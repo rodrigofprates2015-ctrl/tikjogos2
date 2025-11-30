@@ -31,13 +31,20 @@ export function getSession() {
   };
 
   if (process.env.DATABASE_URL) {
-    const pgStore = connectPg(session);
-    sessionConfig.store = new pgStore({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true,
-      ttl: sessionTtl,
-      tableName: "sessions",
-    });
+    try {
+      const pgStore = connectPg(session);
+      const store = new pgStore({
+        conString: process.env.DATABASE_URL,
+        createTableIfMissing: true,
+        ttl: sessionTtl,
+        tableName: "sessions",
+      });
+      sessionConfig.store = store;
+      console.log("PostgreSQL session store initialized successfully");
+    } catch (error) {
+      console.error("Failed to initialize PostgreSQL session store:", error);
+      console.log("Falling back to in-memory session store");
+    }
   }
 
   return session(sessionConfig);

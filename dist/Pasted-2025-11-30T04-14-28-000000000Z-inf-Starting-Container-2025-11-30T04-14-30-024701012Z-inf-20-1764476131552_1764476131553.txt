@@ -1,0 +1,283 @@
+2025-11-30T04:14:28.000000000Z [inf]  Starting Container
+2025-11-30T04:14:30.024701012Z [inf]  
+2025-11-30T04:14:30.024711794Z [inf]  building client...
+2025-11-30T04:14:30.025062115Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-30T04:14:30.025069593Z [inf]  
+2025-11-30T04:14:30.025075881Z [inf]  > rest-express@1.0.0 build
+2025-11-30T04:14:30.025081397Z [inf]  > tsx script/build.ts
+2025-11-30T04:14:30.185158069Z [inf]  [36mvite v7.1.12 [32mbuilding for production...[36m[39m
+2025-11-30T04:14:30.471428412Z [inf]  transforming...
+2025-11-30T04:14:33.472910412Z [inf]  [32m✓[39m 1784 modules transformed.
+2025-11-30T04:14:34.059861650Z [inf]  rendering chunks...
+2025-11-30T04:14:34.059866218Z [inf]  [meta-images] no Replit deployment domain found, skipping meta tag updates
+2025-11-30T04:14:34.059870193Z [inf]  computing gzip size...
+2025-11-30T04:14:34.059874999Z [inf]  [2m../dist/[22m[32mindex.html                 [39m[1m[2m  1.44 kB[22m[1m[22m[2m │ gzip:   0.68 kB[22m
+2025-11-30T04:14:34.059879257Z [inf]  [2m../dist/[22m[2massets/[22m[35mindex-YtkhxeJN.css  [39m[1m[2m 91.81 kB[22m[1m[22m[2m │ gzip:  15.74 kB[22m
+2025-11-30T04:14:34.059885900Z [inf]  [2m../dist/[22m[2massets/[22m[36mindex-GVQkosCc.js   [39m[1m[2m384.70 kB[22m[1m[22m[2m │ gzip: 118.55 kB[22m
+2025-11-30T04:14:34.059890087Z [inf]  [32m✓ built in 3.36s[39m
+2025-11-30T04:14:34.059893831Z [inf]  building server...
+2025-11-30T04:14:34.059899158Z [err]  
+2025-11-30T04:14:34.059903932Z [err]    dist/index.cjs  1.2mb ⚠️
+2025-11-30T04:14:34.059907873Z [err]  
+2025-11-30T04:14:34.059912299Z [err]  ⚡ Done in 226ms
+2025-11-30T04:14:42.000000000Z [inf]  Stopping Container
+2025-11-30T04:14:52.000000000Z [inf]  Starting Container
+2025-11-30T04:14:52.793726662Z [err]  Sun, 30 Nov 2025 04:14:52 GMT express-session deprecated req.secret; provide secret option at node:internal/modules/cjs/loader:1706:14
+2025-11-30T04:14:53.006654024Z [err]      at Object.discovery (file:///app/node_modules/openid-client/build/index.js:244:22)
+2025-11-30T04:14:53.006665436Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-11-30T04:14:53.006673128Z [err]      at async e6.maxAge (/app/dist/index.cjs:85:76250)
+2025-11-30T04:14:53.006679810Z [err]      at async r6 (/app/dist/index.cjs:85:77053)
+2025-11-30T04:14:53.006687814Z [err]      at async a6 (/app/dist/index.cjs:85:83181)
+2025-11-30T04:14:53.006697129Z [err]      at async /app/dist/index.cjs:85:87807 {
+2025-11-30T04:14:53.006706059Z [err]  file:///app/node_modules/openid-client/build/index.js:89
+2025-11-30T04:14:53.006707857Z [err]    code: 'ERR_INVALID_ARG_TYPE',
+2025-11-30T04:14:53.006716770Z [err]    [cause]: undefined
+2025-11-30T04:14:53.006717383Z [err]      const err = new TypeError(message, { cause });
+2025-11-30T04:14:53.006725815Z [err]  }
+2025-11-30T04:14:53.006726971Z [err]                  ^
+2025-11-30T04:14:53.006734388Z [err]  
+2025-11-30T04:14:53.006737811Z [err]  
+2025-11-30T04:14:53.006742404Z [err]  Node.js v22.21.1
+2025-11-30T04:14:53.006745772Z [err]  TypeError: "clientId" must be a non-empty string
+2025-11-30T04:14:53.006751978Z [err]      at CodedTypeError (file:///app/node_modules/openid-client/build/index.js:89:17)
+2025-11-30T04:14:53.006757920Z [err]      at new Configuration (file:///app/node_modules/openid-client/build/index.js:463:19)
+2025-11-30T04:14:54.384474621Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-30T04:14:54.914750030Z [inf]  > rest-express@1.0.0 start
+2025-11-30T04:14:54.914758505Z [inf]  
+2025-11-30T04:14:54.914765045Z [inf]  > NODE_ENV=production node dist/index.cjs
+2025-11-30T04:14:54.914772646Z [err]  Sun, 30 Nov 2025 04:14:54 GMT express-session deprecated req.secret; provide secret option at node:internal/modules/cjs/loader:1706:14
+2025-11-30T04:14:54.914807573Z [inf]  
+2025-11-30T04:14:55.111279113Z [err]    [cause]: undefined
+2025-11-30T04:14:55.111285793Z [err]  }
+2025-11-30T04:14:55.111290979Z [err]      at CodedTypeError (file:///app/node_modules/openid-client/build/index.js:89:17)
+2025-11-30T04:14:55.111317381Z [err]  
+2025-11-30T04:14:55.111324354Z [err]      at new Configuration (file:///app/node_modules/openid-client/build/index.js:463:19)
+2025-11-30T04:14:55.111327928Z [err]  Node.js v22.21.1
+2025-11-30T04:14:55.111335431Z [err]      at Object.discovery (file:///app/node_modules/openid-client/build/index.js:244:22)
+2025-11-30T04:14:55.111347385Z [err]      at async e6.maxAge (/app/dist/index.cjs:85:76250)
+2025-11-30T04:14:55.111347960Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-11-30T04:14:55.111357002Z [err]      at async r6 (/app/dist/index.cjs:85:77053)
+2025-11-30T04:14:55.111364041Z [err]      at async a6 (/app/dist/index.cjs:85:83181)
+2025-11-30T04:14:55.111370838Z [err]      at async /app/dist/index.cjs:85:87807 {
+2025-11-30T04:14:55.111378114Z [err]    code: 'ERR_INVALID_ARG_TYPE',
+2025-11-30T04:14:55.111379257Z [err]  file:///app/node_modules/openid-client/build/index.js:89
+2025-11-30T04:14:55.111385121Z [err]      const err = new TypeError(message, { cause });
+2025-11-30T04:14:55.111407462Z [err]                  ^
+2025-11-30T04:14:55.111413581Z [err]  
+2025-11-30T04:14:55.111418616Z [err]  TypeError: "clientId" must be a non-empty string
+2025-11-30T04:14:58.092101927Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-30T04:14:58.137699300Z [inf]  
+2025-11-30T04:14:58.137704416Z [inf]  > rest-express@1.0.0 start
+2025-11-30T04:14:58.137709275Z [inf]  > NODE_ENV=production node dist/index.cjs
+2025-11-30T04:14:58.137713851Z [inf]  
+2025-11-30T04:14:58.450499232Z [err]  Sun, 30 Nov 2025 04:14:58 GMT express-session deprecated req.secret; provide secret option at node:internal/modules/cjs/loader:1706:14
+2025-11-30T04:14:58.528908185Z [err]      at async e6.maxAge (/app/dist/index.cjs:85:76250)
+2025-11-30T04:14:58.528916554Z [err]      at async r6 (/app/dist/index.cjs:85:77053)
+2025-11-30T04:14:58.528921876Z [err]  file:///app/node_modules/openid-client/build/index.js:89
+2025-11-30T04:14:58.528923603Z [err]      at async a6 (/app/dist/index.cjs:85:83181)
+2025-11-30T04:14:58.528929610Z [err]      const err = new TypeError(message, { cause });
+2025-11-30T04:14:58.528931237Z [err]      at async /app/dist/index.cjs:85:87807 {
+2025-11-30T04:14:58.528937677Z [err]                  ^
+2025-11-30T04:14:58.528938502Z [err]    code: 'ERR_INVALID_ARG_TYPE',
+2025-11-30T04:14:58.528945480Z [err]  
+2025-11-30T04:14:58.528945725Z [err]    [cause]: undefined
+2025-11-30T04:14:58.528954594Z [err]  }
+2025-11-30T04:14:58.528955040Z [err]  TypeError: "clientId" must be a non-empty string
+2025-11-30T04:14:58.528963017Z [err]      at CodedTypeError (file:///app/node_modules/openid-client/build/index.js:89:17)
+2025-11-30T04:14:58.528963693Z [err]  
+2025-11-30T04:14:58.528969583Z [err]      at new Configuration (file:///app/node_modules/openid-client/build/index.js:463:19)
+2025-11-30T04:14:58.528974509Z [err]  Node.js v22.21.1
+2025-11-30T04:14:58.528976924Z [err]      at Object.discovery (file:///app/node_modules/openid-client/build/index.js:244:22)
+2025-11-30T04:14:58.528982625Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-11-30T04:14:59.367778078Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-30T04:14:59.393822067Z [inf]  
+2025-11-30T04:14:59.393832009Z [inf]  > rest-express@1.0.0 start
+2025-11-30T04:14:59.393838011Z [inf]  > NODE_ENV=production node dist/index.cjs
+2025-11-30T04:14:59.393845245Z [inf]  
+2025-11-30T04:14:59.577090014Z [err]  Sun, 30 Nov 2025 04:14:59 GMT express-session deprecated req.secret; provide secret option at node:internal/modules/cjs/loader:1706:14
+2025-11-30T04:14:59.936470231Z [err]    [cause]: undefined
+2025-11-30T04:14:59.936471390Z [err]      const err = new TypeError(message, { cause });
+2025-11-30T04:14:59.936482105Z [err]  }
+2025-11-30T04:14:59.936488233Z [err]  file:///app/node_modules/openid-client/build/index.js:89
+2025-11-30T04:14:59.936488591Z [err]                  ^
+2025-11-30T04:14:59.936492795Z [err]  
+2025-11-30T04:14:59.936498833Z [err]      at async e6.maxAge (/app/dist/index.cjs:85:76250)
+2025-11-30T04:14:59.936503168Z [err]  
+2025-11-30T04:14:59.936505951Z [err]      at CodedTypeError (file:///app/node_modules/openid-client/build/index.js:89:17)
+2025-11-30T04:14:59.936509986Z [err]      at async r6 (/app/dist/index.cjs:85:77053)
+2025-11-30T04:14:59.936512707Z [err]  TypeError: "clientId" must be a non-empty string
+2025-11-30T04:14:59.936515696Z [err]      at new Configuration (file:///app/node_modules/openid-client/build/index.js:463:19)
+2025-11-30T04:14:59.936529953Z [err]      at Object.discovery (file:///app/node_modules/openid-client/build/index.js:244:22)
+2025-11-30T04:14:59.936531139Z [err]      at async a6 (/app/dist/index.cjs:85:83181)
+2025-11-30T04:14:59.936539623Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-11-30T04:14:59.936542554Z [err]      at async /app/dist/index.cjs:85:87807 {
+2025-11-30T04:14:59.936549600Z [err]    code: 'ERR_INVALID_ARG_TYPE',
+2025-11-30T04:14:59.936631183Z [err]  Node.js v22.21.1
+2025-11-30T04:15:00.691630015Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-30T04:15:00.936359394Z [inf]  > NODE_ENV=production node dist/index.cjs
+2025-11-30T04:15:00.936370601Z [inf]  
+2025-11-30T04:15:00.936446440Z [inf]  
+2025-11-30T04:15:00.936453229Z [inf]  > rest-express@1.0.0 start
+2025-11-30T04:15:00.949084731Z [err]  Sun, 30 Nov 2025 04:15:00 GMT express-session deprecated req.secret; provide secret option at node:internal/modules/cjs/loader:1706:14
+2025-11-30T04:15:01.113419096Z [err]  file:///app/node_modules/openid-client/build/index.js:89
+2025-11-30T04:15:01.113423540Z [err]      const err = new TypeError(message, { cause });
+2025-11-30T04:15:01.113427880Z [err]                  ^
+2025-11-30T04:15:01.113432061Z [err]  
+2025-11-30T04:15:01.113436302Z [err]  TypeError: "clientId" must be a non-empty string
+2025-11-30T04:15:01.113440469Z [err]      at CodedTypeError (file:///app/node_modules/openid-client/build/index.js:89:17)
+2025-11-30T04:15:01.113445618Z [err]      at new Configuration (file:///app/node_modules/openid-client/build/index.js:463:19)
+2025-11-30T04:15:01.113450185Z [err]      at Object.discovery (file:///app/node_modules/openid-client/build/index.js:244:22)
+2025-11-30T04:15:01.113454933Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-11-30T04:15:01.113458890Z [err]      at async e6.maxAge (/app/dist/index.cjs:85:76250)
+2025-11-30T04:15:01.113462650Z [err]      at async r6 (/app/dist/index.cjs:85:77053)
+2025-11-30T04:15:01.113466406Z [err]      at async a6 (/app/dist/index.cjs:85:83181)
+2025-11-30T04:15:01.113470160Z [err]      at async /app/dist/index.cjs:85:87807 {
+2025-11-30T04:15:01.113474555Z [err]    code: 'ERR_INVALID_ARG_TYPE',
+2025-11-30T04:15:01.113479960Z [err]    [cause]: undefined
+2025-11-30T04:15:01.113484671Z [err]  }
+2025-11-30T04:15:01.113489748Z [err]  
+2025-11-30T04:15:01.113493772Z [err]  Node.js v22.21.1
+2025-11-30T04:15:02.029587673Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-30T04:15:02.029593829Z [inf]  
+2025-11-30T04:15:02.029599912Z [inf]  > rest-express@1.0.0 start
+2025-11-30T04:15:02.029605772Z [inf]  > NODE_ENV=production node dist/index.cjs
+2025-11-30T04:15:02.029611261Z [inf]  
+2025-11-30T04:15:02.218735263Z [err]  Sun, 30 Nov 2025 04:15:02 GMT express-session deprecated req.secret; provide secret option at node:internal/modules/cjs/loader:1706:14
+2025-11-30T04:15:02.378134052Z [err]    code: 'ERR_INVALID_ARG_TYPE',
+2025-11-30T04:15:02.378143609Z [err]    [cause]: undefined
+2025-11-30T04:15:02.378150824Z [err]  }
+2025-11-30T04:15:02.378157615Z [err]  
+2025-11-30T04:15:02.378164286Z [err]  file:///app/node_modules/openid-client/build/index.js:89
+2025-11-30T04:15:02.378168122Z [err]  Node.js v22.21.1
+2025-11-30T04:15:02.378172315Z [err]      const err = new TypeError(message, { cause });
+2025-11-30T04:15:02.378178278Z [err]                  ^
+2025-11-30T04:15:02.378183738Z [err]  
+2025-11-30T04:15:02.378188553Z [err]  TypeError: "clientId" must be a non-empty string
+2025-11-30T04:15:02.378194167Z [err]      at CodedTypeError (file:///app/node_modules/openid-client/build/index.js:89:17)
+2025-11-30T04:15:02.378199251Z [err]      at new Configuration (file:///app/node_modules/openid-client/build/index.js:463:19)
+2025-11-30T04:15:02.378204260Z [err]      at Object.discovery (file:///app/node_modules/openid-client/build/index.js:244:22)
+2025-11-30T04:15:02.378212163Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-11-30T04:15:02.378217139Z [err]      at async e6.maxAge (/app/dist/index.cjs:85:76250)
+2025-11-30T04:15:02.378221966Z [err]      at async r6 (/app/dist/index.cjs:85:77053)
+2025-11-30T04:15:02.378227093Z [err]      at async a6 (/app/dist/index.cjs:85:83181)
+2025-11-30T04:15:02.378232141Z [err]      at async /app/dist/index.cjs:85:87807 {
+2025-11-30T04:15:03.189667254Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-30T04:15:03.226800482Z [inf]  
+2025-11-30T04:15:03.226807636Z [inf]  > rest-express@1.0.0 start
+2025-11-30T04:15:03.226812051Z [inf]  > NODE_ENV=production node dist/index.cjs
+2025-11-30T04:15:03.226816867Z [inf]  
+2025-11-30T04:15:03.406401966Z [err]  Sun, 30 Nov 2025 04:15:03 GMT express-session deprecated req.secret; provide secret option at node:internal/modules/cjs/loader:1706:14
+2025-11-30T04:15:03.628513133Z [err]  file:///app/node_modules/openid-client/build/index.js:89
+2025-11-30T04:15:03.628520615Z [err]      const err = new TypeError(message, { cause });
+2025-11-30T04:15:03.628526757Z [err]                  ^
+2025-11-30T04:15:03.628532207Z [err]  
+2025-11-30T04:15:03.628538093Z [err]  TypeError: "clientId" must be a non-empty string
+2025-11-30T04:15:03.628543385Z [err]      at CodedTypeError (file:///app/node_modules/openid-client/build/index.js:89:17)
+2025-11-30T04:15:03.628548575Z [err]      at new Configuration (file:///app/node_modules/openid-client/build/index.js:463:19)
+2025-11-30T04:15:03.628554025Z [err]      at Object.discovery (file:///app/node_modules/openid-client/build/index.js:244:22)
+2025-11-30T04:15:03.628559331Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-11-30T04:15:03.628564296Z [err]      at async e6.maxAge (/app/dist/index.cjs:85:76250)
+2025-11-30T04:15:03.628568396Z [err]      at async r6 (/app/dist/index.cjs:85:77053)
+2025-11-30T04:15:03.628573548Z [err]      at async a6 (/app/dist/index.cjs:85:83181)
+2025-11-30T04:15:03.628579277Z [err]      at async /app/dist/index.cjs:85:87807 {
+2025-11-30T04:15:03.628583087Z [err]    code: 'ERR_INVALID_ARG_TYPE',
+2025-11-30T04:15:03.628587290Z [err]    [cause]: undefined
+2025-11-30T04:15:03.628758792Z [err]  }
+2025-11-30T04:15:03.628765927Z [err]  
+2025-11-30T04:15:03.628771476Z [err]  Node.js v22.21.1
+2025-11-30T04:15:05.045151867Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-30T04:15:05.045157779Z [inf]  
+2025-11-30T04:15:05.045163213Z [inf]  > rest-express@1.0.0 start
+2025-11-30T04:15:05.045184629Z [inf]  > NODE_ENV=production node dist/index.cjs
+2025-11-30T04:15:05.045191148Z [inf]  
+2025-11-30T04:15:05.090239565Z [err]  Sun, 30 Nov 2025 04:15:05 GMT express-session deprecated req.secret; provide secret option at node:internal/modules/cjs/loader:1706:14
+2025-11-30T04:15:05.251504467Z [err]  file:///app/node_modules/openid-client/build/index.js:89
+2025-11-30T04:15:05.251505546Z [err]      at async r6 (/app/dist/index.cjs:85:77053)
+2025-11-30T04:15:05.251509460Z [err]      const err = new TypeError(message, { cause });
+2025-11-30T04:15:05.251514255Z [err]                  ^
+2025-11-30T04:15:05.251514862Z [err]      at async a6 (/app/dist/index.cjs:85:83181)
+2025-11-30T04:15:05.251519444Z [err]  
+2025-11-30T04:15:05.251521354Z [err]      at async /app/dist/index.cjs:85:87807 {
+2025-11-30T04:15:05.251525350Z [err]  TypeError: "clientId" must be a non-empty string
+2025-11-30T04:15:05.251527401Z [err]    code: 'ERR_INVALID_ARG_TYPE',
+2025-11-30T04:15:05.251531396Z [err]      at CodedTypeError (file:///app/node_modules/openid-client/build/index.js:89:17)
+2025-11-30T04:15:05.251536767Z [err]      at new Configuration (file:///app/node_modules/openid-client/build/index.js:463:19)
+2025-11-30T04:15:05.251537479Z [err]    [cause]: undefined
+2025-11-30T04:15:05.251542435Z [err]      at Object.discovery (file:///app/node_modules/openid-client/build/index.js:244:22)
+2025-11-30T04:15:05.251546958Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-11-30T04:15:05.251547776Z [err]  }
+2025-11-30T04:15:05.251553161Z [err]      at async e6.maxAge (/app/dist/index.cjs:85:76250)
+2025-11-30T04:15:05.251553594Z [err]  
+2025-11-30T04:15:05.251560195Z [err]  Node.js v22.21.1
+2025-11-30T04:15:06.269625096Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-30T04:15:06.296844583Z [inf]  
+2025-11-30T04:15:06.296852708Z [inf]  > rest-express@1.0.0 start
+2025-11-30T04:15:06.296859256Z [inf]  > NODE_ENV=production node dist/index.cjs
+2025-11-30T04:15:06.296865122Z [inf]  
+2025-11-30T04:15:06.511388668Z [err]  Sun, 30 Nov 2025 04:15:06 GMT express-session deprecated req.secret; provide secret option at node:internal/modules/cjs/loader:1706:14
+2025-11-30T04:15:06.663591239Z [err]  file:///app/node_modules/openid-client/build/index.js:89
+2025-11-30T04:15:06.663596573Z [err]      const err = new TypeError(message, { cause });
+2025-11-30T04:15:06.663603228Z [err]                  ^
+2025-11-30T04:15:06.663609368Z [err]  
+2025-11-30T04:15:06.663618400Z [err]  TypeError: "clientId" must be a non-empty string
+2025-11-30T04:15:06.663624522Z [err]      at CodedTypeError (file:///app/node_modules/openid-client/build/index.js:89:17)
+2025-11-30T04:15:06.663631352Z [err]      at new Configuration (file:///app/node_modules/openid-client/build/index.js:463:19)
+2025-11-30T04:15:06.663636674Z [err]      at Object.discovery (file:///app/node_modules/openid-client/build/index.js:244:22)
+2025-11-30T04:15:06.663642697Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-11-30T04:15:06.663649904Z [err]      at async e6.maxAge (/app/dist/index.cjs:85:76250)
+2025-11-30T04:15:06.663655423Z [err]      at async r6 (/app/dist/index.cjs:85:77053)
+2025-11-30T04:15:06.663660269Z [err]      at async a6 (/app/dist/index.cjs:85:83181)
+2025-11-30T04:15:06.663665104Z [err]      at async /app/dist/index.cjs:85:87807 {
+2025-11-30T04:15:06.663670332Z [err]    code: 'ERR_INVALID_ARG_TYPE',
+2025-11-30T04:15:06.663675690Z [err]    [cause]: undefined
+2025-11-30T04:15:06.663680148Z [err]  }
+2025-11-30T04:15:06.663684850Z [err]  
+2025-11-30T04:15:06.663689235Z [err]  Node.js v22.21.1
+2025-11-30T04:15:07.999247506Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-30T04:15:07.999254215Z [inf]  
+2025-11-30T04:15:07.999260878Z [inf]  > rest-express@1.0.0 start
+2025-11-30T04:15:07.999267830Z [inf]  > NODE_ENV=production node dist/index.cjs
+2025-11-30T04:15:07.999273899Z [inf]  
+2025-11-30T04:15:07.999280210Z [err]  Sun, 30 Nov 2025 04:15:07 GMT express-session deprecated req.secret; provide secret option at node:internal/modules/cjs/loader:1706:14
+2025-11-30T04:15:08.093436590Z [err]  }
+2025-11-30T04:15:08.093446789Z [err]  
+2025-11-30T04:15:08.093451208Z [err]  file:///app/node_modules/openid-client/build/index.js:89
+2025-11-30T04:15:08.093454479Z [err]  Node.js v22.21.1
+2025-11-30T04:15:08.093462809Z [err]      const err = new TypeError(message, { cause });
+2025-11-30T04:15:08.093468963Z [err]                  ^
+2025-11-30T04:15:08.093473979Z [err]  
+2025-11-30T04:15:08.093478966Z [err]  TypeError: "clientId" must be a non-empty string
+2025-11-30T04:15:08.093483965Z [err]      at CodedTypeError (file:///app/node_modules/openid-client/build/index.js:89:17)
+2025-11-30T04:15:08.093488882Z [err]      at new Configuration (file:///app/node_modules/openid-client/build/index.js:463:19)
+2025-11-30T04:15:08.093493006Z [err]      at Object.discovery (file:///app/node_modules/openid-client/build/index.js:244:22)
+2025-11-30T04:15:08.093497738Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-11-30T04:15:08.093502530Z [err]      at async e6.maxAge (/app/dist/index.cjs:85:76250)
+2025-11-30T04:15:08.093508642Z [err]      at async r6 (/app/dist/index.cjs:85:77053)
+2025-11-30T04:15:08.093513504Z [err]      at async a6 (/app/dist/index.cjs:85:83181)
+2025-11-30T04:15:08.093518749Z [err]      at async /app/dist/index.cjs:85:87807 {
+2025-11-30T04:15:08.093525850Z [err]    code: 'ERR_INVALID_ARG_TYPE',
+2025-11-30T04:15:08.093532246Z [err]    [cause]: undefined
+2025-11-30T04:15:08.968786673Z [err]  npm warn config production Use `--omit=dev` instead.
+2025-11-30T04:15:08.968791387Z [inf]  
+2025-11-30T04:15:08.968796896Z [inf]  > rest-express@1.0.0 start
+2025-11-30T04:15:08.968801466Z [inf]  > NODE_ENV=production node dist/index.cjs
+2025-11-30T04:15:08.968806140Z [inf]  
+2025-11-30T04:15:09.007595799Z [err]  Sun, 30 Nov 2025 04:15:09 GMT express-session deprecated req.secret; provide secret option at node:internal/modules/cjs/loader:1706:14
+2025-11-30T04:15:09.176230018Z [err]      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-11-30T04:15:09.176240133Z [err]      at async e6.maxAge (/app/dist/index.cjs:85:76250)
+2025-11-30T04:15:09.176247231Z [err]      at async r6 (/app/dist/index.cjs:85:77053)
+2025-11-30T04:15:09.176254180Z [err]      at async a6 (/app/dist/index.cjs:85:83181)
+2025-11-30T04:15:09.176260064Z [err]      at async /app/dist/index.cjs:85:87807 {
+2025-11-30T04:15:09.176265894Z [err]    code: 'ERR_INVALID_ARG_TYPE',
+2025-11-30T04:15:09.176271707Z [err]    [cause]: undefined
+2025-11-30T04:15:09.176277512Z [err]  }
+2025-11-30T04:15:09.176286271Z [err]  file:///app/node_modules/openid-client/build/index.js:89
+2025-11-30T04:15:09.176290171Z [err]      const err = new TypeError(message, { cause });
+2025-11-30T04:15:09.176294775Z [err]  
+2025-11-30T04:15:09.176295129Z [err]                  ^
+2025-11-30T04:15:09.176301388Z [err]  
+2025-11-30T04:15:09.176303597Z [err]  Node.js v22.21.1
+2025-11-30T04:15:09.176307293Z [err]  TypeError: "clientId" must be a non-empty string
+2025-11-30T04:15:09.176312267Z [err]      at CodedTypeError (file:///app/node_modules/openid-client/build/index.js:89:17)
+2025-11-30T04:15:09.176316934Z [err]      at new Configuration (file:///app/node_modules/openid-client/build/index.js:463:19)
+2025-11-30T04:15:09.176321068Z [err]      at Object.discovery (file:///app/node_modules/openid-client/build/index.js:244:22)

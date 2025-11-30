@@ -1,0 +1,42 @@
+~/workspace$ asdsad
+bash: asdsad: command not found
+~/workspace$ git status
+On branch main
+Your branch is ahead of 'origin/main' by 8 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+    modified:   .local/state/replit/agent/.agent_state_main.bin
+    modified:   .local/state/replit/agent/repl_state.bin
+
+no changes added to commit (use "git add" and/or "git commit -a")
+~/workspace$ git push origin main
+error: cannot run ssh: No such file or directory
+fatal: unable to fork
+~/workspace$ git remote -v
+gitsafe-backup  git://gitsafe:5418/backup.git (fetch)
+gitsafe-backup  git://gitsafe:5418/backup.git (push)
+origin  git@github.com:rodrigofprates2015-ctrl/Dessavez.git (fetch)
+origin  git@github.com:rodrigofprates2015-ctrl/Dessavez.git (push)
+~/workspace$ ^C
+~/workspace$ ^C
+~/workspace$ git remote set-url origin https://github.com/rodrigofprates2015-ctrl/Dessavez.git
+~/workspace$ git push origin main
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/rodrigofprates2015-ctrl/Dessavez.git/'
+~/workspace$ git push origin main
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/rodrigofprates2015-ctrl/Dessavez.git/'
+~/workspace$ echo "rodrigofprates2015-ctrl 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"
+rodrigofprates2015-ctrl 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
+~/workspace$ git push origin main
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/rodrigofprates2015-ctrl/Dessavez.git/'
+~/workspace$ git config --global credential.helper store
+~/workspace$ git push origin main
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/rodrigofprates2015-ctrl/Dessavez.git/'
+~/workspace$ 
+
