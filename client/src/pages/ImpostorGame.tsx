@@ -33,6 +33,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import backgroundImg from "@assets/background_1764616571362.png";
+import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoImpostor from "@assets/logo_1764616571363.png";
+import tripulanteImg from "@assets/Tripulante_1764616571363.png";
+import impostorImg from "@assets/impostor_1764616571362.png";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
 
@@ -219,15 +224,6 @@ const getModeEmoji = (modeId: string) => {
   }
 };
 
-const DecorativeLines = () => (
-  <>
-    <div className="absolute top-[15%] left-0 w-[40%] retro-line transform -skew-y-6"></div>
-    <div className="absolute top-[15%] right-0 w-[40%] retro-line-alt transform skew-y-6"></div>
-    <div className="absolute bottom-[15%] left-0 w-[40%] retro-line-alt transform skew-y-6"></div>
-    <div className="absolute bottom-[15%] right-0 w-[40%] retro-line transform -skew-y-6"></div>
-  </>
-);
-
 const HomeScreen = () => {
   const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname, clearSavedNickname, savedNickname } = useGameStore();
   const [name, setNameInput] = useState("");
@@ -283,106 +279,132 @@ const HomeScreen = () => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-md space-y-8 animate-fade-in p-4 relative z-10">
-      <div className="text-center mb-2">
-        <div className="relative inline-block mb-0">
-          <h1 className="text-6xl font-black retro-title text-white">
-            TikJogos
-          </h1>
-          <p className="text-[#e9c46a] text-sm font-medium mt-2">Jogos sociais para todos</p>
-        </div>
+    <div 
+      className="min-h-screen w-full flex flex-col items-center justify-center relative"
+      style={{
+        backgroundImage: `url(${backgroundImg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Logo TikJogos at top */}
+      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-20">
+        <img src={logoTikjogos} alt="TikJogos" className="h-8 md:h-10" />
       </div>
 
-      <div className="w-full space-y-3">
-        <div className="relative">
-          <Input
+      {/* Tripulante character - left side */}
+      <img 
+        src={tripulanteImg} 
+        alt="Tripulante" 
+        className="hidden md:block absolute bottom-0 left-4 lg:left-16 h-[50vh] max-h-[500px] object-contain z-10"
+      />
+
+      {/* Impostor character - right side */}
+      <img 
+        src={impostorImg} 
+        alt="Impostor" 
+        className="hidden md:block absolute bottom-0 right-4 lg:right-16 h-[50vh] max-h-[500px] object-contain z-10"
+      />
+
+      {/* Main card */}
+      <div className="main-card w-[90%] max-w-md p-6 md:p-8 z-20 animate-fade-in">
+        {/* Impostor logo */}
+        <div className="flex justify-center mb-6">
+          <img src={logoImpostor} alt="Impostor" className="h-20 md:h-24 object-contain" />
+        </div>
+
+        {/* Form */}
+        <div className="space-y-4">
+          {/* Nickname input */}
+          <input
             type="text"
-            placeholder="Seu apelido de tripulante"
+            placeholder="Seu nickname"
             value={name}
             onChange={(e) => setNameInput(e.target.value)}
-            className="input-retro w-full h-14 text-center text-lg placeholder:text-gray-600"
+            className="input-dark"
             data-testid="input-name"
           />
-        </div>
 
-        <div className="flex items-center justify-between px-2">
-          <label className="flex items-center gap-2 cursor-pointer group">
+          {/* Create room button */}
+          <button 
+            onClick={handleCreate} 
+            disabled={isLoading}
+            className="btn-orange w-full"
+            data-testid="button-create-room"
+          >
+            {isLoading ? <Loader2 className="animate-spin" /> : <Zap size={20} />}
+            CRIAR SALA
+          </button>
+
+          {/* Save nickname checkbox */}
+          <div className="flex items-center justify-between px-1">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={saveNicknameChecked}
+                onChange={(e) => setSaveNicknameChecked(e.target.checked)}
+                className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]"
+                data-testid="checkbox-save-nickname"
+              />
+              <span className="text-sm text-[#8aa0b0]">Guardar nickname</span>
+            </label>
+            {savedNickname && (
+              <button
+                onClick={handleClearNickname}
+                className="text-xs text-[#6a8aaa] hover:text-white transition-colors underline"
+                data-testid="button-clear-nickname"
+              >
+                Limpar
+              </button>
+            )}
+          </div>
+
+          {/* OR divider */}
+          <div className="flex items-center gap-4 py-2">
+            <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+            <span className="text-[#8aa0b0] text-sm font-bold">OU</span>
+            <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+          </div>
+
+          {/* Code input and Enter button */}
+          <div className="flex gap-3">
             <input
-              type="checkbox"
-              checked={saveNicknameChecked}
-              onChange={(e) => setSaveNicknameChecked(e.target.checked)}
-              className="w-4 h-4 rounded bg-[#16213e] border-2 border-[#3d4a5c] cursor-pointer checked:bg-[#e07b39] checked:border-[#e07b39] transition-all"
-              data-testid="checkbox-save-nickname"
-            />
-            <span className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Guardar nickname?</span>
-          </label>
-          {savedNickname && (
-            <button
-              onClick={handleClearNickname}
-              className="text-xs text-gray-600 hover:text-gray-400 transition-colors underline"
-              data-testid="button-clear-nickname"
-            >
-              Limpar
-            </button>
-          )}
-        </div>
-      </div>
-
-        <Button 
-          onClick={handleCreate} 
-          disabled={isLoading}
-          className="w-full h-14 btn-retro-primary text-lg"
-          data-testid="button-create-room"
-        >
-          {isLoading ? <Loader2 className="animate-spin mr-2" /> : <Zap className="mr-2" />}
-          CRIAR SALA
-        </Button>
-
-        <div className="flex items-center gap-4 py-3">
-          <div className="flex-1 retro-divider"></div>
-          <span className="text-gray-500 text-xs font-bold tracking-widest">OU</span>
-          <div className="flex-1 retro-divider"></div>
-        </div>
-
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <Input
               type="text"
               placeholder="CÓDIGO"
               value={code}
               onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
               maxLength={4}
-              className="input-retro w-full h-14 text-center uppercase tracking-[0.3em] font-mono font-bold text-lg"
+              className="input-code flex-1"
               data-testid="input-room-code"
             />
+            <button 
+              onClick={handleJoin}
+              disabled={isLoading}
+              className="btn-green"
+              data-testid="button-join-room"
+            >
+              ENTRAR
+            </button>
           </div>
-          <Button 
-            onClick={handleJoin}
-            disabled={isLoading}
-            className="h-14 px-8 btn-retro-secondary"
-            data-testid="button-join-room"
-          >
-            ENTRAR
-          </Button>
         </div>
+      </div>
 
-        <div className="mt-8 pt-6 text-center space-y-3 border-t border-[#3d4a5c]/50">
-          <p className="text-gray-500 text-xs">
-            Desenvolvido com <Heart className="inline w-3 h-3 text-[#c44536] fill-current" /> por <span className="text-gray-400">Rodrigo Freitas</span>
-          </p>
-          <p className="text-gray-600 text-xs">
-            Inspirado em jogos sociais
-          </p>
-          <div className="flex items-center justify-center gap-2 text-xs">
-            <Link href="/privacidade" className="text-gray-600 hover:text-[#4a90a4] transition-colors">
-              Política de Privacidade
-            </Link>
-            <span className="text-gray-700">•</span>
-            <Link href="/termos" className="text-gray-600 hover:text-[#4a90a4] transition-colors">
-              Termos de Uso
-            </Link>
-          </div>
+      {/* Footer */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center z-20">
+        <p className="text-[#6a8aaa] text-xs">
+          Desenvolvido com <Heart className="inline w-3 h-3 text-red-400 fill-current" /> por <span className="text-[#8aa0b0]">Rodrigo Freitas</span>
+        </p>
+        <div className="flex items-center justify-center gap-2 text-xs mt-1">
+          <Link href="/privacidade" className="text-[#6a8aaa] hover:text-white transition-colors">
+            Privacidade
+          </Link>
+          <span className="text-[#4a6a8a]">|</span>
+          <Link href="/termos" className="text-[#6a8aaa] hover:text-white transition-colors">
+            Termos
+          </Link>
         </div>
+      </div>
     </div>
   );
 };
@@ -1215,15 +1237,30 @@ export default function ImpostorGame() {
   const { status } = useGameStore();
   const [isDonationOpen, setIsDonationOpen] = useState(false);
 
+  if (status === 'home') {
+    return (
+      <>
+        <NotificationCenter />
+        <HomeScreen />
+      </>
+    );
+  }
+
   return (
-    <div className="min-h-screen w-full bg-black flex items-center justify-center font-poppins text-white overflow-hidden relative grid-bg">
-      <DecorativeLines />
+    <div 
+      className="min-h-screen w-full flex items-center justify-center font-poppins text-white overflow-hidden relative"
+      style={{
+        backgroundImage: `url(${backgroundImg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
       <NotificationCenter />
       
       <DonationButton onClick={() => setIsDonationOpen(true)} />
       <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />
 
-      {status === 'home' && <HomeScreen />}
       {status === 'lobby' && <LobbyScreen />}
       {status === 'modeSelect' && <ModeSelectScreen />}
       {status === 'submodeSelect' && <PalavraSuperSecretaSubmodeScreen />}
