@@ -130,14 +130,25 @@ const HomeButton = ({ inline = false }: { inline?: boolean } = {}) => {
   );
 };
 
-const DonationButton = ({ onClick }: { onClick: () => void }) => (
-  <button
-    onClick={onClick}
-    className="fixed top-4 right-4 z-40 flex items-center gap-2 px-4 py-2 bg-[#c44536] border-2 border-[#a33526] rounded-xl text-white hover:bg-[#d45546] transition-all font-semibold shadow-lg"
-  >
-    <Heart className="w-4 h-4 fill-current" />
-    <span className="text-sm font-medium">Doar</span>
-  </button>
+const TopRightButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
+  <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
+    <Link 
+      href="/comojogar"
+      className="flex items-center gap-2 px-4 py-2 bg-[#4a90a4] border-2 border-[#3a7084] rounded-xl text-white hover:bg-[#5aa0b4] transition-all font-semibold shadow-lg"
+      data-testid="button-how-to-play"
+    >
+      <HelpCircle className="w-4 h-4" />
+      <span className="text-sm font-medium">Como Jogar</span>
+    </Link>
+    <button
+      onClick={onDonateClick}
+      className="flex items-center gap-2 px-4 py-2 bg-[#c44536] border-2 border-[#a33526] rounded-xl text-white hover:bg-[#d45546] transition-all font-semibold shadow-lg"
+      data-testid="button-donate"
+    >
+      <Heart className="w-4 h-4 fill-current" />
+      <span className="text-sm font-medium">Doar</span>
+    </button>
+  </div>
 );
 
 const AdPopup = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
@@ -409,7 +420,7 @@ const HomeScreen = () => {
       </div>
 
       {/* Donation Button and Modal */}
-      <DonationButton onClick={() => setIsDonationOpen(true)} />
+      <TopRightButtons onDonateClick={() => setIsDonationOpen(true)} />
       <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />
     </div>
   );
@@ -1282,7 +1293,7 @@ export default function ImpostorGame() {
     >
       <NotificationCenter />
       
-      <DonationButton onClick={() => setIsDonationOpen(true)} />
+      <TopRightButtons onDonateClick={() => setIsDonationOpen(true)} />
       <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />
 
       {status === 'lobby' && <LobbyScreen />}
