@@ -771,9 +771,10 @@ const PerguntasDiferentesScreen = () => {
     setShowAdPopup(true);
   };
 
-  const handleCloseAd = () => {
+  const handleCloseAd = async () => {
+    // First call returnToLobby, then close the popup
+    await returnToLobby();
     setShowAdPopup(false);
-    returnToLobby();
   };
 
   const handleSubmitAnswer = () => {
@@ -1049,9 +1050,10 @@ const GameScreen = () => {
     setShowAdPopup(true);
   };
 
-  const handleCloseAd = () => {
+  const handleCloseAd = async () => {
+    // First call returnToLobby, then close the popup
+    await returnToLobby();
     setShowAdPopup(false);
-    returnToLobby();
   };
 
   const handleStartSorteio = () => {
