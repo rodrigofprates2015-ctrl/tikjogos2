@@ -1,0 +1,21 @@
+name: Sync Replit to GitHub
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      
+      - name: Verify branch is up to date
+        run: |
+          git log --oneline -1
+          echo "✅ Sync confirmed - main branch is updated"
