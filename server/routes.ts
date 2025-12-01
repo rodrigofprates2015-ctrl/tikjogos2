@@ -241,8 +241,19 @@ export async function registerRoutes(
         // Handle trigger speaking order wheel - broadcast to all players in room
         if (data.type === 'trigger-speaking-order' && data.roomCode) {
           const roomCode = data.roomCode as string;
-          // Broadcast to all players to show the spinning wheel simultaneously
-          broadcastToRoom(roomCode, { type: 'start-speaking-order-wheel' });
+          const room = await storage.getRoom(roomCode);
+          
+          if (room && room.players) {
+            // Generate random speaking order on the server so all clients get the same order
+            const shuffled = [...room.players].sort(() => Math.random() - 0.5);
+            const speakingOrder = shuffled.slice(0, Math.min(3, shuffled.length)).map(p => p.uid);
+            
+            // Broadcast to all players with the same order
+            broadcastToRoom(roomCode, { 
+              type: 'start-speaking-order-wheel',
+              speakingOrder 
+            });
+          }
         }
       } catch (error) {
         console.error('WebSocket error:', error);

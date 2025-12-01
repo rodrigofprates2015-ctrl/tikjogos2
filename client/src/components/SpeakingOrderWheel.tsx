@@ -6,9 +6,10 @@ interface SpeakingOrderWheelProps {
   players: Player[];
   onComplete: (order: string[]) => void;
   isSpinning?: boolean;
+  serverOrder?: string[] | null; // Order received from server (same for all clients)
 }
 
-export function SpeakingOrderWheel({ players, onComplete, isSpinning = true }: SpeakingOrderWheelProps) {
+export function SpeakingOrderWheel({ players, onComplete, isSpinning = true, serverOrder }: SpeakingOrderWheelProps) {
   const [rotation, setRotation] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [speakingOrder, setSpeakingOrder] = useState<string[]>([]);
@@ -26,15 +27,16 @@ export function SpeakingOrderWheel({ players, onComplete, isSpinning = true }: S
     const timeout = setTimeout(() => {
       clearInterval(interval);
       
-      // Generate random speaking order
-      const shuffled = [...players].sort(() => Math.random() - 0.5);
-      const order = shuffled.slice(0, 3).map(p => p.uid);
+      // Use server-provided order (same for all clients) or fallback to local generation
+      const order = serverOrder && serverOrder.length > 0 
+        ? serverOrder 
+        : [...players].sort(() => Math.random() - 0.5).slice(0, 3).map(p => p.uid);
       
       setSpeakingOrder(order);
       setIsComplete(true);
       
-      // Final rotation to a specific position
-      setRotation(360 * 3 + Math.random() * 360);
+      // Final rotation to a specific position (same seed for visual consistency)
+      setRotation(360 * 3 + 45);
       
       // Show result for 4 seconds then close
       setTimeout(() => {
@@ -46,7 +48,7 @@ export function SpeakingOrderWheel({ players, onComplete, isSpinning = true }: S
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [isSpinning, isComplete, players, onComplete]);
+  }, [isSpinning, isComplete, players, onComplete, serverOrder]);
 
   const displayOrder = speakingOrder.length > 0 
     ? speakingOrder.map(uid => players.find(p => p.uid === uid)?.name || 'Desconhecido')

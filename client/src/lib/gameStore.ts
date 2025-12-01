@@ -204,6 +204,10 @@ export const useGameStore = create<GameState>((set, get) => ({
           });
         }
         if (data.type === 'start-speaking-order-wheel') {
+          // Store the server-generated speaking order so all clients show the same result
+          if (data.speakingOrder) {
+            set({ speakingOrder: data.speakingOrder });
+          }
           get().setShowSpeakingOrderWheel(true);
         }
       } catch (error) {

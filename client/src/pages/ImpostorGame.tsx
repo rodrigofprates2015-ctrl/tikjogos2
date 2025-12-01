@@ -1259,6 +1259,7 @@ const GameScreen = () => {
             setShowSpeakingOrderWheel(false);
           }}
           isSpinning={true}
+          serverOrder={speakingOrder}
         />
       )}
 
