@@ -311,12 +311,9 @@ const HomeScreen = () => {
 
       {/* Main card */}
       <div className="main-card w-[90%] max-w-md p-6 md:p-8 z-20 animate-fade-in">
-        {/* Impostor logo - mobile version with characters, desktop version without */}
+        {/* Impostor logo with characters */}
         <div className="flex justify-center mb-6">
-          {/* Mobile: logo with characters */}
-          <img src={logoImpostorMobile} alt="Impostor" className="md:hidden h-24 object-contain" />
-          {/* Desktop: logo without characters */}
-          <img src={logoImpostor} alt="Impostor" className="hidden md:block h-24 object-contain" />
+          <img src={logoImpostorMobile} alt="Impostor" className="h-24 md:h-28 object-contain" />
         </div>
 
         {/* Form */}
