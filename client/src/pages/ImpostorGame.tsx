@@ -1020,7 +1020,7 @@ const PerguntasDiferentesScreen = () => {
 
 const GameScreen = () => {
   const { user, room, returnToLobby, speakingOrder, setSpeakingOrder, showSpeakingOrderWheel, setShowSpeakingOrderWheel, triggerSpeakingOrderWheel } = useGameStore();
-  const [isRevealed, setIsRevealed] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(true);
   const [showAdPopup, setShowAdPopup] = useState(false);
 
   const handleNewRound = () => {
@@ -1047,47 +1047,43 @@ const GameScreen = () => {
     return <PerguntasDiferentesScreen />;
   }
 
-  const renderInnocentContent = () => {
+  const renderCrewContent = () => {
     if (!gameData) return null;
 
     switch (gameMode) {
       case 'palavraSecreta':
         return (
-          <div className="space-y-6 text-center">
-            <div className="space-y-2">
-              <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Palavra Secreta</p>
-              <h2 className="text-4xl text-white font-black tracking-wide">{gameData.word}</h2>
-            </div>
-            <p className="text-gray-400 text-sm">Dê dicas sutis sobre a palavra!</p>
+          <div className="space-y-3 text-center">
+            <p className="text-cyan-300 text-xs uppercase tracking-[0.2em] font-semibold">Palavra Secreta</p>
+            <h2 className="text-3xl sm:text-4xl text-white font-black">{gameData.word}</h2>
+            <p className="text-cyan-200/70 text-sm">Dê dicas sutis sobre a palavra!</p>
           </div>
         );
       
       case 'palavras':
         const myRole = user?.uid ? gameData.roles?.[user.uid] : null;
         return (
-          <div className="space-y-6 text-center">
-            <div className="space-y-2">
-              <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Local</p>
-              <h2 className="text-3xl text-white font-black">{gameData.location}</h2>
+          <div className="space-y-4 text-center">
+            <div className="space-y-1">
+              <p className="text-cyan-300 text-xs uppercase tracking-[0.2em] font-semibold">Local</p>
+              <h2 className="text-2xl sm:text-3xl text-white font-black">{gameData.location}</h2>
             </div>
-            <div className="w-full h-[1px] bg-[#4a90a4]/30"></div>
-            <div className="space-y-2">
-              <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Sua Função</p>
-              <h3 className="text-2xl text-white font-bold">{myRole}</h3>
+            <div className="w-16 h-[2px] bg-cyan-400/30 mx-auto"></div>
+            <div className="space-y-1">
+              <p className="text-cyan-300 text-xs uppercase tracking-[0.2em] font-semibold">Sua Função</p>
+              <h3 className="text-xl sm:text-2xl text-white font-bold">{myRole}</h3>
             </div>
-            <p className="text-gray-400 text-sm">Descreva o local de acordo com sua função!</p>
+            <p className="text-cyan-200/70 text-sm">Descreva o local de acordo com sua função!</p>
           </div>
         );
       
       case 'duasFaccoes':
         const myFaction = user?.uid ? gameData.factionMap?.[user.uid] : null;
         return (
-          <div className="space-y-6 text-center">
-            <div className="space-y-2">
-              <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Sua Palavra</p>
-              <h2 className="text-4xl text-white font-black">{myFaction}</h2>
-            </div>
-            <p className="text-gray-400 text-sm">
+          <div className="space-y-3 text-center">
+            <p className="text-cyan-300 text-xs uppercase tracking-[0.2em] font-semibold">Sua Palavra</p>
+            <h2 className="text-3xl sm:text-4xl text-white font-black">{myFaction}</h2>
+            <p className="text-cyan-200/70 text-sm">
               Existem duas palavras no jogo!<br/>
               Descubra quem é do seu time.
             </p>
@@ -1096,17 +1092,17 @@ const GameScreen = () => {
       
       case 'categoriaItem':
         return (
-          <div className="space-y-6 text-center">
-            <div className="space-y-2">
-              <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Categoria</p>
-              <h3 className="text-2xl text-white font-bold">{gameData.category}</h3>
+          <div className="space-y-4 text-center">
+            <div className="space-y-1">
+              <p className="text-cyan-300 text-xs uppercase tracking-[0.2em] font-semibold">Categoria</p>
+              <h3 className="text-xl sm:text-2xl text-white font-bold">{gameData.category}</h3>
             </div>
-            <div className="w-full h-[1px] bg-[#4a90a4]/30"></div>
-            <div className="space-y-2">
-              <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Item</p>
-              <h2 className="text-4xl text-white font-black">{gameData.item}</h2>
+            <div className="w-16 h-[2px] bg-cyan-400/30 mx-auto"></div>
+            <div className="space-y-1">
+              <p className="text-cyan-300 text-xs uppercase tracking-[0.2em] font-semibold">Item</p>
+              <h2 className="text-3xl sm:text-4xl text-white font-black">{gameData.item}</h2>
             </div>
-            <p className="text-gray-400 text-sm">Descreva o item de forma indireta!</p>
+            <p className="text-cyan-200/70 text-sm">Descreva o item de forma indireta!</p>
           </div>
         );
       
@@ -1121,8 +1117,8 @@ const GameScreen = () => {
     switch (gameMode) {
       case 'palavraSecreta':
         return (
-          <div className="space-y-4 text-center">
-            <p className="text-gray-300 text-lg font-medium">
+          <div className="space-y-2 text-center px-4">
+            <p className="text-red-200/90 text-lg font-medium leading-relaxed">
               Finja que você sabe a palavra!<br/>
               Engane a todos.
             </p>
@@ -1131,8 +1127,8 @@ const GameScreen = () => {
       
       case 'palavras':
         return (
-          <div className="space-y-4 text-center">
-            <p className="text-gray-300 text-lg font-medium">
+          <div className="space-y-2 text-center px-4">
+            <p className="text-red-200/90 text-lg font-medium leading-relaxed">
               Você não sabe o local!<br/>
               Tente descobrir através das dicas.
             </p>
@@ -1141,8 +1137,8 @@ const GameScreen = () => {
       
       case 'duasFaccoes':
         return (
-          <div className="space-y-4 text-center">
-            <p className="text-gray-300 text-lg font-medium">
+          <div className="space-y-2 text-center px-4">
+            <p className="text-red-200/90 text-lg font-medium leading-relaxed">
               Existem duas palavras no jogo!<br/>
               Você não sabe nenhuma delas.
             </p>
@@ -1151,12 +1147,12 @@ const GameScreen = () => {
       
       case 'categoriaItem':
         return (
-          <div className="space-y-6 text-center">
-            <div className="space-y-2">
-              <p className="text-[#c44536] text-sm uppercase tracking-widest font-bold">Categoria</p>
-              <h3 className="text-2xl text-white font-bold">{gameData.category}</h3>
+          <div className="space-y-4 text-center px-4">
+            <div className="space-y-1">
+              <p className="text-red-300 text-xs uppercase tracking-[0.2em] font-semibold">Categoria</p>
+              <h3 className="text-xl sm:text-2xl text-white font-bold">{gameData.category}</h3>
             </div>
-            <p className="text-gray-300 text-lg font-medium">
+            <p className="text-red-200/90 text-base font-medium leading-relaxed">
               Você só sabe a categoria!<br/>
               Descubra o item específico.
             </p>
@@ -1169,81 +1165,126 @@ const GameScreen = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10">
-      {/* Overlay escuro para contraste */}
-      <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
-      
-      <HomeButton inline />
+    <div className="flex flex-col items-center w-full max-w-md min-h-full p-4 animate-fade-in space-y-3 relative z-10">
+      {/* Home Button */}
+      <Button 
+        onClick={handleNewRound}
+        className="w-full bg-[#1a4a5c] hover:bg-[#1a5a6c] border-2 border-cyan-400/50 text-cyan-300 rounded-lg py-2"
+        data-testid="button-home"
+      >
+        <ArrowLeft className="mr-2 w-4 h-4" /> Home
+      </Button>
+
+      {/* Main Card */}
       <div 
         className={cn(
-          "w-full aspect-[3/4] max-h-[500px] rounded-2xl p-8 flex flex-col items-center justify-center text-center relative transition-all duration-500 cursor-pointer overflow-hidden",
-          isRevealed 
-            ? (isImpostor ? "impostor-card" : "innocent-card")
-            : "bg-black border-2 border-[#3d4a5c]"
+          "w-full rounded-2xl p-6 flex flex-col items-center text-center relative transition-all duration-300 cursor-pointer",
+          isImpostor 
+            ? "bg-gradient-to-b from-[#4a1a1a] to-[#2a0a0a] border-2 border-red-500/60" 
+            : "bg-gradient-to-b from-[#0d4a4a] to-[#082828] border-2 border-cyan-400/60"
         )}
         onClick={() => setIsRevealed(!isRevealed)}
         data-testid="card-reveal"
+        style={{
+          boxShadow: isImpostor 
+            ? '0 0 30px rgba(220, 38, 38, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)' 
+            : '0 0 30px rgba(34, 211, 238, 0.15), inset 0 1px 0 rgba(255,255,255,0.1)'
+        }}
       >
-        {!isRevealed ? (
-          <div className="flex flex-col items-center gap-4">
+        {isRevealed ? (
+          <div className="flex flex-col items-center gap-4 animate-fade-in w-full py-4">
+            {/* Character Image */}
             <div className="relative">
-              <Eye className="w-20 h-20 text-gray-400" />
+              <div 
+                className={cn(
+                  "w-24 h-24 rounded-xl overflow-hidden",
+                  isImpostor ? "bg-red-700/40" : "bg-cyan-700/40"
+                )}
+              >
+                <img 
+                  src={isImpostor ? impostorImg : tripulanteImg} 
+                  alt={isImpostor ? "Impostor" : "Tripulante"}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* Hide Button */}
+              <button 
+                onClick={(e) => { e.stopPropagation(); setIsRevealed(false); }}
+                className={cn(
+                  "absolute -right-12 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
+                  isImpostor 
+                    ? "border border-red-400/30 hover:bg-red-500/20" 
+                    : "border border-cyan-400/30 hover:bg-cyan-500/20"
+                )}
+              >
+                <EyeOff className={cn("w-5 h-5", isImpostor ? "text-red-300/60" : "text-cyan-300/60")} />
+              </button>
             </div>
-            <h3 className="text-2xl font-bold text-gray-200">TOQUE PARA REVELAR</h3>
-            <p className="text-gray-400 text-sm">Veja sua função secreta</p>
+
+            {/* Role Title */}
+            <h2 
+              className={cn(
+                "text-3xl sm:text-4xl font-black tracking-[0.15em] uppercase",
+                isImpostor ? "text-red-400" : "text-cyan-400"
+              )}
+              style={{ 
+                textShadow: isImpostor 
+                  ? '0 2px 10px rgba(239, 68, 68, 0.5)' 
+                  : '0 2px 10px rgba(34, 211, 238, 0.5)' 
+              }}
+              data-testid={isImpostor ? "text-role-impostor" : "text-role-crew"}
+            >
+              {isImpostor ? "IMPOSTOR" : "TRIPULANTE"}
+            </h2>
+
+            {/* Content */}
+            <div className="w-full mt-2">
+              {isImpostor ? renderImpostorContent() : renderCrewContent()}
+            </div>
+
+            {/* Tap to hide hint */}
+            <p className={cn(
+              "text-sm mt-4",
+              isImpostor ? "text-red-300/50" : "text-cyan-300/50"
+            )}>
+              Toque para esconder
+            </p>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-6 animate-fade-in w-full">
-            <button 
-              onClick={(e) => { e.stopPropagation(); setIsRevealed(false); }}
-              className="absolute top-4 right-4 w-10 h-10 rounded-lg border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
-            >
-              <EyeOff className="w-5 h-5 text-white/60" />
-            </button>
-             
-            {isImpostor ? (
-              <>
-                <div className="w-24 h-24 rounded-xl border-2 border-[#c44536] flex items-center justify-center mb-2"
-                     style={{ boxShadow: '0 4px 0 rgba(196, 69, 54, 0.5)' }}>
-                  <User className="w-12 h-12 text-[#c44536]" />
-                </div>
-                <h2 className="text-4xl font-black tracking-widest uppercase" 
-                    style={{ color: '#c44536', textShadow: '2px 2px 0 rgba(196, 69, 54, 0.3)' }}
-                    data-testid="text-role-impostor">IMPOSTOR</h2>
-                {renderImpostorContent()}
-              </>
-            ) : (
-              <>
-                <div className="w-24 h-24 rounded-xl border-2 border-[#4a90a4] flex items-center justify-center mb-2"
-                     style={{ boxShadow: '0 4px 0 rgba(74, 144, 164, 0.5)' }}>
-                  <Rocket className="w-12 h-12 text-[#4a90a4]" />
-                </div>
-                <h2 className="text-3xl font-black tracking-widest uppercase"
-                    style={{ color: '#4a90a4', textShadow: '2px 2px 0 rgba(74, 144, 164, 0.3)' }}
-                    data-testid="text-role-crew">TRIPULANTE</h2>
-                {renderInnocentContent()}
-              </>
-            )}
+          <div className="flex flex-col items-center gap-4 py-16">
+            <Eye className={cn(
+              "w-16 h-16",
+              isImpostor ? "text-red-400/60" : "text-cyan-400/60"
+            )} />
+            <h3 className={cn(
+              "text-xl font-bold",
+              isImpostor ? "text-red-200" : "text-cyan-200"
+            )}>
+              TOQUE PARA REVELAR
+            </h3>
+            <p className={cn(
+              "text-sm",
+              isImpostor ? "text-red-300/50" : "text-cyan-300/50"
+            )}>
+              Veja sua função secreta
+            </p>
           </div>
         )}
       </div>
 
-      <p className="text-gray-300 text-sm text-center">
-        {isRevealed ? "Toque para esconder" : "Toque para ver sua função"}
-      </p>
-
+      {/* Host Buttons */}
       {isHost && (
-        <div className="w-full space-y-2">
+        <div className="w-full space-y-2 mt-2">
           <Button 
             onClick={handleStartSorteio}
-            className="w-full bg-gradient-to-r from-[#4a90a4]/20 to-[#c44536]/20 border-2 border-[#4a90a4] text-[#4a90a4] hover:from-[#4a90a4]/30 hover:to-[#c44536]/30 rounded-lg"
+            className="w-full bg-[#0d4a4a] hover:bg-[#0d5a5a] border-2 border-cyan-400/50 text-cyan-300 rounded-lg"
             data-testid="button-sorteio"
           >
             <Zap className="mr-2 w-4 h-4" /> Sortear Ordem de Fala
           </Button>
           <Button 
             onClick={handleNewRound}
-            className="w-full border-2 border-gray-700 bg-transparent text-gray-400 hover:border-[#4a90a4] hover:text-[#4a90a4] hover:bg-transparent rounded-lg"
+            className="w-full bg-[#1a2a3a] hover:bg-[#2a3a4a] border-2 border-gray-500/30 text-gray-300 rounded-lg"
             data-testid="button-return-lobby"
           >
             <ArrowLeft className="mr-2 w-4 h-4" /> Nova Rodada
