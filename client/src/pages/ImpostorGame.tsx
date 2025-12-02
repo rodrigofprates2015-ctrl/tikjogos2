@@ -431,14 +431,14 @@ const HomeScreen = () => {
       <img 
         src={tripulanteImg} 
         alt="Tripulante" 
-        className="hidden md:block absolute bottom-12 left-[12%] lg:left-[18%] h-[45vh] max-h-[450px] object-contain z-10"
+        className="hidden md:block absolute bottom-16 left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-10"
       />
 
       {/* Impostor character - right side (desktop only) */}
       <img 
         src={impostorImg} 
         alt="Impostor" 
-        className="hidden md:block absolute bottom-12 right-[12%] lg:right-[18%] h-[45vh] max-h-[450px] object-contain z-10"
+        className="hidden md:block absolute bottom-16 right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-10"
       />
 
       {/* Main card */}
