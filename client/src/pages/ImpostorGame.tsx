@@ -7,6 +7,7 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 import { SiDiscord } from "react-icons/si";
 import { 
   User, 
+  Users,
   Zap, 
   Copy, 
   LogOut, 
@@ -28,8 +29,10 @@ import {
   RotateCcw,
   Smartphone,
   MessageSquare,
-  Home
+  Home,
+  Check
 } from "lucide-react";
+import type { PlayerAnswer } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -823,7 +826,7 @@ const ModeSelectScreen = () => {
   );
 };
 
-type PerguntasDiferentesPhase = 'viewing' | 'answering' | 'showing' | 'revealed';
+type PerguntasDiferentesPhase = 'viewing' | 'answering' | 'waiting' | 'allAnswers';
 
 const QuestionRevealedOverlay = ({ 
   crewQuestion, 
@@ -900,8 +903,7 @@ const PerguntasDiferentesScreen = () => {
   const [phase, setPhase] = useState<PerguntasDiferentesPhase>('viewing');
   const [isRevealed, setIsRevealed] = useState(false);
   const [answer, setAnswer] = useState('');
-  const [savedAnswer, setSavedAnswer] = useState('');
-  const [hideOverlay, setHideOverlay] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!room || !room.gameData) return null;
 
@@ -909,9 +911,18 @@ const PerguntasDiferentesScreen = () => {
   const isImpostor = user?.uid === room.impostorId;
   const gameData = room.gameData;
   const questionRevealed = gameData.questionRevealed === true;
+  const answersRevealed = gameData.answersRevealed === true;
+  const answers = gameData.answers || [];
   
   const myQuestion = isImpostor ? gameData.impostorQuestion : gameData.question;
   const crewQuestion = gameData.question || '';
+  
+  const totalPlayers = room.players.filter(p => !p.waitingForGame).length;
+  const answeredCount = answers.length;
+  const allAnswered = answeredCount >= totalPlayers;
+  const hasMyAnswer = answers.some((a: PlayerAnswer) => a.playerId === user?.uid);
+  
+  const myAnswer = answers.find((a: PlayerAnswer) => a.playerId === user?.uid)?.answer || '';
 
   const handleNewRound = async () => {
     console.log('PerguntasDiferentes handleNewRound called, room:', room?.code);
@@ -923,10 +934,41 @@ const PerguntasDiferentesScreen = () => {
     }
   };
 
-  const handleSubmitAnswer = () => {
-    if (answer.trim()) {
-      setSavedAnswer(answer.trim());
-      setPhase('showing');
+  const handleSubmitAnswer = async () => {
+    if (!answer.trim() || !room || !user) return;
+    
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/rooms/${room.code}/submit-answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerId: user.uid,
+          playerName: user.name,
+          answer: answer.trim()
+        })
+      });
+      
+      if (response.ok) {
+        setPhase('waiting');
+      }
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRevealAnswers = async () => {
+    if (!room) return;
+    
+    try {
+      await fetch(`/api/rooms/${room.code}/reveal-answers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error('Error revealing answers:', error);
     }
   };
 
@@ -934,249 +976,277 @@ const PerguntasDiferentesScreen = () => {
     setPhase('answering');
   };
 
-  const showOverlay = questionRevealed && !hideOverlay;
+  useEffect(() => {
+    if (answersRevealed && phase !== 'allAnswers') {
+      setPhase('allAnswers');
+    }
+  }, [answersRevealed, phase]);
+
+  useEffect(() => {
+    if (hasMyAnswer && phase === 'answering') {
+      setPhase('waiting');
+    }
+  }, [hasMyAnswer, phase]);
 
   if (phase === 'viewing') {
     return (
-      <>
-        <div className="flex flex-col items-center justify-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10">
-          {/* Overlay escuro para contraste */}
-          <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
-          
-          <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
-          <div 
-            className={cn(
-              "w-full aspect-[3/4] max-h-[500px] rounded-2xl p-8 flex flex-col items-center justify-center text-center relative transition-all duration-500 cursor-pointer overflow-hidden",
-              isRevealed 
-                ? "innocent-card"
-                : "bg-black border-2 border-[#3d4a5c]"
-            )}
-            onClick={() => !isRevealed && setIsRevealed(true)}
-            data-testid="card-reveal"
-          >
-            {!isRevealed ? (
-              <div className="flex flex-col items-center gap-4">
-                <div className="relative">
-                  <Eye className="w-20 h-20 text-gray-400" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-200">TOQUE PARA REVELAR</h3>
-                <p className="text-gray-400 text-sm">Veja sua pergunta</p>
+      <div className="flex flex-col items-center justify-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10">
+        <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
+        
+        <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
+        <div 
+          className={cn(
+            "w-full aspect-[3/4] max-h-[500px] rounded-2xl p-8 flex flex-col items-center justify-center text-center relative transition-all duration-500 cursor-pointer overflow-hidden",
+            isRevealed 
+              ? "innocent-card"
+              : "bg-black border-2 border-[#3d4a5c]"
+          )}
+          onClick={() => !isRevealed && setIsRevealed(true)}
+          data-testid="card-reveal"
+        >
+          {!isRevealed ? (
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative">
+                <Eye className="w-20 h-20 text-gray-400" />
               </div>
-            ) : (
-              <div className="flex flex-col items-center gap-6 animate-fade-in w-full">
-                <button 
-                  onClick={(e) => { e.stopPropagation(); setIsRevealed(false); }}
-                  className="absolute top-4 right-4 w-10 h-10 rounded-lg border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
-                >
-                  <EyeOff className="w-5 h-5 text-white/60" />
-                </button>
-                
-                <div className="w-24 h-24 rounded-xl border-2 border-[#4a90a4] flex items-center justify-center mb-2"
-                     style={{ boxShadow: '0 4px 0 rgba(74, 144, 164, 0.5)' }}>
-                  <HelpCircle className="w-12 h-12 text-[#4a90a4]" />
-                </div>
-                
-                <div className="space-y-6 text-center">
-                  <div className="space-y-2">
-                    <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Sua Pergunta</p>
-                    <h2 className="text-xl text-white font-bold leading-relaxed px-2">"{myQuestion}"</h2>
-                  </div>
-                  <p className="text-gray-400 text-sm">Memorize sua pergunta!</p>
-                </div>
+              <h3 className="text-2xl font-bold text-gray-200">TOQUE PARA REVELAR</h3>
+              <p className="text-gray-400 text-sm">Veja sua pergunta</p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-6 animate-fade-in w-full">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setIsRevealed(false); }}
+                className="absolute top-4 right-4 w-10 h-10 rounded-lg border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
+              >
+                <EyeOff className="w-5 h-5 text-white/60" />
+              </button>
+              
+              <div className="w-24 h-24 rounded-xl border-2 border-[#4a90a4] flex items-center justify-center mb-2"
+                   style={{ boxShadow: '0 4px 0 rgba(74, 144, 164, 0.5)' }}>
+                <HelpCircle className="w-12 h-12 text-[#4a90a4]" />
               </div>
-            )}
-          </div>
-
-          <p className="text-gray-300 text-sm text-center">
-            {isRevealed ? "Toque no X para esconder" : "Toque para ver sua pergunta"}
-          </p>
-
-          {isRevealed && (
-            <Button 
-              onClick={handleProceedToAnswer}
-              className="w-full h-14 btn-retro-primary font-bold text-lg rounded-lg transition-all active:scale-[0.98]"
-            >
-              <MessageSquare className="mr-2 w-5 h-5" /> Responder Pergunta
-            </Button>
+              
+              <div className="space-y-6 text-center">
+                <div className="space-y-2">
+                  <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Sua Pergunta</p>
+                  <h2 className="text-xl text-white font-bold leading-relaxed px-2">"{myQuestion}"</h2>
+                </div>
+                <p className="text-gray-400 text-sm">Memorize sua pergunta!</p>
+              </div>
+            </div>
           )}
         </div>
-        {showOverlay && (
-          <QuestionRevealedOverlay 
-            crewQuestion={crewQuestion}
-            myQuestion={myQuestion || ''}
-            isImpostor={isImpostor}
-            isHost={isHost}
-            onNewRound={handleNewRound}
-            onClose={() => setHideOverlay(true)}
-          />
+
+        <p className="text-gray-300 text-sm text-center">
+          {isRevealed ? "Toque no X para esconder" : "Toque para ver sua pergunta"}
+        </p>
+
+        {isRevealed && (
+          <Button 
+            onClick={handleProceedToAnswer}
+            className="w-full h-14 btn-retro-primary font-bold text-lg rounded-lg transition-all active:scale-[0.98]"
+          >
+            <MessageSquare className="mr-2 w-5 h-5" /> Responder Pergunta
+          </Button>
         )}
-      </>
+      </div>
     );
   }
 
   if (phase === 'answering') {
     return (
-      <>
-        <div className="flex flex-col items-center justify-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10">
-          {/* Overlay escuro para contraste */}
-          <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
-          
-          <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
-          <div className="w-full bg-[#16213e]/80 rounded-2xl p-6 border border-[#3d4a5c] space-y-6">
-            <div className="text-center space-y-2">
-              <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Sua Pergunta</p>
-              <h2 className="text-lg text-white font-bold leading-relaxed">"{myQuestion}"</h2>
-            </div>
-            
-            <div className="w-full h-[1px] bg-gray-700"></div>
-            
-            <div className="space-y-4">
-              <p className="text-gray-300 text-sm text-center">Digite sua resposta abaixo:</p>
-              <Textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Sua resposta..."
-                className="w-full min-h-[120px] p-4 rounded-xl bg-black border-2 border-[#3d4a5c] text-white text-lg placeholder:text-gray-600 focus-visible:ring-0 focus-visible:border-[#4a90a4] transition-all resize-none"
-              />
-            </div>
-
-            <Button 
-              onClick={handleSubmitAnswer}
-              disabled={!answer.trim()}
-              className="w-full h-14 btn-retro-primary font-bold text-lg rounded-lg transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <Send className="mr-2 w-5 h-5" /> Enviar Resposta
-            </Button>
+      <div className="flex flex-col items-center justify-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10">
+        <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
+        
+        <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
+        <div className="w-full bg-[#16213e]/80 rounded-2xl p-6 border border-[#3d4a5c] space-y-6">
+          <div className="text-center space-y-2">
+            <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Sua Pergunta</p>
+            <h2 className="text-lg text-white font-bold leading-relaxed">"{myQuestion}"</h2>
           </div>
+          
+          <div className="w-full h-[1px] bg-gray-700"></div>
+          
+          <div className="space-y-4">
+            <p className="text-gray-300 text-sm text-center">Digite sua resposta abaixo:</p>
+            <Textarea
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              placeholder="Sua resposta..."
+              className="w-full min-h-[120px] p-4 rounded-xl bg-black border-2 border-[#3d4a5c] text-white text-lg placeholder:text-gray-600 focus-visible:ring-0 focus-visible:border-[#4a90a4] transition-all resize-none"
+            />
+          </div>
+
+          <Button 
+            onClick={handleSubmitAnswer}
+            disabled={!answer.trim() || isSubmitting}
+            className="w-full h-14 btn-retro-primary font-bold text-lg rounded-lg transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <Send className="mr-2 w-5 h-5" /> {isSubmitting ? 'Enviando...' : 'Enviar Resposta'}
+          </Button>
         </div>
-        {showOverlay && (
-          <QuestionRevealedOverlay 
-            crewQuestion={crewQuestion}
-            myQuestion={myQuestion || ''}
-            isImpostor={isImpostor}
-            isHost={isHost}
-            onNewRound={handleNewRound}
-            onClose={() => setHideOverlay(true)}
-          />
-        )}
-      </>
+      </div>
     );
   }
 
-  if (phase === 'showing') {
+  if (phase === 'waiting') {
     return (
-      <>
-        <div className="fixed inset-0 bg-black flex items-center justify-center p-4 z-40">
-          <div className="w-full h-full flex flex-col items-center justify-center">
-            <div className="mb-8 text-center">
-              <div className="flex items-center justify-center gap-2 mb-4 text-[#4a90a4]">
-                <Smartphone className="w-6 h-6 rotate-90" />
-                <p className="text-sm uppercase tracking-widest font-bold">Vire o celular na horizontal</p>
-              </div>
-              <p className="text-gray-300 text-xs">Mostre sua resposta para todos</p>
+      <div className="flex flex-col items-center justify-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10">
+        <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
+        
+        <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
+        
+        <div className="w-full bg-[#16213e]/80 rounded-2xl p-6 border border-[#3d4a5c] space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 rounded-full bg-[#3d8b5f]/20 border-2 border-[#3d8b5f] flex items-center justify-center mx-auto mb-4">
+              <Check className="w-8 h-8 text-[#3d8b5f]" />
             </div>
-            
-            <div 
-              className="w-full max-w-4xl bg-gradient-to-br from-[#1a1a2e] to-[#0a0a15] rounded-3xl p-8 md:p-12 border-2 border-[#4a90a4]/30 shadow-2xl"
-              style={{ boxShadow: '0 4px 0 rgba(74, 144, 164, 0.3)' }}
-            >
-              <p className="text-4xl md:text-6xl lg:text-7xl text-white font-black text-center leading-tight break-words">
-                {savedAnswer}
+            <p className="text-[#3d8b5f] text-sm uppercase tracking-widest font-bold">Resposta Enviada!</p>
+            <p className="text-white text-lg font-medium">"{myAnswer}"</p>
+          </div>
+          
+          <div className="w-full h-[1px] bg-gray-700"></div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-2">
+              <Users className="w-5 h-5 text-[#4a90a4]" />
+              <p className="text-gray-300">
+                <span className="text-[#4a90a4] font-bold">{answeredCount}</span> de <span className="font-bold">{totalPlayers}</span> responderam
               </p>
             </div>
-
-            <div className="mt-8 space-y-4 w-full max-w-md">
-              <Button 
-                onClick={() => setPhase('revealed')}
-                className="w-full h-12 border-2 border-gray-700 bg-transparent text-gray-400 hover:border-[#4a90a4] hover:text-[#4a90a4] hover:bg-transparent rounded-lg"
-              >
-                <ArrowLeft className="mr-2 w-4 h-4" /> Voltar
-              </Button>
+            
+            <div className="flex flex-wrap gap-2 justify-center">
+              {room.players.filter(p => !p.waitingForGame).map(player => {
+                const hasAnswered = answers.some((a: PlayerAnswer) => a.playerId === player.uid);
+                return (
+                  <div 
+                    key={player.uid}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-sm font-medium transition-all",
+                      hasAnswered 
+                        ? "bg-[#3d8b5f]/20 text-[#3d8b5f] border border-[#3d8b5f]/30"
+                        : "bg-gray-700/50 text-gray-400 border border-gray-600/30"
+                    )}
+                  >
+                    {hasAnswered && <Check className="w-3 h-3 inline mr-1" />}
+                    {player.name}
+                  </div>
+                );
+              })}
             </div>
           </div>
+          
+          {!allAnswered && (
+            <p className="text-gray-400 text-sm text-center animate-pulse">
+              Aguardando outros jogadores...
+            </p>
+          )}
         </div>
-        {showOverlay && (
-          <QuestionRevealedOverlay 
-            crewQuestion={crewQuestion}
-            myQuestion={myQuestion || ''}
-            isImpostor={isImpostor}
-            isHost={isHost}
-            onNewRound={handleNewRound}
-            onClose={() => setHideOverlay(true)}
-          />
+
+        {isHost && allAnswered && (
+          <Button 
+            onClick={handleRevealAnswers}
+            className="w-full h-14 bg-[#e07b39] hover:bg-[#e07b39]/80 text-white font-bold text-lg rounded-lg transition-all"
+            style={{ boxShadow: '0 4px 0 rgba(224, 123, 57, 0.5)' }}
+          >
+            <Eye className="mr-2 w-5 h-5" /> Mostrar Respostas para Todos
+          </Button>
         )}
-      </>
+        
+        {!isHost && allAnswered && (
+          <p className="text-[#e07b39] text-sm text-center font-medium animate-pulse">
+            Aguardando o host mostrar as respostas...
+          </p>
+        )}
+      </div>
     );
   }
 
-  if (phase === 'revealed') {
+  if (phase === 'allAnswers') {
     return (
-      <>
-        <div className="flex flex-col items-center justify-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10">
-          {/* Overlay escuro para contraste */}
-          <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
-          
-          <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
-          <div className="w-full bg-[#16213e]/80 rounded-2xl p-6 border border-[#3d4a5c] space-y-4">
-            <div className="text-center space-y-2">
-              <p className="text-gray-300 text-xs uppercase tracking-widest">Sua Resposta</p>
-              <p className="text-xl text-white font-bold">"{savedAnswer}"</p>
-            </div>
-            
-            <Button 
-              onClick={() => setPhase('showing')}
-              className="w-full h-12 border-2 border-[#4a90a4] bg-transparent text-[#4a90a4] hover:bg-[#4a90a4]/10 rounded-lg font-medium"
-            >
-              <Smartphone className="mr-2 w-4 h-4 rotate-90" /> Mostrar Resposta Ampliada
-            </Button>
+      <div className="flex flex-col items-center justify-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10 overflow-y-auto">
+        <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
+        
+        <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
+        
+        <div className="w-full space-y-4">
+          <div className="text-center mb-4">
+            <p className="text-[#e07b39] text-sm uppercase tracking-widest font-bold">Respostas de Todos</p>
           </div>
-
-          {questionRevealed && (
-            <div className="w-full bg-gradient-to-br from-[#c44536]/10 to-[#c44536]/5 rounded-2xl p-6 border border-[#c44536]/30 space-y-4 animate-fade-in">
-              <div className="text-center space-y-2">
-                <p className="text-[#c44536] text-xs uppercase tracking-widest font-bold">Pergunta dos Tripulantes</p>
-                <p className="text-xl text-white font-bold leading-relaxed">"{crewQuestion}"</p>
-              </div>
-              {isImpostor && (
-                <div className="text-center pt-4 border-t border-[#c44536]/20">
-                  <p className="text-[#c44536] text-sm font-medium">
-                    Sua pergunta era diferente! Tente se justificar!
-                  </p>
+          
+          {answers.map((playerAnswer: PlayerAnswer, index: number) => {
+            const isCurrentUser = playerAnswer.playerId === user?.uid;
+            const isPlayerImpostor = playerAnswer.playerId === room.impostorId;
+            return (
+              <div 
+                key={playerAnswer.playerId}
+                className={cn(
+                  "w-full rounded-xl p-4 border-2 transition-all",
+                  isCurrentUser 
+                    ? "bg-[#4a90a4]/10 border-[#4a90a4]/50"
+                    : "bg-[#16213e]/80 border-[#3d4a5c]",
+                  questionRevealed && isPlayerImpostor && "border-[#c44536] bg-[#c44536]/10"
+                )}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
+                    isCurrentUser ? "bg-[#4a90a4] text-white" : "bg-gray-600 text-gray-200",
+                    questionRevealed && isPlayerImpostor && "bg-[#c44536]"
+                  )}>
+                    {index + 1}
+                  </div>
+                  <span className={cn(
+                    "font-bold",
+                    isCurrentUser ? "text-[#4a90a4]" : "text-gray-300",
+                    questionRevealed && isPlayerImpostor && "text-[#c44536]"
+                  )}>
+                    {playerAnswer.playerName}
+                    {isCurrentUser && " (Você)"}
+                    {questionRevealed && isPlayerImpostor && " - IMPOSTOR!"}
+                  </span>
                 </div>
-              )}
-            </div>
-          )}
-
-          {isHost && !questionRevealed && (
-            <Button 
-              onClick={() => revealQuestion()}
-              className="w-full h-14 bg-[#c44536] hover:bg-[#c44536]/80 text-white font-bold text-lg rounded-lg transition-all"
-              style={{ boxShadow: '0 4px 0 rgba(196, 69, 54, 0.5)' }}
-            >
-              <Eye className="mr-2 w-5 h-5" /> Mostrar Pergunta
-            </Button>
-          )}
-
-          {isHost && (
-            <Button 
-              onClick={handleNewRound}
-              className="w-full border-2 border-gray-700 bg-transparent text-gray-400 hover:border-[#4a90a4] hover:text-[#4a90a4] hover:bg-transparent rounded-lg"
-            >
-              <RotateCcw className="mr-2 w-4 h-4" /> Nova Rodada
-            </Button>
-          )}
+                <p className="text-white text-lg pl-10">"{playerAnswer.answer}"</p>
+              </div>
+            );
+          })}
         </div>
-        {showOverlay && (
-          <QuestionRevealedOverlay 
-            crewQuestion={crewQuestion}
-            myQuestion={myQuestion || ''}
-            isImpostor={isImpostor}
-            isHost={isHost}
-            onNewRound={handleNewRound}
-            onClose={() => setHideOverlay(true)}
-          />
+
+        {questionRevealed && (
+          <div className="w-full bg-gradient-to-br from-[#c44536]/10 to-[#c44536]/5 rounded-2xl p-6 border border-[#c44536]/30 space-y-4 animate-fade-in">
+            <div className="text-center space-y-2">
+              <p className="text-[#c44536] text-xs uppercase tracking-widest font-bold">Pergunta dos Tripulantes</p>
+              <p className="text-xl text-white font-bold leading-relaxed">"{crewQuestion}"</p>
+            </div>
+            {isImpostor && (
+              <div className="text-center pt-4 border-t border-[#c44536]/20">
+                <p className="text-[#c44536] text-sm font-medium">
+                  Sua pergunta era diferente! Tente se justificar!
+                </p>
+              </div>
+            )}
+          </div>
         )}
-      </>
+
+        {isHost && !questionRevealed && (
+          <Button 
+            onClick={() => revealQuestion()}
+            className="w-full h-14 bg-[#c44536] hover:bg-[#c44536]/80 text-white font-bold text-lg rounded-lg transition-all"
+            style={{ boxShadow: '0 4px 0 rgba(196, 69, 54, 0.5)' }}
+          >
+            <Eye className="mr-2 w-5 h-5" /> Revelar Pergunta dos Tripulantes
+          </Button>
+        )}
+
+        {isHost && (
+          <Button 
+            onClick={handleNewRound}
+            className="w-full border-2 border-gray-700 bg-transparent text-gray-400 hover:border-[#4a90a4] hover:text-[#4a90a4] hover:bg-transparent rounded-lg"
+          >
+            <RotateCcw className="mr-2 w-4 h-4" /> Nova Rodada
+          </Button>
+        )}
+      </div>
     );
   }
 
