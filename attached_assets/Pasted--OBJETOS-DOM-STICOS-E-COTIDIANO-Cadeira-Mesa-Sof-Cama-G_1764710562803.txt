@@ -1,0 +1,89 @@
+=== OBJETOS DOMÉSTICOS E COTIDIANO ===
+Cadeira, Mesa, Sofá, Cama, Guarda-roupa, Estante, Abajur, Tapete, Cortina, Espelho
+Poltrona, Escrivaninha, Colchão, Berço, Rede, Banco, Prateleira, Ventilador
+Ar-condicionado, Lareira, Geladeira, Fogão, Micro-ondas, Liquidificador, Garfo
+Colher, Faca, Prato, Copo, Xícara, Panela, Frigideira, Tábua de carne, Ralo
+Peneira, Abridor de latas, Saca-rolhas, Palito de dente, Guardanapo, Toalha de mesa
+Detergente, Esponja, Lixeira, Vassoura, Rodo, Pá, Balde, Pregador, Varal, Ferro de passar
+Escova de dentes, Pasta de dente, Pente, Shampoo, Sabonete, Toalha, Desodorante
+Perfume, Cortador de unha, Pinça, Maquiagem, Batom, Espelho de bolso, Protetor solar
+Óculos, Relógio, Anel, Colar, Brinco, Pulseira, Carteira, Bolsa, Mochila, Mala
+Chave, Guarda-chuva, Isqueiro, Fósforo
+Caneta, Lápis, Borracha, Apontador, Caderno, Livro, Agenda, Tesoura, Cola, Régua
+Grampeador, Clips, Post-it, Calculadora, Envelope, Papel, Pasta, Estojo, Quadro branco
+Giz, Canetão, Compasso, Dicionário
+
+=== LUGARES ===
+Escola, Hospital, Banco, Correio, Farmácia, Padaria, Supermercado, Shopping, Cinema
+Teatro, Museu, Biblioteca, Restaurante, Lanchonete, Bar, Academia, Parque, Praça
+Igreja, Cemitério, Delegacia, Corpo de Bombeiros, Hotel, Motel, Aeroporto, Rodoviária
+Estação de trem, Metrô, Ponto de ônibus, Estádio, Zoológico, Circo, Parque de diversões
+Prefeitura, Faculdade
+Praia, Montanha, Floresta, Deserto, Cachoeira, Rio, Lago, Mar, Oceano, Ilha, Caverna
+Vulcão, Geleira, Pântano, Campo, Fazenda, Sítio, Horta, Jardim, Quintal, Céu, Lua, Marte, Espaço
+Quarto, Sala, Cozinha, Banheiro, Varanda, Garagem, Sótão, Porão, Corredor, Elevador
+Escada, Piscina, Sauna, Quadra, Vestiário
+
+=== COMIDAS E BEBIDAS ===
+Maçã, Banana, Laranja, Uva, Morango, Abacaxi, Melancia, Melão, Limão, Manga, Pera
+Pêssego, Abacate, Coco, Cereja, Kiwi, Maracujá, Goiaba, Mamão, Caju, Açaí
+Alface, Tomate, Cenoura, Batata, Cebola, Alho, Brócolis, Couve-flor, Espinafre, Pepino
+Pimentão, Abóbora, Berinjela, Milho, Feijão, Arroz, Macarrão
+Pizza, Hambúrguer, Cachorro-quente, Batata frita, Lasanha, Churrasco, Sushi, Sashimi
+Temaki, Coxinha, Pastel, Esfiha, Kibe, Pão de queijo, Sanduíche, Sopa, Salada, Omelete
+Ovo frito, Bife, Frango assado, Peixe
+Chocolate, Sorvete, Bolo, Torta, Pudim, Brigadeiro, Beijinho, Paçoca, Chiclete, Bala
+Pirulito, Gelatina, Mousse, Panqueca, Waffle, Mel, Açúcar
+Água, Suco, Refrigerante, Café, Chá, Leite, Cerveja, Vinho, Vodka, Whisky, Champanhe
+Água de coco, Limonada, Milkshake
+
+=== ANIMAIS ===
+Cachorro, Gato, Hamster, Coelho, Papagaio, Canário, Peixinho, Cavalo, Vaca, Boi
+Porco, Galinha, Galo, Pato, Ovelha, Cabra, Burro
+Leão, Tigre, Onça, Elefante, Girafa, Zebra, Hipopótamo, Rinoceronte, Macaco, Gorila
+Urso, Panda, Lobo, Raposa, Canguru, Camelo, Veado, Javali
+Tubarão, Baleia, Golfinho, Foca, Pinguim, Polvo, Lula, Caranguejo, Lagosta, Camarão
+Tartaruga, Jacaré, Crocodilo, Sapo
+Águia, Falcão, Coruja, Pombo, Gaivota, Avestruz, Pavão, Flamingo, Tucano
+Borboleta, Abelha, Formiga, Mosca, Mosquito, Aranha, Escorpião, Barata, Besouro, Minhoca, Cobra
+
+=== PROFISSÕES ===
+Médico, Enfermeiro, Dentista, Veterinário, Psicólogo, Professor, Advogado, Juiz
+Policial, Bombeiro, Detetive, Soldado, Piloto, Aeromoça, Astronauta, Motorista
+Taxista, Caminhoneiro, Mecânico, Eletricista, Encanador, Pedreiro, Arquiteto, Engenheiro
+Pintor, Carpinteiro, Jardineiro, Cozinheiro, Chef, Garçom, Padeiro, Açougueiro
+Agricultor, Pescador, Ator, Cantor, Músico, Dançarino, Escritor, Jornalista
+Fotógrafo, Programador, Cientista, Político, Padre, Pastor, Mágico, Palhaço, Atleta
+
+=== HOBBIES, ESPORTES E LAZER ===
+Futebol, Vôlei, Basquete, Tênis, Natação, Corrida, Ciclismo, Skate, Patins, Surfe
+Judô, Karatê, Boxe, Golfe, Beisebol, Futebol Americano, Ginástica, Dança, Ioga, Musculação
+Xadrez, Dama, Baralho, Dominó, Videogame, Quebra-cabeça, Palavras cruzadas, Sinuca
+Boliche, Dardo, Pipa, Esconde-esconde, Pega-pega
+Acampar, Pescar, Ler, Pintar, Desenhar, Tocar violão, Tocar piano, Tocar bateria
+Cantar, Cozinhar, Viajar, Tirar fotos, Assistir filmes, Ouvir música
+
+=== VESTUÁRIO E ACESSÓRIOS ===
+Camiseta, Camisa, Blusa, Jaqueta, Casaco, Moletom, Suéter, Colete, Calça, Short
+Bermuda, Saia, Vestido, Terno, Gravata, Smoking, Pijama, Roupão, Biquíni, Maiô
+Sunga, Calcinha, Cueca, Meia, Sapato, Tênis, Bota, Sandália, Chinelo, Salto alto
+Chuteira, Boné, Chapéu, Touca, Capacete, Luva, Cachecol, Cinto
+
+=== TRANSPORTE E TECNOLOGIA ===
+Carro, Moto, Caminhão, Ônibus, Bicicleta, Skate, Patinete, Trem, Metrô, Avião
+Helicóptero, Barco, Navio, Iate, Submarino, Foguete, Balão, Dirigível, Táxi, Uber
+Trator, Ambulância, Viatura, Carro de bombeiro
+Celular, Smartphone, Tablet, Computador, Notebook, Teclado, Mouse, Monitor, Impressora
+Câmera, Fone de ouvido, Microfone, Caixa de som, Televisão, Controle remoto
+Videogame, Robô, Drone, Satélite, Internet, Wi-Fi, Bateria, Carregador, Cabo USB, Pen drive
+
+=== FENÔMENOS E NATUREZA ===
+Chuva, Sol, Vento, Neve, Tempestade, Raio, Trovão, Arco-íris, Furacão, Tornado
+Terremoto, Tsunami, Eclipse, Amanhecer, Pôr do sol, Noite, Dia, Calor, Frio
+Fogo, Fumaça, Água, Gelo, Vapor, Areia, Terra, Pedra, Ouro, Prata, Diamante
+
+=== CULTURA POP E FANTASIA ===
+Fantasma, Vampiro, Lobisomem, Zumbi, Bruxa, Fada, Sereia, Dragão, Unicórnio
+Alienígena, Robô, Super-herói, Vilão, Múmia, Gigante, Anão, Elfo, Mago
+Terror, Comédia, Romance, Ação, Ficção Científica, Faroeste, Musical
+Desenho animado, Anime, Mangá, Gibi
