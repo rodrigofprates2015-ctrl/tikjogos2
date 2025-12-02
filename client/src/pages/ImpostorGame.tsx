@@ -46,7 +46,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import backgroundImg from "@assets/background_1764616571362.png";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
-import logoImpostor from "@assets/logo3_1764639352082.png";
+import logoImpostor from "@assets/logo3_1764640096962.png";
 import tripulanteImg from "@assets/Tripulante_1764616571363.png";
 import impostorImg from "@assets/impostor_1764616571362.png";
 
