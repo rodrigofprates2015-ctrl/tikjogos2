@@ -67,6 +67,13 @@ export type PlayerAnswer = {
   answer: string;
 };
 
+export type PlayerVote = {
+  playerId: string;
+  playerName: string;
+  targetId: string;
+  targetName: string;
+};
+
 export type GameData = {
   word?: string;
   location?: string;
@@ -80,4 +87,8 @@ export type GameData = {
   questionRevealed?: boolean;
   answers?: PlayerAnswer[];
   answersRevealed?: boolean;
+  crewQuestionRevealed?: boolean;
+  votes?: PlayerVote[];
+  votingStarted?: boolean;
+  votesRevealed?: boolean;
 };
