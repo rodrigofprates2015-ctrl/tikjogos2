@@ -560,9 +560,16 @@ const LobbyScreen = () => {
                     {initial}
                   </div>
                   <div className="flex flex-col">
-                    <span className={cn("font-medium", isMe ? "text-[#3d8b5f]" : "text-white")}>
-                      {p.name} {isMe && '(Você)'}
-                    </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={cn("font-medium", isMe ? "text-[#3d8b5f]" : "text-white")}>
+                        {p.name} {isMe && '(Você)'}
+                      </span>
+                      {p.waitingForGame && (
+                        <span className="text-[11px] text-gray-400 italic opacity-60">
+                          Aguardando partida acabar
+                        </span>
+                      )}
+                    </div>
                     {isPlayerHost && (
                       <span className="text-[10px] text-[#e9c46a] uppercase tracking-widest font-bold flex items-center gap-1">
                         <Crown className="w-3 h-3" /> Capitão

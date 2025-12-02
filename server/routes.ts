@@ -498,9 +498,46 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/rooms/:code/leave-game", async (req, res) => {
+    try {
+      const { code } = req.params;
+      const { playerId } = req.body;
+      
+      const room = await storage.getRoom(code.toUpperCase());
+      if (!room) {
+        return res.status(404).json({ error: "Room not found" });
+      }
+
+      const updatedPlayers = room.players.map(p => 
+        p.uid === playerId 
+          ? { ...p, waitingForGame: true }
+          : p
+      );
+
+      const updatedRoom = await storage.updateRoom(code.toUpperCase(), {
+        players: updatedPlayers,
+      });
+
+      if (updatedRoom) {
+        broadcastToRoom(code.toUpperCase(), { type: 'room-update', room: updatedRoom });
+      }
+
+      res.json(updatedRoom);
+    } catch (error) {
+      res.status(400).json({ error: "Failed to leave game" });
+    }
+  });
+
   app.post("/api/rooms/:code/reset", async (req, res) => {
     try {
       const { code } = req.params;
+      
+      const room = await storage.getRoom(code.toUpperCase());
+      if (!room) {
+        return res.status(404).json({ error: "Room not found" });
+      }
+
+      const updatedPlayers = room.players.map(p => ({ ...p, waitingForGame: false }));
       
       const updatedRoom = await storage.updateRoom(code.toUpperCase(), {
         status: "waiting",
@@ -509,6 +546,7 @@ export async function registerRoutes(
         currentWord: null,
         impostorId: null,
         gameData: null,
+        players: updatedPlayers,
       });
 
       if (updatedRoom) {

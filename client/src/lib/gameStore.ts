@@ -72,6 +72,7 @@ export type GameState = {
   selectMode: (mode: GameModeType) => void;
   startGame: () => Promise<void>;
   returnToLobby: () => Promise<void>;
+  leaveCurrentGame: () => Promise<void>;
   leaveGame: () => void;
   goToModeSelect: () => void;
   backToLobby: () => void;
@@ -234,12 +235,21 @@ export const useGameStore = create<GameState>((set, get) => ({
       return;
     }
 
+    const currentPlayer = room.players.find(p => p.uid === currentUser.uid);
+    const isWaitingForGame = currentPlayer?.waitingForGame === true;
+    console.log('updateRoom: isWaitingForGame:', isWaitingForGame);
+
     let newStatus: GameStatus = 'lobby';
     let enteredDuringGame = false;
     let selectedMode = get().selectedMode;
     
+    // If player is waiting for game to end, keep them in lobby
+    if (isWaitingForGame && room.status === 'playing') {
+      console.log('updateRoom: Player is waiting for game to end, staying in lobby');
+      newStatus = 'lobby';
+    }
     // Check if player just entered a room that's already playing
-    if (room.status === 'playing' && (!currentRoom || currentRoom.code !== room.code)) {
+    else if (room.status === 'playing' && (!currentRoom || currentRoom.code !== room.code)) {
       enteredDuringGame = true;
       newStatus = 'lobby';
     } else if (room.status === 'playing') {
@@ -364,36 +374,76 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   returnToLobby: async () => {
-    const { room } = get();
-    console.log('returnToLobby called, room:', room?.code);
-    if (!room) {
-      console.log('returnToLobby: No room found, returning early');
+    const { room, user } = get();
+    console.log('returnToLobby called, room:', room?.code, 'user:', user?.uid);
+    if (!room || !user) {
+      console.log('returnToLobby: No room or user found, returning early');
+      return;
+    }
+
+    const isHost = room.hostId === user.uid;
+    console.log('returnToLobby: isHost:', isHost);
+
+    if (isHost) {
+      try {
+        console.log('returnToLobby: Host - Making POST request to reset room', room.code);
+        const response = await fetch(`/api/rooms/${room.code}/reset`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        console.log('returnToLobby: Response status', response.status);
+        if (!response.ok) throw new Error('Failed to reset room');
+        
+        const updatedRoom = await response.json();
+        console.log('returnToLobby: Got updated room, status:', updatedRoom?.status);
+        
+        set({ 
+          selectedMode: null,
+          status: 'lobby',
+          room: updatedRoom
+        });
+        console.log('returnToLobby: Successfully reset room and status to lobby');
+
+      } catch (error) {
+        console.error('Error resetting room:', error);
+      }
+    } else {
+      await get().leaveCurrentGame();
+    }
+  },
+
+  leaveCurrentGame: async () => {
+    const { room, user } = get();
+    console.log('leaveCurrentGame called, room:', room?.code, 'user:', user?.uid);
+    if (!room || !user) {
+      console.log('leaveCurrentGame: No room or user found, returning early');
       return;
     }
 
     try {
-      console.log('returnToLobby: Making POST request to reset room', room.code);
-      const response = await fetch(`/api/rooms/${room.code}/reset`, {
+      console.log('leaveCurrentGame: Making POST request to leave game', room.code);
+      const response = await fetch(`/api/rooms/${room.code}/leave-game`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId: user.uid }),
       });
 
-      console.log('returnToLobby: Response status', response.status);
-      if (!response.ok) throw new Error('Failed to reset room');
+      console.log('leaveCurrentGame: Response status', response.status);
+      if (!response.ok) throw new Error('Failed to leave game');
       
       const updatedRoom = await response.json();
-      console.log('returnToLobby: Got updated room, status:', updatedRoom?.status);
+      console.log('leaveCurrentGame: Got updated room', updatedRoom);
       
-      // Force status update to lobby immediately
       set({ 
         selectedMode: null,
         status: 'lobby',
         room: updatedRoom
       });
-      console.log('returnToLobby: Successfully reset room and status to lobby');
+      console.log('leaveCurrentGame: Successfully left game and returned to lobby');
 
     } catch (error) {
-      console.error('Error resetting room:', error);
+      console.error('Error leaving game:', error);
     }
   },
 
