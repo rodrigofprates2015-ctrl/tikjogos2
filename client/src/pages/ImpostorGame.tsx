@@ -1715,9 +1715,9 @@ const GameScreen = () => {
       case 'palavraSecreta':
         return (
           <div className="space-y-2 text-center">
-            <p className="text-cyan-300 text-xs uppercase tracking-[0.2em] font-semibold">Palavra Secreta</p>
+            <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Palavra Secreta</p>
             <h2 className="text-2xl sm:text-3xl text-white font-black">{gameData.word}</h2>
-            <p className="text-cyan-200/70 text-xs">Dê dicas sutis sobre a palavra!</p>
+            <p className="text-gray-400 text-xs">Dê dicas sutis sobre a palavra!</p>
           </div>
         );
       
@@ -1726,12 +1726,12 @@ const GameScreen = () => {
         return (
           <div className="space-y-3 text-center">
             <div className="space-y-1">
-              <p className="text-cyan-300 text-xs uppercase tracking-[0.2em] font-semibold">Local</p>
+              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Local</p>
               <h2 className="text-xl sm:text-2xl text-white font-black">{gameData.location}</h2>
             </div>
-            <div className="w-12 h-[1px] bg-cyan-400/30 mx-auto"></div>
+            <div className="w-12 h-[1px] bg-gray-600/30 mx-auto"></div>
             <div className="space-y-1">
-              <p className="text-cyan-300 text-xs uppercase tracking-[0.2em] font-semibold">Sua Função</p>
+              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Sua Função</p>
               <h3 className="text-lg sm:text-xl text-white font-bold">{myRole}</h3>
             </div>
           </div>
@@ -1741,9 +1741,9 @@ const GameScreen = () => {
         const myFaction = user?.uid ? gameData.factionMap?.[user.uid] : null;
         return (
           <div className="space-y-2 text-center">
-            <p className="text-cyan-300 text-xs uppercase tracking-[0.2em] font-semibold">Sua Palavra</p>
+            <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Sua Palavra</p>
             <h2 className="text-2xl sm:text-3xl text-white font-black">{myFaction}</h2>
-            <p className="text-cyan-200/70 text-xs">Descubra quem é do seu time!</p>
+            <p className="text-gray-400 text-xs">Descubra quem é do seu time!</p>
           </div>
         );
       
@@ -1751,12 +1751,12 @@ const GameScreen = () => {
         return (
           <div className="space-y-3 text-center">
             <div className="space-y-1">
-              <p className="text-cyan-300 text-xs uppercase tracking-[0.2em] font-semibold">Categoria</p>
+              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Categoria</p>
               <h3 className="text-lg sm:text-xl text-white font-bold">{gameData.category}</h3>
             </div>
-            <div className="w-12 h-[1px] bg-cyan-400/30 mx-auto"></div>
+            <div className="w-12 h-[1px] bg-gray-600/30 mx-auto"></div>
             <div className="space-y-1">
-              <p className="text-cyan-300 text-xs uppercase tracking-[0.2em] font-semibold">Item</p>
+              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Item</p>
               <h2 className="text-2xl sm:text-3xl text-white font-black">{gameData.item}</h2>
             </div>
           </div>
@@ -1774,7 +1774,7 @@ const GameScreen = () => {
       case 'palavraSecreta':
         return (
           <div className="space-y-1 text-center px-4">
-            <p className="text-red-200/90 text-sm font-medium leading-relaxed">
+            <p className="text-gray-400 text-sm font-medium leading-relaxed">
               Finja que você sabe a palavra! Engane a todos.
             </p>
           </div>
@@ -1783,7 +1783,7 @@ const GameScreen = () => {
       case 'palavras':
         return (
           <div className="space-y-1 text-center px-4">
-            <p className="text-red-200/90 text-sm font-medium leading-relaxed">
+            <p className="text-gray-400 text-sm font-medium leading-relaxed">
               Você não sabe o local! Tente descobrir através das dicas.
             </p>
           </div>
@@ -1792,7 +1792,7 @@ const GameScreen = () => {
       case 'duasFaccoes':
         return (
           <div className="space-y-1 text-center px-4">
-            <p className="text-red-200/90 text-sm font-medium leading-relaxed">
+            <p className="text-gray-400 text-sm font-medium leading-relaxed">
               Duas palavras no jogo! Você não sabe nenhuma.
             </p>
           </div>
@@ -1802,10 +1802,10 @@ const GameScreen = () => {
         return (
           <div className="space-y-2 text-center px-4">
             <div className="space-y-1">
-              <p className="text-red-300 text-xs uppercase tracking-[0.2em] font-semibold">Categoria</p>
+              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Categoria</p>
               <h3 className="text-lg sm:text-xl text-white font-bold">{gameData.category}</h3>
             </div>
-            <p className="text-red-200/90 text-xs font-medium">
+            <p className="text-gray-400 text-xs font-medium">
               Você só sabe a categoria! Descubra o item.
             </p>
           </div>

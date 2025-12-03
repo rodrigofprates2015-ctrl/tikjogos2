@@ -106,8 +106,8 @@ export function VotingSystem({
         {isHost && (
           <Button 
             onClick={handleStartVoting}
-            className="w-full h-12 bg-[#e9c46a] hover:bg-[#e9c46a]/80 text-black font-bold text-base rounded-lg transition-all"
-            style={{ boxShadow: '0 4px 0 rgba(233, 196, 106, 0.5)' }}
+            className="w-full h-12 bg-white hover:bg-white/80 text-black font-bold text-base rounded-lg transition-all"
+            style={{ boxShadow: '0 4px 0 rgba(255, 255, 255, 0.2)' }}
             data-testid="button-start-voting"
           >
             <Vote className="mr-2 w-5 h-5" /> Iniciar Votacao
@@ -136,8 +136,8 @@ export function VotingSystem({
             </button>
           )}
           <div className="text-center space-y-2">
-            <Vote className="w-12 h-12 text-[#e9c46a] mx-auto" />
-            <p className="text-[#e9c46a] text-sm uppercase tracking-widest font-bold">Hora de Votar!</p>
+            <Vote className="w-12 h-12 text-gray-400 mx-auto" />
+            <p className="text-gray-400 text-sm uppercase tracking-widest font-bold">Hora de Votar!</p>
             <p className="text-gray-300 text-sm">Quem voce acha que e o impostor?</p>
           </div>
           
@@ -151,14 +151,14 @@ export function VotingSystem({
                 className={cn(
                   "w-full p-4 rounded-xl border-2 transition-all text-left flex items-center gap-3",
                   selectedVote === player.uid
-                    ? "bg-[#e9c46a]/20 border-[#e9c46a] text-[#e9c46a]"
-                    : "bg-[#16213e] border-[#3d4a5c] text-gray-300 hover:border-[#e9c46a]/50"
+                    ? "bg-white/15 border-white/40 text-white"
+                    : "bg-[#16213e] border-[#3d4a5c] text-gray-300 hover:border-white/30"
                 )}
                 data-testid={`button-vote-${player.uid}`}
               >
                 <div className={cn(
                   "w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold",
-                  selectedVote === player.uid ? "bg-[#e9c46a] text-black" : "bg-gray-600 text-gray-200"
+                  selectedVote === player.uid ? "bg-white/30 text-white" : "bg-gray-600 text-gray-200"
                 )}>
                   {player.name.charAt(0).toUpperCase()}
                 </div>
@@ -173,8 +173,8 @@ export function VotingSystem({
           <Button 
             onClick={handleSubmitVote}
             disabled={!selectedVote || isSubmitting}
-            className="w-full h-14 bg-[#e9c46a] hover:bg-[#e9c46a]/80 text-black font-bold text-lg rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-            style={{ boxShadow: '0 4px 0 rgba(233, 196, 106, 0.5)' }}
+            className="w-full h-14 bg-white hover:bg-white/80 text-black font-bold text-lg rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            style={{ boxShadow: '0 4px 0 rgba(255, 255, 255, 0.2)' }}
             data-testid="button-confirm-vote"
           >
             <Send className="mr-2 w-5 h-5" /> {isSubmitting ? 'Votando...' : 'Confirmar Voto'}
@@ -202,17 +202,17 @@ export function VotingSystem({
             <div className="w-16 h-16 rounded-full bg-[#3d8b5f]/20 border-2 border-[#3d8b5f] flex items-center justify-center mx-auto mb-4">
               <Check className="w-8 h-8 text-[#3d8b5f]" />
             </div>
-            <p className="text-[#3d8b5f] text-sm uppercase tracking-widest font-bold">Voto Enviado!</p>
-            <p className="text-white text-lg font-medium">Voce votou em: <span className="text-[#e9c46a]">{myVote?.targetName}</span></p>
+            <p className="text-gray-400 text-sm uppercase tracking-widest font-bold">Voto Enviado!</p>
+            <p className="text-white text-lg font-medium">Voce votou em: <span className="text-gray-300">{myVote?.targetName}</span></p>
           </div>
           
           <div className="w-full h-[1px] bg-gray-700"></div>
           
           <div className="space-y-4">
             <div className="flex items-center justify-center gap-2">
-              <Users className="w-5 h-5 text-[#4a90a4]" />
+              <Users className="w-5 h-5 text-gray-400" />
               <p className="text-gray-300">
-                <span className="text-[#4a90a4] font-bold">{votedCount}</span> de <span className="font-bold">{totalPlayers}</span> votaram
+                <span className="text-gray-300 font-bold">{votedCount}</span> de <span className="font-bold">{totalPlayers}</span> votaram
               </p>
             </div>
             
@@ -246,8 +246,8 @@ export function VotingSystem({
           {isHost && allVoted && (
             <Button 
               onClick={handleRevealImpostor}
-              className="w-full h-14 bg-[#c44536] hover:bg-[#c44536]/80 text-white font-bold text-lg rounded-lg transition-all"
-              style={{ boxShadow: '0 4px 0 rgba(196, 69, 54, 0.5)' }}
+              className="w-full h-14 bg-white hover:bg-white/80 text-black font-bold text-lg rounded-lg transition-all"
+              style={{ boxShadow: '0 4px 0 rgba(255, 255, 255, 0.2)' }}
               data-testid="button-reveal-impostor"
             >
               <Skull className="mr-2 w-5 h-5" /> Revelar o Impostor
@@ -255,7 +255,7 @@ export function VotingSystem({
           )}
           
           {!isHost && allVoted && (
-            <p className="text-[#c44536] text-sm text-center font-medium animate-pulse">
+            <p className="text-gray-400 text-sm text-center font-medium animate-pulse">
               Aguardando o host revelar o impostor...
             </p>
           )}

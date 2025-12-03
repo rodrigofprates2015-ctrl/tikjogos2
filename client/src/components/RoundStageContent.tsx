@@ -64,9 +64,9 @@ export function SpeakingOrderStage({ players, serverOrder, onComplete }: Speakin
   return (
     <div className="animate-stage-fade-in w-full flex flex-col items-center gap-6 py-4">
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00f2ea]/10 border border-[#00f2ea]/30">
-          <Zap className="w-5 h-5 text-[#00f2ea]" />
-          <span className="text-[#00f2ea] text-sm uppercase tracking-widest font-bold">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/50 border border-gray-700/50">
+          <Zap className="w-5 h-5 text-gray-400" />
+          <span className="text-gray-400 text-sm uppercase tracking-widest font-bold">
             Ordem de Fala
           </span>
         </div>
@@ -89,21 +89,21 @@ export function SpeakingOrderStage({ players, serverOrder, onComplete }: Speakin
 
       {showResults && displayOrder.length > 0 && (
         <div className="animate-stage-fade-in w-full space-y-3">
-          <p className="text-center text-[#00f2ea] text-sm font-bold uppercase tracking-wider mb-3">
+          <p className="text-center text-gray-400 text-sm font-bold uppercase tracking-wider mb-3">
             Ordem Definida
           </p>
           <div className="space-y-2">
             {displayOrder.map((name, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-[#00f2ea]/10 to-[#ff0050]/10 border border-[#00f2ea]/30 rounded-xl"
+                className="flex items-center gap-3 px-4 py-3 bg-gray-900/40 border border-gray-700/50 rounded-xl"
                 style={{ animation: `stageSlideIn 0.4s ease-out ${idx * 0.1}s backwards` }}
               >
-                <div className="w-8 h-8 rounded-full bg-[#00f2ea]/20 border border-[#00f2ea] flex items-center justify-center">
-                  <span className="text-[#00f2ea] font-bold text-sm">{idx + 1}</span>
+                <div className="w-8 h-8 rounded-full bg-gray-700/40 border border-gray-600 flex items-center justify-center">
+                  <span className="text-gray-300 font-bold text-sm">{idx + 1}</span>
                 </div>
                 <span className="text-white font-medium flex-1">{name}</span>
-                {idx === 0 && <Crown className="w-5 h-5 text-[#e9c46a]" />}
+                {idx === 0 && <Crown className="w-5 h-5 text-yellow-600" />}
               </div>
             ))}
           </div>
@@ -177,9 +177,9 @@ export function SpeakingOrderWithVotingStage({
   return (
     <div className="animate-stage-fade-in w-full flex flex-col items-center gap-4 py-4">
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00f2ea]/10 border border-[#00f2ea]/30">
-          <Zap className="w-4 h-4 text-[#00f2ea]" />
-          <span className="text-[#00f2ea] text-xs uppercase tracking-widest font-bold">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/50 border border-gray-700/50">
+          <Zap className="w-4 h-4 text-gray-400" />
+          <span className="text-gray-400 text-xs uppercase tracking-widest font-bold">
             Ordem de Fala
           </span>
         </div>
@@ -201,7 +201,7 @@ export function SpeakingOrderWithVotingStage({
 
       {showResults && displayOrder.length > 0 && (
         <div className="animate-stage-fade-in w-full space-y-3">
-          <p className="text-center text-[#00f2ea] text-xs font-bold uppercase tracking-wider">
+          <p className="text-center text-gray-400 text-xs font-bold uppercase tracking-wider">
             Ordem Definida
           </p>
           <div className="space-y-1.5">
@@ -218,9 +218,9 @@ export function SpeakingOrderWithVotingStage({
                   className={cn(
                     "w-full flex items-center gap-2 px-3 py-2.5 rounded-xl transition-all text-left",
                     isSelected
-                      ? "bg-[#e9c46a]/20 border-2 border-[#e9c46a]"
-                      : "bg-gradient-to-r from-[#00f2ea]/10 to-[#ff0050]/10 border border-[#00f2ea]/30",
-                    canVote && !isSelected && "hover:border-[#e9c46a]/50",
+                      ? "bg-white/15 border-2 border-white/40"
+                      : "bg-gray-900/40 border border-gray-700/50",
+                    canVote && !isSelected && "hover:border-white/30",
                     isMe && "opacity-60 cursor-not-allowed"
                   )}
                   style={{ animation: `stageSlideIn 0.3s ease-out ${idx * 0.08}s backwards` }}
@@ -229,28 +229,28 @@ export function SpeakingOrderWithVotingStage({
                   <div className={cn(
                     "w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0",
                     isSelected 
-                      ? "bg-[#e9c46a] text-black" 
-                      : "bg-[#00f2ea]/20 border border-[#00f2ea]"
+                      ? "bg-white/30 text-white" 
+                      : "bg-gray-700/40 border border-gray-600"
                   )}>
                     <span className={cn(
                       "font-bold text-xs",
-                      isSelected ? "text-black" : "text-[#00f2ea]"
+                      isSelected ? "text-white" : "text-gray-300"
                     )}>{idx + 1}</span>
                   </div>
                   <span className={cn(
                     "font-medium text-sm flex-1",
-                    isSelected ? "text-[#e9c46a]" : "text-white"
+                    isSelected ? "text-white font-semibold" : "text-white"
                   )}>
                     {name} {isMe && "(Você)"}
                   </span>
-                  {idx === 0 && <Crown className="w-4 h-4 text-[#e9c46a] flex-shrink-0" />}
-                  {isSelected && <Check className="w-4 h-4 text-[#e9c46a] flex-shrink-0" />}
+                  {idx === 0 && <Crown className="w-4 h-4 text-yellow-600 flex-shrink-0" />}
+                  {isSelected && <Check className="w-4 h-4 text-white flex-shrink-0" />}
                 </button>
               );
             })}
           </div>
 
-          <div className="w-full h-[1px] bg-[#3d4a5c] my-2"></div>
+          <div className="w-full h-[1px] bg-gray-700/30 my-2"></div>
 
           <div className="space-y-2">
             <Button 
@@ -261,8 +261,8 @@ export function SpeakingOrderWithVotingStage({
                 }
               }}
               disabled={!selectedVote || isSubmitting}
-              className="w-full h-11 bg-[#e9c46a] hover:bg-[#e9c46a]/80 text-black font-bold text-sm rounded-xl transition-all disabled:opacity-30"
-              style={{ boxShadow: '0 4px 0 rgba(233, 196, 106, 0.4)' }}
+              className="w-full h-11 bg-white text-black font-bold text-sm rounded-xl transition-all disabled:opacity-30"
+              style={{ boxShadow: '0 4px 0 rgba(255, 255, 255, 0.2)' }}
               data-testid="button-vote-from-order"
             >
               <Vote className="mr-2 w-4 h-4" /> 
