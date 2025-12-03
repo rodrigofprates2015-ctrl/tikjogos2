@@ -148,18 +148,122 @@ function generateRoomCode(): string {
   return randomBytes(2).toString('hex').toUpperCase().substring(0, 4);
 }
 
-function getRandomItem<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+// Seeded random number generator (Mulberry32) - produces consistent results for same seed
+function createSeededRNG(seed: number): () => number {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
 }
 
-function shuffleArray<T>(array: T[]): T[] {
+// Convert string to numeric seed for RNG
+function stringToSeed(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
+}
+
+// Shuffle array using seeded RNG - same seed = same order, different seed = different order
+function seededShuffle<T>(array: T[], seed: number): T[] {
   const arr = [...array];
+  const rng = createSeededRNG(seed);
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
 }
+
+// Pool system: stores shuffled items per room/mode to avoid repetition
+interface ItemPool<T> {
+  items: T[];
+  lastRefillTime: number;
+}
+
+const wordPools: Map<string, ItemPool<string>> = new Map();
+const questionPools: Map<string, ItemPool<{ crew: string; imp: string }>> = new Map();
+const pairPools: Map<string, ItemPool<string[]>> = new Map();
+const comboPools: Map<string, ItemPool<{ category: string; item: string }>> = new Map();
+
+// Get unique item from pool - never repeats until all items used
+function getFromPool<T>(
+  poolKey: string,
+  sourceItems: T[],
+  pools: Map<string, ItemPool<T>>,
+  roomCode: string
+): T {
+  const now = Date.now();
+  let pool = pools.get(poolKey);
+  
+  // Create new pool or refill if empty
+  if (!pool || pool.items.length === 0) {
+    // Use timestamp + room code + pool key as seed for unique shuffle each time
+    const seed = stringToSeed(`${roomCode}-${poolKey}-${now}-${Math.random()}`);
+    const shuffled = seededShuffle(sourceItems, seed);
+    pool = {
+      items: shuffled,
+      lastRefillTime: now
+    };
+    pools.set(poolKey, pool);
+    console.log(`[Pool] Created/refilled pool "${poolKey}" with ${shuffled.length} items (seed: ${seed})`);
+  }
+  
+  // Pop item from pool (guaranteed unique until pool empty)
+  const item = pool.items.pop()!;
+  console.log(`[Pool] Drew item from "${poolKey}", ${pool.items.length} remaining`);
+  return item;
+}
+
+// Get word from pool for Palavra Secreta modes
+function getPooledWord(submode: string, roomCode: string): string {
+  const poolKey = `palavra-${submode}`;
+  const words = PALAVRA_SECRETA_SUBMODES_DATA[submode] || GAME_MODES.palavraSecreta.data;
+  return getFromPool(poolKey, words, wordPools, roomCode);
+}
+
+// Get question from pool for Perguntas Diferentes
+function getPooledQuestion(roomCode: string): { crew: string; imp: string } {
+  const poolKey = `perguntas`;
+  return getFromPool(poolKey, GAME_MODES.perguntasDiferentes.perguntas, questionPools, roomCode);
+}
+
+// Legacy functions (kept for compatibility with other modes)
+function getRandomItem<T>(arr: T[]): T {
+  const seed = Date.now() + Math.random() * 1000000;
+  const rng = createSeededRNG(seed);
+  return arr[Math.floor(rng() * arr.length)];
+}
+
+function shuffleArray<T>(array: T[]): T[] {
+  const seed = Date.now() + Math.random() * 1000000;
+  return seededShuffle(array, seed);
+}
+
+// Clean up old pools periodically (optional - prevents memory leak for abandoned rooms)
+function cleanupOldPools() {
+  const maxAge = 1000 * 60 * 60 * 2; // 2 hours
+  const now = Date.now();
+  
+  Array.from(wordPools.entries()).forEach(([key, pool]) => {
+    if (now - pool.lastRefillTime > maxAge) {
+      wordPools.delete(key);
+    }
+  });
+  Array.from(questionPools.entries()).forEach(([key, pool]) => {
+    if (now - pool.lastRefillTime > maxAge) {
+      questionPools.delete(key);
+    }
+  });
+}
+
+// Run cleanup every 30 minutes
+setInterval(cleanupOldPools, 1000 * 60 * 30);
 
 // Submode words for Palavra Secreta
 const PALAVRA_SECRETA_SUBMODES_DATA: Record<string, string[]> = {
@@ -251,17 +355,21 @@ const PALAVRA_SECRETA_SUBMODES_DATA: Record<string, string[]> = {
   strangerThings: ['Eleven', 'Mike', 'Lucas', 'Dustin', 'Will', 'Max', 'Hopper', 'Joyce', 'Vecna', 'Demogorgon', 'Mind Flayer', 'Hawkins', 'Upside Down', 'Barb', 'Robin', 'Steve', 'Billy', 'Eddie', 'Murray', 'Kali', 'Brenner', 'Suzie', 'Erica', 'Laboratório', 'Neva', 'Walkie-talkie', 'Arcade', 'Starcourt', 'Hellfire', 'Byers']
 };
 
-function setupGameMode(mode: GameModeType, players: Player[], impostorId: string, selectedSubmode?: string): GameData {
+function setupGameMode(mode: GameModeType, players: Player[], impostorId: string, selectedSubmode?: string, roomCode?: string): GameData {
+  const code = roomCode || 'default';
+  
   switch (mode) {
     case "palavraSecreta": {
-      // Use submode words if provided, otherwise use default list
+      // Use pooled words - guarantees no repetition until all used
       const submode = selectedSubmode || 'classico';
-      const words = PALAVRA_SECRETA_SUBMODES_DATA[submode] || GAME_MODES.palavraSecreta.data;
-      return { word: getRandomItem(words) };
+      const word = getPooledWord(submode, code);
+      return { word };
     }
     
     case "palavras": {
-      const location = getRandomItem(GAME_MODES.palavras.locais);
+      // Use pooled location for variety
+      const poolKey = `locais`;
+      const location = getFromPool(poolKey, GAME_MODES.palavras.locais, wordPools, code);
       const availableRoles = shuffleArray([...GAME_MODES.palavras.funcoes]);
       const roles: Record<string, string> = {};
       players.forEach((p, i) => {
@@ -273,7 +381,10 @@ function setupGameMode(mode: GameModeType, players: Player[], impostorId: string
     }
     
     case "duasFaccoes": {
-      const pair = getRandomItem(GAME_MODES.duasFaccoes.pares);
+      // Use pooled pairs for variety
+      const poolKey = `faccoes`;
+      const allPairs = GAME_MODES.duasFaccoes.pares;
+      const pair = getFromPool(poolKey, allPairs, pairPools, code);
       const factionA = pair[0];
       const factionB = pair[1];
       const factionMap: Record<string, string> = {};
@@ -286,20 +397,27 @@ function setupGameMode(mode: GameModeType, players: Player[], impostorId: string
     }
     
     case "categoriaItem": {
-      const categories = Object.keys(GAME_MODES.categoriaItem.categorias);
-      const category = getRandomItem(categories);
-      const items = GAME_MODES.categoriaItem.categorias[category as keyof typeof GAME_MODES.categoriaItem.categorias];
-      const item = getRandomItem(items);
-      return { category, item };
+      // Create combinations of category+item and pool them
+      const poolKey = `categoria-item`;
+      const allCombinations: { category: string; item: string }[] = [];
+      for (const [cat, items] of Object.entries(GAME_MODES.categoriaItem.categorias)) {
+        for (const item of items) {
+          allCombinations.push({ category: cat, item });
+        }
+      }
+      const combo = getFromPool(poolKey, allCombinations, comboPools, code);
+      return { category: combo.category, item: combo.item };
     }
     
     case "perguntasDiferentes": {
-      const pair = getRandomItem(GAME_MODES.perguntasDiferentes.perguntas);
+      // Use pooled questions - guarantees no repetition until all 93 used
+      const pair = getPooledQuestion(code);
       return { question: pair.crew, impostorQuestion: pair.imp };
     }
     
     default:
-      return { word: getRandomItem(GAME_MODES.palavraSecreta.data) };
+      const word = getPooledWord('classico', code);
+      return { word };
   }
 }
 
@@ -586,7 +704,7 @@ export async function registerRoutes(
       const impostorIndex = Math.floor(Math.random() * players.length);
       const impostorId = players[impostorIndex].uid;
       
-      const gameData = setupGameMode(gameMode, players, impostorId, selectedSubmode);
+      const gameData = setupGameMode(gameMode, players, impostorId, selectedSubmode, code.toUpperCase());
       
       const modeInfo = GAME_MODES[gameMode];
 
