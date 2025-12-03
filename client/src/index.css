@@ -66,6 +66,28 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-6px); }
   }
+  
+  @keyframes stageFadeIn {
+    from { 
+      opacity: 0; 
+      transform: translateY(15px) scale(0.98); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0) scale(1); 
+    }
+  }
+  
+  @keyframes stageSlideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
 }
 
 @layer base {
@@ -91,6 +113,11 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+  
+  /* Stage transition animations */
+  .animate-stage-fade-in {
+    animation: stageFadeIn 0.4s ease-out forwards;
   }
 
   /* Main card with light blue border like mockup */
