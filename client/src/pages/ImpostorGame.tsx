@@ -175,24 +175,14 @@ const GameNavButtons = ({
         <Button 
           onClick={handleGoHome}
           size="icon"
-          className={cn(
-            "rounded-lg",
-            isImpostor 
-              ? "bg-[#4a1a1a] hover:bg-[#5a2a2a] border-2 border-red-400/50 text-red-300"
-              : "bg-[#1a4a5c] hover:bg-[#1a5a6c] border-2 border-cyan-400/50 text-cyan-300"
-          )}
+          className="rounded-lg bg-gray-700 hover:bg-gray-600 border-2 border-gray-600/50 text-gray-300"
           data-testid="button-home"
         >
           <Home className="w-4 h-4" />
         </Button>
         <Button 
           onClick={handleBackToLobbyClick}
-          className={cn(
-            "flex-1 rounded-lg",
-            isImpostor 
-              ? "bg-[#4a1a1a] hover:bg-[#5a2a2a] border-2 border-red-400/50 text-red-300"
-              : "bg-[#1a4a5c] hover:bg-[#1a5a6c] border-2 border-cyan-400/50 text-cyan-300"
-          )}
+          className="flex-1 rounded-lg bg-gray-700 hover:bg-gray-600 border-2 border-gray-600/50 text-gray-300"
           data-testid="button-back-lobby"
         >
           <ArrowLeft className="mr-2 w-4 h-4" /> Voltar ao Lobby
@@ -218,12 +208,7 @@ const GameNavButtons = ({
             </AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleConfirmBackToLobby}
-              className={cn(
-                "flex-1 border-none",
-                isImpostor 
-                  ? "bg-[#c44536] hover:bg-[#d45546] text-white"
-                  : "bg-[#4a90a4] hover:bg-[#5aa0b4] text-white"
-              )}
+              className="flex-1 border-none bg-white hover:bg-white/90 text-black"
               data-testid="button-confirm-back-lobby"
             >
               Confirmar
@@ -572,7 +557,7 @@ const HomeScreen = () => {
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center z-20">
         <img src={logoTikjogos} alt="TikJogos" className="h-4 md:h-5 mx-auto mb-2" />
         <p className="text-[#6a8aaa] text-xs">
-          Desenvolvido com <Heart className="inline w-3 h-3 text-red-400 fill-current" /> por <span className="text-[#8aa0b0]">Rodrigo Freitas</span>
+          Desenvolvido com <Heart className="inline w-3 h-3 text-gray-500 fill-current" /> por <span className="text-[#8aa0b0]">Rodrigo Freitas</span>
         </p>
         <div className="flex items-center justify-center gap-2 text-xs mt-1">
           <Link href="/privacidade" className="text-[#6a8aaa] hover:text-white transition-colors">
@@ -850,19 +835,19 @@ const QuestionRevealedOverlay = ({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#16213e]/95 backdrop-blur-sm animate-fade-in">
       <div className="w-full max-w-md space-y-6">
-        <div className="w-full bg-gradient-to-br from-[#c44536]/10 to-[#c44536]/5 rounded-2xl p-6 border border-[#c44536]/30 space-y-4">
+        <div className="w-full bg-gradient-to-br from-gray-700/20 to-gray-700/5 rounded-2xl p-6 border border-gray-600/30 space-y-4">
           <div className="text-center space-y-2">
-            <div className="w-16 h-16 mx-auto rounded-xl border-2 border-[#c44536] flex items-center justify-center mb-4"
-                 style={{ boxShadow: '0 4px 0 rgba(196, 69, 54, 0.5)' }}>
-              <Eye className="w-8 h-8 text-[#c44536]" />
+            <div className="w-16 h-16 mx-auto rounded-xl border-2 border-gray-600 flex items-center justify-center mb-4"
+                 style={{ boxShadow: '0 4px 0 rgba(128, 128, 128, 0.2)' }}>
+              <Eye className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-[#c44536] text-sm uppercase tracking-widest font-bold">Pergunta dos Tripulantes</p>
+            <p className="text-gray-400 text-sm uppercase tracking-widest font-bold">Pergunta dos Tripulantes</p>
             <p className="text-2xl text-white font-bold leading-relaxed">"{crewQuestion}"</p>
           </div>
           
           {isImpostor && questionsDiffer && (
-            <div className="text-center pt-4 border-t border-[#c44536]/20 space-y-2">
-              <p className="text-[#c44536] text-lg font-bold animate-pulse">
+            <div className="text-center pt-4 border-t border-gray-600/20 space-y-2">
+              <p className="text-gray-400 text-lg font-bold animate-pulse">
                 Sua pergunta era diferente!
               </p>
               <p className="text-gray-400 text-sm">
@@ -872,8 +857,8 @@ const QuestionRevealedOverlay = ({
           )}
           
           {!isImpostor && (
-            <div className="text-center pt-4 border-t border-[#4a90a4]/20">
-              <p className="text-[#4a90a4] text-sm">
+            <div className="text-center pt-4 border-t border-gray-600/20">
+              <p className="text-gray-400 text-sm">
                 Descubra quem recebeu uma pergunta diferente!
               </p>
             </div>
@@ -1282,15 +1267,15 @@ const PerguntasDiferentesScreen = () => {
         {isHost && (
           <Button 
             onClick={handleRevealCrewQuestion}
-            className="w-full h-14 bg-[#c44536] hover:bg-[#c44536]/80 text-white font-bold text-lg rounded-lg transition-all"
-            style={{ boxShadow: '0 4px 0 rgba(196, 69, 54, 0.5)' }}
+            className="w-full h-14 bg-white hover:bg-white/80 text-black font-bold text-lg rounded-lg transition-all"
+            style={{ boxShadow: '0 4px 0 rgba(255, 255, 255, 0.2)' }}
           >
             <Eye className="mr-2 w-5 h-5" /> Revelar Pergunta dos Tripulantes
           </Button>
         )}
         
         {!isHost && (
-          <p className="text-[#c44536] text-sm text-center font-medium animate-pulse">
+          <p className="text-gray-400 text-sm text-center font-medium animate-pulse">
             Aguardando o host revelar a pergunta dos tripulantes...
           </p>
         )}
@@ -1305,14 +1290,14 @@ const PerguntasDiferentesScreen = () => {
         
         <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
         
-        <div className="w-full bg-gradient-to-br from-[#c44536]/10 to-[#c44536]/5 rounded-2xl p-6 border border-[#c44536]/30 space-y-4">
+        <div className="w-full bg-gradient-to-br from-gray-700/20 to-gray-700/5 rounded-2xl p-6 border border-gray-600/30 space-y-4">
           <div className="text-center space-y-2">
-            <p className="text-[#c44536] text-xs uppercase tracking-widest font-bold">Pergunta dos Tripulantes</p>
+            <p className="text-gray-400 text-xs uppercase tracking-widest font-bold">Pergunta dos Tripulantes</p>
             <p className="text-xl text-white font-bold leading-relaxed">"{crewQuestion}"</p>
           </div>
           {isImpostor && (
-            <div className="text-center pt-4 border-t border-[#c44536]/20">
-              <p className="text-[#c44536] text-sm font-medium">
+            <div className="text-center pt-4 border-t border-gray-600/20">
+              <p className="text-gray-400 text-sm font-medium">
                 Sua pergunta era diferente! Tente se justificar!
               </p>
             </div>
@@ -1509,17 +1494,9 @@ const PerguntasDiferentesScreen = () => {
         <div className="w-full bg-[#0a1628]/95 rounded-2xl p-6 space-y-6">
           <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
           
-          <div className={cn(
-            "w-full rounded-2xl p-6 border-2 space-y-6 text-center",
-            crewWins 
-              ? "bg-gradient-to-br from-[#3d8b5f]/20 to-[#3d8b5f]/5 border-[#3d8b5f]"
-              : "bg-gradient-to-br from-[#c44536]/20 to-[#c44536]/5 border-[#c44536]"
-          )}>
+          <div className="w-full rounded-2xl p-6 border-2 space-y-6 text-center bg-gradient-to-br from-gray-700/20 to-gray-700/5 border-gray-600">
             <div className="space-y-4">
-              <div className={cn(
-                "w-20 h-20 rounded-full flex items-center justify-center mx-auto",
-                crewWins ? "bg-[#3d8b5f]" : "bg-[#c44536]"
-              )}>
+              <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto bg-gray-600">
                 {crewWins ? (
                   <Trophy className="w-10 h-10 text-white" />
                 ) : (
@@ -1527,15 +1504,12 @@ const PerguntasDiferentesScreen = () => {
                 )}
               </div>
               
-              <h2 className={cn(
-                "text-3xl font-bold",
-                crewWins ? "text-[#3d8b5f]" : "text-[#c44536]"
-              )}>
+              <h2 className="text-3xl font-bold text-white">
                 {crewWins ? "TRIPULACAO VENCEU!" : "IMPOSTOR VENCEU!"}
               </h2>
               
               <p className="text-gray-300 text-lg">
-                O impostor era: <span className="text-[#c44536] font-bold">{impostorName}</span>
+                O impostor era: <span className="text-gray-400 font-bold">{impostorName}</span>
               </p>
             </div>
             
@@ -2028,7 +2002,7 @@ const GameScreen = () => {
               <>
                 <Button 
                   onClick={handleStartSorteio}
-                  className="w-full h-10 bg-[#0d4a4a] hover:bg-[#0d5a5a] border-2 border-cyan-400/50 text-cyan-300 rounded-xl font-medium text-sm"
+                  className="w-full h-10 bg-white hover:bg-white/80 border-2 border-white/40 text-black rounded-xl font-medium text-sm"
                   data-testid="button-sorteio"
                 >
                   <Zap className="mr-2 w-4 h-4" /> Sortear Ordem de Fala
@@ -2066,12 +2040,7 @@ const GameScreen = () => {
 
       <div className="w-full card-retro p-4 space-y-4">
         <div 
-          className={cn(
-            "w-full rounded-xl p-4 flex flex-col items-center text-center relative transition-all duration-300 cursor-pointer",
-            isImpostor 
-              ? "bg-gradient-to-b from-[#4a1a1a] to-[#2a0a0a] border border-red-500/40" 
-              : "bg-gradient-to-b from-[#0d4a4a] to-[#082828] border border-cyan-400/40"
-          )}
+          className="w-full rounded-xl p-4 flex flex-col items-center text-center relative transition-all duration-300 cursor-pointer bg-gradient-to-b from-[#2a2a3a] to-[#1a1a2a] border border-gray-600/40"
           onClick={() => setIsRevealed(!isRevealed)}
           data-testid="card-reveal"
         >
@@ -2079,10 +2048,7 @@ const GameScreen = () => {
             <div className="flex flex-col items-center gap-3 animate-fade-in w-full py-2">
               <div className="flex items-center gap-3">
                 <div 
-                  className={cn(
-                    "w-16 h-16 rounded-lg overflow-hidden flex-shrink-0",
-                    isImpostor ? "bg-red-700/40" : "bg-cyan-700/40"
-                  )}
+                  className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-700/40"
                 >
                   <img 
                     src={isImpostor ? impostorImg : tripulanteImg} 
@@ -2093,10 +2059,7 @@ const GameScreen = () => {
                 </div>
                 <div className="text-left">
                   <h2 
-                    className={cn(
-                      "text-xl sm:text-2xl font-black tracking-wider uppercase",
-                      isImpostor ? "text-red-400" : "text-cyan-400"
-                    )}
+                    className="text-xl sm:text-2xl font-black tracking-wider uppercase text-gray-200"
                     data-testid={isImpostor ? "text-role-impostor" : "text-role-crew"}
                   >
                     {isImpostor ? "IMPOSTOR" : "TRIPULANTE"}
@@ -2104,15 +2067,10 @@ const GameScreen = () => {
                 </div>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsRevealed(false); }}
-                  className={cn(
-                    "ml-auto w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
-                    isImpostor 
-                      ? "border border-red-400/30 hover:bg-red-500/20" 
-                      : "border border-cyan-400/30 hover:bg-cyan-500/20"
-                  )}
+                  className="ml-auto w-8 h-8 rounded-lg flex items-center justify-center transition-colors border border-gray-600/30 hover:bg-gray-500/20"
                   data-testid="button-hide-role"
                 >
-                  <EyeOff className={cn("w-4 h-4", isImpostor ? "text-red-300/60" : "text-cyan-300/60")} />
+                  <EyeOff className="w-4 h-4 text-gray-400/60" />
                 </button>
               </div>
 
@@ -2122,14 +2080,8 @@ const GameScreen = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2 py-6">
-              <Eye className={cn(
-                "w-10 h-10",
-                isImpostor ? "text-red-400/60" : "text-cyan-400/60"
-              )} />
-              <h3 className={cn(
-                "text-base font-bold",
-                isImpostor ? "text-red-200" : "text-cyan-200"
-              )}>
+              <Eye className="w-10 h-10 text-gray-400/60" />
+              <h3 className="text-base font-bold text-gray-300">
                 TOQUE PARA REVELAR
               </h3>
             </div>

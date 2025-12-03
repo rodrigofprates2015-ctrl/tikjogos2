@@ -544,7 +544,7 @@ export function DiscussionStage({ isHost, onStartVoting, onStartSorteio, onNewRo
         <>
           <Button 
             onClick={onStartSorteio}
-            className="w-full h-11 bg-[#0d4a4a] hover:bg-[#0d5a5a] border-2 border-cyan-400/50 text-cyan-300 rounded-xl font-medium"
+            className="w-full h-11 bg-white hover:bg-white/80 border-2 border-white/40 text-black rounded-xl font-medium"
             data-testid="button-sorteio"
           >
             <Zap className="mr-2 w-4 h-4" /> Sortear Ordem de Fala
