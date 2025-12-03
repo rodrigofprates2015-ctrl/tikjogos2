@@ -1599,7 +1599,6 @@ const GameScreen = () => {
   const { user, room, returnToLobby, speakingOrder, setSpeakingOrder, showSpeakingOrderWheel, setShowSpeakingOrderWheel, triggerSpeakingOrderWheel } = useGameStore();
   const [isRevealed, setIsRevealed] = useState(true);
   const [showAdPopup, setShowAdPopup] = useState(false);
-  const [currentStage, setCurrentStage] = useState<RoundStage>('WORD_REVEAL');
   const [isSubmittingVote, setIsSubmittingVote] = useState(false);
 
   const handleNewRound = () => {
@@ -1615,18 +1614,15 @@ const GameScreen = () => {
       console.error('Error in returnToLobby:', error);
     }
     setShowAdPopup(false);
-    setCurrentStage('WORD_REVEAL');
   };
 
   const handleStartSorteio = () => {
-    setCurrentStage('SPEAKING_ORDER');
     triggerSpeakingOrderWheel();
   };
 
   const handleSpeakingOrderComplete = (order: string[]) => {
     setSpeakingOrder(order);
     setShowSpeakingOrderWheel(false);
-    setCurrentStage('WORD_REVEAL');
   };
 
   const roomCode = room?.code;
@@ -1644,21 +1640,21 @@ const GameScreen = () => {
   const votesRevealed = gameData?.votesRevealed === true;
   const hasMyVote = votes.some(v => v.playerId === user?.uid);
 
-  useEffect(() => {
+  const deriveCurrentStage = (): RoundStage => {
     if (votesRevealed) {
-      setCurrentStage('ROUND_RESULT');
+      return 'ROUND_RESULT';
     } else if (votingStarted && hasMyVote) {
-      setCurrentStage('VOTING_FEEDBACK');
+      return 'VOTING_FEEDBACK';
     } else if (votingStarted && !hasMyVote) {
-      setCurrentStage('VOTING');
+      return 'VOTING';
     } else if (showSpeakingOrderWheel) {
-      setCurrentStage('SPEAKING_ORDER');
-    } else if (!votingStarted && !votesRevealed) {
-      if (currentStage !== 'SPEAKING_ORDER') {
-        setCurrentStage('WORD_REVEAL');
-      }
+      return 'SPEAKING_ORDER';
+    } else {
+      return 'WORD_REVEAL';
     }
-  }, [votingStarted, votesRevealed, hasMyVote, showSpeakingOrderWheel, currentStage]);
+  };
+
+  const currentStage = deriveCurrentStage();
 
   if (gameMode === 'perguntasDiferentes') {
     return <PerguntasDiferentesScreen />;
@@ -2158,6 +2154,7 @@ const GameScreen = () => {
                       ? "border border-red-400/30 hover:bg-red-500/20" 
                       : "border border-cyan-400/30 hover:bg-cyan-500/20"
                   )}
+                  data-testid="button-hide-role"
                 >
                   <EyeOff className={cn("w-4 h-4", isImpostor ? "text-red-300/60" : "text-cyan-300/60")} />
                 </button>
