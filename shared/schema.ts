@@ -50,6 +50,7 @@ export type Player = {
   uid: string;
   name: string;
   waitingForGame?: boolean;
+  connected?: boolean;  // Track connection status - true = connected, false = temporarily disconnected
 };
 
 export type RoomStatus = "waiting" | "playing";

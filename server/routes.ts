@@ -462,55 +462,65 @@ export async function registerRoutes(
     });
   }
 
-  async function removeGhostPlayer(ws: WebSocket, roomCode: string, playerId: string) {
-    console.log(`[Heartbeat] Removing ghost player ${playerId} from room ${roomCode}`);
+  // Mark a player as disconnected (but keep them in the room - they can reconnect)
+  async function markPlayerDisconnected(ws: WebSocket, roomCode: string, playerId: string) {
+    console.log(`[Connection] Marking player ${playerId} as disconnected in room ${roomCode}`);
     
     const connections = roomConnections.get(roomCode);
     if (connections) {
       connections.delete(ws);
-      if (connections.size === 0) {
-        roomConnections.delete(roomCode);
-      }
     }
     playerConnections.delete(ws);
 
     const room = await storage.getRoom(roomCode);
     if (!room) return;
 
-    const disconnectedPlayer = room.players.find(p => p.uid === playerId);
-    const wasHost = room.hostId === playerId;
-    const hasRemainingPlayers = room.players.length > 1;
+    // Update player's connected status to false (but keep them in the room)
+    const updatedPlayers = room.players.map(p => 
+      p.uid === playerId ? { ...p, connected: false } : p
+    );
 
-    let currentRoom = await storage.removePlayerFromRoom(roomCode, playerId);
-    if (!currentRoom) return;
-
-    let newHostName: string | undefined;
-    if (wasHost && hasRemainingPlayers && currentRoom.players.length > 0) {
-      const newHostId = currentRoom.players[0].uid;
-      currentRoom = await storage.updateRoom(roomCode, { hostId: newHostId }) || currentRoom;
-      newHostName = currentRoom.players.find(p => p.uid === newHostId)?.name;
-      
-      if (connections && connections.size > 0) {
-        broadcastToRoom(roomCode, { type: 'host-changed', newHostId, newHostName });
-      }
-    }
-
-    if (disconnectedPlayer) {
-      broadcastToRoom(roomCode, { type: 'player-left', playerId, playerName: disconnectedPlayer.name });
-      broadcastToRoom(roomCode, { type: 'room-update', room: currentRoom });
-    }
-
-    try {
-      ws.close(1000, 'Ghost player removed');
-    } catch (e) {
-      // WebSocket may already be closed
+    const updatedRoom = await storage.updateRoom(roomCode, { players: updatedPlayers });
+    if (updatedRoom) {
+      // Notify other players that this player is temporarily disconnected
+      broadcastToRoom(roomCode, { 
+        type: 'player-disconnected', 
+        playerId, 
+        playerName: room.players.find(p => p.uid === playerId)?.name 
+      });
+      broadcastToRoom(roomCode, { type: 'room-update', room: updatedRoom });
     }
   }
 
+  // Mark a player as connected (restore connection status on reconnect)
+  async function markPlayerConnected(roomCode: string, playerId: string) {
+    console.log(`[Connection] Marking player ${playerId} as connected in room ${roomCode}`);
+    
+    const room = await storage.getRoom(roomCode);
+    if (!room) return null;
+
+    // Update player's connected status to true
+    const updatedPlayers = room.players.map(p => 
+      p.uid === playerId ? { ...p, connected: true } : p
+    );
+
+    const updatedRoom = await storage.updateRoom(roomCode, { players: updatedPlayers });
+    if (updatedRoom) {
+      // Notify other players that this player reconnected
+      broadcastToRoom(roomCode, { 
+        type: 'player-reconnected', 
+        playerId, 
+        playerName: room.players.find(p => p.uid === playerId)?.name 
+      });
+      broadcastToRoom(roomCode, { type: 'room-update', room: updatedRoom });
+    }
+    return updatedRoom;
+  }
+
   // Server-side heartbeat: ping all clients every 5 seconds
-  // Remove players who haven't responded in 10 seconds (as specified in requirements)
+  // Mark players as disconnected (NOT remove) if they don't respond in 10 seconds
   const PING_INTERVAL = 5000;
-  const PONG_TIMEOUT = 10000;
+  const DISCONNECT_TIMEOUT = 10000;
 
   setInterval(() => {
     const now = Date.now();
@@ -520,9 +530,9 @@ export async function registerRoutes(
       
       const timeSinceLastPong = now - info.lastPong;
       
-      if (timeSinceLastPong > PONG_TIMEOUT) {
-        console.log(`[Heartbeat] Player ${info.playerId} timed out (${timeSinceLastPong}ms since last pong)`);
-        await removeGhostPlayer(ws, info.roomCode, info.playerId);
+      if (timeSinceLastPong > DISCONNECT_TIMEOUT) {
+        console.log(`[Heartbeat] Player ${info.playerId} unresponsive (${timeSinceLastPong}ms) - marking as disconnected`);
+        await markPlayerDisconnected(ws, info.roomCode, info.playerId);
       } else if (ws.readyState === WebSocket.OPEN) {
         try {
           ws.send(JSON.stringify({ type: 'ping' }));
@@ -592,8 +602,22 @@ export async function registerRoutes(
           
           const room = await storage.getRoom(roomCode);
           if (room) {
-            ws.send(JSON.stringify({ type: 'room-update', room }));
-            console.log(`[Join] Player ${currentPlayerId} joined room ${roomCode}`);
+            // Check if player already exists in room (reconnecting)
+            const existingPlayer = room.players.find(p => p.uid === currentPlayerId);
+            if (existingPlayer) {
+              // Player is reconnecting - restore their connection status
+              console.log(`[Reconnect] Player ${currentPlayerId} is reconnecting to room ${roomCode}`);
+              const updatedRoom = await markPlayerConnected(roomCode, currentPlayerId);
+              if (updatedRoom) {
+                ws.send(JSON.stringify({ type: 'room-update', room: updatedRoom }));
+              } else {
+                ws.send(JSON.stringify({ type: 'room-update', room }));
+              }
+            } else {
+              // New player joining
+              ws.send(JSON.stringify({ type: 'room-update', room }));
+              console.log(`[Join] Player ${currentPlayerId} joined room ${roomCode}`);
+            }
           }
         }
         
@@ -650,44 +674,10 @@ export async function registerRoutes(
       console.log(`[Close] WebSocket closed for player ${currentPlayerId} in room ${currentRoomCode}`);
       
       if (currentRoomCode && currentPlayerId) {
-        const connections = roomConnections.get(currentRoomCode);
-        if (connections) {
-          connections.delete(ws);
-          if (connections.size === 0) {
-            roomConnections.delete(currentRoomCode);
-          }
-        }
-        playerConnections.delete(ws);
-
-        const room = await storage.getRoom(currentRoomCode);
-        if (!room) return;
-
-        const disconnectedPlayer = room.players.find(p => p.uid === currentPlayerId);
-        const wasHost = room.hostId === currentPlayerId;
-        const hasRemainingPlayers = room.players.length > 1;
-
-        let currentRoom = await storage.removePlayerFromRoom(currentRoomCode, currentPlayerId);
-        if (!currentRoom) return;
-
-        let newHostName: string | undefined;
-        if (wasHost && hasRemainingPlayers && currentRoom.players.length > 0) {
-          const newHostId = currentRoom.players[0].uid;
-          currentRoom = await storage.updateRoom(currentRoomCode, { hostId: newHostId }) || currentRoom;
-          newHostName = currentRoom.players.find(p => p.uid === newHostId)?.name;
-          
-          if (connections && connections.size > 0) {
-            broadcastToRoom(currentRoomCode, { type: 'host-changed', newHostId, newHostName });
-          }
-        }
-
-        if (disconnectedPlayer && connections && connections.size > 0) {
-          broadcastToRoom(currentRoomCode, { 
-            type: 'player-left', 
-            playerId: currentPlayerId, 
-            playerName: disconnectedPlayer.name 
-          });
-          broadcastToRoom(currentRoomCode, { type: 'room-update', room: currentRoom });
-        }
+        // Mark player as disconnected (but keep them in the room - they can reconnect)
+        await markPlayerDisconnected(ws, currentRoomCode, currentPlayerId);
+        // Note: We do NOT remove the player or change host - they might reconnect
+        // Players remain in the room until they manually leave
       }
     });
   });
@@ -710,7 +700,7 @@ export async function registerRoutes(
       }).parse(req.body);
 
       const code = generateRoomCode();
-      const player: Player = { uid: hostId, name: hostName };
+      const player: Player = { uid: hostId, name: hostName, connected: true };
 
       const room = await storage.createRoom({
         code,
@@ -748,7 +738,8 @@ export async function registerRoutes(
       const player: Player = { 
         uid: playerId, 
         name: playerName,
-        waitingForGame: isGameInProgress 
+        waitingForGame: isGameInProgress,
+        connected: true  // New players start as connected
       };
       const updatedRoom = await storage.addPlayerToRoom(code.toUpperCase(), player);
 
@@ -776,51 +767,34 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Room not found" });
       }
 
-      // Get active player IDs from WebSocket connections
-      const now = Date.now();
-      const activePlayerIds = new Set<string>();
-      
-      playerConnections.forEach((info, ws) => {
-        if (info.roomCode === code.toUpperCase() && 
-            info.playerId && 
-            ws.readyState === WebSocket.OPEN &&
-            (now - info.lastPong) < PONG_TIMEOUT) {
-          activePlayerIds.add(info.playerId);
-        }
-      });
-
-      // Filter room players to only include those with active connections
+      // Filter room players to only include those who are explicitly connected
       const allPlayers = (room.players || []) as Player[];
-      const activePlayers = allPlayers.filter(p => !p.waitingForGame && activePlayerIds.has(p.uid));
+      // Players are connected if: they have connected === true (explicitly connected)
+      const connectedPlayers = allPlayers.filter(p => !p.waitingForGame && p.connected === true);
+      const disconnectedPlayers = allPlayers.filter(p => !p.waitingForGame && p.connected !== true);
       
-      console.log(`[StartGame] Room ${code}: ${allPlayers.length} total players, ${activePlayers.length} active players`);
+      console.log(`[StartGame] Room ${code}: ${allPlayers.length} total, ${connectedPlayers.length} connected, ${disconnectedPlayers.length} disconnected`);
       
-      if (activePlayers.length < 3) {
+      if (connectedPlayers.length < 3) {
         return res.status(400).json({ 
-          error: "Minimum 3 active players required",
-          activeCount: activePlayers.length,
+          error: "Minimum 3 connected players required",
+          connectedCount: connectedPlayers.length,
+          disconnectedCount: disconnectedPlayers.length,
           totalCount: allPlayers.length
         });
       }
 
-      // Remove ghost players from room before starting
-      const ghostPlayers = allPlayers.filter(p => !p.waitingForGame && !activePlayerIds.has(p.uid));
-      if (ghostPlayers.length > 0) {
-        console.log(`[StartGame] Removing ${ghostPlayers.length} ghost players:`, ghostPlayers.map(p => p.name));
-        for (const ghost of ghostPlayers) {
-          await storage.removePlayerFromRoom(code.toUpperCase(), ghost.uid);
-        }
-        // Refresh room after removing ghosts
-        const refreshedRoom = await storage.getRoom(code.toUpperCase());
-        if (refreshedRoom) {
-          broadcastToRoom(code.toUpperCase(), { type: 'room-update', room: refreshedRoom });
-        }
+      // Note: We do NOT remove disconnected players - they stay in the room and can reconnect
+      // We just don't include them in the current game round
+      if (disconnectedPlayers.length > 0) {
+        console.log(`[StartGame] ${disconnectedPlayers.length} players are disconnected:`, disconnectedPlayers.map(p => p.name));
+        console.log(`[StartGame] Game will start with ${connectedPlayers.length} connected players`);
       }
 
-      const impostorIndex = Math.floor(Math.random() * activePlayers.length);
-      const impostorId = activePlayers[impostorIndex].uid;
+      const impostorIndex = Math.floor(Math.random() * connectedPlayers.length);
+      const impostorId = connectedPlayers[impostorIndex].uid;
       
-      const gameData = setupGameMode(gameMode, activePlayers, impostorId, selectedSubmode, code.toUpperCase());
+      const gameData = setupGameMode(gameMode, connectedPlayers, impostorId, selectedSubmode, code.toUpperCase());
       
       const modeInfo = GAME_MODES[gameMode];
 

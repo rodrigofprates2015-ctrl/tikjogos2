@@ -1,0 +1,62 @@
+NÃO EXPULSAR, MANTER CONEXÃO
+
+❗ Objetivo principal: Jogadores NÃO devem ser expulsos quando inativos.
+O sistema deve manter a conexão viva e sincronizada mesmo com o usuário parado, aba minimizada, celular bloqueado ou open-inativo.
+
+Quero que você implemente um sistema que mantenha clientes conectados ao servidor e impeça o estado ghost, sem remover automaticamente ninguém.
+
+📌 Funções obrigatórias
+1. Heartbeat para manter conexão viva
+
+Servidor envia ping periodicamente somente para confirmar vida do socket
+
+Cliente responde com pong
+
+Se o ping falhar, o cliente deve reconectar, não ser expulso
+
+Não delete o jogador ao perder heartbeat.
+Se o server não receber pong, marque como desconectado temporário e aguarde reconexão.
+
+2. Reconexão automática do cliente
+
+Detectou onclose? -> reconectar mantendo ID da sessão
+
+Reconectou? -> enviar sync_request para atualizar estado no lobby
+
+Nenhuma desconexão deve resultar em kick automático.
+
+3. Sincronização ao voltar foco
+
+Quando aba voltar ao foco → sync_request
+
+Servidor responde com estado atual do lobby e força re-render client-side
+
+Isso corrige jogadores invisíveis sem remover ninguém.
+
+4. Anti-Ghost sem expulsar
+
+Se o cliente cair e reconectar → ele deve voltar com o mesmo ID
+
+Se o socket cair, mas o cliente continuar com a aba aberta → reconexão corrige isso
+
+O jogador só some do lobby se ele de fato sair manualmente
+
+5. Validação para iniciar partida
+
+O host só inicia o jogo com jogadores sincronizados, não expulsos.
+
+Exemplo:
+
+const activePlayers = players.filter(p => p.connected === true); 
+// NÃO expulsar players desconectados – apenas marcar estado e aguardar reconexão
+
+Resumo para evitar erro
+❗ NÃO QUERO timeout expulsando players
+❗ NÃO QUERO remover quem ficar inativo
+✔ QUERO reconexão automática
+✔ QUERO que ninguém vire ghost
+✔ QUERO sync do lobby ao focar janela
+✔ QUERO o jogador preso na sala mesmo AFK
+Gere agora o código completo seguindo exatamente essas regras.
+
+Se tentar remover players por timeout → estará errado.

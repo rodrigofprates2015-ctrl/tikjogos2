@@ -76,7 +76,7 @@ export type GameState = {
   gameModes: GameMode[];
   selectedMode: GameModeType | null;
   submodeSelect: boolean;
-  notifications: Array<{ id: string; type: 'player-left' | 'host-changed' | 'disconnected'; message: string }>;
+  notifications: Array<{ id: string; type: 'player-left' | 'player-joined' | 'player-reconnected' | 'host-changed' | 'disconnected'; message: string }>;
   enteredDuringGame: boolean;
   isDisconnected: boolean;
   savedNickname: string | null;
@@ -103,7 +103,7 @@ export type GameState = {
   setSpeakingOrder: (order: string[]) => void;
   setShowSpeakingOrderWheel: (show: boolean) => void;
   triggerSpeakingOrderWheel: () => void;
-  addNotification: (notification: { type: 'player-left' | 'host-changed' | 'disconnected'; message: string }) => void;
+  addNotification: (notification: { type: 'player-left' | 'player-joined' | 'player-reconnected' | 'host-changed' | 'disconnected'; message: string }) => void;
   removeNotification: (id: string) => void;
   setDisconnected: (disconnected: boolean) => void;
 };
@@ -290,6 +290,18 @@ export const useGameStore = create<GameState>((set, get) => ({
           get().addNotification({
             type: 'player-left',
             message: `${data.playerName} saiu da sala`
+          });
+        }
+        if (data.type === 'player-disconnected') {
+          get().addNotification({
+            type: 'player-reconnected',  // Using reconnected type as a connection status indicator
+            message: `${data.playerName} desconectou temporariamente`
+          });
+        }
+        if (data.type === 'player-reconnected') {
+          get().addNotification({
+            type: 'player-reconnected',
+            message: `${data.playerName} reconectou`
           });
         }
         if (data.type === 'host-changed') {
@@ -578,7 +590,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     });
   },
 
-  addNotification: (notification: { type: 'player-left' | 'host-changed' | 'disconnected'; message: string }) => {
+  addNotification: (notification: { type: 'player-left' | 'player-joined' | 'player-reconnected' | 'host-changed' | 'disconnected'; message: string }) => {
     const id = Date.now().toString();
     set((state) => ({
       notifications: [...state.notifications, { id, ...notification }]
