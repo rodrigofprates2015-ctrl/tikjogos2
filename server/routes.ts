@@ -682,22 +682,33 @@ export async function registerRoutes(
         }
 
         // Handle kick-player - host can remove a player from the room
-        if (data.type === 'kick-player' && data.roomCode && data.targetPlayerId && data.requesterId) {
+        if (data.type === 'kick-player' && data.roomCode && data.targetPlayerId) {
           const roomCode = data.roomCode as string;
           const targetPlayerId = data.targetPlayerId as string;
-          const requesterId = data.requesterId as string;
+          
+          // SECURITY: Get the actual player ID from the WebSocket connection, NOT from client payload
+          // This prevents spoofing where attackers send fake hostId
+          const connectionInfo = playerConnections.get(ws);
+          if (!connectionInfo || connectionInfo.roomCode !== roomCode) {
+            console.log(`[Kick] Rejected: Connection not found or room mismatch`);
+            return;
+          }
+          const actualRequesterId = connectionInfo.playerId;
           
           const room = await storage.getRoom(roomCode);
-          if (!room) return;
+          if (!room) {
+            console.log(`[Kick] Rejected: Room ${roomCode} not found`);
+            return;
+          }
           
-          // Only host can kick players
-          if (room.hostId !== requesterId) {
-            console.log(`[Kick] Rejected: ${requesterId} is not the host of room ${roomCode}`);
+          // Only host can kick players - use the verified playerId from connection
+          if (room.hostId !== actualRequesterId) {
+            console.log(`[Kick] Rejected: ${actualRequesterId} is not the host of room ${roomCode}`);
             return;
           }
           
           // Cannot kick yourself (the host)
-          if (targetPlayerId === requesterId) {
+          if (targetPlayerId === actualRequesterId) {
             console.log(`[Kick] Rejected: Host cannot kick themselves`);
             return;
           }
@@ -708,7 +719,7 @@ export async function registerRoutes(
             return;
           }
           
-          console.log(`[Kick] Host ${requesterId} is kicking player ${targetPlayerId} (${targetPlayer.name}) from room ${roomCode}`);
+          console.log(`[Kick] Host ${actualRequesterId} is kicking player ${targetPlayerId} (${targetPlayer.name}) from room ${roomCode}`);
           
           // Remove the player from the room
           const updatedRoom = await storage.removePlayerFromRoom(roomCode, targetPlayerId);
