@@ -1,0 +1,132 @@
+Regras finais — comportamento esperado (sem ambiguidades)
+Tipos de desconexão
+
+Soft disconnect (inatividade / aba em background / suspensão do SO)
+
+Detectado por: ping/pong perdido + browser ainda possivelmente com WS suspenso.
+
+Ação: marcar state = "disconnected_pending" (mostrar OFFLINE no lobby), não remover imediatamente.
+
+Usuário pode se reconectar com o mesmo sessionID e voltar ao connected.
+
+Hard exit (fechar aba/navegador, "quit", crash explícito)
+
+Detectado por: cliente envia leave/disconnect_notice via beforeunload/pagehide ou servidor recebe um close do socket acompanhado de um sinal que indica saída limpa (ver abaixo).
+
+Ação: remover o jogador do lobby e, se for HOST, transferir host imediatamente para outro jogador conectado.
+
+Observação: se o cliente não conseguir enviar leave (rede cortada), o servidor pode aplicar fallback: marcar disconnected_pending e aguardar um curto grace (ex.: 10–30s) para remoção definitiva como hard-exit. Esse grace curto serve apenas ao caso de perda abrupta de rede — não para punir AFK.
+
+🔁 Regras de host / failover
+
+Se o host causar hard exit (ou enviar leave intencional):
+
+Remover propriedade de host do jogador.
+
+Escolher novo host entre os players com connected === true.
+
+Prioridade sugerida: jogador com mais tempo de sessão / menor joinIndex (o mais antigo conectado), ou primeiro na lista.
+
+Broadcast lobby_update com newHostId.
+
+Se não houver players connected === true, escolher primeiro disconnected_pending (se host quiser forçar) ou aguardar host manual.
+
+Se host reconectar depois, não reassuma host automaticamente (opcional: permitir reassume manual com confirmação).
+
+Valores recomendados (padrões)
+
+HEARTBEAT_INTERVAL = 5000 ms
+
+PONG_TIMEOUT (para marcar disconnected_pending) = 15000 ms
+
+HARD_EXIT_FALLBACK_GRACE = 10000–30000 ms (10–30s) — curto, só para casos de rede abrupta
+
+LONG_GRACE_REMOVE (opcional) = 5 min — só se você realmente quiser remoção depois de muito tempo (não obrigatório)
+
+Exigências obrigatórias para a IA/dev (texto pronto para colar)
+
+Importante: implementar ambos os comportamentos: (a) não expulsar por inatividade; (b) expulsar e transferir host em caso de hard exit (quando o client envia leave / disconnect_notice ou quando o server confirma hard exit via fallback grace curto).
+
+Server:
+
+Aceitar leave / disconnect_notice enviado pelo client e processar remoção imediata + host transfer.
+
+No ws.on('close'): se houver flag graceForHardExit (p.ex. close recebido sem reconexão e sem ping recvd) → iniciar HARD_EXIT_FALLBACK_GRACE; se não houver reconexão em X ms → tratar como hard exit (remover + host transfer).
+
+Não remover players só por falta de pong — apenas marcar disconnected_pending.
+
+Broadcasts: lobby_update, host_changed, player_removed.
+
+Client:
+
+Em beforeunload / pagehide enviar { type: "leave", id } — tratar como hard exit intencional.
+
+Em visibilitychange quando visible -> send sync_request.
+
+Em onclose -> reconectar com exponential/backoff a menos que um leave foi intencional (neste caso não reconectar).
+
+Guardar sessionID no localStorage.
+
+Snippets práticos (copiar direto)
+Server — host transfer + leave handling (pseudo/Node+ws)
+// chamada quando um player solicita leave intencional ou quando o server decide remover por hard-exit fallback
+function handlePlayerLeave(playerId, reason = "leave_intentional") {
+  const player = players.get(playerId);
+  if (!player) return;
+  // remove from players map
+  players.delete(playerId);
+
+  // if player was host -> reassign
+  if (playerId === currentHostId) {
+    reassignHost();
+  }
+
+  broadcastLobby();
+}
+
+function reassignHost() {
+  // pick the next connected player (oldest joinIndex)
+  const connected = Array.from(players.values())
+    .filter(p => p.state === "connected")
+    .sort((a,b) => a.joinIndex - b.joinIndex);
+
+  if (connected.length > 0) {
+    currentHostId = connected[0].id;
+  } else {
+    // no connected players: optionally pick disconnected_pending or set currentHostId = null
+    const pendings = Array.from(players.values()).filter(p => p.state === "disconnected_pending");
+    currentHostId = pendings.length ? pendings[0].id : null;
+  }
+
+  // notify all
+  wss.broadcast(JSON.stringify({ type: "host_changed", hostId: currentHostId }));
+}
+
+Client — beforeunload send leave
+window.addEventListener("pagehide", sendLeave); // better than beforeunload in many browsers
+window.addEventListener("beforeunload", sendLeave);
+
+function sendLeave() {
+  try {
+    // use navigator.sendBeacon for reliability if available
+    const payload = JSON.stringify({ type: "leave", id: playerId });
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon("/ws-leave-endpoint", payload); // if you expose an HTTP endpoint; else fallback:
+    } else if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(payload);
+    }
+  } catch (e) {}
+}
+
+
+Nota: sendBeacon works well to notify server via HTTP before unload. If you rely only on WebSocket, sometimes the socket is torn down too fast — pagehide + sendBeacon + WS leave is the most robust combo.
+
+Recomendações finais / limitações a explicar a IA
+
+Explique claramente na entrega que beforeunload/pagehide não é 100% confiável em todas as redes/phones, por isso o fallback (curto grace) é necessário.
+
+Não aplicar remoção por timeout de heartbeat — só marcar disconnected_pending. Remoção só quando: leave recebido OR hard-exit fallback grace Xs expirou.
+
+Host reassignment deve ser imediata no caso de leave ou hard-exit detected-by-fallback.
+
+Atualize a UI para mostrar player.state (connected / disconnected_pending) e destacar o host atual.
