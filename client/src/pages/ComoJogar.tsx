@@ -12,7 +12,7 @@ import {
   CheckCircle,
   Lightbulb
 } from "lucide-react";
-import backgroundImg from "@assets/background_natal_1764973696118.png";
+import backgroundImg from "@assets/background_natal_1764991979853.webp";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoImpostorMobile from "@assets/logo2_1764619562643.png";
 

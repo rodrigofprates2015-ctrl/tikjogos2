@@ -51,11 +51,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import backgroundImg from "@assets/background_natal_1764973696118.png";
+import backgroundImg from "@assets/background_natal_1764991979853.webp";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoImpostor from "@assets/logo3_1764640096962.png";
-import tripulanteImg from "@assets/tripulante_natal_1764973648162.png";
-import impostorImg from "@assets/impostor_natal_1764973648161.png";
+import tripulanteImg from "@assets/tripulante_natal_1764991976186.webp";
+import impostorImg from "@assets/impostor_natal_1764991977974.webp";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
 
