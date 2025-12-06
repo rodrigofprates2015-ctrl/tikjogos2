@@ -1,0 +1,44 @@
+PROJETO: TikJogos - Expansão de Monetização (UGC)
+TIPO: Web Game Multiplayer (Estilo Impostor/Among Us)
+STACK ATUAL: Node.js, Express, Socket.io (Replit)
+
+OBJETIVO GERAL:
+Implementar um sistema de "Conteúdo Gerado pelo Usuário" (UGC) onde jogadores podem pagar uma taxa única (microtransação) para criar temas de palavras personalizados para o jogo.
+
+FUNCIONALIDADES NOVAS A IMPLEMENTAR:
+
+1. SISTEMA DE TEMAS CUSTOMIZADOS (BACKEND)
+- Criar um banco de dados (SQLite ou JSON simples) para armazenar os temas.
+- Estrutura do Tema:
+  - ID (Único)
+  - Título do Tema (String)
+  - Autor (String - Nickname)
+  - Palavras (Array de 20 strings)
+  - Is_Public (Booleano: Se true, aparece na galeria. Se false, é privado)
+  - Approved (Booleano: Para moderação)
+  - Access_Code (String curta para acesso rápido se for privado)
+
+2. SISTEMA DE PAGAMENTO (MERCADO PAGO)
+- Integração com SDK oficial do Mercado Pago para Node.js.
+- Método: PIX.
+- Valor: R$ 3,00 (fixo por criação).
+- Fluxo:
+  a. Usuário preenche o formulário do tema.
+  b. Backend gera preferência de pagamento e retorna QR Code (Base64/CopyPaste).
+  c. Frontend exibe QR Code.
+  d. Webhook recebe notificação de "approved".
+  e. Backend salva o tema no banco de dados definitivamente.
+
+3. GALERIA DE TEMAS (FRONTEND)
+- Página/Modal "Oficina de Criação": Formulário para criar novo tema + Pagamento.
+- Página/Modal "Galeria da Comunidade": Listagem de temas públicos criados por jogadores.
+- Funcionalidade de "Carregar Tema": Ao criar uma sala, o host pode colar um código de tema ou selecionar da galeria para usar aquelas palavras na partida.
+
+4. SEGURANÇA E MODERAÇÃO
+- Implementar "Bad Words Filter" (lista negra de palavras ofensivas) que impede a criação do tema se detectado.
+- Sistema de Webhook seguro para confirmar que o pagamento é real.
+
+UX/UI DESEJADA:
+- Manter o estilo visual atual (Cartoon/Clean).
+- Sem necessidade de Login/Senha (Login Híbrido ou baseado em Cookies/LocalStorage para lembrar temas criados).
+- Foco em compartilhamento via Link ou Código.
