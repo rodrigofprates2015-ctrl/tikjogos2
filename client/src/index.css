@@ -10,7 +10,17 @@
   font-display: swap;
 }
 
+/* GT America Compressed Medium Italic - for smaller banner text */
+@font-face {
+  font-family: 'GT America Compressed Medium';
+  font-weight: 500;
+  font-style: italic;
+  src: local('GT America Compressed Medium Italic'), local('GTAmericaCompressed-MediumItalic');
+  font-display: swap;
+}
+
 @theme inline {
+  --font-gt-america-medium: "GT America Compressed Medium", "Impact", "Arial Narrow", sans-serif;
   --font-poppins: "Poppins", sans-serif;
   --font-gt-america: "GT America Compressed", "Impact", "Arial Narrow", sans-serif;
   
@@ -439,9 +449,10 @@
   }
 
   .hero-banner-text-small {
-    font-family: var(--font-poppins);
+    font-family: var(--font-gt-america-medium);
     font-size: 0.875rem;
     font-weight: 500;
+    font-style: italic;
     color: white;
     margin-bottom: 0.25rem;
     text-transform: uppercase;
@@ -453,7 +464,7 @@
     font-size: 1.75rem;
     font-weight: 700;
     font-style: italic;
-    color: #001e48;
+    color: #511a27;
     line-height: 1.1;
     text-transform: uppercase;
     letter-spacing: 0.02em;
