@@ -1478,7 +1478,7 @@ export async function registerRoutes(
   // Payment Routes - Mercado Pago PIX
   const createPaymentSchema = z.object({
     titulo: z.string().min(3, "Título deve ter pelo menos 3 caracteres").max(50, "Título deve ter no máximo 50 caracteres"),
-    palavras: z.array(z.string().min(1)).length(20, "Deve ter exatamente 20 palavras"),
+    palavras: z.array(z.string().min(1)).min(10, "Deve ter no mínimo 10 palavras").max(20, "Deve ter no máximo 20 palavras"),
     autor: z.string().min(2, "Nome do autor deve ter pelo menos 2 caracteres").max(30, "Nome do autor deve ter no máximo 30 caracteres"),
     isPublic: z.boolean().optional().default(true)
   });
