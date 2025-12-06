@@ -1671,27 +1671,50 @@ export async function registerRoutes(
         const metadata = paymentInfo.metadata;
         if (metadata) {
           const titulo = metadata.titulo;
-          // Try to find the theme that was created
-          const themes = await storage.getPublicApprovedThemes();
-          const matchedTheme = themes.find(t => 
-            t.titulo === titulo && 
-            t.autor === metadata.autor && 
-            t.paymentStatus === 'approved'
-          );
+          const autor = metadata.autor;
           
-          // Also check private themes
-          if (!matchedTheme) {
-            const theme = await storage.getThemeByPaymentMetadata(titulo, metadata.autor);
-            if (theme && theme.paymentStatus === 'approved') {
-              return res.json({
-                status: 'approved',
-                accessCode: theme.accessCode
-              });
+          // Try to find the theme that was created
+          let existingTheme = await storage.getThemeByPaymentMetadata(titulo, autor);
+          
+          // If theme doesn't exist yet (webhook didn't fire), create it as fallback
+          if (!existingTheme) {
+            console.log('[Payment Status] Theme not found, creating as fallback for payment:', paymentId);
+            
+            // Parse palavras from metadata
+            let palavras: string[] = [];
+            try {
+              palavras = JSON.parse(metadata.palavras || '[]');
+            } catch (e) {
+              console.error('[Payment Status] Failed to parse palavras:', e);
             }
-          } else {
+            
+            const isPublic = metadata.isPublic === 'true';
+            
+            // Generate access code
+            const accessCode = cryptoRandomBytes(3).toString('hex').toUpperCase();
+            
+            // Create the theme
+            existingTheme = await storage.createTheme({
+              titulo,
+              autor,
+              palavras,
+              isPublic,
+              accessCode,
+              paymentStatus: 'approved',
+              approved: true
+            });
+            
+            console.log('[Payment Status] Theme created via fallback:', {
+              id: existingTheme.id,
+              titulo: existingTheme.titulo,
+              accessCode: existingTheme.accessCode
+            });
+          }
+          
+          if (existingTheme && existingTheme.paymentStatus === 'approved') {
             return res.json({
               status: 'approved',
-              accessCode: matchedTheme.accessCode
+              accessCode: existingTheme.accessCode
             });
           }
         }
