@@ -90,7 +90,7 @@ export type GameState = {
   createRoom: () => Promise<void>;
   joinRoom: (code: string) => Promise<boolean>;
   selectMode: (mode: GameModeType) => void;
-  startGame: () => Promise<void>;
+  startGame: (themeCode?: string) => Promise<void>;
   returnToLobby: () => Promise<void>;
   leaveCurrentGame: () => Promise<void>;
   leaveGame: () => void;
@@ -579,7 +579,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
   },
 
-  startGame: async () => {
+  startGame: async (themeCode?: string) => {
     const { room, selectedMode } = get();
     if (!room || !selectedMode) return;
 
@@ -591,6 +591,10 @@ export const useGameStore = create<GameState>((set, get) => ({
         const submode = localStorage.getItem('selectedSubmode');
         if (submode) {
           requestBody.selectedSubmode = submode;
+        }
+        // Add custom theme code if provided
+        if (themeCode && themeCode.trim()) {
+          requestBody.themeCode = themeCode.trim().toUpperCase();
         }
       }
 

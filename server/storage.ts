@@ -29,6 +29,7 @@ export interface IStorage {
   createTheme(theme: InsertTheme): Promise<Theme>;
   getTheme(id: string): Promise<Theme | undefined>;
   getThemeByAccessCode(accessCode: string): Promise<Theme | undefined>;
+  getThemeByPaymentMetadata(titulo: string, autor: string): Promise<Theme | undefined>;
   getPublicApprovedThemes(): Promise<Theme[]>;
   updateTheme(id: string, updates: Partial<InsertTheme>): Promise<Theme | undefined>;
   deleteTheme(id: string): Promise<void>;
@@ -147,6 +148,15 @@ export class MemoryStorage implements IStorage {
   async getThemeByAccessCode(accessCode: string): Promise<Theme | undefined> {
     for (const theme of this.themesMap.values()) {
       if (theme.accessCode === accessCode) {
+        return theme;
+      }
+    }
+    return undefined;
+  }
+
+  async getThemeByPaymentMetadata(titulo: string, autor: string): Promise<Theme | undefined> {
+    for (const theme of this.themesMap.values()) {
+      if (theme.titulo === titulo && theme.autor === autor) {
         return theme;
       }
     }
@@ -279,6 +289,14 @@ export class DatabaseStorage implements IStorage {
   async getThemeByAccessCode(accessCode: string): Promise<Theme | undefined> {
     if (!db) throw new Error("Database not initialized");
     const [theme] = await db.select().from(themes).where(eq(themes.accessCode, accessCode));
+    return theme;
+  }
+
+  async getThemeByPaymentMetadata(titulo: string, autor: string): Promise<Theme | undefined> {
+    if (!db) throw new Error("Database not initialized");
+    const [theme] = await db.select().from(themes).where(
+      and(eq(themes.titulo, titulo), eq(themes.autor, autor))
+    );
     return theme;
   }
 

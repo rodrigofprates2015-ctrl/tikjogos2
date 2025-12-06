@@ -1,17 +1,26 @@
+import { useState } from "react";
 import { useGameStore } from "@/lib/gameStore";
 import { PALAVRA_SECRETA_SUBMODES, type PalavraSuperSecretaSubmode } from "@/lib/palavra-secreta-submodes";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, Sparkles, Palette } from "lucide-react";
 
 const PalavraSuperSecretaSubmodeScreen = () => {
   const { startGame, backToLobby, user, room } = useGameStore();
   const isHost = room && user && room.hostId === user.uid;
+  const [themeCode, setThemeCode] = useState('');
 
   const handleSelectSubmode = (submode: PalavraSuperSecretaSubmode) => {
     if (isHost) {
       // Store submode for startGame to use
       localStorage.setItem('selectedSubmode', submode);
-      startGame();
+      startGame(themeCode || undefined);
+    }
+  };
+
+  const handleStartWithCustomTheme = () => {
+    if (isHost && themeCode.length === 6) {
+      localStorage.setItem('selectedSubmode', 'classico');
+      startGame(themeCode);
     }
   };
 
@@ -70,6 +79,37 @@ const PalavraSuperSecretaSubmodeScreen = () => {
           </button>
         ))}
       </div>
+
+      {isHost && (
+        <div className="bg-[#0f0f1e] rounded-xl p-4 border border-gray-700 space-y-3">
+          <div className="flex items-center gap-2 text-[#00f2ea]">
+            <Palette className="w-4 h-4" />
+            <p className="text-sm font-medium">Ou use um tema personalizado:</p>
+          </div>
+          <div className="flex gap-3">
+            <input
+              type="text"
+              placeholder="Codigo do tema (ex: ABC123)"
+              value={themeCode}
+              onChange={(e) => setThemeCode(e.target.value.toUpperCase())}
+              maxLength={6}
+              className="flex-1 bg-[#1a1a2e] border border-gray-700 rounded-lg px-4 py-2 text-center text-white tracking-widest uppercase focus:border-[#00f2ea] focus:outline-none transition-colors"
+              data-testid="input-theme-code"
+            />
+            <Button
+              onClick={handleStartWithCustomTheme}
+              disabled={themeCode.length !== 6}
+              className="bg-gradient-to-r from-[#00f2ea] to-[#ff0050] text-white font-bold disabled:opacity-50"
+              data-testid="button-start-custom-theme"
+            >
+              Jogar
+            </Button>
+          </div>
+          <p className="text-xs text-gray-500 text-center">
+            Adquira temas personalizados na Oficina de Temas
+          </p>
+        </div>
+      )}
 
       <div className="flex gap-3">
         <Button

@@ -366,11 +366,17 @@ const PALAVRA_SECRETA_SUBMODES_DATA: Record<string, string[]> = {
   strangerThings: ['Eleven', 'Mike', 'Lucas', 'Dustin', 'Will', 'Max', 'Hopper', 'Joyce', 'Vecna', 'Demogorgon', 'Mind Flayer', 'Hawkins', 'Upside Down', 'Barb', 'Robin', 'Steve', 'Billy', 'Eddie', 'Murray', 'Kali', 'Brenner', 'Suzie', 'Erica', 'Laboratório', 'Neva', 'Walkie-talkie', 'Arcade', 'Starcourt', 'Hellfire', 'Byers']
 };
 
-function setupGameMode(mode: GameModeType, players: Player[], impostorId: string, selectedSubmode?: string, roomCode?: string): GameData {
+function setupGameMode(mode: GameModeType, players: Player[], impostorId: string, selectedSubmode?: string, roomCode?: string, customWords?: string[]): GameData {
   const code = roomCode || 'default';
   
   switch (mode) {
     case "palavraSecreta": {
+      // If custom words provided (from user-created theme), use them
+      if (customWords && customWords.length > 0) {
+        const poolKey = `custom-${code}`;
+        const word = getFromPool(poolKey, customWords, wordPools, code);
+        return { word };
+      }
       // Use pooled words - guarantees no repetition until all used
       const submode = selectedSubmode || 'classico';
       const word = getPooledWord(submode, code);
@@ -1064,9 +1070,10 @@ export async function registerRoutes(
   app.post("/api/rooms/:code/start", async (req, res) => {
     try {
       const { code } = req.params;
-      const { gameMode, selectedSubmode } = z.object({
+      const { gameMode, selectedSubmode, themeCode } = z.object({
         gameMode: z.enum(["palavraSecreta", "palavras", "duasFaccoes", "categoriaItem", "perguntasDiferentes"]),
-        selectedSubmode: z.string().optional()
+        selectedSubmode: z.string().optional(),
+        themeCode: z.string().optional()
       }).parse(req.body);
       
       const room = await storage.getRoom(code.toUpperCase());
@@ -1099,10 +1106,22 @@ export async function registerRoutes(
         console.log(`[StartGame] Game will start with ${connectedPlayers.length} connected players`);
       }
 
+      // If themeCode is provided, fetch custom theme words
+      let customWords: string[] | undefined;
+      if (themeCode && gameMode === "palavraSecreta") {
+        const theme = await storage.getThemeByAccessCode(themeCode);
+        if (theme && theme.paymentStatus === "approved") {
+          customWords = theme.palavras;
+          console.log(`[StartGame] Using custom theme "${theme.titulo}" by ${theme.autor} with ${customWords.length} words`);
+        } else {
+          console.log(`[StartGame] Theme code ${themeCode} not found or not approved, using default words`);
+        }
+      }
+
       const impostorIndex = Math.floor(Math.random() * connectedPlayers.length);
       const impostorId = connectedPlayers[impostorIndex].uid;
       
-      const gameData = setupGameMode(gameMode, connectedPlayers, impostorId, selectedSubmode, code.toUpperCase());
+      const gameData = setupGameMode(gameMode, connectedPlayers, impostorId, selectedSubmode, code.toUpperCase(), customWords);
       
       const modeInfo = GAME_MODES[gameMode];
 
@@ -1587,6 +1606,101 @@ export async function registerRoutes(
     } catch (error) {
       console.error('[Webhook] Error processing notification:', error);
       // Don't throw - we already sent 200 to avoid retries
+    }
+  });
+
+  // Get public approved themes for gallery
+  app.get("/api/themes/public", async (_req, res) => {
+    try {
+      const themes = await storage.getPublicApprovedThemes();
+      // Return only public info (no accessCode for security)
+      const publicThemes = themes.map(t => ({
+        id: t.id,
+        titulo: t.titulo,
+        autor: t.autor,
+        palavrasCount: t.palavras.length,
+        createdAt: t.createdAt
+      }));
+      res.json(publicThemes);
+    } catch (error) {
+      console.error('[Themes] Error fetching public themes:', error);
+      res.status(500).json({ error: "Erro ao buscar temas" });
+    }
+  });
+
+  // Get theme by access code (for using in game)
+  app.get("/api/themes/code/:accessCode", async (req, res) => {
+    try {
+      const { accessCode } = req.params;
+      const theme = await storage.getThemeByAccessCode(accessCode.toUpperCase());
+      
+      if (!theme) {
+        return res.status(404).json({ error: "Tema não encontrado" });
+      }
+      
+      if (theme.paymentStatus !== 'approved') {
+        return res.status(400).json({ error: "Tema ainda não está disponível" });
+      }
+      
+      // Return theme info for use in game
+      res.json({
+        id: theme.id,
+        titulo: theme.titulo,
+        autor: theme.autor,
+        palavrasCount: theme.palavras.length,
+        accessCode: theme.accessCode
+      });
+    } catch (error) {
+      console.error('[Themes] Error fetching theme by code:', error);
+      res.status(500).json({ error: "Erro ao buscar tema" });
+    }
+  });
+
+  // Check payment status by payment ID (for polling)
+  app.get("/api/payments/status/:paymentId", async (req, res) => {
+    try {
+      const paymentId = parseInt(req.params.paymentId);
+      if (isNaN(paymentId)) {
+        return res.status(400).json({ error: "ID de pagamento inválido" });
+      }
+      
+      const paymentInfo = await getPaymentStatus(paymentId);
+      
+      if (paymentInfo.status === 'approved') {
+        // Check if theme was created for this payment
+        const metadata = paymentInfo.metadata;
+        if (metadata) {
+          const titulo = metadata.titulo;
+          // Try to find the theme that was created
+          const themes = await storage.getPublicApprovedThemes();
+          const matchedTheme = themes.find(t => 
+            t.titulo === titulo && 
+            t.autor === metadata.autor && 
+            t.paymentStatus === 'approved'
+          );
+          
+          // Also check private themes
+          if (!matchedTheme) {
+            const theme = await storage.getThemeByPaymentMetadata(titulo, metadata.autor);
+            if (theme && theme.paymentStatus === 'approved') {
+              return res.json({
+                status: 'approved',
+                accessCode: theme.accessCode
+              });
+            }
+          } else {
+            return res.json({
+              status: 'approved',
+              accessCode: matchedTheme.accessCode
+            });
+          }
+        }
+      }
+      
+      res.json({ status: paymentInfo.status });
+    } catch (error) {
+      console.error('[Payment Status] Error:', error);
+      res.status(500).json({ error: "Erro ao verificar status do pagamento" });
     }
   });
 
