@@ -12,14 +12,13 @@ export const PALAVRA_SECRETA_SUBMODES: Record<PalavraSuperSecretaSubmode, { titl
     desc: 'Palavras natalinas e de fim de ano',
     image: '/submode-natal.png',
     words: [
-      'Papai Noel', 'Árvore de Natal', 'Presente', 'Rena', 'Neve', 'Boneco de Neve', 'Trenó', 
-      'Estrela', 'Guirlanda', 'Panetone', 'Peru', 'Ceia', 'Meia de Natal', 'Chaminé', 'Sinos',
-      'Vela', 'Anjo', 'Presépio', 'Nascimento', 'Belém', 'Reis Magos', 'Manjedoura', 'Bastão de Doce',
-      'Biscoito de Gengibre', 'Chocolate Quente', 'Flocos de Neve', 'Lareira', 'Luzes de Natal',
-      'Bola de Natal', 'Cartão de Natal', 'Coral', 'Canção de Natal', 'Duende', 'Polo Norte',
-      'Fita Vermelha', 'Azevinho', 'Pinheiro', 'Noite Feliz', 'Feliz Natal', 'Ano Novo',
-      'Champanhe', 'Fogos de Artifício', 'Contagem Regressiva', 'Família', 'Abraço', 'Gratidão',
-      'Esperança', 'Amor', 'Paz', 'Magia'
+      'Papai Noel', 'Jesus Cristo', 'Anjo', 'Menino Jesus', 'Reis Magos', 'Elfo', 'Rena', 'Família',
+      'Árvore de Natal', 'Presentes', 'Luzes', 'Pisca-pisca', 'Estrela', 'Sino', 'Vela', 'Guirlanda',
+      'Bola de Natal', 'Presépio', 'Meia', 'Trenó', 'Chaminé', 'Boneco de neve', 'Floco de neve',
+      'Bota', 'Gorro', 'Festão', 'Ceia', 'Peru', 'Panetone', 'Rabanada', 'Uva-passa', 'Nozes',
+      'Castanha', 'Vinho quente', 'Canções natalinas', 'Cartão de Natal', 'Tradição', 'Véspera',
+      'Amor', 'Paz', 'Esperança', 'Alegria', 'União', 'Magia', 'Perdão', 'Generosidade', 'Harmonia',
+      'Fraternidade', 'Reflexão', 'Gratidão', 'Renovação'
     ]
   },
   clashRoyale: {
