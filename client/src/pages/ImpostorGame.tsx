@@ -732,6 +732,7 @@ const getModeEmoji = (modeId: string) => {
     case 'duasFaccoes': return '⚔️';
     case 'categoriaItem': return '🎯';
     case 'perguntasDiferentes': return '🤔';
+    case 'palavraComunidade': return '👥';
     default: return '🎮';
   }
 };
@@ -961,6 +962,7 @@ type PublicTheme = {
   titulo: string;
   autor: string;
   palavrasCount: number;
+  accessCode: string;
   createdAt: string;
 };
 
@@ -1055,8 +1057,6 @@ const CommunityThemesModal = ({ isOpen, onClose, onSelectTheme }: { isOpen: bool
 const LobbyScreen = () => {
   const { room, user, goToModeSelect, leaveGame, kickPlayer } = useGameStore();
   const { toast } = useToast();
-  const [isCommunityThemesOpen, setIsCommunityThemesOpen] = useState(false);
-  const [selectedCommunityTheme, setSelectedCommunityTheme] = useState<string | null>(null);
 
   if (!room) return null;
 
@@ -1180,14 +1180,6 @@ const LobbyScreen = () => {
           {players.length < 3 && (
             <p className="text-center text-xs text-[#c44536] mt-3">Mínimo de 3 tripulantes</p>
           )}
-          <Button 
-            onClick={() => setIsCommunityThemesOpen(true)}
-            variant="outline"
-            className="w-full h-12 border-2 border-[#6b4ba3] text-[#6b4ba3] hover:bg-[#6b4ba3]/10 font-semibold"
-            data-testid="button-community-themes"
-          >
-            <FileText className="mr-2 w-4 h-4" /> Carregar Tema da Comunidade
-          </Button>
         </div>
       ) : (
         <div className="w-full text-center text-gray-300 py-4 flex flex-col items-center gap-3">
@@ -1200,14 +1192,6 @@ const LobbyScreen = () => {
         </div>
       )}
 
-      <CommunityThemesModal 
-        isOpen={isCommunityThemesOpen} 
-        onClose={() => setIsCommunityThemesOpen(false)}
-        onSelectTheme={(themeId) => {
-          setSelectedCommunityTheme(themeId);
-          setIsCommunityThemesOpen(false);
-        }}
-      />
     </div>
   );
 };
@@ -1216,12 +1200,39 @@ const ModeSelectScreen = () => {
   const { room, user, gameModes, selectedMode, selectMode, startGame, backToLobby, fetchGameModes, showSpeakingOrderWheel, speakingOrder, setSpeakingOrder, setShowSpeakingOrderWheel } = useGameStore();
   const { toast } = useToast();
   const [isStarting, setIsStarting] = useState(false);
+  const [communityThemes, setCommunityThemes] = useState<PublicTheme[]>([]);
+  const [isLoadingThemes, setIsLoadingThemes] = useState(false);
+  const [selectedThemeCode, setSelectedThemeCode] = useState<string | null>(null);
 
   const isHost = room && user && room.hostId === user.uid;
 
   useEffect(() => {
     fetchGameModes();
   }, [fetchGameModes]);
+
+  useEffect(() => {
+    if (selectedMode === 'palavraComunidade') {
+      loadCommunityThemes();
+    } else {
+      setSelectedThemeCode(null);
+    }
+  }, [selectedMode]);
+
+  const loadCommunityThemes = async () => {
+    setIsLoadingThemes(true);
+    try {
+      const res = await fetch('/api/themes/public');
+      if (res.ok) {
+        const themes = await res.json();
+        setCommunityThemes(themes);
+      }
+    } catch (err) {
+      console.error('Failed to load themes:', err);
+      toast({ title: "Erro", description: "Falha ao carregar temas", variant: "destructive" });
+    } finally {
+      setIsLoadingThemes(false);
+    }
+  };
 
   const handleStartGameWithSorteio = async () => {
     if (!selectedMode || !room) return;
@@ -1231,6 +1242,18 @@ const ModeSelectScreen = () => {
     // Se é modo de perguntas diferentes, pula sorteio
     if (selectedMode === 'perguntasDiferentes') {
       await startGame();
+      setIsStarting(false);
+      return;
+    }
+    
+    // Se é palavraComunidade, precisa ter um tema selecionado
+    if (selectedMode === 'palavraComunidade') {
+      if (!selectedThemeCode) {
+        toast({ title: "Selecione um tema", description: "Escolha um tema da comunidade para jogar", variant: "destructive" });
+        setIsStarting(false);
+        return;
+      }
+      await startGame(selectedThemeCode);
       setIsStarting(false);
       return;
     }
@@ -1306,11 +1329,61 @@ const ModeSelectScreen = () => {
             </div>
           </button>
         ))}
+        
+        {selectedMode === 'palavraComunidade' && (
+          <div className="mt-4 pt-4 border-t border-[#3d4a5c]">
+            <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+              <Users className="w-4 h-4 text-[#4a90a4]" />
+              Escolha um tema da comunidade
+            </h3>
+            {isLoadingThemes ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="w-6 h-6 animate-spin text-[#4a90a4]" />
+              </div>
+            ) : communityThemes.length === 0 ? (
+              <div className="text-center py-6 text-gray-400">
+                <p>Nenhum tema disponivel ainda.</p>
+                <p className="text-sm mt-2">Crie um na Oficina de Temas!</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                {communityThemes.map((theme) => (
+                  <button
+                    key={theme.id}
+                    onClick={() => setSelectedThemeCode(theme.accessCode)}
+                    className={cn(
+                      "w-full p-3 rounded-xl border-2 text-left transition-all",
+                      selectedThemeCode === theme.accessCode
+                        ? "border-[#6b4ba3] bg-[#6b4ba3]/10"
+                        : "border-[#3d4a5c] bg-[#16213e]/60 hover:border-gray-500"
+                    )}
+                    data-testid={`button-theme-${theme.id}`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-white truncate">{theme.titulo}</h4>
+                        <p className="text-xs text-gray-400 truncate">por {theme.autor}</p>
+                      </div>
+                      <span className="text-xs text-[#6b4ba3] bg-[#6b4ba3]/10 px-2 py-1 rounded shrink-0">
+                        {theme.palavrasCount} palavras
+                      </span>
+                      {selectedThemeCode === theme.accessCode && (
+                        <div className="w-5 h-5 rounded-full bg-[#6b4ba3] flex items-center justify-center shrink-0">
+                          <Check className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <Button 
         onClick={handleStartGameWithSorteio}
-        disabled={!selectedMode || isStarting}
+        disabled={!selectedMode || isStarting || (selectedMode === 'palavraComunidade' && !selectedThemeCode)}
         className="w-full h-16 btn-retro-primary font-bold text-lg rounded-lg transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
       >
         <Rocket className="mr-2" /> INICIAR PARTIDA

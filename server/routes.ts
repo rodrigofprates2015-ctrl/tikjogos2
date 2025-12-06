@@ -143,6 +143,12 @@ const GAME_MODES = {
       { crew: "O que teremos num futuro ideal e tecnológico?", imp: "O que vai causar o fim da raça humana?" },
       { crew: "Qual super-herói salvaria o dia no final?", imp: "Quem é o vilão mais estiloso dos quadrinhos?" }
     ]
+  },
+  palavraComunidade: {
+    title: "Palavra - criados por vocês",
+    desc: "Temas criados pela comunidade! Escolha um tema personalizado.",
+    impostorGoal: "Tente descobrir a palavra.",
+    data: []
   }
 };
 
@@ -430,6 +436,18 @@ function setupGameMode(mode: GameModeType, players: Player[], impostorId: string
       // Use pooled questions - guarantees no repetition until all 93 used
       const pair = getPooledQuestion(code);
       return { question: pair.crew, impostorQuestion: pair.imp };
+    }
+    
+    case "palavraComunidade": {
+      // Community themes - must have custom words provided
+      if (customWords && customWords.length > 0) {
+        const poolKey = `comunidade-${code}`;
+        const word = getFromPool(poolKey, customWords, wordPools, code);
+        return { word };
+      }
+      // Fallback to classico if no custom words
+      const word = getPooledWord('classico', code);
+      return { word };
     }
     
     default:
@@ -1071,7 +1089,7 @@ export async function registerRoutes(
     try {
       const { code } = req.params;
       const { gameMode, selectedSubmode, themeCode } = z.object({
-        gameMode: z.enum(["palavraSecreta", "palavras", "duasFaccoes", "categoriaItem", "perguntasDiferentes"]),
+        gameMode: z.enum(["palavraSecreta", "palavras", "duasFaccoes", "categoriaItem", "perguntasDiferentes", "palavraComunidade"]),
         selectedSubmode: z.string().optional(),
         themeCode: z.string().optional()
       }).parse(req.body);
@@ -1106,9 +1124,9 @@ export async function registerRoutes(
         console.log(`[StartGame] Game will start with ${connectedPlayers.length} connected players`);
       }
 
-      // If themeCode is provided, fetch custom theme words
+      // If themeCode is provided, fetch custom theme words (for palavraSecreta or palavraComunidade)
       let customWords: string[] | undefined;
-      if (themeCode && gameMode === "palavraSecreta") {
+      if (themeCode && (gameMode === "palavraSecreta" || gameMode === "palavraComunidade")) {
         const theme = await storage.getThemeByAccessCode(themeCode);
         if (theme && theme.paymentStatus === "approved") {
           customWords = theme.palavras;
@@ -1613,12 +1631,13 @@ export async function registerRoutes(
   app.get("/api/themes/public", async (_req, res) => {
     try {
       const themes = await storage.getPublicApprovedThemes();
-      // Return only public info (no accessCode for security)
+      // Return public theme info with accessCode for game usage
       const publicThemes = themes.map(t => ({
         id: t.id,
         titulo: t.titulo,
         autor: t.autor,
         palavrasCount: t.palavras.length,
+        accessCode: t.accessCode,
         createdAt: t.createdAt
       }));
       res.json(publicThemes);

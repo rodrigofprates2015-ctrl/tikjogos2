@@ -60,7 +60,8 @@ export type GameModeType =
   | "palavras" 
   | "duasFaccoes"
   | "categoriaItem"
-  | "perguntasDiferentes";
+  | "perguntasDiferentes"
+  | "palavraComunidade";
 
 export type PlayerAnswer = {
   playerId: string;

@@ -13,7 +13,8 @@ export type GameModeType =
   | "palavras" 
   | "duasFaccoes"
   | "categoriaItem"
-  | "perguntasDiferentes";
+  | "perguntasDiferentes"
+  | "palavraComunidade";
 
 export type PlayerVote = {
   playerId: string;
@@ -596,6 +597,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         if (themeCode && themeCode.trim()) {
           requestBody.themeCode = themeCode.trim().toUpperCase();
         }
+      }
+      
+      // If Palavra Comunidade, add the theme code
+      if (selectedMode === 'palavraComunidade' && themeCode && themeCode.trim()) {
+        requestBody.themeCode = themeCode.trim().toUpperCase();
       }
 
       const response = await fetch(`/api/rooms/${room.code}/start`, {
