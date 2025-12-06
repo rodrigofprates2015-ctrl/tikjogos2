@@ -663,7 +663,7 @@ const GameNavButtons = ({
 const TopRightButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
   <>
     {/* Mobile: Como Jogar and Discord on left */}
-    <div className="sm:hidden fixed top-4 left-4 z-40 flex items-center gap-2">
+    <div className="sm:hidden fixed top-4 left-4 z-[60] flex items-center gap-2">
       <Link 
         href="/comojogar"
         className="flex items-center gap-2 px-3 py-2 bg-[#4a90a4] border-2 border-[#3a7084] rounded-xl text-white hover:bg-[#5aa0b4] transition-all font-semibold shadow-lg"
@@ -683,7 +683,7 @@ const TopRightButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
     </div>
     
     {/* Desktop: All buttons on right */}
-    <div className="hidden sm:flex fixed top-4 right-4 z-40 items-center gap-2">
+    <div className="hidden sm:flex fixed top-4 right-4 z-[60] items-center gap-2">
       <Link 
         href="/comojogar"
         className="flex items-center gap-2 px-4 py-2 bg-[#4a90a4] border-2 border-[#3a7084] rounded-xl text-white hover:bg-[#5aa0b4] transition-all font-semibold shadow-lg"
@@ -715,7 +715,7 @@ const TopRightButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
     {/* Mobile: Doar on right */}
     <button
       onClick={onDonateClick}
-      className="sm:hidden fixed top-4 right-4 z-40 flex items-center gap-2 px-4 py-2 bg-[#c44536] border-2 border-[#a33526] rounded-xl text-white hover:bg-[#d45546] transition-all font-semibold shadow-lg"
+      className="sm:hidden fixed top-4 right-4 z-[60] flex items-center gap-2 px-4 py-2 bg-[#c44536] border-2 border-[#a33526] rounded-xl text-white hover:bg-[#d45546] transition-all font-semibold shadow-lg"
       data-testid="button-donate-mobile"
     >
       <Heart className="w-4 h-4 fill-current" />
