@@ -1583,7 +1583,9 @@ export async function registerRoutes(
       
       const titulo = metadata.titulo;
       const autor = metadata.autor;
-      const isPublic = metadata.is_public ?? metadata.isPublic ?? true;
+      const isPublic = metadata.is_public === true || metadata.is_public === 'true' || 
+                        metadata.isPublic === true || metadata.isPublic === 'true' ||
+                        (metadata.isPublic === undefined && metadata.is_public === undefined);
       
       // Parse palavras (stored as JSON string in metadata)
       let palavras: string[];
@@ -1707,7 +1709,7 @@ export async function registerRoutes(
               console.error('[Payment Status] Failed to parse palavras:', e);
             }
             
-            const isPublic = metadata.isPublic === 'true';
+            const isPublic = metadata.isPublic === true || metadata.isPublic === 'true';
             
             // Generate access code
             const accessCode = cryptoRandomBytes(3).toString('hex').toUpperCase();
