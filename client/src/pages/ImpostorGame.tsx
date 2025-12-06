@@ -809,7 +809,7 @@ const HomeScreen = () => {
         data-testid="hero-banner-theme-workshop"
       >
         <p className="hero-banner-text-small">Divirta-se com os amigos</p>
-        <p className="hero-banner-text-main">Gere seu próprio tema</p>
+        <p className="hero-banner-text-main">Crie seu próprio tema</p>
         <p className="hero-banner-text-price">Por apenas R$ 3,00</p>
       </Link>
 
