@@ -2307,6 +2307,15 @@ const GameScreen = () => {
           </div>
         );
       
+      case 'palavraComunidade':
+        return (
+          <div className="space-y-2 text-center">
+            <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Palavra Secreta</p>
+            <h2 className="text-2xl sm:text-3xl text-white font-black">{gameData.word}</h2>
+            <p className="text-gray-400 text-xs">Dê dicas sutis sobre a palavra!</p>
+          </div>
+        );
+      
       default:
         return null;
     }
@@ -2352,6 +2361,15 @@ const GameScreen = () => {
             </div>
             <p className="text-gray-400 text-xs font-medium">
               Você só sabe a categoria! Descubra o item.
+            </p>
+          </div>
+        );
+      
+      case 'palavraComunidade':
+        return (
+          <div className="space-y-1 text-center px-4">
+            <p className="text-gray-400 text-sm font-medium leading-relaxed">
+              Finja que você sabe a palavra! Engane a todos.
             </p>
           </div>
         );
