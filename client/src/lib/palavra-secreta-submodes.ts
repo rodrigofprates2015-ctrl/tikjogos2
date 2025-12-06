@@ -1,10 +1,26 @@
-export type PalavraSuperSecretaSubmode = 'classico' | 'clashRoyale' | 'animes' | 'marvel' | 'strangerThings';
+export type PalavraSuperSecretaSubmode = 'classico' | 'natal' | 'clashRoyale' | 'animes' | 'marvel' | 'strangerThings';
 
 export const PALAVRA_SECRETA_SUBMODES: Record<PalavraSuperSecretaSubmode, { title: string; desc: string; words: string[]; image?: string }> = {
   classico: {
     title: 'Clássico',
     desc: 'Palavras aleatórias',
+    image: '/submode-classico.png',
     words: ['Sol', 'Carro', 'Casa', 'Cachorro', 'Computador', 'Montanha', 'Pizza', 'Escola', 'Roupa', 'Avião', 'Janela', 'Telefone', 'Bola', 'Relógio', 'Flor', 'Gelo', 'Música', 'Prédio', 'Caminhão', 'Praia']
+  },
+  natal: {
+    title: 'Natal',
+    desc: 'Palavras natalinas e de fim de ano',
+    image: '/submode-natal.png',
+    words: [
+      'Papai Noel', 'Árvore de Natal', 'Presente', 'Rena', 'Neve', 'Boneco de Neve', 'Trenó', 
+      'Estrela', 'Guirlanda', 'Panetone', 'Peru', 'Ceia', 'Meia de Natal', 'Chaminé', 'Sinos',
+      'Vela', 'Anjo', 'Presépio', 'Nascimento', 'Belém', 'Reis Magos', 'Manjedoura', 'Bastão de Doce',
+      'Biscoito de Gengibre', 'Chocolate Quente', 'Flocos de Neve', 'Lareira', 'Luzes de Natal',
+      'Bola de Natal', 'Cartão de Natal', 'Coral', 'Canção de Natal', 'Duende', 'Polo Norte',
+      'Fita Vermelha', 'Azevinho', 'Pinheiro', 'Noite Feliz', 'Feliz Natal', 'Ano Novo',
+      'Champanhe', 'Fogos de Artifício', 'Contagem Regressiva', 'Família', 'Abraço', 'Gratidão',
+      'Esperança', 'Amor', 'Paz', 'Magia'
+    ]
   },
   clashRoyale: {
     title: 'Clash Royale',
