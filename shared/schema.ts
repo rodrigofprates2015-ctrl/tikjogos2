@@ -103,6 +103,7 @@ export const themes = pgTable("themes", {
   isPublic: boolean("is_public").notNull().default(true),
   accessCode: varchar("access_code"),
   paymentStatus: varchar("payment_status").notNull().default("pending"),
+  paymentId: varchar("payment_id"),
   approved: boolean("approved").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });

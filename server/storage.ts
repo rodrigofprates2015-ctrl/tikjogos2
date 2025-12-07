@@ -30,6 +30,7 @@ export interface IStorage {
   getTheme(id: string): Promise<Theme | undefined>;
   getThemeByAccessCode(accessCode: string): Promise<Theme | undefined>;
   getThemeByPaymentMetadata(titulo: string, autor: string): Promise<Theme | undefined>;
+  getThemeByPaymentId(paymentId: string): Promise<Theme | undefined>;
   getPublicApprovedThemes(): Promise<Theme[]>;
   updateTheme(id: string, updates: Partial<InsertTheme>): Promise<Theme | undefined>;
   deleteTheme(id: string): Promise<void>;
@@ -130,10 +131,11 @@ export class MemoryStorage implements IStorage {
       id,
       titulo: themeData.titulo,
       autor: themeData.autor,
-      palavras: themeData.palavras,
+      palavras: themeData.palavras as string[],
       isPublic: themeData.isPublic ?? true,
       accessCode: themeData.accessCode ?? null,
       paymentStatus: themeData.paymentStatus ?? "pending",
+      paymentId: themeData.paymentId ?? null,
       approved: themeData.approved ?? false,
       createdAt: new Date(),
     };
@@ -146,18 +148,20 @@ export class MemoryStorage implements IStorage {
   }
 
   async getThemeByAccessCode(accessCode: string): Promise<Theme | undefined> {
-    for (const theme of this.themesMap.values()) {
-      if (theme.accessCode === accessCode) {
-        return theme;
+    const themesArray = Array.from(this.themesMap.values());
+    for (let i = 0; i < themesArray.length; i++) {
+      if (themesArray[i].accessCode === accessCode) {
+        return themesArray[i];
       }
     }
     return undefined;
   }
 
   async getThemeByPaymentMetadata(titulo: string, autor: string): Promise<Theme | undefined> {
-    for (const theme of this.themesMap.values()) {
-      if (theme.titulo === titulo && theme.autor === autor) {
-        return theme;
+    const themesArray = Array.from(this.themesMap.values());
+    for (let i = 0; i < themesArray.length; i++) {
+      if (themesArray[i].titulo === titulo && themesArray[i].autor === autor) {
+        return themesArray[i];
       }
     }
     return undefined;
@@ -165,9 +169,10 @@ export class MemoryStorage implements IStorage {
 
   async getPublicApprovedThemes(): Promise<Theme[]> {
     const result: Theme[] = [];
-    for (const theme of this.themesMap.values()) {
-      if (theme.isPublic && theme.approved) {
-        result.push(theme);
+    const themesArray = Array.from(this.themesMap.values());
+    for (let i = 0; i < themesArray.length; i++) {
+      if (themesArray[i].isPublic && themesArray[i].approved) {
+        result.push(themesArray[i]);
       }
     }
     return result;
@@ -176,9 +181,23 @@ export class MemoryStorage implements IStorage {
   async updateTheme(id: string, updates: Partial<InsertTheme>): Promise<Theme | undefined> {
     const theme = this.themesMap.get(id);
     if (!theme) return undefined;
-    const updatedTheme: Theme = { ...theme, ...updates };
+    const updatedTheme: Theme = { 
+      ...theme, 
+      ...updates,
+      palavras: updates.palavras ? updates.palavras as string[] : theme.palavras
+    };
     this.themesMap.set(id, updatedTheme);
     return updatedTheme;
+  }
+
+  async getThemeByPaymentId(paymentId: string): Promise<Theme | undefined> {
+    const themesArray = Array.from(this.themesMap.values());
+    for (let i = 0; i < themesArray.length; i++) {
+      if (themesArray[i].paymentId === paymentId) {
+        return themesArray[i];
+      }
+    }
+    return undefined;
   }
 
   async deleteTheme(id: string): Promise<void> {
@@ -297,6 +316,12 @@ export class DatabaseStorage implements IStorage {
     const [theme] = await db.select().from(themes).where(
       and(eq(themes.titulo, titulo), eq(themes.autor, autor))
     );
+    return theme;
+  }
+
+  async getThemeByPaymentId(paymentId: string): Promise<Theme | undefined> {
+    if (!db) throw new Error("Database not initialized");
+    const [theme] = await db.select().from(themes).where(eq(themes.paymentId, paymentId));
     return theme;
   }
 

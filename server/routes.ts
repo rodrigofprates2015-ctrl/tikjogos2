@@ -22,7 +22,9 @@ const pendingThemes: Map<number, PendingTheme> = new Map();
 // Cleanup old pending themes (older than 1 hour)
 setInterval(() => {
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-  for (const [paymentId, theme] of pendingThemes.entries()) {
+  const entries = Array.from(pendingThemes.entries());
+  for (let i = 0; i < entries.length; i++) {
+    const [paymentId, theme] = entries[i];
     if (theme.createdAt < oneHourAgo) {
       pendingThemes.delete(paymentId);
     }
@@ -1540,8 +1542,26 @@ export async function registerRoutes(
         });
       }
       
-      // Store pending theme data for when MP metadata is unavailable
+      // Save theme to database with status 'pending' and paymentId
+      // This persists the theme data across server restarts
       if (paymentResult.paymentId) {
+        try {
+          const pendingTheme = await storage.createTheme({
+            titulo: validatedData.titulo,
+            autor: validatedData.autor,
+            palavras: validatedData.palavras,
+            isPublic: validatedData.isPublic,
+            paymentStatus: 'pending',
+            paymentId: String(paymentResult.paymentId),
+            approved: false
+          });
+          console.log('[Payment] Saved pending theme to DB with paymentId:', paymentResult.paymentId, 'themeId:', pendingTheme.id);
+        } catch (dbError) {
+          console.error('[Payment] Failed to save pending theme to DB:', dbError);
+          // Still continue - the in-memory backup will work for non-restart cases
+        }
+        
+        // Also keep in-memory cache as backup (for current session)
         pendingThemes.set(paymentResult.paymentId, {
           titulo: validatedData.titulo,
           autor: validatedData.autor,
@@ -1549,7 +1569,7 @@ export async function registerRoutes(
           isPublic: validatedData.isPublic,
           createdAt: new Date()
         });
-        console.log('[Payment] Stored pending theme for paymentId:', paymentResult.paymentId);
+        console.log('[Payment] Stored pending theme in memory for paymentId:', paymentResult.paymentId);
       }
       
       res.json({
@@ -1606,10 +1626,31 @@ export async function registerRoutes(
         return;
       }
       
-      // Get theme data from metadata
+      // First, check if theme already exists in database by paymentId (saved when payment was created)
+      let existingTheme = await storage.getThemeByPaymentId(String(paymentId));
+      
+      if (existingTheme) {
+        console.log('[Webhook] Found existing theme in DB for paymentId:', paymentId);
+        
+        // If theme exists but not yet approved, update it
+        if (existingTheme.paymentStatus !== 'approved') {
+          const accessCode = cryptoRandomBytes(3).toString('hex').toUpperCase();
+          existingTheme = await storage.updateTheme(existingTheme.id, {
+            paymentStatus: 'approved',
+            approved: true,
+            accessCode
+          });
+          console.log('[Webhook] Updated theme to approved:', existingTheme?.id, 'accessCode:', accessCode);
+        } else {
+          console.log('[Webhook] Theme already approved:', existingTheme.id);
+        }
+        return;
+      }
+      
+      // Fallback: Get theme data from metadata (for payments created before DB update)
       const metadata = paymentInfo.metadata;
       if (!metadata) {
-        console.error('[Webhook] No metadata found in payment');
+        console.error('[Webhook] No theme in DB and no metadata found for payment:', paymentId);
         return;
       }
       
@@ -1646,6 +1687,7 @@ export async function registerRoutes(
         isPublic,
         accessCode,
         paymentStatus: 'approved',
+        paymentId: String(paymentId),
         approved: true
       });
       
@@ -1721,17 +1763,44 @@ export async function registerRoutes(
       console.log('[Payment Status] Checking payment:', paymentId, 'status:', paymentInfo.status);
       
       if (paymentInfo.status === 'approved') {
-        // First, try to get theme data from our stored pendingThemes (most reliable)
+        // First, check if theme already exists in database by paymentId (most reliable - survives restarts)
+        let existingTheme = await storage.getThemeByPaymentId(String(paymentId));
+        
+        if (existingTheme) {
+          console.log('[Payment Status] Found theme in DB for paymentId:', paymentId, 'status:', existingTheme.paymentStatus);
+          
+          // If theme exists but not yet approved, update it
+          if (existingTheme.paymentStatus !== 'approved') {
+            const accessCode = cryptoRandomBytes(3).toString('hex').toUpperCase();
+            existingTheme = await storage.updateTheme(existingTheme.id, {
+              paymentStatus: 'approved',
+              approved: true,
+              accessCode
+            });
+            console.log('[Payment Status] Updated theme to approved:', existingTheme?.id, 'accessCode:', accessCode);
+            
+            // Clean up in-memory cache
+            pendingThemes.delete(paymentId);
+          }
+          
+          if (existingTheme && existingTheme.paymentStatus === 'approved') {
+            return res.json({
+              status: 'approved',
+              accessCode: existingTheme.accessCode
+            });
+          }
+        }
+        
+        // Fallback: Try in-memory cache or MP metadata (for themes created before DB update)
         const pendingTheme = pendingThemes.get(paymentId);
         
-        // Determine theme data source: pendingThemes (preferred) or MP metadata (fallback)
         let titulo: string | undefined;
         let autor: string | undefined;
         let palavras: string[] = [];
         let isPublic = true;
         
         if (pendingTheme) {
-          console.log('[Payment Status] Using stored pending theme data for payment:', paymentId);
+          console.log('[Payment Status] Using in-memory pending theme for payment:', paymentId);
           titulo = pendingTheme.titulo;
           autor = pendingTheme.autor;
           palavras = pendingTheme.palavras;
@@ -1749,43 +1818,48 @@ export async function registerRoutes(
         }
         
         if (titulo && autor && palavras.length > 0) {
-          // Try to find existing theme
-          let existingTheme = await storage.getThemeByPaymentMetadata(titulo, autor);
+          // Try to find existing theme by metadata
+          let metadataTheme = await storage.getThemeByPaymentMetadata(titulo, autor);
           
           // If theme doesn't exist yet, create it
-          if (!existingTheme) {
+          if (!metadataTheme) {
             console.log('[Payment Status] Creating theme for payment:', paymentId);
             
             const accessCode = cryptoRandomBytes(3).toString('hex').toUpperCase();
             
-            existingTheme = await storage.createTheme({
+            metadataTheme = await storage.createTheme({
               titulo,
               autor,
               palavras,
               isPublic,
               accessCode,
               paymentStatus: 'approved',
+              paymentId: String(paymentId),
               approved: true
             });
             
             console.log('[Payment Status] Theme created:', {
-              id: existingTheme.id,
-              titulo: existingTheme.titulo,
-              accessCode: existingTheme.accessCode
+              id: metadataTheme.id,
+              titulo: metadataTheme.titulo,
+              accessCode: metadataTheme.accessCode
             });
             
             // Clean up pending theme after successful creation
             pendingThemes.delete(paymentId);
           }
           
-          if (existingTheme && existingTheme.paymentStatus === 'approved') {
+          if (metadataTheme && metadataTheme.paymentStatus === 'approved') {
             return res.json({
               status: 'approved',
-              accessCode: existingTheme.accessCode
+              accessCode: metadataTheme.accessCode
             });
           }
         } else {
-          console.log('[Payment Status] No theme data available for payment:', paymentId, { pendingTheme: !!pendingTheme, metadata: !!paymentInfo.metadata });
+          console.log('[Payment Status] No theme data available for payment:', paymentId, { 
+            dbTheme: !!existingTheme, 
+            pendingTheme: !!pendingTheme, 
+            metadata: !!paymentInfo.metadata 
+          });
         }
       }
       

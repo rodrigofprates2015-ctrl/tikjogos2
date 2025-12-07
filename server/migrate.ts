@@ -69,11 +69,17 @@ async function runMigrations() {
         is_public BOOLEAN NOT NULL DEFAULT true,
         access_code VARCHAR,
         payment_status VARCHAR NOT NULL DEFAULT 'pending',
+        payment_id VARCHAR,
         approved BOOLEAN NOT NULL DEFAULT false,
         created_at TIMESTAMP DEFAULT NOW()
       )
     `);
     console.log('[Migration] themes table ready');
+
+    await db.execute(sql`
+      ALTER TABLE themes ADD COLUMN IF NOT EXISTS payment_id VARCHAR
+    `);
+    console.log('[Migration] payment_id column ensured');
 
     console.log('[Migration] All migrations completed successfully!');
   } catch (error) {
