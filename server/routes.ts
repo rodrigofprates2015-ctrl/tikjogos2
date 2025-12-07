@@ -1599,13 +1599,20 @@ export async function registerRoutes(
       // Always respond 200 to prevent Mercado Pago from retrying
       res.status(200).send('OK');
       
-      const { type, data } = req.body;
+      const { type, action, data } = req.body;
       
-      console.log('[Webhook] Received notification:', { type, data });
+      console.log('[Webhook] Received notification:', { type, action, data, body: JSON.stringify(req.body) });
       
-      // Only process payment notifications
-      if (type !== 'payment') {
-        console.log('[Webhook] Ignoring non-payment notification type:', type);
+      // Handle both old format (type) and new format (action)
+      // Old format: { type: 'payment', data: { id: '123' } }
+      // New format: { action: 'payment.updated', data: { id: '123' } }
+      const isPaymentNotification = 
+        type === 'payment' || 
+        (action && action.startsWith('payment.')) ||
+        (type && type.startsWith('payment.'));
+      
+      if (!isPaymentNotification) {
+        console.log('[Webhook] Ignoring non-payment notification:', { type, action });
         return;
       }
       
