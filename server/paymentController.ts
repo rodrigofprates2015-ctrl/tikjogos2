@@ -5,7 +5,7 @@ let _payment: Payment | null = null;
 let _lastToken: string | null = null;
 
 function getCleanAccessToken(): string {
-  let token = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
+  let token = process.env.MERCADO_PAGO_ACCESS_TOKEN || '';
   token = token.trim().replace(/^=+/, '');
   return token;
 }
@@ -45,7 +45,7 @@ export interface PaymentResponse {
 }
 
 export async function createPayment(themeData: ThemeData): Promise<PaymentResponse> {
-  if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
+  if (!process.env.MERCADO_PAGO_ACCESS_TOKEN) {
     return {
       success: false,
       error: 'Mercado Pago access token not configured'
