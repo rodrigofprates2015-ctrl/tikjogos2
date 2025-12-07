@@ -1634,20 +1634,32 @@ export async function registerRoutes(
       }
       
       // First, check if theme already exists in database by paymentId (saved when payment was created)
-      let existingTheme = await storage.getThemeByPaymentId(String(paymentId));
+      console.log('[Webhook] Looking for theme with paymentId:', String(paymentId));
+      let existingTheme: any;
+      try {
+        existingTheme = await storage.getThemeByPaymentId(String(paymentId));
+        console.log('[Webhook] DB lookup result:', existingTheme ? `Found theme ${existingTheme.id}` : 'Not found');
+      } catch (dbLookupError) {
+        console.error('[Webhook] Error looking up theme in DB:', dbLookupError);
+        // Continue to try other methods
+      }
       
       if (existingTheme) {
-        console.log('[Webhook] Found existing theme in DB for paymentId:', paymentId);
+        console.log('[Webhook] Found existing theme in DB for paymentId:', paymentId, 'themeId:', existingTheme.id);
         
         // If theme exists but not yet approved, update it
         if (existingTheme.paymentStatus !== 'approved') {
-          const accessCode = cryptoRandomBytes(3).toString('hex').toUpperCase();
-          existingTheme = await storage.updateTheme(existingTheme.id, {
-            paymentStatus: 'approved',
-            approved: true,
-            accessCode
-          });
-          console.log('[Webhook] Updated theme to approved:', existingTheme?.id, 'accessCode:', accessCode);
+          try {
+            const accessCode = existingTheme.accessCode || cryptoRandomBytes(3).toString('hex').toUpperCase();
+            existingTheme = await storage.updateTheme(existingTheme.id, {
+              paymentStatus: 'approved',
+              approved: true,
+              accessCode
+            });
+            console.log('[Webhook] Updated theme to approved:', existingTheme?.id, 'accessCode:', accessCode);
+          } catch (updateError) {
+            console.error('[Webhook] Failed to update theme to approved:', updateError);
+          }
         } else {
           console.log('[Webhook] Theme already approved:', existingTheme.id);
         }
@@ -1656,30 +1668,54 @@ export async function registerRoutes(
       
       // Fallback: Get theme data from metadata (for payments created before DB update)
       const metadata = paymentInfo.metadata;
-      if (!metadata) {
-        console.error('[Webhook] No theme in DB and no metadata found for payment:', paymentId);
-        return;
+      console.log('[Webhook] Raw metadata from MercadoPago:', JSON.stringify(metadata));
+      
+      // Try to get theme data from various sources
+      let titulo: string | undefined;
+      let autor: string | undefined;
+      let palavras: string[] | undefined;
+      let isPublic = true;
+      
+      // First, try to get from MercadoPago metadata
+      if (metadata) {
+        titulo = metadata.titulo;
+        autor = metadata.autor;
+        isPublic = metadata.is_public === true || metadata.is_public === 'true' || 
+                          metadata.isPublic === true || metadata.isPublic === 'true' ||
+                          (metadata.isPublic === undefined && metadata.is_public === undefined);
+        
+        // Parse palavras (may be JSON string or already array or undefined)
+        if (metadata.palavras) {
+          try {
+            if (typeof metadata.palavras === 'string') {
+              palavras = JSON.parse(metadata.palavras);
+            } else if (Array.isArray(metadata.palavras)) {
+              palavras = metadata.palavras;
+            }
+          } catch (e) {
+            console.error('[Webhook] Failed to parse palavras from metadata:', e);
+          }
+        }
       }
       
-      const titulo = metadata.titulo;
-      const autor = metadata.autor;
-      const isPublic = metadata.is_public === true || metadata.is_public === 'true' || 
-                        metadata.isPublic === true || metadata.isPublic === 'true' ||
-                        (metadata.isPublic === undefined && metadata.is_public === undefined);
-      
-      // Parse palavras (stored as JSON string in metadata)
-      let palavras: string[];
-      try {
-        palavras = typeof metadata.palavras === 'string' 
-          ? JSON.parse(metadata.palavras) 
-          : metadata.palavras;
-      } catch (e) {
-        console.error('[Webhook] Failed to parse palavras from metadata:', e);
-        return;
-      }
-      
+      // If we don't have complete data from metadata, check in-memory pendingThemes cache
       if (!titulo || !autor || !palavras || !Array.isArray(palavras)) {
-        console.error('[Webhook] Invalid theme data in metadata:', { titulo, autor, palavras });
+        console.log('[Webhook] Incomplete metadata, checking pendingThemes cache for paymentId:', paymentId);
+        const pendingTheme = pendingThemes.get(Number(paymentId));
+        if (pendingTheme) {
+          console.log('[Webhook] Found pending theme in memory cache:', pendingTheme.titulo);
+          titulo = pendingTheme.titulo;
+          autor = pendingTheme.autor;
+          palavras = pendingTheme.palavras;
+          isPublic = pendingTheme.isPublic;
+          // Clean up cache
+          pendingThemes.delete(Number(paymentId));
+        }
+      }
+      
+      // Final validation
+      if (!titulo || !autor || !palavras || !Array.isArray(palavras)) {
+        console.error('[Webhook] Could not find valid theme data for payment:', paymentId, { titulo, autor, hasPalavras: !!palavras });
         return;
       }
       
@@ -1687,22 +1723,26 @@ export async function registerRoutes(
       const accessCode = cryptoRandomBytes(3).toString('hex').toUpperCase();
       
       // Save theme to database
-      const theme = await storage.createTheme({
-        titulo,
-        autor,
-        palavras,
-        isPublic,
-        accessCode,
-        paymentStatus: 'approved',
-        paymentId: String(paymentId),
-        approved: true
-      });
-      
-      console.log('[Webhook] Theme created successfully:', {
-        id: theme.id,
-        titulo: theme.titulo,
-        accessCode: theme.accessCode
-      });
+      try {
+        const theme = await storage.createTheme({
+          titulo,
+          autor,
+          palavras,
+          isPublic,
+          accessCode,
+          paymentStatus: 'approved',
+          paymentId: String(paymentId),
+          approved: true
+        });
+        
+        console.log('[Webhook] Theme created successfully:', {
+          id: theme.id,
+          titulo: theme.titulo,
+          accessCode: theme.accessCode
+        });
+      } catch (createError) {
+        console.error('[Webhook] Failed to create theme in database:', createError);
+      }
       
     } catch (error) {
       console.error('[Webhook] Error processing notification:', error);
