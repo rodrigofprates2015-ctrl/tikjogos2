@@ -1,0 +1,89 @@
+Excelente análise! Você está absolutamente certo. Deixe-me verificar como o storage está configurado:
+
+
+Opened server/storage.ts
+
+Executed rg -n 'pendingThemes|memory|Map' server
+
+Decided on caching strategy review (7 seconds)
+Encontrei! O código já usa PostgreSQL (via Drizzle), mas há um cache em memória pendingThemes no routes.ts que pode ser o problema. Veja a linha 20:
+
+const pendingThemes: Map<number, PendingTheme> = new Map();
+
+Deixe-me verificar a conexão com o banco de dados:
+
+
+Opened server/db.ts
+
+Decided on database client strategy (4 seconds)
+Encontrei o problema! O db.ts usa @neondatabase/serverless que é específico para o banco Neon do Replit. No Railway, você está usando PostgreSQL padrão (postgres.railway.internal), que precisa da biblioteca pg padrão.
+
+Vou corrigir isso para funcionar em ambos os ambientes:
+
+
+Decided on database refactoring strategy
+
+Installed pg, @types/pg
+
+Decided on Neon/Postgres environment handling
+
+Add tool for connecting to data
+
+Show 3 more
+
+Opened server/db.ts
+
+Decided on server/db refactor
+I have the context. Now I'll refactor server/db.ts to support both Neon (Replit) and standard PostgreSQL (Railway).
+
+
+Edited server/db.ts
+
+Planned workflow restart
+Now let me restart the workflow to test the connection:
+
+
+Show 2 more
+Checked console and system logs
+
+Planned next steps for review
+A conexão está funcionando. O servidor iniciou corretamente e detectou o ambiente Neon/Replit. Agora vou atualizar a lista de tarefas e revisar as alterações:
+
+
+Check if data connection works
+
+Planned state persistence and context
+
+Decided on next steps
+
+Fixed database driver configuration
+
+Decided on node-postgres API fix
+O architect encontrou um erro na API do drizzle. Vou corrigir:
+
+
+Show 4 more
+Checked console and system logs
+
+Confirmed fix is correct
+
+Verified drizzle API call format
+
+Marked task two complete
+O código foi aprovado pelo revisor. Vou atualizar a lista de tarefas:
+
+
+Completed tasks
+
+Decided on completion notification
+
+Decided on completion communication
+Pronto! A correção foi concluída com sucesso.
+
+O que foi feito:
+O arquivo server/db.ts foi refatorado para detectar automaticamente o ambiente:
+
+No Replit (ambiente Neon): Continua usando o driver @neondatabase/serverless
+No Railway (PostgreSQL padrão): Agora usa o driver pg (node-postgres)
+Próximo passo:
+Você precisa fazer um novo deploy no Railway para que a correção entre em produção. Depois disso, os webhooks do Mercado Pago devem conseguir conectar ao banco de dados e atualizar os temas corretamente.
