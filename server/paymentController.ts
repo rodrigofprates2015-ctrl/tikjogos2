@@ -56,7 +56,17 @@ export async function createPayment(themeData: ThemeData): Promise<PaymentRespon
     const payment = getPaymentClient();
     const idempotencyKey = `theme-${Date.now()}-${Math.random().toString(36).substring(7)}`;
     
-    const paymentData = {
+    // Get the webhook URL for notifications
+    // Priority: APP_URL env var > RAILWAY_PUBLIC_DOMAIN > default
+    let webhookUrl = process.env.APP_URL || process.env.RAILWAY_PUBLIC_DOMAIN;
+    if (webhookUrl && !webhookUrl.startsWith('http')) {
+      webhookUrl = `https://${webhookUrl}`;
+    }
+    const notificationUrl = webhookUrl ? `${webhookUrl}/webhook` : undefined;
+    
+    console.log('[Payment] Creating payment with notification_url:', notificationUrl);
+    
+    const paymentData: any = {
       transaction_amount: 1.50,
       description: `Tema Personalizado: ${themeData.titulo}`,
       payment_method_id: 'pix',
@@ -72,6 +82,11 @@ export async function createPayment(themeData: ThemeData): Promise<PaymentRespon
         isPublic: themeData.isPublic ?? true
       }
     };
+    
+    // Add notification_url if available - CRITICAL for webhook to work
+    if (notificationUrl) {
+      paymentData.notification_url = notificationUrl;
+    }
 
     const response = await payment.create({
       body: paymentData,
