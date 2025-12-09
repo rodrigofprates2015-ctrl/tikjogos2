@@ -824,7 +824,7 @@ const HomeScreen = () => {
         <ins 
           className="adsbygoogle"
           style={{ display: 'block', width: '160px', height: '600px' }}
-          data-ad-client="ca-pub-4854252788330308"
+          data-ad-client="ca-pub-9927561573478881"
           data-ad-slot="auto"
           data-ad-format="vertical"
         />
@@ -835,7 +835,7 @@ const HomeScreen = () => {
         <ins 
           className="adsbygoogle"
           style={{ display: 'block', width: '160px', height: '600px' }}
-          data-ad-client="ca-pub-4854252788330308"
+          data-ad-client="ca-pub-9927561573478881"
           data-ad-slot="auto"
           data-ad-format="vertical"
         />

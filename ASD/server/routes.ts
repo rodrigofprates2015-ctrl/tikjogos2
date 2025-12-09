@@ -466,7 +466,7 @@ export async function registerRoutes(
 
   // Serve ads.txt for Google AdSense verification
   app.get("/ads.txt", (_req, res) => {
-    res.type("text/plain").send("google.com, pub-4854252788330308, DIRECT, f08c47fec0942fa0");
+    res.type("text/plain").send("google.com, pub-9927561573478881, DIRECT, f08c47fec0942fa0");
   });
 
   // Serve version info
