@@ -1,0 +1,174 @@
+import React, { useState, useEffect } from 'react';
+import { Settings, BarChart2, HelpCircle, Delete, CornerDownLeft, Share2, RotateCcw, Clock } from 'lucide-react';
+
+export default function App() {
+  // Estado para o timer (apenas visual)
+  const [timeLeft, setTimeLeft] = useState('03:31:04');
+
+  // Estado simulado do jogo
+  const [guesses] = useState([
+    [
+      { letter: 'V', status: 'absent' },
+      { letter: 'I', status: 'absent' },
+      { letter: 'D', status: 'present' },
+      { letter: 'A', status: 'correct' },
+      { letter: 'R', status: 'absent' },
+    ],
+    [
+      { letter: 'P', status: 'correct' },
+      { letter: 'L', status: 'present' },
+      { letter: 'U', status: 'absent' },
+      { letter: 'M', status: 'correct' },
+      { letter: 'A', status: 'correct' },
+    ],
+    [
+      { letter: 'P', status: 'correct' },
+      { letter: 'A', status: 'correct' },
+      { letter: 'U', status: 'correct' },
+      { letter: 'S', status: 'correct' },
+      { letter: 'A', status: 'correct' },
+    ],
+    // Linhas vazias
+    Array(5).fill({ letter: '', status: 'empty' }),
+    Array(5).fill({ letter: '', status: 'empty' }),
+    Array(5).fill({ letter: '', status: 'empty' }),
+  ]);
+
+  const keyboardRows = [
+    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+    ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACK'],
+  ];
+
+  const getKeyStyle = (key) => {
+    if (['P', 'A', 'U', 'S'].includes(key)) return 'bg-emerald-600 text-white border-emerald-600';
+    if (['L', 'D'].includes(key)) return 'bg-amber-500 text-white border-amber-500';
+    if (['V', 'I', 'R', 'M'].includes(key)) return 'bg-slate-700 text-slate-300 border-slate-700';
+    return 'bg-slate-600 text-white hover:bg-slate-500 border-slate-600';
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col items-center font-sans antialiased selection:bg-emerald-500/30">
+      
+      {/* Header Redesenhado */}
+      <header className="w-full max-w-lg pt-6 pb-6 px-4 flex flex-col items-center relative border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm z-10">
+        
+        {/* Ícones de Navegação (Posicionados Absolutamente para manter o centro limpo) */}
+        <div className="absolute top-6 left-4 flex gap-3">
+          <HelpCircle className="w-6 h-6 text-slate-400 cursor-pointer hover:text-emerald-400 transition-colors" />
+          <Settings className="w-6 h-6 text-slate-400 cursor-pointer hover:text-emerald-400 transition-colors" />
+        </div>
+        <div className="absolute top-6 right-4 flex gap-3">
+          <BarChart2 className="w-6 h-6 text-slate-400 cursor-pointer hover:text-emerald-400 transition-colors" />
+        </div>
+
+        {/* Título Central com Logo */}
+        <div className="flex flex-col items-center animate-fade-in">
+          <div className="flex items-center gap-3 mb-1">
+            {/* Quadrado Verde (Logo) */}
+            <div className="w-8 h-8 bg-emerald-500 rounded shadow-[0_0_15px_rgba(16,185,129,0.4)] border border-emerald-400 flex-shrink-0"></div>
+            <h1 className="text-4xl font-extrabold text-white tracking-tight">Termo</h1>
+          </div>
+          
+          <p className="text-slate-400 font-medium text-sm mb-3">Descubra a palavra do dia</p>
+          
+          {/* Timer */}
+          <div className="flex items-center gap-2 text-xs font-medium text-emerald-400 bg-slate-800/80 px-4 py-1.5 rounded-full border border-slate-700/50 shadow-inner">
+            <Clock size={14} className="text-emerald-500" />
+            <span>Próxima palavra em: <span className="font-mono font-bold text-emerald-300 text-sm ml-1">{timeLeft}</span></span>
+          </div>
+        </div>
+      </header>
+
+      {/* Área do Jogo */}
+      <main className="flex-1 flex flex-col justify-center items-center w-full max-w-lg px-2 py-4 gap-6">
+        
+        {/* Grid de Palavras */}
+        <div className="grid grid-rows-6 gap-2 w-full max-w-[320px] aspect-[5/6]">
+          {guesses.map((row, rowIndex) => (
+            <div key={rowIndex} className="grid grid-cols-5 gap-2">
+              {row.map((cell, cellIndex) => {
+                let cellClass = "border-2 flex items-center justify-center text-3xl font-bold uppercase transition-all duration-300 transform select-none rounded-sm";
+                
+                if (cell.status === 'correct') {
+                  cellClass += " bg-emerald-600 border-emerald-600 text-white shadow-[0_0_15px_rgba(5,150,105,0.4)]";
+                } else if (cell.status === 'present') {
+                  cellClass += " bg-amber-500 border-amber-500 text-white";
+                } else if (cell.status === 'absent') {
+                  cellClass += " bg-slate-700 border-slate-700 text-slate-300";
+                } else {
+                  cellClass += " border-slate-700 bg-slate-800/30 text-white";
+                }
+
+                return (
+                  <div key={cellIndex} className={cellClass}>
+                    {cell.letter}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* Mensagem de Vitória */}
+        <div className="bg-slate-800 border border-emerald-500/30 px-6 py-3 rounded-lg shadow-xl flex flex-col items-center gap-2 animate-bounce-short w-full max-w-[320px]">
+          <span className="text-emerald-400 font-bold text-lg tracking-wide uppercase">Esplêndido!</span>
+          <div className="flex gap-3 mt-1 w-full justify-center">
+             <button className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2 px-4 rounded transition-all shadow-lg hover:shadow-emerald-900/50">
+                <Share2 size={16} /> Compartilhar
+             </button>
+             <button className="flex-1 flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold py-2 px-4 rounded transition-colors">
+                <RotateCcw size={16} /> Jogar
+             </button>
+          </div>
+        </div>
+
+      </main>
+
+      {/* Teclado */}
+      <div className="w-full max-w-lg px-2 pb-6 pt-2">
+        <div className="flex flex-col gap-2 w-full">
+          {keyboardRows.map((row, i) => (
+            <div key={i} className="flex justify-center gap-1.5">
+              {row.map((key) => {
+                const isSpecial = key.length > 1;
+                const baseStyle = "flex items-center justify-center rounded font-bold text-sm select-none transition-all active:scale-95 shadow-sm active:translate-y-0.5";
+                const sizeStyle = isSpecial ? "px-2 py-3 w-14 sm:w-16" : "w-8 h-12 flex-1 max-w-[42px] sm:h-14";
+                
+                let content = key;
+                if (key === 'ENTER') content = <CornerDownLeft size={18} />;
+                if (key === 'BACK') content = <Delete size={18} />;
+
+                return (
+                  <button 
+                    key={key} 
+                    className={`${baseStyle} ${sizeStyle} ${!isSpecial ? getKeyStyle(key) : 'bg-slate-600 text-white border-slate-600 hover:bg-slate-500'}`}
+                  >
+                    {content}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <style jsx>{`
+        .animate-bounce-short {
+          animation: bounce-short 0.5s ease-out;
+        }
+        @keyframes bounce-short {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out;
+        }
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </div>
+  );
+}
