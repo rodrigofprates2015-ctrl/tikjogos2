@@ -34,7 +34,8 @@ import {
   Vote,
   Skull,
   Trophy,
-  UserX
+  UserX,
+  Gamepad2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -666,6 +667,14 @@ const TopRightButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
     {/* Desktop: All buttons on right - fixed position */}
     <div className="hidden sm:flex fixed top-4 right-4 z-[60] items-center gap-2">
       <Link 
+        href="/outros-jogos"
+        className="flex items-center gap-2 px-4 py-2 bg-[#e8a045] border-2 border-[#c88025] rounded-xl text-white hover:bg-[#f8b055] transition-all font-semibold shadow-lg"
+        data-testid="button-other-games"
+      >
+        <Gamepad2 className="w-4 h-4" />
+        <span className="text-sm font-medium">Outros Jogos</span>
+      </Link>
+      <Link 
         href="/comojogar"
         className="flex items-center gap-2 px-4 py-2 bg-[#4a90a4] border-2 border-[#3a7084] rounded-xl text-white hover:bg-[#5aa0b4] transition-all font-semibold shadow-lg"
         data-testid="button-how-to-play"
@@ -697,6 +706,13 @@ const TopRightButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
 
 const MobileActionButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
   <div className="sm:hidden flex items-center justify-center gap-2 w-full mb-3">
+    <Link 
+      href="/outros-jogos"
+      className="flex items-center gap-2 px-3 py-2 bg-[#e8a045] border-2 border-[#c88025] rounded-xl text-white hover:bg-[#f8b055] transition-all font-semibold shadow-lg"
+      data-testid="button-other-games-mobile"
+    >
+      <Gamepad2 className="w-4 h-4" />
+    </Link>
     <Link 
       href="/comojogar"
       className="flex items-center gap-2 px-3 py-2 bg-[#4a90a4] border-2 border-[#3a7084] rounded-xl text-white hover:bg-[#5aa0b4] transition-all font-semibold shadow-lg"

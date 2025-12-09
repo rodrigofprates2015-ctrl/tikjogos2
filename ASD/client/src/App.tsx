@@ -10,6 +10,8 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
 import ComoJogar from "@/pages/ComoJogar";
 import CriarTema from "@/pages/CriarTema";
+import OutrosJogos from "@/pages/OutrosJogos";
+import Termo from "@/pages/Termo";
 import { useAuth } from "@/hooks/useAuth";
 
 function Router() {
@@ -26,6 +28,8 @@ function Router() {
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/termos" component={TermsOfUse} />
       <Route path="/terms" component={TermsOfUse} />
+      <Route path="/outros-jogos" component={OutrosJogos} />
+      <Route path="/termo" component={Termo} />
       <Route component={NotFound} />
     </Switch>
   );
