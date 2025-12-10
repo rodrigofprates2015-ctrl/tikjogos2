@@ -154,7 +154,7 @@ export default function CriarTema() {
       }}
     >
       <div className="w-full max-w-lg z-10">
-        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 mb-4 bg-[#4a90a4]/20 border-2 border-[#4a90a4] rounded-xl text-[#4a90a4] hover:bg-[#4a90a4]/30 transition-all font-semibold" data-testid="button-back-home">
+        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 mb-4 bg-[#4a90a4] border-2 border-[#3d7a8a] rounded-xl text-white hover:bg-[#5aa0b4] transition-all font-semibold shadow-md" data-testid="button-back-home">
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm font-medium">Voltar para Home</span>
         </Link>

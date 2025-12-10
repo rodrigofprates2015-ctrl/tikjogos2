@@ -21,7 +21,7 @@ export default function NotFound() {
           </p>
 
           <Link href="/" className="block">
-            <Button className="w-full h-12 border-2 border-[#00f2ea] bg-transparent text-[#00f2ea] hover:bg-[#00f2ea]/10 rounded-lg font-medium flex items-center justify-center gap-2">
+            <Button className="w-full h-12 border-2 border-[#00c8c0] bg-[#00f2ea] text-black hover:bg-[#33f5ee] rounded-lg font-medium flex items-center justify-center gap-2 shadow-md">
               <ArrowLeft className="w-4 h-4" />
               Voltar à Tela Inicial
             </Button>

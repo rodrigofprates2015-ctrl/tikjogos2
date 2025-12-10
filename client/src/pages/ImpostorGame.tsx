@@ -576,7 +576,7 @@ const HomeButton = ({ inline = false }: { inline?: boolean } = {}) => {
     <button
       onClick={handleClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2 bg-[#4a90a4]/20 border-2 border-[#4a90a4] rounded-xl text-[#4a90a4] hover:bg-[#4a90a4]/30 transition-all font-semibold",
+        "flex items-center gap-2 px-4 py-2 bg-[#4a90a4] border-2 border-[#3d7a8a] rounded-xl text-white hover:bg-[#5aa0b4] transition-all font-semibold shadow-md",
         inline ? "w-full justify-center" : "fixed top-4 left-4 z-40"
       )}
       title="Voltar à tela inicial"
