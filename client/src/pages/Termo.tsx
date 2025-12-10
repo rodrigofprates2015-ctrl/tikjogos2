@@ -41,8 +41,8 @@ const WORDS = [
 
 const VALID_KEYS = [
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-  ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "⌫"]
+  ["A", "S", "D", "F", "G", "H", "J", "K", "L", "⌫"],
+  ["Z", "X", "C", "V", "B", "N", "M", "ENTER"]
 ];
 
 function getDailyWord(): string {
@@ -319,13 +319,19 @@ export default function Termo() {
     return VALID_KEYS.map((row, i) => (
       <div key={i} className="flex justify-center gap-1.5">
         {row.map((key) => {
-          const isSpecial = key === "ENTER" || key === "⌫";
-          const baseStyle = "flex items-center justify-center rounded font-bold text-sm select-none transition-all active:scale-95";
-          const sizeStyle = isSpecial ? "px-3 py-3 min-w-[52px]" : "w-9 h-14 flex-1 max-w-[44px]";
+          const isEnter = key === "ENTER";
+          const isBackspace = key === "⌫";
+          const isSpecial = isEnter || isBackspace;
+          const baseStyle = "flex items-center justify-center rounded font-bold select-none transition-all active:scale-95";
+          const sizeStyle = isEnter 
+            ? "px-4 py-3 min-w-[70px] text-xs" 
+            : isBackspace 
+              ? "px-3 py-3 min-w-[44px] text-sm" 
+              : "w-9 h-14 flex-1 max-w-[44px] text-sm";
           
           let content: React.ReactNode = key;
-          if (key === "ENTER") content = <CornerDownLeft size={20} />;
-          if (key === "⌫") content = <Delete size={20} />;
+          if (isEnter) content = "ENTER";
+          if (isBackspace) content = <Delete size={20} />;
 
           return (
             <button 
