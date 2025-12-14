@@ -1,0 +1,163 @@
+CONTEÚDO: Políticas e Restrições para Editores do Google
+Introdução: A Diferença entre Políticas e Restrições
+O Google divide as regras em duas categorias principais. É importante entender a diferença:
+
+Políticas para Editores do Google: São regras obrigatórias. Se você violar essas políticas, o Google pode bloquear anúncios no seu site, suspender ou encerrar sua conta.
+
+Restrições para Editores do Google: Identificam conteúdos que não são proibidos, mas que receberão menos anúncios (ou nenhum anúncio de certas fontes). O Google Ads, por exemplo, não anuncia nesses conteúdos.
+
+PARTE 1: Políticas para Editores do Google (Obrigatórias)
+Violar estas regras pode causar o banimento da conta.
+
+1. Conteúdo Ilegal
+Não é permitido conteúdo que:
+
+Seja ilegal, promova atividades ilegais ou infrinja direitos legais de terceiros.
+
+2. Abuso de Propriedade Intelectual
+Não é permitido conteúdo que:
+
+Viole direitos autorais (pirataria).
+
+Venda ou promova produtos falsificados (réplicas que imitam marcas famosas).
+
+3. Conteúdo Perigoso ou Depreciativo
+Não é permitido conteúdo que:
+
+Promova discriminação ou incite o ódio contra indivíduos ou grupos com base em raça, religião, deficiência, idade, nacionalidade, orientação sexual, gênero, etc.
+
+Assedie, intimide ou pratique bullying.
+
+Ameace ou incite violência física ou mental (incluindo suicídio, anorexia ou automutilação).
+
+4. Crueldade contra Animais
+Não é permitido conteúdo que:
+
+Promova crueldade ou violência gratuita contra animais (ex: rinhas).
+
+Promova a venda de produtos de espécies em extinção (ex: marfim, barbatanas de tubarão).
+
+5. Conteúdo Enganoso
+Representação enganosa:
+
+Falsificar a identidade do site ou do criador.
+
+Sugerir falsamente afiliação com outras organizações (ex: fingir ser um site do governo).
+
+Declarações não confiáveis e prejudiciais:
+
+Informações falsas sobre processos eleitorais ou democráticos.
+
+Declarações de saúde prejudiciais ou contra o consenso científico (ex: movimentos antivacina, negação da COVID-19).
+
+Negação das mudanças climáticas.
+
+Práticas enganosas:
+
+Engenharia social (Phishing).
+
+Esquemas de "ganhar dinheiro rápido".
+
+Mídia manipulada:
+
+Deepfakes ou mídias alteradas para enganar sobre política ou questões sociais.
+
+6. Comportamento Desonesto
+Não é permitido conteúdo que ajude a enganar outras pessoas, como:
+
+Venda de documentos falsos (passaportes, diplomas).
+
+Serviços de elaboração de trabalhos acadêmicos ("faço sua tese").
+
+Instruções ou softwares para hacking, cracking ou acesso não autorizado.
+
+Spyware ou tecnologia de vigilância de parceiros (rastreadores de cônjuge).
+
+7. Conteúdo Sexualmente Explícito
+Não é permitido:
+
+Atos sexuais, nudez explícita, pornografia.
+
+Temas sexuais não consensuais (estupro, incesto, pornografia infantil).
+
+Deepfakes pornográficos.
+
+8. Atos Sexuais Compensados
+Prostituição, serviços de acompanhantes, massagens íntimas ou "sugar dating".
+
+9. Serviços de Noivas Estrangeiras
+Sites que facilitam o casamento internacional mediante pagamento (agentes matrimoniais internacionais).
+
+10. Temas Adultos em Conteúdo para a Família
+Conteúdo que parece infantil (desenhos, personagens conhecidos) mas contém sexo, violência ou temas adultos inapropriados.
+
+11. Abuso e Exploração Sexual Infantil
+Qualquer material que explore, abuse ou coloque crianças em risco. Isso é crime e o Google reporta às autoridades.
+
+12. Políticas Comportamentais (Anúncios)
+Declarações desonestas: Informações falsas no cadastro do AdSense.
+
+Interferência de anúncios: Anúncios que cobrem o conteúdo, botões escondidos, cliques acidentais forçados.
+
+Inventário valioso: Anúncios em páginas sem conteúdo (páginas "em construção", páginas de erro 404 vazias) ou com mais anúncios do que conteúdo.
+
+PARTE 2: Restrições para Editores do Google (Limitam Ganhos)
+Estes conteúdos podem existir, mas receberão pouca ou nenhuma publicidade.
+
+1. Conteúdo Sexual (Moderado)
+Nudez parcial, foco em partes do corpo de forma sensual, entretenimento sexual, fetiches.
+
+Produtos sexuais (brinquedos, lubrificantes).
+
+Conselhos sexuais ou medicamentos para desempenho sexual.
+
+2. Conteúdo Chocante
+Imagens nojentas, sangue, vísceras, fluidos corporais, cenas de crime ou acidentes.
+
+Linguagem obscena excessiva (muitos palavrões).
+
+Exceção: Imagens de jogos (gameplay) têm regras mais brandas, a menos que mostrem tortura ou violência sexual.
+
+3. Explosivos
+Venda ou instruções de montagem de bombas, granadas, fogos de artifício.
+
+4. Armas de Fogo e Acessórios
+Venda de armas (reais ou esportivas), munição e peças (silenciadores, miras).
+
+Instruções de montagem de armas.
+
+5. Outras Armas
+Facas de combate, canivetes automáticos, estrelas ninja, soco inglês, spray de pimenta.
+
+6. Tabaco
+Cigarros, charutos, vapes (cigarros eletrônicos), tabaco para mascar.
+
+7. Drogas Recreativas
+Drogas ilegais, maconha, cocaína, cristal, etc.
+
+Acessórios para uso de drogas (cachimbos, bongs).
+
+8. Venda ou Uso Indevido de Álcool
+Venda online de bebidas alcoólicas.
+
+Promoção do consumo irresponsável ou excessivo (binge drinking).
+
+9. Jogos de Azar Online
+Cassinos online, apostas esportivas, loterias, jogos com dinheiro real.
+
+Nota: Em alguns países isso é permitido com licença específica, mas geralmente é restrito.
+
+10. Medicamentos Controlados e Suplementos Reprovados
+Venda de remédios que exigem receita.
+
+Suplementos com ingredientes perigosos ou proibidos (ex: efedra).
+
+11. Apps Removidos da Google Play
+Conteúdo relacionado a aplicativos que o Google baniu da Play Store.
+
+12. Restrições de Vídeo (Para quem usa anúncios em vídeo)
+O player de vídeo deve ser declarado corretamente (In-stream vs. Conteúdo complementar).
+
+O vídeo deve ser o foco da página, não algo escondido no canto.
+
+O som deve estar ligado por padrão apenas se for o foco da interação do usuário.
