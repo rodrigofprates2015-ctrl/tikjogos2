@@ -953,7 +953,7 @@ const HomeScreen = () => {
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center z-20">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center z-20 max-w-md px-4">
         <img src={logoTikjogos} alt="TikJogos" className="h-4 md:h-5 mx-auto mb-2" />
         <p className="text-[#6a8aaa] text-xs">
           Desenvolvido com <Heart className="inline w-3 h-3 text-gray-500 fill-current" /> por <span className="text-[#8aa0b0]">Rodrigo Freitas</span>
@@ -967,6 +967,9 @@ const HomeScreen = () => {
             Termos
           </Link>
         </div>
+        <p className="text-[#4a6a8a] text-[10px] mt-2 leading-relaxed">
+          O TikJogos é um projeto independente de fãs. Todas as marcas registradas (como nomes de personagens e franquias) pertencem aos seus respectivos proprietários e são usadas aqui apenas para fins de referência em contexto de jogo de palavras/trivia.
+        </p>
       </div>
 
       {/* Donation Button and Modal */}

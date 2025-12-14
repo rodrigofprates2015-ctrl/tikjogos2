@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
+import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 
 export default function TermsOfUse() {
   return (
@@ -31,7 +32,7 @@ export default function TermsOfUse() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">2. Descrição do Serviço</h2>
             <p>
-              O TikJogos é um jogo online gratuito de dedução social inspirado em jogos como Spyfall. O site oferece:
+              O TikJogos é um jogo online gratuito de dedução social. O site oferece:
             </p>
             <ul className="list-disc list-inside mt-2 space-y-1">
               <li>5 modos de jogo diferentes</li>
@@ -59,7 +60,10 @@ export default function TermsOfUse() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">4. Propriedade Intelectual</h2>
             <p>
-              Todo o conteúdo do site, incluindo mas não se limitando a texto, gráficos, logos, ícones, imagens, código-fonte e software, é de propriedade do TikJogos ou de seus licenciadores e é protegido por leis de direitos autorais.
+              Todo o conteúdo original do site, incluindo mas não se limitando a texto, gráficos, logos, ícones, imagens, código-fonte e software, é de propriedade do TikJogos ou de seus licenciadores e é protegido por leis de direitos autorais.
+            </p>
+            <p className="mt-2">
+              Algumas palavras e termos utilizados nos modos de jogo podem fazer referência a marcas registradas de terceiros. Estas marcas pertencem aos seus respectivos proprietários e são usadas apenas para fins de referência em contexto de jogo de palavras/trivia.
             </p>
           </section>
 
@@ -98,7 +102,7 @@ export default function TermsOfUse() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">8. Links Externos</h2>
             <p>
-              O site pode conter links para sites de terceiros (Google AdSense, redes sociais). Não somos responsáveis pelo conteúdo ou práticas de privacidade desses sites.
+              O site pode conter links para sites de terceiros. Não somos responsáveis pelo conteúdo ou práticas de privacidade desses sites.
             </p>
           </section>
 
@@ -117,14 +121,29 @@ export default function TermsOfUse() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">11. Modificações dos Termos</h2>
+            <h2 className="text-xl font-bold text-white mb-3">11. Contato</h2>
+            <p>
+              Para dúvidas sobre estes termos, entre em contato conosco através do email:
+            </p>
+            <p className="mt-2">
+              <a 
+                href="mailto:rodrigo.f.prates2033@gmail.com" 
+                className="text-[#00f2ea] hover:underline font-medium"
+              >
+                rodrigo.f.prates2033@gmail.com
+              </a>
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-white mb-3">12. Modificações dos Termos</h2>
             <p>
               Reservamo-nos o direito de modificar estes termos a qualquer momento. O uso contínuo do site após alterações constitui aceitação dos novos termos.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">12. Lei Aplicável</h2>
+            <h2 className="text-xl font-bold text-white mb-3">13. Lei Aplicável</h2>
             <p>
               Estes termos são regidos pelas leis brasileiras. Qualquer disputa será resolvida nos tribunais competentes do Brasil.
             </p>
@@ -134,6 +153,8 @@ export default function TermsOfUse() {
         <div className="mt-12 pt-6 border-t border-gray-800 text-center text-gray-500 text-sm">
           <p>© {new Date().getFullYear()} TikJogos. Todos os direitos reservados.</p>
         </div>
+        
+        <LegalDisclaimer />
       </div>
     </div>
   );

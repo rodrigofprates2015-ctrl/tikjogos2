@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
+import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 
 export default function PrivacyPolicy() {
   return (
@@ -77,7 +78,15 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">6. Contato</h2>
             <p>
-              Para dúvidas sobre esta política de privacidade, entre em contato conosco.
+              Para dúvidas sobre esta política de privacidade ou qualquer outro assunto, entre em contato conosco através do email:
+            </p>
+            <p className="mt-2">
+              <a 
+                href="mailto:rodrigo.f.prates2033@gmail.com" 
+                className="text-[#00f2ea] hover:underline font-medium"
+              >
+                rodrigo.f.prates2033@gmail.com
+              </a>
             </p>
           </section>
 
@@ -93,6 +102,8 @@ export default function PrivacyPolicy() {
         <div className="mt-12 pt-6 border-t border-gray-800 text-center text-gray-500 text-sm">
           <p>© {new Date().getFullYear()} TikJogos. Todos os direitos reservados.</p>
         </div>
+        
+        <LegalDisclaimer />
       </div>
     </div>
   );

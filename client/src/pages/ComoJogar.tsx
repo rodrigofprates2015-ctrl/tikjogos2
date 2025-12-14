@@ -282,6 +282,9 @@ export default function ComoJogar() {
             {" | "}
             <Link href="/termos" className="hover:text-gray-300 transition-colors">Termos</Link>
           </p>
+          <p className="mt-3 text-xs text-gray-600 max-w-2xl mx-auto">
+            O TikJogos é um projeto independente de fãs. Todas as marcas registradas (como nomes de personagens e franquias) pertencem aos seus respectivos proprietários e são usadas aqui apenas para fins de referência em contexto de jogo de palavras/trivia.
+          </p>
         </div>
       </footer>
     </div>
