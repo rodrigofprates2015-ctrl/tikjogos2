@@ -12,6 +12,7 @@ import ComoJogar from "@/pages/ComoJogar";
 import CriarTema from "@/pages/CriarTema";
 import OutrosJogos from "@/pages/OutrosJogos";
 import Termo from "@/pages/Termo";
+import AdminDashboard from "@/pages/AdminDashboard";
 import { useAuth } from "@/hooks/useAuth";
 
 function Router() {
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/terms" component={TermsOfUse} />
       <Route path="/outros-jogos" component={OutrosJogos} />
       <Route path="/termo" component={Termo} />
+      <Route path="/dashadmin" component={AdminDashboard} />
       <Route component={NotFound} />
     </Switch>
   );

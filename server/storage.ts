@@ -22,6 +22,7 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   createRoom(room: InsertRoom): Promise<Room>;
   getRoom(code: string): Promise<Room | undefined>;
+  getAllRooms(): Promise<Room[]>;
   updateRoom(code: string, updates: Partial<InsertRoom>): Promise<Room | undefined>;
   addPlayerToRoom(code: string, player: Player): Promise<Room | undefined>;
   removePlayerFromRoom(code: string, playerId: string): Promise<Room | undefined>;
@@ -113,6 +114,10 @@ export class MemoryStorage implements IStorage {
 
   async deleteRoom(code: string): Promise<void> {
     this.rooms.delete(code);
+  }
+
+  async getAllRooms(): Promise<Room[]> {
+    return Array.from(this.rooms.values());
   }
 
   cleanupOldRooms(): void {
@@ -281,6 +286,10 @@ export class DatabaseStorage implements IStorage {
 
   async deleteRoom(code: string): Promise<void> {
     this.rooms.delete(code);
+  }
+
+  async getAllRooms(): Promise<Room[]> {
+    return Array.from(this.rooms.values());
   }
 
   cleanupOldRooms(): void {

@@ -1762,5 +1762,89 @@ export async function registerRoutes(
     }
   });
 
+  // ==================== ADMIN ENDPOINTS ====================
+  
+  // Admin login endpoint - validates credentials from environment variables
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { email, password } = z.object({
+        email: z.string().email(),
+        password: z.string()
+      }).parse(req.body);
+      
+      const adminEmail = process.env.ADMIN_EMAIL;
+      const adminPassword = process.env.ADMIN_PASSWORD;
+      
+      if (!adminEmail || !adminPassword) {
+        console.error('[Admin] Admin credentials not configured');
+        return res.status(500).json({ error: "Admin não configurado" });
+      }
+      
+      if (email === adminEmail && password === adminPassword) {
+        // Generate a simple session token
+        const token = randomBytes(32).toString('hex');
+        // Store in session if available, otherwise just return the token
+        if (req.session) {
+          (req.session as any).adminToken = token;
+          (req.session as any).isAdmin = true;
+        }
+        console.log('[Admin] Login successful');
+        return res.json({ success: true, token });
+      }
+      
+      console.log('[Admin] Login failed - invalid credentials');
+      return res.status(401).json({ error: "Credenciais inválidas" });
+    } catch (error) {
+      console.error('[Admin] Login error:', error);
+      res.status(400).json({ error: "Erro no login" });
+    }
+  });
+  
+  // Admin middleware to verify admin token
+  const verifyAdmin = (req: any, res: any, next: any) => {
+    const authHeader = req.headers.authorization;
+    const sessionAdmin = req.session?.isAdmin;
+    
+    if (sessionAdmin || (authHeader && authHeader.startsWith('Bearer '))) {
+      next();
+    } else {
+      res.status(401).json({ error: "Não autorizado" });
+    }
+  };
+  
+  // Get all rooms for admin dashboard (protected)
+  app.get("/api/admin/rooms", verifyAdmin, async (req, res) => {
+    try {
+      const rooms = await storage.getAllRooms();
+      // Sort by creation date, newest first, limit to 50
+      const sortedRooms = rooms
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 50);
+      
+      res.json(sortedRooms);
+    } catch (error) {
+      console.error('[Admin] Error fetching rooms:', error);
+      res.status(500).json({ error: "Erro ao buscar salas" });
+    }
+  });
+  
+  // Get specific room details for spectator mode (protected)
+  app.get("/api/admin/rooms/:code", verifyAdmin, async (req, res) => {
+    try {
+      const { code } = req.params;
+      const room = await storage.getRoom(code.toUpperCase());
+      
+      if (!room) {
+        return res.status(404).json({ error: "Sala não encontrada" });
+      }
+      
+      // Return full room data including secret info for admin
+      res.json(room);
+    } catch (error) {
+      console.error('[Admin] Error fetching room:', error);
+      res.status(500).json({ error: "Erro ao buscar sala" });
+    }
+  });
+
   return httpServer;
 }
