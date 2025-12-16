@@ -8,6 +8,14 @@ export type Player = {
 
 export type GameStatus = 'home' | 'lobby' | 'modeSelect' | 'submodeSelect' | 'spinning' | 'playing';
 
+export type LobbyChatMessage = {
+  id: string;
+  senderId: string;
+  senderName: string;
+  message: string;
+  timestamp: number;
+};
+
 export type GameModeType = 
   | "palavraSecreta"
   | "palavras" 
@@ -84,6 +92,7 @@ export type GameState = {
   speakingOrder: string[] | null;
   speakingOrderPlayerMap: Record<string, string> | null;
   showSpeakingOrderWheel: boolean;
+  lobbyChatMessages: LobbyChatMessage[];
   
   setUser: (name: string) => void;
   saveNickname: (name: string) => void;
@@ -109,6 +118,9 @@ export type GameState = {
   removeNotification: (id: string) => void;
   setDisconnected: (disconnected: boolean) => void;
   kickPlayer: (targetPlayerId: string) => void;
+  sendLobbyChat: (message: string) => void;
+  addLobbyChatMessage: (msg: LobbyChatMessage) => void;
+  clearLobbyChat: () => void;
 };
 
 function generateUID(): string {
@@ -131,6 +143,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   speakingOrder: null,
   speakingOrderPlayerMap: null,
   showSpeakingOrderWheel: false,
+  lobbyChatMessages: [],
 
   setUser: (name: string) => {
     const uid = generateUID();
@@ -187,7 +200,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   backToLobby: () => {
     const { user, room, ws } = get();
-    set({ status: 'lobby', selectedMode: null, submodeSelect: false });
+    set({ status: 'lobby', selectedMode: null, submodeSelect: false, lobbyChatMessages: [] });
     
     // If host, broadcast to all players
     if (room && user && room.hostId === user.uid && ws && ws.readyState === WebSocket.OPEN) {
@@ -425,6 +438,15 @@ export const useGameStore = create<GameState>((set, get) => ({
             set({ speakingOrderPlayerMap: data.playerMap });
           }
           get().setShowSpeakingOrderWheel(true);
+        }
+        if (data.type === 'lobby-chat-message') {
+          get().addLobbyChatMessage({
+            id: `chat-${data.timestamp}-${data.senderId}`,
+            senderId: data.senderId,
+            senderName: data.senderName,
+            message: data.message,
+            timestamp: data.timestamp
+          });
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
@@ -733,6 +755,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       room: null,
       ws: null,
       selectedMode: null,
+      lobbyChatMessages: [],
     });
   },
 
@@ -815,5 +838,27 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   setDisconnected: (disconnected: boolean) => {
     set({ isDisconnected: disconnected });
+  },
+
+  sendLobbyChat: (message: string) => {
+    const { room, ws } = get();
+    if (!room || !ws || ws.readyState !== WebSocket.OPEN) return;
+    if (!message.trim()) return;
+    
+    ws.send(JSON.stringify({
+      type: 'lobby-chat',
+      roomCode: room.code,
+      message: message.trim()
+    }));
+  },
+
+  addLobbyChatMessage: (msg: LobbyChatMessage) => {
+    set((state) => ({
+      lobbyChatMessages: [...state.lobbyChatMessages.slice(-49), msg]
+    }));
+  },
+
+  clearLobbyChat: () => {
+    set({ lobbyChatMessages: [] });
   }
 }));

@@ -992,6 +992,35 @@ export async function registerRoutes(
             console.log(`[Kick] Successfully removed player ${targetPlayer.name} from room ${roomCode}`);
           }
         }
+
+        // Handle lobby chat message - broadcast to all players in room
+        if (data.type === 'lobby-chat' && data.roomCode && data.message) {
+          const roomCode = data.roomCode as string;
+          const messageText = (data.message as string).trim().slice(0, 200); // Trim and limit message length
+          
+          // Reject empty/whitespace-only messages
+          if (!messageText) return;
+          
+          const connectionInfo = playerConnections.get(ws);
+          if (!connectionInfo || connectionInfo.roomCode !== roomCode) {
+            return;
+          }
+          
+          const room = await storage.getRoom(roomCode);
+          if (!room) return;
+          
+          const sender = room.players.find(p => p.uid === connectionInfo.playerId);
+          if (!sender) return;
+          
+          // Broadcast chat message to all players in room
+          broadcastToRoom(roomCode, {
+            type: 'lobby-chat-message',
+            senderId: sender.uid,
+            senderName: sender.name,
+            message: messageText,
+            timestamp: Date.now()
+          });
+        }
       } catch (error) {
         console.error('WebSocket error:', error);
       }

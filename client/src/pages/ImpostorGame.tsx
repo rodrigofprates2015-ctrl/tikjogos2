@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import PalavraSuperSecretaSubmodeScreen from "@/pages/PalavraSuperSecretaSubmodeScreen";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
+import { LobbyChat } from "@/components/LobbyChat";
 import { SiDiscord } from "react-icons/si";
 import { 
   User, 
@@ -1214,6 +1215,7 @@ const LobbyScreen = () => {
         </div>
       )}
 
+      <LobbyChat />
     </div>
   );
 };
