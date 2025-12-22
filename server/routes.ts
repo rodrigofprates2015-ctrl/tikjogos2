@@ -466,7 +466,7 @@ export async function registerRoutes(
 
   // Redirect ads.txt to Ezoic AdsManager
   app.get("/ads.txt", (_req, res) => {
-    res.redirect(301, "https://srv.adstxtmanager.com/19390/https%3A%2F%2Ftikjogos.com.br%2F.com");
+    res.redirect(301, "https://srv.adstxtmanager.com/19390/tikjogos.com.br");
   });
 
   // Serve version info
