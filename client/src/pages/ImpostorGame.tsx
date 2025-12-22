@@ -830,28 +830,6 @@ const HomeScreen = () => {
         </div>
       </Link>
 
-      {/* Left AdSense Banner - 160x600 */}
-      <div className="hidden xl:block fixed left-2 top-1/2 -translate-y-1/2 z-30">
-        <ins 
-          className="adsbygoogle"
-          style={{ display: 'block', width: '160px', height: '600px' }}
-          data-ad-client="ca-pub-9927561573478881"
-          data-ad-slot="auto"
-          data-ad-format="vertical"
-        />
-      </div>
-
-      {/* Right AdSense Banner - 160x600 */}
-      <div className="hidden xl:block fixed right-2 top-1/2 -translate-y-1/2 z-30">
-        <ins 
-          className="adsbygoogle"
-          style={{ display: 'block', width: '160px', height: '600px' }}
-          data-ad-client="ca-pub-9927561573478881"
-          data-ad-slot="auto"
-          data-ad-format="vertical"
-        />
-      </div>
-
       {/* Tripulante character - left side (desktop only) */}
       <img 
         src={tripulanteImg} 
