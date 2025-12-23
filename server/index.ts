@@ -26,13 +26,15 @@ app.use(express.urlencoded({ extended: false }));
 
 // Serve Ezoic verification file
 app.get(/^\/ezoic-[a-zA-Z0-9]+\.html$/, (req, res) => {
-  const filePath = path.resolve(import.meta.dirname, "..", "public", req.path.substring(1));
+  const fileName = req.path.substring(1);
+  const filePath = path.join(process.cwd(), "public", fileName);
   
-  if (fs.existsSync(filePath)) {
+  fs.stat(filePath, (err, stats) => {
+    if (err || !stats.isFile()) {
+      return res.status(404).send("Not found");
+    }
     res.sendFile(filePath);
-  } else {
-    res.status(404).send("Not found");
-  }
+  });
 });
 
 export function log(message: string, source = "express") {
