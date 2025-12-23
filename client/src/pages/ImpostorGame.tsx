@@ -3,6 +3,7 @@ import { useGameStore, type GameModeType, type PlayerVote, type PlayerAnswer } f
 import { Link } from "wouter";
 import PalavraSuperSecretaSubmodeScreen from "@/pages/PalavraSuperSecretaSubmodeScreen";
 import { NotificationCenter } from "@/components/NotificationCenter";
+import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
 import { LobbyChat } from "@/components/LobbyChat";
 import { SiDiscord } from "react-icons/si";
@@ -817,6 +818,9 @@ const HomeScreen = () => {
         backgroundRepeat: 'no-repeat'
       }}
     >
+      {/* Top Ad Block */}
+      <AdBlockTop />
+
       {/* Hero Banner - Oficina de Temas */}
       <Link 
         href="/criar-tema"
@@ -933,6 +937,9 @@ const HomeScreen = () => {
           </div>
         </div>
       </div>
+
+      {/* Bottom Ad Block */}
+      <AdBlockBottom />
 
       {/* Footer - now below the content, takes full width */}
       <div className="w-full text-center py-6 px-4 bg-gradient-to-t from-black/40 to-transparent z-20 relative border-t border-[#3d4a5c]/30">

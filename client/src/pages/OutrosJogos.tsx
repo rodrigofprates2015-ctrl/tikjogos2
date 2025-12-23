@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { ArrowLeft, Gamepad2 } from "lucide-react";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoTermo from "@/assets/Termo_Logo_58x58_1765323385999.png";
+import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
 
 const games = [
   {
@@ -16,6 +17,9 @@ const games = [
 export default function OutrosJogos() {
   return (
     <div className="min-h-screen w-full flex flex-col items-center bg-[#121a31] py-8 px-4">
+      {/* Top Ad Block */}
+      <AdBlockTop />
+
       <Link 
         href="/"
         className="fixed top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-[#3a3a3c] rounded-lg text-white transition-all font-semibold"
@@ -56,6 +60,9 @@ export default function OutrosJogos() {
           </div>
         </div>
       </div>
+
+      {/* Bottom Ad Block */}
+      <AdBlockBottom />
 
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center z-20 max-w-md px-4">
         <img src={logoTikjogos} alt="TikJogos" className="h-4 md:h-5 mx-auto mb-2" />

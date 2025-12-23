@@ -15,6 +15,7 @@ import {
 import backgroundImg from "@assets/background_natal_1765071997985.png";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoImpostorMobile from "@assets/logo_site_impostor_1765071990526.png";
+import { AdBlockTop, AdBlockInContent, AdBlockBottom } from "@/components/AdBlocks";
 
 const gameModes = [
   {
@@ -130,6 +131,9 @@ export default function ComoJogar() {
         backgroundAttachment: 'fixed'
       }}
     >
+      {/* Top Ad Block */}
+      <AdBlockTop />
+
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#0a1628]/90 backdrop-blur-sm border-b border-[#3d4a5c]">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
@@ -263,6 +267,9 @@ export default function ComoJogar() {
           </div>
         </section>
 
+        {/* Ad Block In Content */}
+        <AdBlockInContent />
+
         {/* CTA */}
         <section className="text-center py-8">
           <h2 className="text-xl font-bold text-white mb-4">Pronto para Jogar?</h2>
@@ -272,6 +279,9 @@ export default function ComoJogar() {
           </Link>
         </section>
       </main>
+
+      {/* Bottom Ad Block */}
+      <AdBlockBottom />
 
       {/* Footer */}
       <footer className="bg-[#0a1628]/90 border-t border-[#3d4a5c] py-6">
