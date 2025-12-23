@@ -1,0 +1,62 @@
+O Diagnóstico: "Anotando no caderno errado"
+Se o Mercado Pago entrega o aviso, seu site confirma que recebeu, mas o status do pedido não muda para o usuário, o problema é onde seu código está salvando essa informação.
+
+É quase certeza que aconteceu o seguinte na migração Replit -> Railway:
+
+O Webhook recebe o aviso de pagamento.
+
+O seu código responde 200 OK (por isso fica verde no Mercado Pago).
+
+O seu código tenta salvar a confirmação ("Pago") no banco de dados.
+
+O ERRO: O código provavelmente ainda está configurado para salvar em um arquivo local (SQLite ou JSON) ou em um banco de memória, em vez de usar o PostgreSQL do Railway.
+
+Como o Railway não mantém arquivos locais (ele apaga tudo a cada reinício/deploy), ou como o front-end está lendo do Postgres e o Webhook está escrevendo num arquivo local, a informação se perde.
+
+Como corrigir (Passo a Passo)
+Você precisa verificar o arquivo onde você faz a conexão com o banco de dados.
+
+Passo 1: Verifique o Driver do Banco No seu arquivo package.json, você tem a biblioteca pg (Postgres) instalada? Ou está usando sqlite3?
+
+Se estiver usando sqlite3 ou salvando em dados.json, não vai funcionar no Railway com múltiplos acessos. Você precisa mudar para Postgres.
+
+Passo 2: Verifique a Conexão (Onde está o erro provável) Vá no arquivo onde você conecta ao banco (ex: db.js, database.js ou prisma.schema).
+
+Ele deve estar mais ou menos assim para funcionar no Railway:
+
+JavaScript
+
+// Exemplo usando a biblioteca 'pg' (Postgres)
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  // O código TEM que pegar a variável de ambiente que vi no seu print 3
+  connectionString: process.env.DATABASE_URL, 
+  ssl: {
+    rejectUnauthorized: false // Necessário para conectar no Railway
+  }
+});
+
+module.exports = pool;
+Passo 3: O erro silencioso no Webhook Muitas vezes o código do webhook é assim:
+
+JavaScript
+
+app.post('/webhook', async (req, res) => {
+    res.sendStatus(200); // Responde rápido para o MP não reclamar
+    
+    // A LÓGICA VEM DEPOIS
+    try {
+       // Se der erro AQUI, você nunca fica sabendo pq já respondeu 200
+       await atualizarBancoDeDados(req.body); 
+    } catch (erro) {
+       console.log("ERRO CRÍTICO:", erro); // <--- Você precisa olhar os logs do Railway para ver isso
+    }
+});
+Resumo da Ação: O problema não é de rede nem de URL (seus prints provam isso). O problema é de Código/Banco de Dados.
+
+Verifique se seu código está lendo process.env.DATABASE_URL.
+
+Vá na aba Logs do Railway logo após um pagamento e veja se aparece algum erro vermelho de "Connection refused" ou "Table not found".
+
+Se você puder colar aqui o trecho do seu código que faz a conexão com o banco (db.js) ou o trecho da rota /webhook, eu consigo te dizer exatamente onde mudar.

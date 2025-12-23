@@ -1,0 +1,509 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* GT America Compressed Bold Italic - using fallback if font not available */
+@font-face {
+  font-family: 'GT America Compressed';
+  font-weight: 700;
+  font-style: italic;
+  src: local('GT America Compressed Bold Italic'), local('GTAmericaCompressed-BoldItalic');
+  font-display: swap;
+}
+
+/* GT America Compressed Medium Italic - for smaller banner text */
+@font-face {
+  font-family: 'GT America Compressed Medium';
+  font-weight: 500;
+  font-style: italic;
+  src: local('GT America Compressed Medium Italic'), local('GTAmericaCompressed-MediumItalic');
+  font-display: swap;
+}
+
+@theme inline {
+  --font-gt-america-medium: "GT America Compressed Medium", "Impact", "Arial Narrow", sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+  --font-gt-america: "GT America Compressed", "Impact", "Arial Narrow", sans-serif;
+  
+  /* Color Palette matching the mockup */
+  --color-background: 210 60% 35%;
+  --color-foreground: 0 0% 100%;
+  --color-card: 220 40% 25%;
+  --color-card-foreground: 0 0% 100%;
+  
+  /* Primary - Orange (buttons) */
+  --color-primary: 30 80% 55%;
+  --color-primary-foreground: 0 0% 100%;
+  
+  /* Secondary - Green (enter button) */
+  --color-secondary: 145 50% 40%;
+  --color-secondary-foreground: 0 0% 100%;
+  
+  /* Accent - Light Blue (borders) */
+  --color-accent: 200 70% 70%;
+  --color-accent-foreground: 220 40% 20%;
+  
+  /* Danger/Impostor - Red */
+  --color-danger: 10 70% 50%;
+  --color-danger-foreground: 0 0% 100%;
+  
+  /* Success - Green */
+  --color-success: 160 60% 40%;
+  --color-success-foreground: 0 0% 100%;
+  
+  /* Warning - Yellow */
+  --color-warning: 45 90% 60%;
+  --color-warning-foreground: 220 40% 15%;
+  
+  /* Muted */
+  --color-muted: 220 30% 30%;
+  --color-muted-foreground: 220 10% 60%;
+  
+  /* Border */
+  --color-border: 200 50% 60%;
+  
+  /* Animations */
+  --animate-fade-in: fadeIn 0.4s ease-out forwards;
+  --animate-bounce-in: bounceIn 0.5s ease-out forwards;
+  --animate-pulse-soft: pulseSoft 2s ease-in-out infinite;
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes bounceIn {
+    0% { opacity: 0; transform: scale(0.8); }
+    50% { transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  
+  @keyframes pulseSoft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  
+  @keyframes stageFadeIn {
+    from { 
+      opacity: 0; 
+      transform: translateY(15px) scale(0.98); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0) scale(1); 
+    }
+  }
+  
+  @keyframes stageSlideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}
+
+@layer base {
+  html {
+    @apply h-full;
+  }
+  
+  body {
+    @apply font-poppins min-h-screen;
+    background: #2b6da8;
+    color: white;
+  }
+  
+  #root {
+    @apply min-h-screen flex flex-col;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  /* Stage transition animations */
+  .animate-stage-fade-in {
+    animation: stageFadeIn 0.4s ease-out forwards;
+  }
+
+  /* Main card with light blue border like mockup */
+  .main-card {
+    background: linear-gradient(180deg, rgba(30, 50, 80, 0.95) 0%, rgba(20, 40, 70, 0.98) 100%);
+    border: 4px solid #7ec8e3;
+    border-radius: 20px;
+    box-shadow: 
+      0 0 20px rgba(126, 200, 227, 0.3),
+      inset 0 0 30px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Dark input style like mockup */
+  .input-dark {
+    background: #1a2a3a;
+    border: 2px solid #3a5a7a;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    padding: 14px 20px;
+    width: 100%;
+    transition: all 0.2s;
+  }
+  
+  .input-dark::placeholder {
+    color: #6a8aaa;
+  }
+  
+  .input-dark:focus {
+    outline: none;
+    border-color: #7ec8e3;
+    box-shadow: 0 0 10px rgba(126, 200, 227, 0.3);
+  }
+
+  /* Orange button like mockup */
+  .btn-orange {
+    background: linear-gradient(180deg, #e8a045 0%, #d89035 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 700;
+    font-size: 18px;
+    padding: 14px 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 0 #b87020;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .btn-orange:hover {
+    background: linear-gradient(180deg, #f0b055 0%, #e0a045 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #b87020;
+  }
+  
+  .btn-orange:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #b87020;
+  }
+
+  /* Green button like mockup */
+  .btn-green {
+    background: linear-gradient(180deg, #3d9970 0%, #2d8060 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 14px 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 0 #1d6050;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .btn-green:hover {
+    background: linear-gradient(180deg, #4da980 0%, #3d9070 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #1d6050;
+  }
+  
+  .btn-green:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #1d6050;
+  }
+
+  /* Gray input for code */
+  .input-code {
+    background: #3a4a5a;
+    border: 2px solid #5a6a7a;
+    border-radius: 10px;
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 14px 20px;
+    text-align: center;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    width: 100%;
+    transition: all 0.2s;
+  }
+  
+  .input-code::placeholder {
+    color: #8a9aaa;
+    letter-spacing: 0.1em;
+  }
+  
+  .input-code:focus {
+    outline: none;
+    border-color: #7ec8e3;
+  }
+
+  /* Card styles for the game */
+  .innocent-card {
+    background: linear-gradient(135deg, #1a4a5a 0%, #2a6a7a 50%, #1a5a6a 100%);
+    border: 3px solid #2a9d8f;
+    border-radius: 16px;
+    box-shadow: 
+      0 4px 0 #1d7a6f,
+      0 8px 20px rgba(42, 157, 143, 0.3);
+  }
+
+  .impostor-card {
+    background: linear-gradient(135deg, #4a1a1a 0%, #6a2a2a 50%, #5a1a1a 100%);
+    border: 3px solid #c44536;
+    border-radius: 16px;
+    box-shadow: 
+      0 4px 0 #8b3025,
+      0 8px 20px rgba(196, 69, 54, 0.3);
+    animation: pulse-danger 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-danger {
+    0%, 100% { 
+      box-shadow: 
+        0 4px 0 #8b3025,
+        0 8px 20px rgba(196, 69, 54, 0.3);
+    }
+    50% { 
+      box-shadow: 
+        0 4px 0 #8b3025,
+        0 12px 30px rgba(196, 69, 54, 0.5);
+    }
+  }
+
+  /* Retro button styles (for other screens) */
+  .btn-retro-primary {
+    background: linear-gradient(180deg, #e8a045 0%, #d89035 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 0 #b87020;
+    transition: all 0.15s;
+  }
+
+  .btn-retro-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #b87020;
+  }
+
+  .btn-retro-primary:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #b87020;
+  }
+
+  .btn-retro-secondary {
+    background: linear-gradient(180deg, #3d9970 0%, #2d8060 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 0 #1d6050;
+    transition: all 0.15s;
+  }
+
+  .btn-retro-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #1d6050;
+  }
+
+  .btn-retro-secondary:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #1d6050;
+  }
+
+  .btn-retro-blue {
+    background: linear-gradient(180deg, #4a90a4 0%, #3a8094 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 0 #2a6074;
+    transition: all 0.15s;
+  }
+
+  .btn-retro-blue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #2a6074;
+  }
+
+  .btn-retro-blue:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #2a6074;
+  }
+
+  .btn-retro-danger {
+    background: linear-gradient(180deg, #c44536 0%, #a43526 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 0 #842516;
+    transition: all 0.15s;
+  }
+
+  .btn-retro-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #842516;
+  }
+
+  .btn-retro-danger:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #842516;
+  }
+
+  /* Card style for other screens */
+  .card-retro {
+    background: linear-gradient(180deg, rgba(30, 50, 80, 0.95) 0%, rgba(20, 40, 70, 0.98) 100%);
+    border: 3px solid #5a7a9a;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Input style for other screens */
+  .input-retro {
+    background: #1a2a3a;
+    border: 2px solid #4a6a8a;
+    border-radius: 10px;
+    color: white;
+    transition: all 0.2s;
+  }
+  
+  .input-retro::placeholder {
+    color: #6a8aaa;
+  }
+  
+  .input-retro:focus {
+    outline: none;
+    border-color: #7ec8e3;
+    box-shadow: 0 0 10px rgba(126, 200, 227, 0.3);
+  }
+
+  /* Retro divider */
+  .retro-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #5a7a9a, transparent);
+  }
+
+  /* Mode cards */
+  .mode-card {
+    background: linear-gradient(180deg, rgba(30, 50, 80, 0.9) 0%, rgba(20, 40, 70, 0.95) 100%);
+    border: 2px solid #4a6a8a;
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+  
+  .mode-card:hover {
+    border-color: #7ec8e3;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(126, 200, 227, 0.2);
+  }
+  
+  .mode-card.selected {
+    border-color: #e8a045;
+    box-shadow: 0 0 15px rgba(232, 160, 69, 0.3);
+  }
+
+  /* Hero Banner - Oficina de Temas */
+  .hero-banner {
+    padding: 0;
+    text-align: left;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+    height: 80px;
+    background: linear-gradient(180deg, #e8a045 0%, #d89035 100%);
+    box-shadow: 0 4px 0 #b87020;
+  }
+
+  .hero-banner:hover {
+    background: linear-gradient(180deg, #f0b055 0%, #e0a045 100%);
+  }
+
+  .hero-banner-overlay {
+    padding: 0.75rem 1.5rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hero-banner-text-small {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 0.125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .hero-banner-text-main {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .hero-banner-text-price {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    margin-top: 0.125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  @media (min-width: 768px) {
+    .hero-banner {
+      height: 100px;
+    }
+    .hero-banner-overlay {
+      padding: 1rem 2rem;
+    }
+    .hero-banner-text-small {
+      font-size: 0.875rem;
+    }
+    .hero-banner-text-main {
+      font-size: 1.75rem;
+    }
+    .hero-banner-text-price {
+      font-size: 0.875rem;
+    }
+  }
+}

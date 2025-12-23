@@ -1,0 +1,54 @@
+Etapa 2: Configuração do Ads.txt
+A configuração do arquivo ads.txt é obrigatória para todos os editores que utilizam o Ezoic. Este arquivo ajuda a maximizar sua receita com anúncios, garantindo que parceiros de publicidade autorizados possam dar lances em seu inventário.
+
+O que é o Ads.txt? 🔗
+O arquivo ads.txt é um simples arquivo de texto que informa aos anunciantes quais empresas estão autorizadas a vender anúncios no seu site. Pense nele como uma lista de "vendedores verificados" que impede que empresas não autorizadas vendam espaços publicitários falsos no seu domínio.
+
+Escolha seu método de configuração 🔗
+Selecione o método que melhor se adapta à configuração do seu site:
+
+Importante: Substitua [YOUR_DOMAIN].com`<nome de domínio real>` em todos os exemplos de código abaixo.
+1. Sites WordPress (Recomendado) 🔗
+Opção mais fácil para usuários do WordPress:
+
+Instale o plugin de integração Ezoic a partir do painel de administração do WordPress.
+Ative o plugin e acesse as configurações dele.
+Ative o recurso de gerenciamento de ads.txt
+O plugin cuida de tudo automaticamente.
+O plugin Ezoic para WordPress gerencia automaticamente seu arquivo ads.txt e o mantém atualizado. Nenhuma configuração técnica é necessária!
+2. Redirecionamentos de servidor 🔗
+Para usuários com acesso ao servidor:
+
+Apache (.htaccess):
+
+Redirect 301 /ads.txt https://srv.adstxtmanager.com/19390/[YOUR_DOMAIN].com
+apache
+Nginx:
+
+server {
+    location ~ /ads.txt {
+        return 301 https://srv.adstxtmanager.com/19390/[YOUR_DOMAIN].com;
+    }
+}
+nginx
+PHP:
+
+<?php
+header('Location: https://srv.adstxtmanager.com/19390/[YOUR_DOMAIN].com');
+exit;
+?>
+php
+3. Atualizações automatizadas (avançadas) 🔗
+Para atualizações diárias automáticas:
+
+curl -L https://srv.adstxtmanager.com/19390/[YOUR_DOMAIN].com > ads.txt
+bash
+Configure uma tarefa cron diária para executar este comando automaticamente e manter seu arquivo ads.txt atualizado.
+Teste sua configuração 🔗
+Acesse yourdomain.com/ads.txt no seu navegador
+Verifique se você vê uma lista de vendedores de anúncios autorizados.
+Limpe o cache do seu site se o arquivo não aparecer imediatamente.
+Concluído! 🔗
+Assim que o seu arquivo ads.txt estiver funcionando corretamente, você terá concluído com sucesso a Etapa 2. Seu site agora está configurado adequadamente para funcionar com os parceiros de publicidade da Ezoic, ajudando a maximizar sua receita com anúncios.
+
+Pronto para a etapa final? Continue para a Etapa 3: Posicionamento de anúncios para começar a exibir anúncios em seu site.

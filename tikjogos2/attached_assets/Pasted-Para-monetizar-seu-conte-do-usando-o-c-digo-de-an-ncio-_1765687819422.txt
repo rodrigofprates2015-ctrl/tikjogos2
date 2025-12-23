@@ -1,0 +1,33 @@
+Para monetizar seu conteúdo usando o código de anúncio do Google, você precisa obedecer às políticas a seguir. Deixar de cumprir essas políticas pode fazer com que o Google bloqueie a exibição de anúncios no seu conteúdo, suspenda ou encerre sua conta.
+
+Não permitimos conteúdo que seja ilegal, promova atividades ilegais ou infrinja os direitos legais de terceiros. Não permitimos conteúdo que viole direitos autorais, que venda ou promova a venda de produtos falsificados. Não permitimos conteúdo que promova discriminação ou incite ódio contra um grupo ou indivíduo, que assedie, intimide ou pratique bullying, que inclua ameaças ou incite violência física ou mental, ou que explore outras pessoas por meio de extorsão. Não permitimos conteúdo que promova crueldade ou violência gratuita contra animais nem a venda de produtos originados de espécies em risco de extinção.
+
+Não permitimos conteúdo que contenha declarações falsas, informações enganosas ou que oculte dados reais, nem conteúdo que sugira afiliação falsa com indivíduos ou organizações. Não permitimos conteúdo que faça afirmações comprovadamente falsas que prejudiquem a confiança em processos eleitorais, que promova declarações prejudiciais sobre saúde contrariando consenso científico ou que seja contrário ao consenso científico sobre mudanças climáticas. Não é permitido incentivar a interação do usuário sob pretextos falsos ou imprecisos, tentar roubar informações pessoais por meio de phishing, promover promessas desonestas como esquemas de enriquecimento rápido ou fazer declarações falsas ou ocultar dados de identidade relacionados a política ou interesse público. Não permitimos conteúdo que engane usuários com mídia manipulada sobre política ou interesse público.
+
+Não permitimos conteúdo sexualmente explícito destinado à excitação sexual, descrições gráficas de atos sexuais ou fetiches sexuais explícitos. Não permitimos conteúdo que explore ou coloque crianças em risco sexual, incluindo qualquer forma de abuso sexual infantil ou sexualização de menores.
+
+Não permitimos conteúdo que inclua violência gratuita, extrema ou detalhada, que mostre mutilações ou ferimentos graves de forma explícita ou que apresente imagens ou descrições repulsivas destinadas a chocar o usuário.
+
+Não permitimos conteúdo que promova o uso, venda ou fabricação de drogas ilegais, que ensine como preparar ou consumir substâncias ilícitas ou que promova o abuso de medicamentos controlados.
+
+Não permitimos conteúdo que promova a venda ou o uso indevido de armas de fogo, armas brancas ou explosivos, que forneça instruções para fabricação ou modificação de armas ou que incentive violência armada.
+
+Não permitimos conteúdo que promova jogos de azar ilegais, que incentive apostas sem licenciamento ou autorização legal ou que direcione usuários para serviços de apostas não regulamentados.
+
+Não permitimos conteúdo que promova esquemas de enriquecimento rápido, golpes financeiros, pirâmides, fraudes, engenharia social ou qualquer prática destinada a enganar usuários para obter dinheiro ou informações pessoais.
+
+Não permitimos conteúdo que contenha malware, spyware ou vírus, que engane usuários para instalar software prejudicial, que altere configurações do sistema sem consentimento ou que cause danos, interrupções ou acesso não autorizado.
+
+As informações fornecidas pelos editores ao Google devem ser verdadeiras, completas e atualizadas, não podendo ser enganosas nem omitidas intencionalmente. Não permitimos anúncios que interfiram na interação normal do usuário com o conteúdo, que cubram conteúdo principal, impeçam a navegação, forcem cliques acidentais ou sejam exibidos fora do contexto da página.
+
+Não permitimos anúncios em páginas sem conteúdo próprio, em páginas com conteúdo copiado sem valor adicional, em páginas em construção, em páginas com mais anúncios do que conteúdo editorial ou em páginas geradas automaticamente sem propósito claro.
+
+O conteúdo deve estar majoritariamente em um idioma compatível, ser direcionado corretamente ao público-alvo e cumprir leis e regulamentos locais.
+
+Não permitimos a coleta de dados do usuário sem consentimento, o uso de dados sensíveis para publicidade personalizada ou a segmentação baseada em informações proibidas. Os editores devem manter uma Política de Privacidade acessível, informar sobre o uso de cookies e tecnologias de rastreamento e cumprir todas as leis de proteção de dados aplicáveis.
+
+Quando o conteúdo for direcionado a crianças, a coleta de dados é severamente limitada, a publicidade personalizada não é permitida e o editor deve cumprir integralmente a legislação aplicável, incluindo a COPPA.
+
+Não permitimos spam, práticas abusivas, redirecionamentos enganosos, manipulação de tráfego, violação de sanções comerciais, inventário não autorizado ou ausência de um arquivo ads.txt válido.
+
+O descumprimento dessas políticas pode resultar no bloqueio da veiculação de anúncios, na restrição de anúncios, na suspensão ou no encerramento da conta.

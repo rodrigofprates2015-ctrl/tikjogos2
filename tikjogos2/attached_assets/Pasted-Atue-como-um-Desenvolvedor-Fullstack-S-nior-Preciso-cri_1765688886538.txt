@@ -1,0 +1,52 @@
+Atue como um Desenvolvedor Fullstack Sênior. Preciso criar uma nova rota privada no meu projeto React chamada /admin-dashboard. Esta área será exclusiva para mim (desenvolvedor) monitorar o jogo em tempo real.
+
+Requisitos de Segurança:
+
+A página deve ser protegida por uma verificação simples (pode ser uma senha 'hardcoded' no front-end por enquanto ou verificação de UID de admin se já tivermos autenticação), para impedir que jogadores comuns acessem.
+
+Funcionalidades da Dashboard:
+
+Métricas em Tempo Real: No topo, mostre cards com:
+
+Total de Salas Ativas.
+
+Total de Jogadores Online (soma de jogadores em todas as salas).
+
+Lista de Salas: Uma tabela listando todas as salas ativas do banco de dados (Firestore/Realtime DB). Colunas:
+
+Código da Sala.
+
+Status (Aguardando/Jogando).
+
+Número de Jogadores (ex: 5/10).
+
+Tema/Categoria escolhida.
+
+Botão 'Inspecionar'.
+
+Modo Fantasma (Spectator Mode):
+
+Ao clicar em 'Inspecionar' na lista acima, abra um modal ou leve para uma visão da sala.
+
+Importante: Eu devo entrar como observador invisível. Não devo aparecer na lista de jogadores da sala, não posso votar e não posso interagir.
+
+Quero ver os dados ocultos: Quem é o Impostor, qual a palavra secreta, e o status de cada jogador (vivo/morto).
+
+O objetivo é apenas analisar se a lógica do jogo está fluindo corretamente, sem interferir na partida.
+
+Estilo: Use um design limpo e escuro (Dark Mode), estilo painel administrativo, com tabelas organizadas.
+
+Por favor, implemente o código dessa nova página e a lógica de conexão com o banco de dados para ler essas informações em tempo real."
+
+Dicas de Segurança para você (Não coloque no Prompt)
+Como você vai implementar isso, tenha cuidado com dois pontos:
+
+A Senha: Se você fizer a verificação apenas no Front-end (ex: if (senha === "1234")), um hacker experiente consegue achar a senha inspecionando o código.
+
+Para agora: Tudo bem para testar.
+
+Para o futuro: O ideal é usar as Regras de Segurança do Firebase (Firestore Rules) para que apenas o seu email de admin tenha permissão de ler a lista completa de salas.
+
+Performance: Listar todas as salas em tempo real pode consumir muita leitura do banco de dados se o jogo crescer muito.
+
+Peça para a IA usar um limit (ex: mostrar apenas as últimas 50 salas criadas) para não estourar sua cota gratuita do Firebase.
