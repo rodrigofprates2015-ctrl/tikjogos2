@@ -203,16 +203,14 @@ const seedPosts = [
 ];
 
 async function seed() {
-  console.log(\`Seeding \${seedPosts.length} blog posts...\`);
+  console.log(`Seeding ${seedPosts.length} blog posts...`);
   for (const postData of seedPosts) {
     const existing = await storage.getPostBySlug(postData.slug);
     if (!existing) {
       await storage.createPost(postData);
-      console.log(\`Created post: \${postData.title}\`);
+      console.log(`Created post: ${postData.title}`);
     } else {
-      // Update existing post to ensure it has the correct content
-      await storage.updatePostBySlug(postData.slug, postData);
-      console.log(\`Updated post: \${postData.slug}\`);
+      console.log(`Skipping existing post: ${postData.slug}`);
     }
   }
   console.log("Seeding complete!");
