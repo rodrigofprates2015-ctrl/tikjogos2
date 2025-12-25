@@ -108,6 +108,27 @@ export const themes = pgTable("themes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const posts = pgTable("posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  content: text("content").notNull(),
+  excerpt: text("excerpt").notNull(),
+  author: text("author").notNull().default("Equipe TikJogos"),
+  category: text("category").notNull(),
+  imageUrl: text("imageUrl"),
+  featured: boolean("featured").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertPostSchema = createInsertSchema(posts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPost = z.infer<typeof insertPostSchema>;
+export type Post = typeof posts.$inferSelect;
+
 export const insertThemeSchema = createInsertSchema(themes).omit({
   id: true,
   createdAt: true,

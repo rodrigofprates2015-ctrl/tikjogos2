@@ -14,6 +14,7 @@ import OutrosJogos from "@/pages/OutrosJogos";
 import Termo from "@/pages/Termo";
 import AdminDashboard from "@/pages/AdminDashboard";
 import Blog from "@/pages/Blog";
+import BlogPost from "@/pages/BlogPost";
 import { useAuth } from "@/hooks/useAuth";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/comojogar" component={ComoJogar} />
       <Route path="/como-jogar" component={ComoJogar} />
       <Route path="/blog" component={Blog} />
+      <Route path="/blog/:slug" component={BlogPost} />
       <Route path="/privacidade" component={PrivacyPolicy} />
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/termos" component={TermsOfUse} />

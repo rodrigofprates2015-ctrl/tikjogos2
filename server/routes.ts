@@ -1921,16 +1921,31 @@ export async function registerRoutes(
     try {
       const { code } = req.params;
       const room = await storage.getRoom(code.toUpperCase());
-      
-      if (!room) {
-        return res.status(404).json({ error: "Sala não encontrada" });
-      }
-      
-      // Return full room data including secret info for admin
+      if (!room) return res.status(404).json({ error: "Sala não encontrada" });
       res.json(room);
     } catch (error) {
-      console.error('[Admin] Error fetching room:', error);
-      res.status(500).json({ error: "Erro ao buscar sala" });
+      console.error('[Admin] Error fetching room details:', error);
+      res.status(500).json({ error: "Erro ao buscar detalhes da sala" });
+    }
+  });
+
+  // Blog Routes
+  app.get("/api/posts", async (_req, res) => {
+    try {
+      const blogPosts = await storage.getPosts();
+      res.json(blogPosts);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to fetch posts" });
+    }
+  });
+
+  app.get("/api/posts/:slug", async (req, res) => {
+    try {
+      const post = await storage.getPostBySlug(req.params.slug);
+      if (!post) return res.status(404).json({ error: "Post not found" });
+      res.json(post);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to fetch post" });
     }
   });
 

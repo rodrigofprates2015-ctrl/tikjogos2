@@ -1,6 +1,6 @@
-import { type Player, type GameData, type User, type UpsertUser, users, type Theme, type InsertTheme, themes } from "@shared/schema";
+import { type Player, type GameData, type User, type UpsertUser, users, type Theme, type InsertTheme, themes, type Post, type InsertPost, posts } from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 
 export type Room = {
   code: string;
@@ -35,16 +35,42 @@ export interface IStorage {
   getPublicApprovedThemes(): Promise<Theme[]>;
   updateTheme(id: string, updates: Partial<InsertTheme>): Promise<Theme | undefined>;
   deleteTheme(id: string): Promise<void>;
+  // Blog storage
+  getPosts(): Promise<Post[]>;
+  getPostBySlug(slug: string): Promise<Post | undefined>;
+  createPost(post: InsertPost): Promise<Post>;
 }
 
 export class MemoryStorage implements IStorage {
   private rooms: Map<string, Room> = new Map();
   private usersMap: Map<string, User> = new Map();
   private themesMap: Map<string, Theme> = new Map();
+  private postsMap: Map<string, Post> = new Map();
   private themeIdCounter: number = 1;
+  private postIdCounter: number = 1;
 
   async getUser(id: string): Promise<User | undefined> {
     return this.usersMap.get(id);
+  }
+  
+  async getPosts(): Promise<Post[]> {
+    return Array.from(this.postsMap.values()).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getPostBySlug(slug: string): Promise<Post | undefined> {
+    return Array.from(this.postsMap.values()).find(p => p.slug === slug);
+  }
+
+  async createPost(postData: InsertPost): Promise<Post> {
+    const id = `mem-post-${this.postIdCounter++}`;
+    const post: Post = {
+      id,
+      ...postData,
+      imageUrl: postData.imageUrl ?? null,
+      createdAt: new Date(),
+    };
+    this.postsMap.set(id, post);
+    return post;
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
@@ -208,6 +234,26 @@ export class MemoryStorage implements IStorage {
   async deleteTheme(id: string): Promise<void> {
     this.themesMap.delete(id);
   }
+
+  async getPosts(): Promise<Post[]> {
+    return Array.from(this.postsMap.values()).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getPostBySlug(slug: string): Promise<Post | undefined> {
+    return Array.from(this.postsMap.values()).find(p => p.slug === slug);
+  }
+
+  async createPost(postData: InsertPost): Promise<Post> {
+    const id = `mem-post-${this.postIdCounter++}`;
+    const post: Post = {
+      id,
+      ...postData,
+      imageUrl: postData.imageUrl ?? null,
+      createdAt: new Date(),
+    };
+    this.postsMap.set(id, post);
+    return post;
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -351,6 +397,23 @@ export class DatabaseStorage implements IStorage {
   async deleteTheme(id: string): Promise<void> {
     if (!db) throw new Error("Database not initialized");
     await db.delete(themes).where(eq(themes.id, id));
+  }
+
+  async getPosts(): Promise<Post[]> {
+    if (!db) throw new Error("Database not initialized");
+    return await db.select().from(posts).orderBy(desc(posts.createdAt));
+  }
+
+  async getPostBySlug(slug: string): Promise<Post | undefined> {
+    if (!db) throw new Error("Database not initialized");
+    const [post] = await db.select().from(posts).where(eq(posts.slug, slug));
+    return post;
+  }
+
+  async createPost(postData: InsertPost): Promise<Post> {
+    if (!db) throw new Error("Database not initialized");
+    const [post] = await db.insert(posts).values(postData).returning();
+    return post;
   }
 }
 
