@@ -1431,6 +1431,25 @@ const ModeSelectScreen = () => {
   useEffect(() => {
     if (selectedMode === 'palavraComunidade') {
       loadCommunityThemes();
+      // Check if a theme was selected from the gallery page
+      const selectedThemeId = sessionStorage.getItem('selectedThemeId');
+      if (selectedThemeId) {
+        // Find the theme and set its access code
+        fetch('/api/themes/public')
+          .then(res => res.json())
+          .then(themes => {
+            const theme = themes.find((t: PublicTheme) => t.id === selectedThemeId);
+            if (theme) {
+              setSelectedThemeCode(theme.accessCode);
+              toast({ 
+                title: "Tema selecionado!", 
+                description: `"${theme.titulo}" está pronto para jogar` 
+              });
+            }
+            sessionStorage.removeItem('selectedThemeId');
+          })
+          .catch(err => console.error('Failed to load selected theme:', err));
+      }
     } else {
       setSelectedThemeCode(null);
     }
@@ -1554,49 +1573,50 @@ const ModeSelectScreen = () => {
           <div className="mt-4 pt-4 border-t border-[#3d4a5c]">
             <h3 className="text-white font-bold mb-3 flex items-center gap-2">
               <Users className="w-4 h-4 text-[#4a90a4]" />
-              Escolha um tema da comunidade
+              Temas da Comunidade
             </h3>
-            {isLoadingThemes ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="w-6 h-6 animate-spin text-[#4a90a4]" />
-              </div>
-            ) : communityThemes.length === 0 ? (
-              <div className="text-center py-6 text-gray-400">
-                <p>Nenhum tema disponivel ainda.</p>
-                <p className="text-sm mt-2">Crie um na Oficina de Temas!</p>
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                {communityThemes.map((theme) => (
+            
+            {selectedThemeCode ? (
+              <div className="p-4 rounded-2xl border-2 border-[#6b4ba3] bg-[#6b4ba3]/10 mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6b4ba3] to-[#4a3070] flex items-center justify-center">
+                    <Check className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-[#6b4ba3]">Tema Selecionado</p>
+                    <p className="text-xs text-gray-400">Pronto para iniciar a partida!</p>
+                  </div>
                   <button
-                    key={theme.id}
-                    onClick={() => setSelectedThemeCode(theme.accessCode)}
-                    className={cn(
-                      "w-full p-3 rounded-xl border-2 text-left transition-all",
-                      selectedThemeCode === theme.accessCode
-                        ? "border-[#6b4ba3] bg-[#6b4ba3]/10"
-                        : "border-[#3d4a5c] bg-[#16213e]/60 hover:border-gray-500"
-                    )}
-                    data-testid={`button-theme-${theme.id}`}
+                    onClick={() => setSelectedThemeCode(null)}
+                    className="text-gray-400 hover:text-white transition-colors"
                   >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-white truncate">{theme.titulo}</h4>
-                        <p className="text-xs text-gray-400 truncate">por {theme.autor}</p>
-                      </div>
-                      <span className="text-xs text-[#6b4ba3] bg-[#6b4ba3]/10 px-2 py-1 rounded shrink-0">
-                        {theme.palavrasCount} palavras
-                      </span>
-                      {selectedThemeCode === theme.accessCode && (
-                        <div className="w-5 h-5 rounded-full bg-[#6b4ba3] flex items-center justify-center shrink-0">
-                          <Check className="w-3 h-3 text-white" />
-                        </div>
-                      )}
-                    </div>
+                    <X className="w-5 h-5" />
                   </button>
-                ))}
+                </div>
               </div>
-            )}
+            ) : null}
+            
+            <Link href="/temas">
+              <div className="group relative p-6 rounded-2xl border-2 border-dashed border-[#3d4a5c] hover:border-[#6b4ba3] bg-[#16213e]/20 hover:bg-[#16213e]/40 transition-all duration-300 cursor-pointer text-center">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#6b4ba3] to-[#4a3070] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Sparkles className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-bold text-white group-hover:text-[#6b4ba3] transition-colors">
+                      {selectedThemeCode ? 'Trocar Tema' : 'Explorar Galeria de Temas'}
+                    </h4>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Descubra temas incríveis criados pela comunidade!
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <Play className="w-3 h-3" />
+                    <span>Clique para ver todos os temas disponíveis</span>
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
         )}
       </div>

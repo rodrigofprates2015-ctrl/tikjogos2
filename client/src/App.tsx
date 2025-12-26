@@ -15,6 +15,7 @@ import Termo from "@/pages/Termo";
 import AdminDashboard from "@/pages/AdminDashboard";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
+import CommunityThemes from "@/pages/CommunityThemes";
 import { useAuth } from "@/hooks/useAuth";
 
 function Router() {
@@ -25,6 +26,8 @@ function Router() {
       <Route path="/" component={ImpostorGame} />
       <Route path="/criar-tema" component={CriarTema} />
       <Route path="/oficina" component={CriarTema} />
+      <Route path="/temas" component={CommunityThemes} />
+      <Route path="/temas-comunidade" component={CommunityThemes} />
       <Route path="/comojogar" component={ComoJogar} />
       <Route path="/como-jogar" component={ComoJogar} />
       <Route path="/blog" component={Blog} />
