@@ -16,6 +16,7 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import CommunityThemes from "@/pages/CommunityThemes";
+import PalavraSecretaGallery from "@/pages/PalavraSecretaGallery";
 import { useAuth } from "@/hooks/useAuth";
 
 function Router() {
@@ -28,6 +29,8 @@ function Router() {
       <Route path="/oficina" component={CriarTema} />
       <Route path="/temas" component={CommunityThemes} />
       <Route path="/temas-comunidade" component={CommunityThemes} />
+      <Route path="/palavra-secreta" component={PalavraSecretaGallery} />
+      <Route path="/galeria-palavras" component={PalavraSecretaGallery} />
       <Route path="/comojogar" component={ComoJogar} />
       <Route path="/como-jogar" component={ComoJogar} />
       <Route path="/blog" component={Blog} />

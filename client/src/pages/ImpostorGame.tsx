@@ -920,15 +920,22 @@ const HomeScreen = () => {
   useEffect(() => {
     const autoStart = sessionStorage.getItem('autoStartGame');
     const selectedThemeCode = sessionStorage.getItem('selectedThemeCode');
+    const selectedGameMode = sessionStorage.getItem('selectedGameMode');
+    const selectedCategory = sessionStorage.getItem('selectedCategory');
     
-    if (autoStart === 'true' && selectedThemeCode) {
+    if (autoStart === 'true' && (selectedThemeCode || selectedGameMode)) {
       const saved = loadSavedNickname();
       if (saved) {
         setUser(saved);
         createRoom();
+        
+        const description = selectedThemeCode 
+          ? "Preparando o jogo com o tema selecionado"
+          : "Preparando o jogo com a categoria selecionada";
+        
         toast({ 
           title: "Criando sala...", 
-          description: "Preparando o jogo com o tema selecionado" 
+          description 
         });
       } else {
         // If no saved nickname, just show a message
@@ -937,6 +944,8 @@ const HomeScreen = () => {
           description: "Digite seu nome e crie uma sala para jogar" 
         });
         sessionStorage.removeItem('autoStartGame');
+        sessionStorage.removeItem('selectedGameMode');
+        sessionStorage.removeItem('selectedCategory');
       }
     }
   }, [loadSavedNickname, setUser, createRoom, toast]);
@@ -1506,23 +1515,29 @@ const ModeSelectScreen = () => {
     fetchGameModes();
   }, [fetchGameModes]);
 
-  // Auto-select palavraComunidade mode when coming from gallery
+  // Auto-select mode when coming from gallery
   useEffect(() => {
     const autoStart = sessionStorage.getItem('autoStartGame');
     const selectedThemeCode = sessionStorage.getItem('selectedThemeCode');
+    const selectedGameMode = sessionStorage.getItem('selectedGameMode');
     
-    if (autoStart === 'true' && selectedThemeCode && !selectedMode) {
-      selectMode('palavraComunidade');
+    if (autoStart === 'true' && !selectedMode) {
+      if (selectedThemeCode) {
+        selectMode('palavraComunidade');
+      } else if (selectedGameMode) {
+        selectMode(selectedGameMode as GameModeType);
+      }
     }
   }, [selectedMode, selectMode]);
 
-  // Handle theme selection and auto-start
+  // Handle theme/mode selection and auto-start
   useEffect(() => {
+    const autoStart = sessionStorage.getItem('autoStartGame');
+    
     if (selectedMode === 'palavraComunidade') {
       loadCommunityThemes();
       
       const selectedThemeId = sessionStorage.getItem('selectedThemeId');
-      const autoStart = sessionStorage.getItem('autoStartGame');
       
       if (selectedThemeId) {
         fetch('/api/themes/public')
@@ -1548,6 +1563,11 @@ const ModeSelectScreen = () => {
           })
           .catch(err => console.error('Failed to load selected theme:', err));
       }
+    } else if (selectedMode === 'palavraSecreta' && autoStart === 'true' && isHost) {
+      // Auto-start for palavra secreta from gallery
+      setShouldAutoStart(true);
+      sessionStorage.removeItem('selectedGameMode');
+      sessionStorage.removeItem('selectedCategory');
     } else {
       setSelectedThemeCode(null);
     }
