@@ -916,6 +916,31 @@ const HomeScreen = () => {
     }
   }, [loadSavedNickname]);
 
+  // Auto-create room when coming from gallery
+  useEffect(() => {
+    const autoStart = sessionStorage.getItem('autoStartGame');
+    const selectedThemeCode = sessionStorage.getItem('selectedThemeCode');
+    
+    if (autoStart === 'true' && selectedThemeCode) {
+      const saved = loadSavedNickname();
+      if (saved) {
+        setUser(saved);
+        createRoom();
+        toast({ 
+          title: "Criando sala...", 
+          description: "Preparando o jogo com o tema selecionado" 
+        });
+      } else {
+        // If no saved nickname, just show a message
+        toast({ 
+          title: "Digite seu nome", 
+          description: "Digite seu nome e crie uma sala para jogar" 
+        });
+        sessionStorage.removeItem('autoStartGame');
+      }
+    }
+  }, []);
+
   const handleCreate = () => {
     if (!name.trim()) {
       toast({ title: "Nome necessário", description: "Por favor, digite seu nome.", variant: "destructive" });
@@ -1428,11 +1453,23 @@ const ModeSelectScreen = () => {
     fetchGameModes();
   }, [fetchGameModes]);
 
+  // Auto-select palavraComunidade mode when coming from gallery
+  useEffect(() => {
+    const autoStart = sessionStorage.getItem('autoStartGame');
+    const selectedThemeCode = sessionStorage.getItem('selectedThemeCode');
+    
+    if (autoStart === 'true' && selectedThemeCode && !selectedMode) {
+      selectMode('palavraComunidade');
+    }
+  }, [selectedMode, selectMode]);
+
   useEffect(() => {
     if (selectedMode === 'palavraComunidade') {
       loadCommunityThemes();
       // Check if a theme was selected from the gallery page
       const selectedThemeId = sessionStorage.getItem('selectedThemeId');
+      const autoStart = sessionStorage.getItem('autoStartGame');
+      
       if (selectedThemeId) {
         // Find the theme and set its access code
         fetch('/api/themes/public')
@@ -1441,12 +1478,26 @@ const ModeSelectScreen = () => {
             const theme = themes.find((t: PublicTheme) => t.id === selectedThemeId);
             if (theme) {
               setSelectedThemeCode(theme.accessCode);
-              toast({ 
-                title: "Tema selecionado!", 
-                description: `"${theme.titulo}" está pronto para jogar` 
-              });
+              
+              // Auto-start game if coming from gallery
+              if (autoStart === 'true' && isHost) {
+                sessionStorage.removeItem('autoStartGame');
+                sessionStorage.removeItem('selectedThemeId');
+                sessionStorage.removeItem('selectedThemeCode');
+                
+                // Start game after a short delay to ensure everything is loaded
+                setTimeout(() => {
+                  handleStartGameWithSorteio();
+                }, 500);
+              } else {
+                toast({ 
+                  title: "Tema selecionado!", 
+                  description: `"${theme.titulo}" está pronto para jogar` 
+                });
+                sessionStorage.removeItem('selectedThemeId');
+                sessionStorage.removeItem('selectedThemeCode');
+              }
             }
-            sessionStorage.removeItem('selectedThemeId');
           })
           .catch(err => console.error('Failed to load selected theme:', err));
       }

@@ -61,14 +61,28 @@ export default function CommunityThemes() {
       theme.autor.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handlePlayTheme = (themeId: string) => {
-    // Store selected theme in sessionStorage and redirect to game
-    sessionStorage.setItem("selectedThemeId", themeId);
-    setLocation("/");
-    toast({ 
-      title: "Tema selecionado!", 
-      description: "Crie uma sala e selecione 'Palavra da Comunidade' para jogar" 
-    });
+  const handlePlayTheme = async (theme: PublicTheme) => {
+    try {
+      // Store theme data for immediate game start
+      sessionStorage.setItem("selectedThemeId", theme.id);
+      sessionStorage.setItem("selectedThemeCode", theme.accessCode);
+      sessionStorage.setItem("autoStartGame", "true");
+      
+      // Redirect to game
+      setLocation("/");
+      
+      toast({ 
+        title: "Iniciando jogo!", 
+        description: `Preparando "${theme.titulo}" para jogar` 
+      });
+    } catch (error) {
+      console.error("Error starting game:", error);
+      toast({ 
+        title: "Erro", 
+        description: "Não foi possível iniciar o jogo", 
+        variant: "destructive" 
+      });
+    }
   };
 
   return (
@@ -258,7 +272,7 @@ export default function CommunityThemes() {
                 {/* Hover Overlay */}
                 <div className="absolute inset-0 bg-[#0a1628]/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
                   <button
-                    onClick={() => handlePlayTheme(theme.id)}
+                    onClick={() => handlePlayTheme(theme)}
                     className="bg-[#6b4ba3] hover:bg-[#7b5bb3] text-white font-bold py-3 px-8 rounded-full transform scale-90 group-hover:scale-100 transition-all duration-300 shadow-lg hover:shadow-[#6b4ba3]/50 flex items-center gap-2"
                   >
                     <Play className="w-5 h-5 fill-white" />
