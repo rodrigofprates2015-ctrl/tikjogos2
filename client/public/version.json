@@ -1,6 +1,6 @@
 {
-  "version": "v.3.4",
-  "versionNumber": 3.4,
+  "version": "v.3.5",
+  "versionNumber": 3.5,
   "lastUpdated": "2025-01-02",
-  "changes": "Testing deploy - Gallery auto-start feature"
+  "changes": "Gallery auto-start + Palavra Secreta gallery"
 }
