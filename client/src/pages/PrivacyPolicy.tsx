@@ -4,7 +4,7 @@ import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 
 export default function PrivacyPolicy() {
   return (
-    <div className="min-h-screen w-full bg-black text-white font-poppins p-6">
+    <div className="min-h-screen w-full text-white font-poppins p-6" style={{ backgroundColor: '#063970' }}>
       <div className="max-w-2xl mx-auto">
         <Link href="/" className="inline-flex items-center gap-2 text-[#00f2ea] hover:underline mb-8">
           <ArrowLeft className="w-4 h-4" />

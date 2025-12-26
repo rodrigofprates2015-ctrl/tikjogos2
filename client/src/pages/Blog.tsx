@@ -1,7 +1,6 @@
 import { Link } from "wouter";
 import { useEffect } from "react";
 import { Clock, Ghost, ArrowRight } from "lucide-react";
-import backgroundImg from "@assets/background_natal_1765071997985.png";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import { articles } from "@/data/articles";
 
@@ -20,11 +19,7 @@ export default function Blog() {
     <div 
       className="min-h-screen w-full relative flex flex-col"
       style={{
-        backgroundImage: `url(${backgroundImg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
+        backgroundColor: '#063970'
       }}
     >
       <nav className="bg-[#0a1628]/90 backdrop-blur-sm border-b border-[#3d4a5c] sticky top-0 z-50">

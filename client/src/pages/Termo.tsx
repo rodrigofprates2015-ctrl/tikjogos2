@@ -349,7 +349,7 @@ export default function Termo() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121a31] text-white flex flex-col items-center font-sans antialiased">
+    <div className="min-h-screen text-white flex flex-col items-center font-sans antialiased" style={{ backgroundColor: '#063970' }}>
       
       {/* Header */}
       <header className="w-full max-w-lg pt-4 pb-4 px-4 flex flex-col items-center relative border-b border-[#3a3a3c]">
