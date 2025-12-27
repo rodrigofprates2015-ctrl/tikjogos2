@@ -1,9 +1,17 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
+import { Zap, Loader2, Heart } from "lucide-react";
 import backgroundImg from "@assets/background_natal_1765071997985.png";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoImpostor from "@assets/logo_site_impostor_1765071990526.png";
+import tripulanteImg from "@assets/tripulante_natal_1765071995242.png";
+import impostorImg from "@assets/impostor_natal_1765071992843.png";
 
 export default function Prototipo() {
+  const [name, setNameInput] = useState("");
+  const [code, setCodeInput] = useState("");
+  const [saveNicknameChecked, setSaveNicknameChecked] = useState(false);
+
   useEffect(() => {
     // Carregar o sistema de anúncios
     const script = document.createElement('script');
@@ -12,138 +20,162 @@ export default function Prototipo() {
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
   }, []);
 
+  const handleCreate = () => {
+    alert('Botão CRIAR SALA clicado! (Página de teste)');
+  };
+
+  const handleJoin = () => {
+    alert('Botão ENTRAR clicado! (Página de teste)');
+  };
+
   return (
-    <div
-      className="min-h-screen w-full relative"
+    <div 
+      className="min-h-screen w-full flex flex-col relative"
       style={{
         backgroundImage: `url(${backgroundImg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
       }}
     >
-      {/* Navigation */}
-      <nav className="bg-[#0a1628]/90 backdrop-blur-sm border-b border-[#3d4a5c] sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center cursor-pointer">
-            <img src={logoTikjogos} alt="TikJogos" className="h-8" />
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">
-              Voltar ao Jogo
-            </Link>
+      {/* BLOCO DE ANÚNCIO - TOPO */}
+      <div id="partner-slot-top" className="partner-content-wrapper" style={{ maxWidth: '728px', margin: '1rem auto' }}></div>
+
+      {/* Hero Banner - Oficina de Temas */}
+      <Link 
+        href="/criar-tema"
+        className="hero-banner"
+      >
+        <div className="hero-banner-overlay">
+          <p className="hero-banner-text-small">Divirta-se com os amigos</p>
+          <p className="hero-banner-text-main">Crie seu próprio tema</p>
+          <p className="hero-banner-text-price">Por apenas R$ 1,50</p>
+        </div>
+      </Link>
+
+      {/* Tripulante character - left side (desktop only) */}
+      <img 
+        src={tripulanteImg} 
+        alt="Tripulante" 
+        className="hidden md:block absolute bottom-32 left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-10"
+      />
+
+      {/* Impostor character - right side (desktop only) */}
+      <img 
+        src={impostorImg} 
+        alt="Impostor" 
+        className="hidden md:block absolute bottom-32 right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-10"
+      />
+
+      {/* Main content area - flex-grow to push footer down */}
+      <div className="flex-1 flex flex-col items-center justify-center pt-20 md:pt-24 px-4 relative z-20">
+        {/* BLOCO DE ANÚNCIO - ANTES DO CARD */}
+        <div id="partner-slot-before-card" className="partner-content-wrapper mb-6" style={{ maxWidth: '468px', width: '100%' }}></div>
+
+        {/* Main card */}
+        <div className="main-card w-[90%] max-w-md p-5 md:p-6 animate-fade-in">
+          {/* Impostor logo with characters */}
+          <div className="flex justify-center mb-3">
+            <img src={logoImpostor} alt="Impostor" className="h-28 md:h-36 object-contain" />
+          </div>
+
+          {/* Form */}
+          <div className="space-y-3">
+            {/* Nickname input */}
+            <input
+              type="text"
+              placeholder="Seu nickname"
+              value={name}
+              onChange={(e) => setNameInput(e.target.value)}
+              className="input-dark"
+            />
+
+            {/* Create room button */}
+            <button 
+              onClick={handleCreate} 
+              className="btn-orange w-full"
+            >
+              <Zap size={20} />
+              CRIAR SALA
+            </button>
+
+            {/* Save nickname checkbox */}
+            <div className="flex items-center justify-between px-1">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={saveNicknameChecked}
+                  onChange={(e) => setSaveNicknameChecked(e.target.checked)}
+                  className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]"
+                />
+                <span className="text-sm text-[#8aa0b0]">Guardar nickname</span>
+              </label>
+            </div>
+
+            {/* OR divider */}
+            <div className="flex items-center gap-4 py-2">
+              <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+              <span className="text-[#8aa0b0] text-sm font-bold">OU</span>
+              <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+            </div>
+
+            {/* Code input and Enter button */}
+            <div className="flex gap-3">
+              <input
+                type="text"
+                placeholder="CÓDIGO"
+                value={code}
+                onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+                maxLength={4}
+                className="input-code flex-1"
+              />
+              <button 
+                onClick={handleJoin}
+                className="btn-green"
+              >
+                ENTRAR
+              </button>
+            </div>
+
           </div>
         </div>
-      </nav>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Sidebar */}
-          <aside className="lg:col-span-3 space-y-6">
-            <div className="bg-[#0a1628]/90 backdrop-blur-sm rounded-2xl border border-[#3d4a5c] p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Menu</h2>
-              <nav className="space-y-2">
-                <a href="#" className="block text-gray-300 hover:text-white transition-colors py-2">
-                  Jogos
-                </a>
-                <a href="#" className="block text-gray-300 hover:text-white transition-colors py-2">
-                  Notícias
-                </a>
-                <a href="#" className="block text-gray-300 hover:text-white transition-colors py-2">
-                  Comunidade
-                </a>
-              </nav>
-            </div>
-
-            {/* Ad Slot - Sidebar */}
-            <div id="partner-slot-sidebar" className="partner-content-wrapper"></div>
-          </aside>
-
-          {/* Main Content */}
-          <main className="lg:col-span-9 space-y-6">
-            {/* Hero Section */}
-            <div className="bg-[#0a1628]/90 backdrop-blur-sm rounded-2xl border border-[#3d4a5c] p-8">
-              <h1 className="text-4xl font-bold text-white mb-4">
-                Bem-vindo ao TikJogos - Protótipo de Anúncios
-              </h1>
-              <p className="text-gray-300 text-lg mb-6">
-                Esta é uma página de demonstração do sistema de gerenciamento de anúncios (House Ads).
-                Os banners são carregados dinamicamente com base em peso e categoria.
-              </p>
-              
-              {/* Ad Slot - Top Banner */}
-              <div id="partner-slot-top" className="partner-content-wrapper mb-6"></div>
-
-              <div className="prose prose-invert max-w-none">
-                <h2 className="text-2xl font-bold text-white mb-3">Características do Sistema</h2>
-                <ul className="text-gray-300 space-y-2">
-                  <li>✅ Weighted Random Algorithm - Anúncios com maior peso aparecem mais</li>
-                  <li>✅ Filtragem por dispositivo (mobile/desktop)</li>
-                  <li>✅ Anti-AdBlock naming conventions</li>
-                  <li>✅ Tracking de cliques</li>
-                  <li>✅ Design responsivo e moderno</li>
-                  <li>✅ Performance otimizada</li>
-                </ul>
-
-                <h2 className="text-2xl font-bold text-white mt-8 mb-3">Como Funciona</h2>
-                <p className="text-gray-300">
-                  O sistema carrega anúncios de um arquivo JSON (ads-data.js) e os renderiza
-                  dinamicamente usando JavaScript puro. Cada anúncio tem um "peso" que determina
-                  sua probabilidade de exibição.
-                </p>
-
-                {/* Ad Slot - Middle Content */}
-                <div id="partner-slot-middle" className="partner-content-wrapper my-8"></div>
-
-                <h2 className="text-2xl font-bold text-white mt-8 mb-3">Exemplo de Conteúdo</h2>
-                <p className="text-gray-300 mb-4">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-                  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-                  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                </p>
-                <p className="text-gray-300 mb-4">
-                  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
-                  eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
-                  in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
-              </div>
-            </div>
-
-            {/* Ad Slot - Bottom Banner */}
-            <div id="partner-slot-bottom" className="partner-content-wrapper"></div>
-
-            {/* Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div
-                  key={i}
-                  className="bg-[#0a1628]/90 backdrop-blur-sm rounded-2xl border border-[#3d4a5c] p-6 hover:border-[#6b4ba3] transition-all"
-                >
-                  <h3 className="text-xl font-bold text-white mb-2">Card {i}</h3>
-                  <p className="text-gray-300 text-sm">
-                    Exemplo de conteúdo do card. Clique para saber mais sobre este item.
-                  </p>
-                </div>
-              ))}
-            </div>
-          </main>
-        </div>
+        {/* BLOCO DE ANÚNCIO - DEPOIS DO CARD */}
+        <div id="partner-slot-after-card" className="partner-content-wrapper mt-6" style={{ maxWidth: '468px', width: '100%' }}></div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-[#0a1628]/90 backdrop-blur-sm border-t border-[#3d4a5c] mt-12 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-gray-400 text-sm">
-            © 2025 TikJogos - Protótipo de Sistema de Anúncios
-          </p>
+      {/* BLOCO DE ANÚNCIO - RODAPÉ */}
+      <div id="partner-slot-bottom" className="partner-content-wrapper" style={{ maxWidth: '728px', margin: '1rem auto' }}></div>
+
+      {/* Footer - now below the content, takes full width */}
+      <div className="w-full text-center py-6 px-4 bg-gradient-to-t from-black/40 to-transparent z-20 relative border-t border-[#3d4a5c]/30">
+        <img src={logoTikjogos} alt="TikJogos" className="h-4 md:h-5 mx-auto mb-2" />
+        <p className="text-[#6a8aaa] text-xs">
+          Desenvolvido com <Heart className="inline w-3 h-3 text-gray-500 fill-current" /> por <span className="text-[#8aa0b0]">Rodrigo Freitas</span>
+        </p>
+        <div className="flex items-center justify-center gap-2 text-xs mt-1 flex-wrap">
+          <Link href="/blog" className="text-[#6a8aaa] hover:text-white transition-colors">
+            Blog
+          </Link>
+          <span className="text-[#4a6a8a]">|</span>
+          <Link href="/privacidade" className="text-[#6a8aaa] hover:text-white transition-colors">
+            Privacidade
+          </Link>
+          <span className="text-[#4a6a8a]">|</span>
+          <Link href="/termos" className="text-[#6a8aaa] hover:text-white transition-colors">
+            Termos
+          </Link>
         </div>
-      </footer>
+        <p className="text-[#4a6a8a] text-[10px] mt-2 leading-relaxed max-w-md mx-auto">
+          Página de teste - Sistema de anúncios TikJogos
+        </p>
+      </div>
     </div>
   );
 }

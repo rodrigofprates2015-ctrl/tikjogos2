@@ -322,7 +322,9 @@
           { id: 'partner-slot-sidebar', options: { size: 'medium' } },
           { id: 'partner-slot-top', options: { size: 'large' } },
           { id: 'partner-slot-middle', options: { size: 'large' } },
-          { id: 'partner-slot-bottom', options: { size: 'large' } }
+          { id: 'partner-slot-bottom', options: { size: 'large' } },
+          { id: 'partner-slot-before-card', options: { size: 'medium' } },
+          { id: 'partner-slot-after-card', options: { size: 'medium' } }
         ];
 
         // Renderizar cada slot
