@@ -17,6 +17,7 @@ import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import CommunityThemes from "@/pages/CommunityThemes";
 import Prototipo from "@/pages/Prototipo";
+import AdTest from "@/pages/AdTest";
 import { useAuth } from "@/hooks/useAuth";
 
 function Router() {
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/temas" component={CommunityThemes} />
       <Route path="/temas-comunidade" component={CommunityThemes} />
       <Route path="/prototipo" component={Prototipo} />
+      <Route path="/ad-test" component={AdTest} />
       <Route path="/comojogar" component={ComoJogar} />
       <Route path="/como-jogar" component={ComoJogar} />
       <Route path="/blog" component={Blog} />

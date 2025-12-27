@@ -1,30 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "wouter";
-import { Zap, Loader2, Heart } from "lucide-react";
+import { Zap, Heart } from "lucide-react";
 import backgroundImg from "@assets/background_natal_1765071997985.png";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoImpostor from "@assets/logo_site_impostor_1765071990526.png";
 import tripulanteImg from "@assets/tripulante_natal_1765071995242.png";
 import impostorImg from "@assets/impostor_natal_1765071992843.png";
+import { AdBanner } from "@/components/ad-banner";
+import { getRandomAdByFormat } from "@/data/ad-data";
 
 export default function Prototipo() {
   const [name, setNameInput] = useState("");
   const [code, setCodeInput] = useState("");
   const [saveNicknameChecked, setSaveNicknameChecked] = useState(false);
 
-  useEffect(() => {
-    // Carregar o sistema de anúncios comparativos
-    const script = document.createElement('script');
-    script.src = '/price-comparison-engine.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
+  // Selecionar anúncios aleatórios
+  const topAd = getRandomAdByFormat('728x90');
+  const bottomAd = getRandomAdByFormat('728x90');
+  const leftAd = getRandomAdByFormat('160x600');
+  const rightAd = getRandomAdByFormat('160x600');
 
   const handleCreate = () => {
     alert('Botão CRIAR SALA clicado! (Página de teste)');
@@ -45,21 +39,46 @@ export default function Prototipo() {
       }}
     >
       {/* BLOCO DE ANÚNCIO - LATERAL ESQUERDA (Desktop only) - 160x600 */}
-      <div 
-        id="price-comp-160x600-left" 
-        className="hidden xl:block fixed left-4 top-1/2 -translate-y-1/2 z-30"
-        style={{ width: '160px' }}
-      ></div>
+      {leftAd && (
+        <div className="hidden xl:block fixed left-4 top-1/2 -translate-y-1/2 z-30">
+          <AdBanner
+            id={leftAd.id}
+            productName={leftAd.productName}
+            description={leftAd.description}
+            image={leftAd.image}
+            offers={leftAd.offers}
+            dimensions={leftAd.dimensions}
+          />
+        </div>
+      )}
 
       {/* BLOCO DE ANÚNCIO - LATERAL DIREITA (Desktop only) - 160x600 */}
-      <div 
-        id="price-comp-160x600-right" 
-        className="hidden xl:block fixed right-4 top-1/2 -translate-y-1/2 z-30"
-        style={{ width: '160px' }}
-      ></div>
+      {rightAd && (
+        <div className="hidden xl:block fixed right-4 top-1/2 -translate-y-1/2 z-30">
+          <AdBanner
+            id={rightAd.id}
+            productName={rightAd.productName}
+            description={rightAd.description}
+            image={rightAd.image}
+            offers={rightAd.offers}
+            dimensions={rightAd.dimensions}
+          />
+        </div>
+      )}
 
       {/* BLOCO DE ANÚNCIO - TOPO - 728x90 */}
-      <div id="price-comp-728x90-top" style={{ maxWidth: '728px', margin: '1rem auto' }}></div>
+      {topAd && (
+        <div className="flex justify-center" style={{ margin: '1rem auto' }}>
+          <AdBanner
+            id={topAd.id}
+            productName={topAd.productName}
+            description={topAd.description}
+            image={topAd.image}
+            offers={topAd.offers}
+            dimensions={topAd.dimensions}
+          />
+        </div>
+      )}
 
       {/* Hero Banner - Oficina de Temas */}
       <Link 
@@ -159,7 +178,18 @@ export default function Prototipo() {
       </div>
 
       {/* BLOCO DE ANÚNCIO - RODAPÉ - 728x90 */}
-      <div id="price-comp-728x90-bottom" style={{ maxWidth: '728px', margin: '1rem auto' }}></div>
+      {bottomAd && (
+        <div className="flex justify-center" style={{ margin: '1rem auto' }}>
+          <AdBanner
+            id={bottomAd.id}
+            productName={bottomAd.productName}
+            description={bottomAd.description}
+            image={bottomAd.image}
+            offers={bottomAd.offers}
+            dimensions={bottomAd.dimensions}
+          />
+        </div>
+      )}
 
       {/* Footer - now below the content, takes full width */}
       <div className="w-full text-center py-6 px-4 bg-gradient-to-t from-black/40 to-transparent z-20 relative border-t border-[#3d4a5c]/30">
