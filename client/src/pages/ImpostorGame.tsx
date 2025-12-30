@@ -1036,8 +1036,6 @@ const HomeScreen = () => {
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
         <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
-        <div className="absolute top-20 left-10 text-slate-700/20 animate-bounce" style={{ animationDuration: '3000ms' }}><Gamepad2 size={64} /></div>
-        <div className="absolute bottom-40 right-10 text-slate-700/20 animate-bounce" style={{ animationDuration: '4000ms' }}><Rocket size={56} /></div>
       </div>
 
       {/* Top Ad Block */}
@@ -1631,8 +1629,6 @@ const LobbyScreen = () => {
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
         <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
-        <div className="absolute top-20 left-10 text-slate-700/20 animate-bounce" style={{ animationDuration: '3000ms' }}><Users size={64} /></div>
-        <div className="absolute bottom-40 right-10 text-slate-700/20 animate-bounce" style={{ animationDuration: '4000ms' }}><Crown size={56} /></div>
       </div>
       
       <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] relative z-10">
@@ -1965,8 +1961,6 @@ const ModeSelectScreen = () => {
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
         <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
-        <div className="absolute top-20 left-10 text-slate-700/20 animate-bounce" style={{ animationDuration: '3000ms' }}><Gamepad2 size={64} /></div>
-        <div className="absolute bottom-40 right-10 text-slate-700/20 animate-bounce" style={{ animationDuration: '4000ms' }}><Rocket size={56} /></div>
       </div>
       
       <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] relative z-10">
