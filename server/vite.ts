@@ -22,7 +22,8 @@ export async function setupVite(server: Server, app: Express) {
       ...viteLogger,
       error: (msg, options) => {
         viteLogger.error(msg, options);
-        process.exit(1);
+        // Don't exit on Vite errors in development - just log them
+        console.error('[Vite Error]:', msg);
       },
     },
     server: serverOptions,
@@ -51,6 +52,7 @@ export async function setupVite(server: Server, app: Express) {
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
+      console.error('[Vite Transform Error]:', e);
       vite.ssrFixStacktrace(e as Error);
       next(e);
     }
