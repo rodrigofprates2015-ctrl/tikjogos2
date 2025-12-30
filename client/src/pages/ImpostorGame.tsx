@@ -1602,34 +1602,56 @@ const LobbyScreen = () => {
   };
 
   return (
-    <div className="flex flex-col w-full max-w-md h-full py-6 px-4 animate-fade-in relative z-10">
-      {/* Overlay escuro para contraste */}
-      <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
-      
-      <div className="w-full flex justify-between items-center mb-6 border-b border-[#3d4a5c] pb-4">
-        <div onClick={copyLink} className="cursor-pointer group">
-          <p className="text-gray-300 text-[10px] uppercase tracking-widest mb-1 group-hover:text-[#e07b39] transition-colors">Código da Sala</p>
-          <h2 className="text-4xl font-black tracking-widest font-mono flex items-center gap-3">
-            <span className="text-[#e07b39]" data-testid="text-room-code">{room.code}</span>
-            <Copy className="w-4 h-4 text-gray-300 group-hover:text-[#e07b39] transition-colors" />
-          </h2>
-        </div>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={leaveGame}
-          className="w-10 h-10 rounded-xl border-2 border-[#3d4a5c] hover:border-[#c44536] hover:bg-[#c44536]/10 text-gray-300 hover:text-[#c44536] transition-all"
-          data-testid="button-leave-room"
-        >
-          <LogOut className="w-5 h-5" />
-        </Button>
+    <div className="flex flex-col w-full max-w-2xl h-full py-6 px-4 animate-fade-in relative z-10">
+      {/* Elementos decorativos de fundo */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
+        <div className="absolute top-20 left-10 text-slate-700/20 animate-bounce" style={{ animationDuration: '3000ms' }}><Users size={64} /></div>
+        <div className="absolute bottom-40 right-10 text-slate-700/20 animate-bounce" style={{ animationDuration: '4000ms' }}><Crown size={56} /></div>
       </div>
+      
+      <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] relative z-10">
+        {/* Header com código da sala */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+          <div onClick={copyLink} className="cursor-pointer group flex-1 text-center md:text-left">
+            <p className="text-slate-400 text-xs uppercase tracking-widest mb-2 font-bold group-hover:text-orange-400 transition-colors">
+              Código da Sala
+            </p>
+            <div className="flex items-center justify-center md:justify-start gap-3">
+              <h2 className="text-5xl md:text-6xl font-black tracking-widest font-mono text-orange-500 group-hover:text-orange-400 transition-colors" data-testid="text-room-code">
+                {room.code}
+              </h2>
+              <div className="p-3 bg-orange-500/10 rounded-2xl border-2 border-orange-500/20 group-hover:bg-orange-500/20 transition-colors">
+                <Copy className="w-6 h-6 text-orange-500" />
+              </div>
+            </div>
+            <p className="text-slate-500 text-xs mt-2 font-medium">Clique para copiar o link</p>
+          </div>
+          
+          <button 
+            onClick={leaveGame}
+            className="p-3 bg-slate-800 rounded-2xl hover:bg-rose-500 transition-all border-b-4 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group"
+            data-testid="button-leave-room"
+          >
+            <LogOut size={24} strokeWidth={3} className="group-hover:animate-pulse" />
+          </button>
+        </div>
 
-      <div className="flex-1 w-full card-retro p-4 mb-4 overflow-y-auto scrollbar-hide">
-        <h3 className="text-gray-300 text-xs font-bold uppercase mb-4 flex items-center gap-2 tracking-widest">
-          Tripulantes ({players.length})
-          <span className="flex-1 h-[1px] bg-[#3d4a5c]"></span>
-        </h3>
+      {/* Lista de Jogadores */}
+      <div className="flex-1 w-full mb-6 overflow-y-auto scrollbar-hide">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-blue-500/10 rounded-xl border-2 border-blue-500/20">
+            <Users className="w-5 h-5 text-blue-500" />
+          </div>
+          <h3 className="text-white text-lg font-black">
+            Tripulantes na Nave
+          </h3>
+          <div className="px-3 py-1 bg-blue-500 text-white text-sm font-black rounded-full border-2 border-blue-700">
+            {players.length}
+          </div>
+        </div>
+        
         <ul className="space-y-3 pb-4">
           {players.map((p) => {
             const isMe = p.uid === user?.uid;
@@ -1640,47 +1662,69 @@ const LobbyScreen = () => {
               <li 
                 key={p.uid} 
                 className={cn(
-                  "p-3 rounded-xl flex items-center justify-between border-2 transition-all duration-300",
-                  isMe ? "border-[#3d8b5f] bg-[#3d8b5f]/10" : "border-[#3d4a5c] bg-[#16213e]/50 hover:border-[#4a90a4]"
+                  "relative p-4 rounded-3xl flex items-center justify-between border-4 transition-all duration-200",
+                  isMe 
+                    ? "bg-emerald-500 border-emerald-700 shadow-[0_6px_0_0_rgba(0,0,0,0.2)]" 
+                    : "bg-slate-800 border-slate-900 hover:bg-slate-750 hover:-translate-y-1 shadow-lg"
                 )}
                 data-testid={`player-${p.uid}`}
               >
-                <div className="flex items-center gap-3">
+                {/* Badge Capitão */}
+                {isPlayerHost && (
+                  <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 rounded-full p-1.5 border-3 border-yellow-600 shadow-sm z-10">
+                    <Crown size={16} fill="currentColor" />
+                  </div>
+                )}
+                
+                <div className="flex items-center gap-4 flex-1">
+                  {/* Avatar */}
                   <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold border-2",
-                    isMe ? "border-[#3d8b5f] text-[#3d8b5f] bg-[#3d8b5f]/20" : "border-[#3d4a5c] text-gray-400"
+                    "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black border-2 border-black/10 shrink-0",
+                    isMe ? "bg-white/20 text-white" : "bg-blue-500 text-white"
                   )}>
                     {initial}
                   </div>
-                  <div className="flex flex-col">
+                  
+                  {/* Info */}
+                  <div className="flex flex-col flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={cn("font-medium", isMe ? "text-[#3d8b5f]" : "text-white")}>
-                        {p.name} {isMe && '(Você)'}
+                      <span className={cn(
+                        "font-black text-lg leading-tight",
+                        isMe ? "text-white" : "text-slate-100"
+                      )}>
+                        {p.name}
                       </span>
-                      {p.waitingForGame && (
-                        <span className="text-[11px] text-gray-400 italic opacity-60">
-                          Aguardando partida acabar
+                      {isMe && (
+                        <span className="text-xs font-bold px-2 py-0.5 bg-white/20 text-white rounded-full border border-white/30">
+                          VOCÊ
                         </span>
                       )}
                     </div>
+                    
+                    {p.waitingForGame && (
+                      <span className="text-xs text-white/70 font-medium mt-1">
+                        ⏳ Aguardando partida acabar
+                      </span>
+                    )}
+                    
                     {isPlayerHost && (
-                      <span className="text-[10px] text-[#e9c46a] uppercase tracking-widest font-bold flex items-center gap-1">
-                        <Crown className="w-3 h-3" /> Capitão
+                      <span className="text-xs text-yellow-400 font-bold mt-1 flex items-center gap-1">
+                        <Crown className="w-3 h-3" fill="currentColor" /> CAPITÃO DA NAVE
                       </span>
                     )}
                   </div>
                 </div>
+                
+                {/* Botão Expulsar */}
                 {isHost && !isMe && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
+                  <button
                     onClick={() => kickPlayer(p.uid)}
-                    className="w-8 h-8 rounded-lg border border-[#3d4a5c] hover:border-[#c44536] hover:bg-[#c44536]/10 text-gray-400 hover:text-[#c44536] transition-all"
+                    className="p-2 bg-slate-900 rounded-xl hover:bg-rose-500 transition-all border-b-3 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group ml-2"
                     data-testid={`button-kick-${p.uid}`}
                     title="Expulsar jogador"
                   >
-                    <UserX className="w-4 h-4" />
-                  </Button>
+                    <UserX className="w-5 h-5 group-hover:animate-pulse" strokeWidth={2.5} />
+                  </button>
                 )}
               </li>
             );
@@ -1688,40 +1732,62 @@ const LobbyScreen = () => {
         </ul>
       </div>
 
+      {/* Ações do Lobby */}
       {isWaitingForNextRound ? (
-        <div className="w-full text-center text-[#e9c46a] py-4 flex flex-col items-center gap-3">
-          <div className="flex gap-2">
-            <div className="w-2 h-2 bg-[#e9c46a] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-2 h-2 bg-[#e9c46a] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-2 h-2 bg-[#e9c46a] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+        <div className="w-full text-center py-6 flex flex-col items-center gap-4 bg-amber-500/10 rounded-3xl border-4 border-amber-500/20">
+          <div className="p-4 bg-amber-500/20 rounded-2xl">
+            <Clock className="w-8 h-8 text-amber-400 animate-pulse" />
           </div>
-          <p className="text-sm font-medium">Aguardando próxima rodada...</p>
-          <p className="text-xs text-gray-300">Você entrará quando a rodada começar</p>
+          <div>
+            <p className="text-amber-400 font-black text-lg mb-1">Aguardando próxima rodada...</p>
+            <p className="text-slate-400 text-sm font-medium">Você entrará quando a rodada começar</p>
+          </div>
+          <div className="flex gap-2">
+            <div className="w-3 h-3 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-3 h-3 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-3 h-3 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
         </div>
       ) : isHost ? (
-        <div className="w-full animate-fade-in space-y-3">
-          <Button 
+        <div className="w-full animate-fade-in space-y-4">
+          <button 
             onClick={goToModeSelect}
             disabled={players.length < 3}
-            className="w-full h-16 btn-retro-primary font-bold text-lg transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
+            className={cn(
+              "w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
+              players.length >= 3
+                ? 'bg-gradient-to-r from-purple-500 to-violet-500 border-purple-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
+                : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+            )}
             data-testid="button-start-game"
           >
-            <Play className="mr-2 fill-current" /> ESCOLHER MODO
-          </Button>
+            <Play size={28} className={players.length >= 3 ? 'animate-bounce fill-current' : 'fill-current'} />
+            {players.length >= 3 ? 'ESCOLHER MODO' : 'AGUARDANDO TRIPULANTES'}
+          </button>
           {players.length < 3 && (
-            <p className="text-center text-xs text-[#c44536] mt-3">Mínimo de 3 tripulantes</p>
+            <div className="flex items-center justify-center gap-2 text-rose-400">
+              <Info size={16} />
+              <p className="text-sm font-bold">Mínimo de 3 tripulantes para iniciar</p>
+            </div>
           )}
         </div>
       ) : (
-        <div className="w-full text-center text-gray-300 py-4 flex flex-col items-center gap-3">
-          <div className="flex gap-2">
-            <div className="w-2 h-2 bg-[#4a90a4] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-2 h-2 bg-[#4a90a4] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-2 h-2 bg-[#4a90a4] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+        <div className="w-full text-center py-6 flex flex-col items-center gap-4 bg-blue-500/10 rounded-3xl border-4 border-blue-500/20">
+          <div className="p-4 bg-blue-500/20 rounded-2xl">
+            <Crown className="w-8 h-8 text-blue-400 animate-pulse" />
           </div>
-          <p className="text-sm">Aguardando o capitão iniciar...</p>
+          <div>
+            <p className="text-blue-400 font-black text-lg mb-1">Aguardando o capitão...</p>
+            <p className="text-slate-400 text-sm font-medium">O capitão escolherá o modo de jogo</p>
+          </div>
+          <div className="flex gap-2">
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
         </div>
       )}
+      </div>
 
       <LobbyChat />
     </div>
