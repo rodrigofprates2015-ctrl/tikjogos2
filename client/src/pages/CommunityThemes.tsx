@@ -3,7 +3,6 @@ import { Link, useLocation } from "wouter";
 import { Search, Plus, Heart, Play, TrendingUp, Clock, Star, Sparkles, ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import backgroundImg from "@assets/background_natal_1765071997985.png";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 type PublicTheme = {
@@ -89,11 +88,7 @@ export default function CommunityThemes() {
     <div
       className="min-h-screen w-full relative flex flex-col"
       style={{
-        backgroundImage: `url(${backgroundImg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
+        backgroundColor: '#1C202C'
       }}
     >
       {/* Navigation */}

@@ -61,7 +61,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import backgroundImg from "@assets/background_natal_1765071997985.png";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoImpostor from "@assets/logo_site_impostor_1765071990526.png";
 import tripulanteImg from "@assets/tripulante_natal_1765071995242.png";
@@ -1030,10 +1029,7 @@ const HomeScreen = () => {
     <div 
       className="min-h-screen w-full flex flex-col relative"
       style={{
-        backgroundImage: `url(${backgroundImg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
+        backgroundColor: '#1C202C'
       }}
     >
       {/* Elementos decorativos de fundo */}
@@ -3578,10 +3574,7 @@ export default function ImpostorGame() {
     <div 
       className="min-h-screen w-full flex items-center justify-center font-poppins text-white overflow-hidden relative"
       style={{
-        backgroundImage: `url(${backgroundImg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
+        backgroundColor: '#1C202C'
       }}
     >
       <NotificationCenter />

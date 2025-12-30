@@ -12,7 +12,6 @@ import {
   CheckCircle,
   Lightbulb
 } from "lucide-react";
-import backgroundImg from "@assets/background_natal_1765071997985.png";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoImpostorMobile from "@assets/logo_site_impostor_1765071990526.png";
 import { AdBlockTop, AdBlockInContent, AdBlockBottom } from "@/components/AdBlocks";
@@ -124,11 +123,7 @@ export default function ComoJogar() {
     <div 
       className="min-h-screen w-full relative"
       style={{
-        backgroundImage: `url(${backgroundImg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
+        backgroundColor: '#1C202C'
       }}
     >
       {/* Top Ad Block */}

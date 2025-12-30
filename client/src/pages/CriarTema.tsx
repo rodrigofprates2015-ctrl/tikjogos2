@@ -9,7 +9,6 @@ import {
   Check,
   FileText
 } from "lucide-react";
-import backgroundImg from "@assets/background_natal_1765071997985.png";
 import logoImpostor from "@assets/logo_site_impostor_1765071990526.png";
 
 type PaymentState = {
@@ -146,11 +145,7 @@ export default function CriarTema() {
     <div 
       className="min-h-screen w-full flex flex-col items-center relative py-6 px-4"
       style={{
-        backgroundImage: `url(${backgroundImg})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
+        backgroundColor: '#1C202C'
       }}
     >
       <div className="w-full max-w-lg z-10">
