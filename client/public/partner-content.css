@@ -171,6 +171,16 @@
   outline: none;
 }
 
+/* Hide Google AdSense auto-annotations */
+.google-anno-skip,
+.google-anno-sc,
+div[class*="google-anno"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 /* Print - ocultar anúncios */
 @media print {
   .partner-content-wrapper,
