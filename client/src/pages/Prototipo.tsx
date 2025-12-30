@@ -38,6 +38,9 @@ export default function Prototipo() {
         backgroundRepeat: 'no-repeat'
       }}
     >
+      {/* Elementos decorativos de fundo */}
+      <div className="bg-blur-purple fixed top-20 left-10 w-64 h-64 opacity-30 pointer-events-none"></div>
+      <div className="bg-blur-blue fixed bottom-20 right-10 w-80 h-80 opacity-30 pointer-events-none"></div>
       {/* BLOCO DE ANÚNCIO - LATERAL ESQUERDA (Desktop only) - 160x600 */}
       {leftAd && (
         <div className="hidden xl:block fixed left-4 top-1/2 -translate-y-1/2 z-30">
@@ -109,7 +112,7 @@ export default function Prototipo() {
       {/* Main content area - flex-grow to push footer down */}
       <div className="flex-1 flex flex-col items-center justify-center pt-20 md:pt-24 px-4 relative z-20">
         {/* Main card */}
-        <div className="main-card w-[90%] max-w-md p-5 md:p-6 animate-fade-in">
+        <div className="panel w-[90%] max-w-md animate-fade-in">
           {/* Impostor logo with characters */}
           <div className="flex justify-center mb-3">
             <img src={logoImpostor} alt="Impostor" className="h-28 md:h-36 object-contain" />
@@ -129,7 +132,7 @@ export default function Prototipo() {
             {/* Create room button */}
             <button 
               onClick={handleCreate} 
-              className="btn-orange w-full"
+              className="btn btn-orange w-full justify-center"
             >
               <Zap size={20} />
               CRIAR SALA
@@ -167,7 +170,7 @@ export default function Prototipo() {
               />
               <button 
                 onClick={handleJoin}
-                className="btn-green"
+                className="btn btn-cta"
               >
                 ENTRAR
               </button>

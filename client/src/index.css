@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./theme-tikjogos.css";
 
 /* GT America Compressed Bold Italic - using fallback if font not available */
 @font-face {
