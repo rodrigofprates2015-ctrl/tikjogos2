@@ -1835,63 +1835,58 @@ const ModeSelectScreen = () => {
 
   return (
     <div className="flex flex-col w-full max-w-4xl h-full py-6 px-4 animate-fade-in relative z-10">
-      {/* Overlay escuro para contraste */}
-      <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
+      {/* Elementos decorativos de fundo */}
+      <div className="bg-blur-purple fixed top-20 left-10 w-64 h-64 opacity-20 pointer-events-none"></div>
+      <div className="bg-blur-blue fixed bottom-20 right-10 w-80 h-80 opacity-20 pointer-events-none"></div>
       
-      <div className="flex items-center gap-4 mb-6">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={handleBackClick}
-          className="w-10 h-10 rounded-lg border border-[#3d4a5c] hover:border-[#4a90a4] text-gray-300 hover:text-[#4a90a4] transition-all"
-          data-testid="button-back-to-lobby"
-          title={isHost ? "Voltar ao lobby (todos os jogadores serão levados)" : "Voltar ao lobby"}
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h2 className="text-2xl font-bold text-white drop-shadow-lg">Escolha o Modo</h2>
-          <p className="text-gray-200 text-sm">Selecione como jogar</p>
+      <div className="panel">
+        <div className="flex items-center gap-4 mb-6">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleBackClick}
+            className="w-10 h-10 rounded-lg border border-[#3d4a5c] hover:border-[#4a90a4] text-gray-300 hover:text-[#4a90a4] transition-all"
+            data-testid="button-back-to-lobby"
+            title={isHost ? "Voltar ao lobby (todos os jogadores serão levados)" : "Voltar ao lobby"}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold text-white drop-shadow-lg">Escolha o Modo</h2>
+            <p className="text-gray-200 text-sm">Selecione como jogar</p>
+          </div>
         </div>
-      </div>
 
-      <div className="flex-1 overflow-y-auto pb-4 scrollbar-hide">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {gameModes.map((mode) => (
-            <button
-              key={mode.id}
-              onClick={() => selectMode(mode.id as GameModeType)}
-              className={cn(
-                "w-full p-4 rounded-xl border-2 text-left transition-all duration-300",
-                selectedMode === mode.id 
-                  ? "border-[#4a90a4] bg-[#4a90a4]/10" 
-                  : "border-[#3d4a5c] bg-[#16213e]/80 hover:border-gray-500"
-              )}
-              style={selectedMode === mode.id ? { boxShadow: '0 4px 0 rgba(58, 77, 96, 0.5)' } : {}}
-            >
-              <div className="flex items-start gap-4">
-                <div className={cn(
-                  "w-12 h-12 rounded-lg flex items-center justify-center text-2xl border-2 shrink-0",
-                  selectedMode === mode.id ? "border-[#4a90a4] bg-[#4a90a4]/10" : "border-[#3d4a5c] bg-black"
-                )}>
-                  {getModeEmoji(mode.id)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-bold text-lg">{mode.title}</h3>
-                  <p className="text-gray-200 text-sm mt-1">{mode.desc}</p>
-                </div>
-                {selectedMode === mode.id && (
-                  <div className="w-6 h-6 rounded-full bg-[#4a90a4] flex items-center justify-center shrink-0"
-                       style={{ boxShadow: '0 2px 0 rgba(74, 144, 164, 0.5)' }}>
-                    <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
+        <div className="flex-1 overflow-y-auto pb-4 scrollbar-hide">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {gameModes.map((mode) => (
+              <button
+                key={mode.id}
+                onClick={() => selectMode(mode.id as GameModeType)}
+                className={cn(
+                  "card text-left",
+                  selectedMode === mode.id && "selected theme-purple"
                 )}
-              </div>
-            </button>
-          ))}
-        </div>
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl shrink-0 bg-black/20">
+                    {getModeEmoji(mode.id)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-white font-bold text-lg">{mode.title}</h3>
+                    <p className="text-gray-200 text-sm mt-1">{mode.desc}</p>
+                  </div>
+                  {selectedMode === mode.id && (
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
         
         {selectedMode === 'palavraComunidade' && (
           <div className="mt-4 pt-4 border-t border-[#3d4a5c]">
@@ -1997,15 +1992,16 @@ const ModeSelectScreen = () => {
             </button>
           </div>
         )}
-      </div>
+        </div>
 
-      <Button 
-        onClick={handleStartGameWithSorteio}
-        disabled={!selectedMode || isStarting || (selectedMode === 'palavraComunidade' && !selectedThemeCode)}
-        className="w-full h-16 btn-retro-primary font-bold text-lg rounded-lg transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <Rocket className="mr-2" /> INICIAR PARTIDA
-      </Button>
+        <Button 
+          onClick={handleStartGameWithSorteio}
+          disabled={!selectedMode || isStarting || (selectedMode === 'palavraComunidade' && !selectedThemeCode)}
+          className="btn btn-cta w-full mt-6 justify-center text-lg"
+        >
+          <Rocket className="mr-2" /> INICIAR PARTIDA
+        </Button>
+      </div>
 
       <PalavraSecretaCategoryModal 
         isOpen={showCategoryModal}
