@@ -43,7 +43,7 @@ export default function Prototipo() {
       <div className="bg-blur-blue fixed bottom-20 right-10 w-80 h-80 opacity-30 pointer-events-none"></div>
       {/* BLOCO DE ANÚNCIO - LATERAL ESQUERDA (Desktop only) - 160x600 */}
       {leftAd && (
-        <div className="hidden xl:block fixed left-4 top-1/2 -translate-y-1/2 z-30">
+        <div className="hidden xl:block fixed left-0 top-20 z-10 pointer-events-auto">
           <AdBanner
             id={leftAd.id}
             productName={leftAd.productName}
@@ -57,7 +57,7 @@ export default function Prototipo() {
 
       {/* BLOCO DE ANÚNCIO - LATERAL DIREITA (Desktop only) - 160x600 */}
       {rightAd && (
-        <div className="hidden xl:block fixed right-4 top-1/2 -translate-y-1/2 z-30">
+        <div className="hidden xl:block fixed right-0 top-20 z-10 pointer-events-auto">
           <AdBanner
             id={rightAd.id}
             productName={rightAd.productName}
