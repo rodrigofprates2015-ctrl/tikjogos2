@@ -468,6 +468,13 @@
   }
 
   .hero-banner-text-small {
+    font-family: "Changa One", sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    color: #ffffff;
+    line-height: 1;
+    text-shadow: none;
+    text-transform: uppercase;
     display: none;
   }
 
@@ -497,8 +504,8 @@
   }
 
   .hero-banner-text-price::before {
-    content: '🎨';
-    font-size: 2.4rem;
+    content: '';
+    display: none;
   }
 
   @media (min-width: 768px) {
@@ -515,7 +522,7 @@
       font-size: 2.2rem;
     }
     .hero-banner-text-price::before {
-      font-size: 3rem;
+      display: none;
     }
   }
 }
