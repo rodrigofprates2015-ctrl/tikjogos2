@@ -434,7 +434,7 @@
   /* Hero Banner - Oficina de Temas */
   .hero-banner {
     padding: 0;
-    text-align: center;
+    text-align: left;
     width: 100%;
     position: fixed;
     top: 0;
@@ -463,8 +463,8 @@
     height: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
+    justify-content: flex-start;
+    gap: 0;
   }
 
   .hero-banner-text-small {
@@ -480,31 +480,25 @@
 
   .hero-banner-text-main {
     font-family: "Changa One", sans-serif !important;
-    font-size: 2rem !important;
+    font-size: 1.2rem !important;
     font-weight: 400 !important;
     color: #ffffff !important;
-    line-height: 1 !important;
+    line-height: 1.2 !important;
     letter-spacing: 0.02em !important;
     text-shadow: none !important;
     text-transform: uppercase !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .hero-banner-text-price {
-    font-family: "Changa One", sans-serif !important;
-    font-size: 1.8rem !important;
-    font-weight: 400 !important;
-    color: #ffffff !important;
-    line-height: 1 !important;
-    letter-spacing: 0.02em !important;
-    text-shadow: none !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 0.25rem !important;
-    text-transform: uppercase !important;
+    display: none !important;
   }
 
   .hero-banner-text-price::before {
-    content: '';
     display: none;
   }
 
@@ -513,16 +507,16 @@
       height: 80px;
     }
     .hero-banner-overlay {
-      gap: 1.5rem;
+      padding: 0.5rem 2rem;
     }
     .hero-banner-text-main {
       font-size: 2.5rem !important;
     }
-    .hero-banner-text-price {
-      font-size: 2.2rem !important;
-    }
-    .hero-banner-text-price::before {
-      display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .hero-banner-text-main {
+      font-size: 3rem !important;
     }
   }
 }

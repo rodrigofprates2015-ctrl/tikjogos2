@@ -86,8 +86,7 @@ export default function Prototipo() {
       >
         <div className="hero-banner-overlay">
           <p className="hero-banner-text-small">Divirta-se com os amigos</p>
-          <p className="hero-banner-text-main">Crie seu próprio tema</p>
-          <p className="hero-banner-text-price">Por apenas R$ 1,50</p>
+          <p className="hero-banner-text-main">Crie seu próprio tema por apenas R$ 1,50</p>
         </div>
       </Link>
 
