@@ -3074,25 +3074,25 @@ const GameScreen = () => {
     switch (gameMode) {
       case 'palavraSecreta':
         return (
-          <div className="space-y-2 text-center">
-            <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Palavra Secreta</p>
-            <h2 className="text-2xl sm:text-3xl text-white font-black">{gameData.word}</h2>
-            <p className="text-gray-400 text-xs">Dê dicas sutis sobre a palavra!</p>
+          <div className="space-y-3 text-center p-4 bg-emerald-500/5 rounded-2xl border-2 border-emerald-500/20">
+            <p className="text-emerald-400 text-xs uppercase tracking-[0.3em] font-bold">Palavra Secreta</p>
+            <h2 className="text-3xl sm:text-4xl text-white font-black tracking-tight">{gameData.word}</h2>
+            <p className="text-slate-400 text-sm">Dê dicas sutis sobre a palavra!</p>
           </div>
         );
       
       case 'palavras':
         const myRole = user?.uid ? gameData.roles?.[user.uid] : null;
         return (
-          <div className="space-y-3 text-center">
-            <div className="space-y-1">
-              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Local</p>
-              <h2 className="text-xl sm:text-2xl text-white font-black">{gameData.location}</h2>
+          <div className="space-y-4 text-center p-4 bg-emerald-500/5 rounded-2xl border-2 border-emerald-500/20">
+            <div className="space-y-2">
+              <p className="text-emerald-400 text-xs uppercase tracking-[0.3em] font-bold">Local</p>
+              <h2 className="text-2xl sm:text-3xl text-white font-black">{gameData.location}</h2>
             </div>
-            <div className="w-12 h-[1px] bg-gray-600/30 mx-auto"></div>
-            <div className="space-y-1">
-              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Sua Função</p>
-              <h3 className="text-lg sm:text-xl text-white font-bold">{myRole}</h3>
+            <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent mx-auto"></div>
+            <div className="space-y-2">
+              <p className="text-emerald-400 text-xs uppercase tracking-[0.3em] font-bold">Sua Função</p>
+              <h3 className="text-xl sm:text-2xl text-white font-bold">{myRole}</h3>
             </div>
           </div>
         );
@@ -3142,8 +3142,8 @@ const GameScreen = () => {
     switch (gameMode) {
       case 'palavraSecreta':
         return (
-          <div className="space-y-1 text-center px-4">
-            <p className="text-gray-400 text-sm font-medium leading-relaxed">
+          <div className="text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+            <p className="text-slate-300 text-sm font-medium leading-relaxed">
               Finja que você sabe a palavra! Engane a todos.
             </p>
           </div>
@@ -3151,8 +3151,8 @@ const GameScreen = () => {
       
       case 'palavras':
         return (
-          <div className="space-y-1 text-center px-4">
-            <p className="text-gray-400 text-sm font-medium leading-relaxed">
+          <div className="text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+            <p className="text-slate-300 text-sm font-medium leading-relaxed">
               Você não sabe o local! Tente descobrir através das dicas.
             </p>
           </div>
@@ -3160,8 +3160,8 @@ const GameScreen = () => {
       
       case 'duasFaccoes':
         return (
-          <div className="space-y-1 text-center px-4">
-            <p className="text-gray-400 text-sm font-medium leading-relaxed">
+          <div className="text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+            <p className="text-slate-300 text-sm font-medium leading-relaxed">
               Duas palavras no jogo! Você não sabe nenhuma.
             </p>
           </div>
@@ -3169,12 +3169,12 @@ const GameScreen = () => {
       
       case 'categoriaItem':
         return (
-          <div className="space-y-2 text-center px-4">
-            <div className="space-y-1">
-              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Categoria</p>
-              <h3 className="text-lg sm:text-xl text-white font-bold">{gameData.category}</h3>
+          <div className="space-y-3 text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+            <div className="space-y-2">
+              <p className="text-rose-400 text-xs uppercase tracking-[0.3em] font-bold">Categoria</p>
+              <h3 className="text-xl sm:text-2xl text-white font-bold">{gameData.category}</h3>
             </div>
-            <p className="text-gray-400 text-xs font-medium">
+            <p className="text-slate-400 text-sm">
               Você só sabe a categoria! Descubra o item.
             </p>
           </div>
@@ -3182,8 +3182,8 @@ const GameScreen = () => {
       
       case 'palavraComunidade':
         return (
-          <div className="space-y-1 text-center px-4">
-            <p className="text-gray-400 text-sm font-medium leading-relaxed">
+          <div className="text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+            <p className="text-slate-300 text-sm font-medium leading-relaxed">
               Finja que você sabe a palavra! Engane a todos.
             </p>
           </div>
@@ -3221,18 +3221,20 @@ const GameScreen = () => {
 
       case 'VOTING':
         return (
-          <div className="animate-stage-fade-in w-full space-y-4 py-3">
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#e9c46a]/10 border border-[#e9c46a]/30">
-                <Vote className="w-4 h-4 text-[#e9c46a]" />
-                <span className="text-[#e9c46a] text-xs uppercase tracking-widest font-bold">
-                  Hora de Votar!
-                </span>
+          <div className="animate-stage-fade-in w-full space-y-5">
+            <div className="text-center space-y-3">
+              <div className="w-16 h-16 rounded-2xl bg-orange-500/10 border-2 border-orange-500/30 flex items-center justify-center mx-auto">
+                <Vote className="w-8 h-8 text-orange-400" />
               </div>
-              <p className="text-gray-400 text-xs">Quem você acha que é o impostor?</p>
+              <div>
+                <h3 className="text-2xl font-black text-white uppercase tracking-wider mb-1">
+                  Hora de Votar!
+                </h3>
+                <p className="text-slate-400 text-sm">Quem você acha que é o impostor?</p>
+              </div>
             </div>
             
-            <div className="w-full h-[1px] bg-[#3d4a5c]"></div>
+            <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
             
             <VotingPlayerList
               activePlayers={activePlayers}
@@ -3250,45 +3252,45 @@ const GameScreen = () => {
         const allVoted = votedCount >= totalPlayers;
 
         return (
-          <div className="animate-stage-fade-in w-full space-y-4 py-3">
-            <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-full bg-[#3d8b5f]/20 border-2 border-[#3d8b5f] flex items-center justify-center mx-auto">
-                <Check className="w-6 h-6 text-[#3d8b5f]" />
+          <div className="animate-stage-fade-in w-full space-y-5">
+            <div className="text-center space-y-3">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/30 flex items-center justify-center mx-auto">
+                <Check className="w-8 h-8 text-emerald-400" />
               </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#3d8b5f]/10 border border-[#3d8b5f]/30">
-                <span className="text-[#3d8b5f] text-xs uppercase tracking-widest font-bold">
+              <div>
+                <h3 className="text-2xl font-black text-emerald-400 uppercase tracking-wider mb-2">
                   Voto Enviado!
-                </span>
+                </h3>
+                <p className="text-white text-base">
+                  Você votou em: <span className="text-orange-400 font-bold">{myVote?.targetName}</span>
+                </p>
               </div>
-              <p className="text-white text-sm">
-                Você votou em: <span className="text-[#e9c46a] font-bold">{myVote?.targetName}</span>
-              </p>
             </div>
             
-            <div className="w-full h-[1px] bg-[#3d4a5c]"></div>
+            <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
             
-            <div className="space-y-3">
+            <div className="space-y-4 p-4 bg-slate-700/20 rounded-2xl border border-slate-600/30">
               <div className="flex items-center justify-center gap-2">
-                <Users className="w-4 h-4 text-[#4a90a4]" />
-                <p className="text-gray-300 text-sm">
-                  <span className="text-[#4a90a4] font-bold">{votedCount}</span> de <span className="font-bold">{totalPlayers}</span> votaram
+                <Users className="w-5 h-5 text-blue-400" />
+                <p className="text-white text-base font-medium">
+                  <span className="text-blue-400 font-bold">{votedCount}</span> de <span className="font-bold">{totalPlayers}</span> votaram
                 </p>
               </div>
               
-              <div className="flex flex-wrap gap-1.5 justify-center">
+              <div className="flex flex-wrap gap-2 justify-center">
                 {activePlayers.map(player => {
                   const hasVoted = votes.some(v => v.playerId === player.uid);
                   return (
                     <div 
                       key={player.uid}
                       className={cn(
-                        "px-2 py-1 rounded-full text-xs font-medium transition-all",
+                        "px-3 py-1.5 rounded-xl text-sm font-medium transition-all",
                         hasVoted 
-                          ? "bg-[#3d8b5f]/20 text-[#3d8b5f] border border-[#3d8b5f]/30"
-                          : "bg-gray-700/50 text-gray-400 border border-gray-600/30"
+                          ? "bg-emerald-500/20 text-emerald-300 border-2 border-emerald-500/40"
+                          : "bg-slate-700/50 text-slate-400 border-2 border-slate-600/30"
                       )}
                     >
-                      {hasVoted && <Check className="w-2.5 h-2.5 inline mr-0.5" />}
+                      {hasVoted && <Check className="w-3 h-3 inline mr-1" />}
                       {player.name}
                     </div>
                   );
@@ -3328,39 +3330,43 @@ const GameScreen = () => {
         const crewWins = votesForImpostor > activePlayers.length / 2;
 
         return (
-          <div className="animate-stage-fade-in w-full space-y-4 py-3">
-            <div className="text-center space-y-2">
+          <div className="animate-stage-fade-in w-full space-y-6">
+            <div className="text-center space-y-4">
               <div className={cn(
-                "w-14 h-14 rounded-full flex items-center justify-center mx-auto",
-                crewWins ? "bg-[#3d8b5f]" : "bg-[#c44536]"
+                "w-20 h-20 rounded-2xl flex items-center justify-center mx-auto shadow-2xl border-4",
+                crewWins 
+                  ? "bg-gradient-to-br from-emerald-500 to-emerald-600 border-emerald-400/50" 
+                  : "bg-gradient-to-br from-rose-500 to-rose-600 border-rose-400/50"
               )}>
                 {crewWins ? (
-                  <Trophy className="w-7 h-7 text-white" />
+                  <Trophy className="w-10 h-10 text-white" />
                 ) : (
-                  <Skull className="w-7 h-7 text-white" />
+                  <Skull className="w-10 h-10 text-white" />
                 )}
               </div>
               
-              <h2 className={cn(
-                "text-lg font-bold uppercase tracking-wider",
-                crewWins ? "text-[#3d8b5f]" : "text-[#c44536]"
-              )}>
-                {crewWins ? "Tripulação Venceu!" : "Impostor Venceu!"}
-              </h2>
-              
-              <p className="text-gray-300 text-sm">
-                O impostor era: <span className="text-[#c44536] font-bold">{impostorName}</span>
-              </p>
+              <div>
+                <h2 className={cn(
+                  "text-3xl font-black uppercase tracking-wider mb-2",
+                  crewWins ? "text-emerald-400" : "text-rose-400"
+                )}>
+                  {crewWins ? "Tripulação Venceu!" : "Impostor Venceu!"}
+                </h2>
+                
+                <p className="text-white text-base">
+                  O impostor era: <span className="text-rose-400 font-bold text-lg">{impostorName}</span>
+                </p>
+              </div>
             </div>
             
-            <div className="w-full h-[1px] bg-[#3d4a5c]"></div>
+            <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
             
-            <div className="space-y-2">
-              <p className="text-[#e9c46a] text-xs uppercase tracking-widest font-bold text-center">
+            <div className="space-y-3 p-4 bg-slate-700/20 rounded-2xl border border-slate-600/30">
+              <p className="text-orange-400 text-sm uppercase tracking-widest font-bold text-center">
                 Resultados da Votação
               </p>
               
-              <div className="space-y-1.5 max-h-[120px] overflow-y-auto scrollbar-hide">
+              <div className="space-y-2 max-h-[140px] overflow-y-auto scrollbar-hide">
                 {activePlayers.map(player => {
                   const votesReceived = votes.filter(v => v.targetId === player.uid).length;
                   const isTheImpostor = player.uid === room.impostorId;
@@ -3368,22 +3374,22 @@ const GameScreen = () => {
                     <div 
                       key={player.uid}
                       className={cn(
-                        "w-full p-2 rounded-lg flex items-center justify-between",
+                        "w-full p-3 rounded-xl flex items-center justify-between transition-all",
                         isTheImpostor 
-                          ? "bg-[#c44536]/15 border border-[#c44536]/40"
-                          : "bg-[#16213e]/50"
+                          ? "bg-rose-500/20 border-2 border-rose-500/50 shadow-lg"
+                          : "bg-slate-700/50 border-2 border-slate-600/30"
                       )}
                     >
                       <span className={cn(
-                        "font-bold text-xs",
-                        isTheImpostor ? "text-[#c44536]" : "text-gray-300"
+                        "font-bold text-sm",
+                        isTheImpostor ? "text-rose-300" : "text-slate-200"
                       )}>
                         {player.name}
-                        {isTheImpostor && " (Impostor)"}
+                        {isTheImpostor && " 👹"}
                       </span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-[#e9c46a] font-bold text-sm">{votesReceived}</span>
-                        <span className="text-gray-500 text-xs">votos</span>
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-800/50">
+                        <span className="text-orange-400 font-bold text-base">{votesReceived}</span>
+                        <span className="text-slate-400 text-xs">votos</span>
                       </div>
                     </div>
                   );
@@ -3394,10 +3400,10 @@ const GameScreen = () => {
             {isHost && (
               <Button 
                 onClick={handleNewRound}
-                className="w-full h-11 btn-retro-primary font-bold text-sm rounded-xl transition-all"
+                className="w-full h-12 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold text-sm rounded-2xl shadow-lg border-2 border-purple-400/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 data-testid="button-new-round"
               >
-                <RotateCcw className="mr-2 w-4 h-4" /> Nova Rodada
+                <RotateCcw className="mr-2 w-5 h-5" /> Nova Rodada
               </Button>
             )}
           </div>
@@ -3406,37 +3412,41 @@ const GameScreen = () => {
       case 'WORD_REVEAL':
       default:
         return (
-          <div className="animate-stage-fade-in w-full space-y-3 py-2">
+          <div className="animate-stage-fade-in w-full space-y-3">
             {isHost ? (
               <>
                 <Button 
                   onClick={handleStartSorteio}
-                  className="w-full h-10 bg-white hover:bg-white/80 border-2 border-white/40 text-black rounded-xl font-medium text-sm"
+                  className="w-full h-12 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-2xl font-bold text-sm shadow-lg border-2 border-purple-400/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
                   data-testid="button-sorteio"
                 >
-                  <Zap className="mr-2 w-4 h-4" /> Sortear Ordem de Fala
+                  <Zap className="mr-2 w-5 h-5" /> Sortear Ordem de Fala
                 </Button>
                 <Button 
                   onClick={handleStartVoting}
-                  className="w-full h-10 bg-[#e9c46a] hover:bg-[#e9c46a]/80 text-black font-bold rounded-xl text-sm"
-                  style={{ boxShadow: '0 3px 0 rgba(233, 196, 106, 0.4)' }}
+                  className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold rounded-2xl text-sm shadow-lg border-2 border-orange-400/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
                   data-testid="button-start-voting"
                 >
-                  <Vote className="mr-2 w-4 h-4" /> Iniciar Votação
+                  <Vote className="mr-2 w-5 h-5" /> Iniciar Votação
                 </Button>
                 <Button 
                   onClick={handleNewRound}
                   variant="ghost"
-                  className="w-full h-9 text-gray-400 hover:text-gray-200 rounded-xl text-sm"
+                  className="w-full h-10 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl text-sm transition-all"
                   data-testid="button-return-lobby"
                 >
                   <ArrowLeft className="mr-2 w-4 h-4" /> Nova Rodada
                 </Button>
               </>
             ) : (
-              <p className="text-gray-400 text-sm text-center py-2">
-                Aguardando o host iniciar a votação...
-              </p>
+              <div className="text-center py-4">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-700/50 border border-slate-600/30">
+                  <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></div>
+                  <p className="text-slate-300 text-sm font-medium">
+                    Aguardando o host iniciar a votação...
+                  </p>
+                </div>
+              </div>
             )}
           </div>
         );
@@ -3444,20 +3454,29 @@ const GameScreen = () => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-md min-h-full p-4 animate-fade-in space-y-3 relative z-10">
+    <div className="flex flex-col items-center w-full max-w-2xl min-h-full py-6 px-4 animate-fade-in space-y-4 relative z-10">
+      {/* Elementos decorativos de fundo */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
+      </div>
+
       <GameNavButtons onBackToLobby={handleBackToLobby} isImpostor={isImpostor} />
 
-      <div className="w-full card-retro p-4 space-y-4">
+      <div className="w-full bg-[#242642] rounded-[3rem] p-6 md:p-8 shadow-2xl border-4 border-[#2f3252] relative z-10 space-y-6">
         <div 
-          className="w-full rounded-xl p-4 flex flex-col items-center text-center relative transition-all duration-300 cursor-pointer bg-gradient-to-b from-[#2a2a3a] to-[#1a1a2a] border border-gray-600/40"
+          className="w-full rounded-2xl p-6 flex flex-col items-center text-center relative transition-all duration-300 cursor-pointer bg-gradient-to-br from-[#2f3252] to-[#1e2036] border-2 border-[#3d4a5c] hover:border-[#4a5568] shadow-lg"
           onClick={() => setIsRevealed(!isRevealed)}
           data-testid="card-reveal"
         >
           {isRevealed ? (
-            <div className="flex flex-col items-center gap-3 animate-fade-in w-full py-2">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col items-center gap-4 animate-fade-in w-full">
+              <div className="flex items-center gap-4 w-full">
                 <div 
-                  className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-700/40"
+                  className={cn(
+                    "w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 shadow-xl border-4",
+                    isImpostor ? "border-rose-500/50 bg-rose-500/10" : "border-emerald-500/50 bg-emerald-500/10"
+                  )}
                 >
                   <img 
                     src={isImpostor ? impostorImg : tripulanteImg} 
@@ -3466,42 +3485,52 @@ const GameScreen = () => {
                     style={{ transform: 'scale(1.5) translateY(18%)' }}
                   />
                 </div>
-                <div className="text-left">
+                <div className="text-left flex-1">
                   <h2 
-                    className="text-xl sm:text-2xl font-black tracking-wider uppercase text-gray-200"
+                    className={cn(
+                      "text-2xl sm:text-3xl font-black tracking-wider uppercase",
+                      isImpostor ? "text-rose-400" : "text-emerald-400"
+                    )}
                     data-testid={isImpostor ? "text-role-impostor" : "text-role-crew"}
                   >
                     {isImpostor ? "IMPOSTOR" : "TRIPULANTE"}
                   </h2>
+                  <p className="text-slate-400 text-xs mt-1">
+                    {isImpostor ? "Engane todos!" : "Descubra o impostor!"}
+                  </p>
                 </div>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsRevealed(false); }}
-                  className="ml-auto w-8 h-8 rounded-lg flex items-center justify-center transition-colors border border-gray-600/30 hover:bg-gray-500/20"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all bg-slate-700/50 hover:bg-slate-600/50 border-2 border-slate-600/30"
                   data-testid="button-hide-role"
                 >
-                  <EyeOff className="w-4 h-4 text-gray-400/60" />
+                  <EyeOff className="w-5 h-5 text-slate-400" />
                 </button>
               </div>
+
+              <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
 
               <div className="w-full">
                 {isImpostor ? renderImpostorContent() : renderCrewContent()}
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-2 py-6">
-              <Eye className="w-10 h-10 text-gray-400/60" />
-              <h3 className="text-base font-bold text-gray-300">
-                TOQUE PARA REVELAR
+            <div className="flex flex-col items-center gap-3 py-8">
+              <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border-2 border-purple-500/30 flex items-center justify-center">
+                <Eye className="w-8 h-8 text-purple-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white uppercase tracking-wider">
+                Toque para Revelar
               </h3>
+              <p className="text-slate-400 text-sm">Descubra seu papel no jogo</p>
             </div>
           )}
         </div>
 
-        <div className="w-full h-[1px] bg-[#3d4a5c]"></div>
+        <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
 
         {renderStageContent()}
       </div>
-
     </div>
   );
 };
