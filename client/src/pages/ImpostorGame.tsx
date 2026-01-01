@@ -1968,9 +1968,8 @@ const ModeSelectScreen = () => {
           setShouldAutoStart(true);
         }
         
-        // Clean up after setting
-        sessionStorage.removeItem('selectedThemeId');
-        sessionStorage.removeItem('selectedThemeCode');
+        // DON'T clean up yet - wait for auto-start to complete
+        // sessionStorage will be cleaned in the auto-start useEffect
         
         toast({ 
           title: "Tema selecionado!", 
@@ -2013,15 +2012,30 @@ const ModeSelectScreen = () => {
 
   // Auto-start game when ready
   useEffect(() => {
+    console.log('[AutoStartGame] Checking:', {
+      shouldAutoStart,
+      selectedThemeCode,
+      isHost,
+      selectedMode
+    });
+    
     if (shouldAutoStart && selectedThemeCode && isHost) {
+      console.log('[AutoStartGame] Starting game with theme:', selectedThemeCode);
+      
+      // Clean up session storage
       sessionStorage.removeItem('autoStartGame');
+      sessionStorage.removeItem('selectedThemeId');
+      sessionStorage.removeItem('selectedThemeCode');
+      sessionStorage.removeItem('selectedGameMode');
+      
       setShouldAutoStart(false);
       
       setTimeout(() => {
+        console.log('[AutoStartGame] Calling handleStartGameWithSorteio');
         handleStartGameWithSorteio();
       }, 1000);
     }
-  }, [shouldAutoStart, selectedThemeCode, isHost]);
+  }, [shouldAutoStart, selectedThemeCode, isHost, selectedMode]);
 
   if (!room) return null;
 
