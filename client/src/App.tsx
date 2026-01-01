@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { VersionBadge } from "@/components/VersionBadge";
+import { useEffect } from "react";
 import NotFound from "@/pages/not-found";
 import ImpostorGame from "@/pages/ImpostorGame";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
@@ -20,6 +21,30 @@ import Prototipo from "@/pages/Prototipo";
 import AdTest from "@/pages/AdTest";
 import RoomRedirect from "@/pages/RoomRedirect";
 import { useAuth } from "@/hooks/useAuth";
+
+function VersionManager() {
+  useEffect(() => {
+    const CURRENT_VERSION = "1.0.1";
+    const storedVersion = localStorage.getItem("app_version");
+
+    if (storedVersion !== CURRENT_VERSION) {
+      console.log("New version detected, clearing cache...");
+      
+      const nickname = localStorage.getItem("tikjogos_saved_nickname");
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      if (nickname) {
+        localStorage.setItem("tikjogos_saved_nickname", nickname);
+      }
+      
+      localStorage.setItem("app_version", CURRENT_VERSION);
+      window.location.reload();
+    }
+  }, []);
+
+  return null;
+}
 
 function Router() {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -54,6 +79,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <VersionManager />
         <Router />
         <Toaster />
         <VersionBadge />
