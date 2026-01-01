@@ -137,6 +137,14 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         setRooms(data);
+      } else if (response.status === 401) {
+        // Unauthorized - clear auth and redirect
+        console.log('[Admin] Unauthorized, clearing auth');
+        localStorage.removeItem("adminToken");
+        setIsAuthenticated(false);
+        setToken(null);
+      } else {
+        console.error(`[Admin] Error fetching rooms: ${response.status}`);
       }
     } catch (error) {
       console.error("Error fetching rooms:", error);
@@ -159,6 +167,14 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         setThemes(data);
+      } else if (response.status === 401) {
+        // Unauthorized - clear auth and redirect
+        console.log('[Admin] Unauthorized, clearing auth');
+        localStorage.removeItem("adminToken");
+        setIsAuthenticated(false);
+        setToken(null);
+      } else {
+        console.error(`[Admin] Error fetching themes: ${response.status}`);
       }
     } catch (error) {
       console.error("Error fetching themes:", error);

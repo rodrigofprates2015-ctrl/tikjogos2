@@ -67,7 +67,20 @@ app.use((req, res, next) => {
   // Import and run seed
   import("./seed").catch(err => console.error("Seed failed:", err));
 
-  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+  // Catch-all for unhandled routes before error handler
+  // This prevents the error handler from showing "Oops!" page for valid SPA routes
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    // If we get here and it's not an API route, it means no route matched
+    // But we should let the SPA handle it (for client-side routing)
+    if (!req.path.startsWith('/api') && !res.headersSent) {
+      // Don't call next() with error, just pass through
+      // The static file handler or Vite will serve the SPA
+      return next();
+    }
+    next();
+  });
+
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
@@ -82,58 +95,16 @@ app.use((req, res, next) => {
       return;
     }
 
-    // Don't send JSON for non-API routes to avoid download issues on mobile
+    // For API routes, return JSON error
     if (req.path.startsWith('/api')) {
       res.status(status).json({ message });
-    } else {
-      // For non-API routes, redirect to home or show error page
-      res.status(status).send(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Erro - TikJogos</title>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-                margin: 0;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                text-align: center;
-                padding: 20px;
-              }
-              .error-container {
-                max-width: 500px;
-              }
-              h1 { font-size: 3em; margin: 0; }
-              p { font-size: 1.2em; margin: 20px 0; }
-              a {
-                display: inline-block;
-                padding: 12px 24px;
-                background: white;
-                color: #667eea;
-                text-decoration: none;
-                border-radius: 8px;
-                font-weight: bold;
-                margin-top: 20px;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="error-container">
-              <h1>Oops!</h1>
-              <p>Algo deu errado. Por favor, tente novamente.</p>
-              <a href="/">Voltar para o início</a>
-            </div>
-          </body>
-        </html>
-      `);
+      return;
     }
+
+    // For non-API routes, let the SPA handle it (don't show error page)
+    // This allows React Router to handle 404s and other client-side routing
+    console.log('[Error Handler] Non-API route error, passing to next handler');
+    next();
   });
 
   // importantly only setup vite in development and after
