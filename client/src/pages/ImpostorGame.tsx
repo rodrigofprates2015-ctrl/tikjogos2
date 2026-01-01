@@ -1922,9 +1922,28 @@ const ModeSelectScreen = () => {
     if (selectedMode === 'palavraComunidade') {
       loadCommunityThemes();
       
+      // Check if theme code is already in sessionStorage (from gallery)
+      const themeCodeFromStorage = sessionStorage.getItem('selectedThemeCode');
       const selectedThemeId = sessionStorage.getItem('selectedThemeId');
       
-      if (selectedThemeId) {
+      if (themeCodeFromStorage && !selectedThemeCode) {
+        // Use the theme code directly from storage
+        setSelectedThemeCode(themeCodeFromStorage);
+        
+        if (autoStart === 'true' && isHost) {
+          setShouldAutoStart(true);
+        }
+        
+        // Clean up after setting
+        sessionStorage.removeItem('selectedThemeId');
+        sessionStorage.removeItem('selectedThemeCode');
+        
+        toast({ 
+          title: "Tema selecionado!", 
+          description: "Tema da comunidade carregado com sucesso" 
+        });
+      } else if (selectedThemeId && !selectedThemeCode) {
+        // Fallback: fetch theme by ID if code not available
         fetch('/api/themes/public')
           .then(res => res.json())
           .then(themes => {
@@ -1934,16 +1953,15 @@ const ModeSelectScreen = () => {
               
               if (autoStart === 'true' && isHost) {
                 setShouldAutoStart(true);
-                sessionStorage.removeItem('selectedThemeId');
-                sessionStorage.removeItem('selectedThemeCode');
-              } else {
-                toast({ 
-                  title: "Tema selecionado!", 
-                  description: `"${theme.titulo}" está pronto para jogar` 
-                });
-                sessionStorage.removeItem('selectedThemeId');
-                sessionStorage.removeItem('selectedThemeCode');
               }
+              
+              sessionStorage.removeItem('selectedThemeId');
+              sessionStorage.removeItem('selectedThemeCode');
+              
+              toast({ 
+                title: "Tema selecionado!", 
+                description: `"${theme.titulo}" está pronto para jogar` 
+              });
             }
           })
           .catch(err => console.error('Failed to load selected theme:', err));
@@ -1956,7 +1974,7 @@ const ModeSelectScreen = () => {
     } else {
       setSelectedThemeCode(null);
     }
-  }, [selectedMode, isHost, toast]);
+  }, [selectedMode, isHost, toast, selectedThemeCode]);
 
   // Auto-start game when ready
   useEffect(() => {

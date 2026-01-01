@@ -127,14 +127,17 @@ export default function CommunityThemes() {
         // Use Futebol submode
         sessionStorage.setItem("selectedGameMode", "palavraSecreta");
         sessionStorage.setItem("selectedSubmode", "futebol");
+        sessionStorage.setItem("selectedCategory", "futebol");
         sessionStorage.setItem("autoStartGame", "true");
       } else if (theme.id === 'disney-luciana') {
         // Use Disney submode
         sessionStorage.setItem("selectedGameMode", "palavraSecreta");
         sessionStorage.setItem("selectedSubmode", "disney");
+        sessionStorage.setItem("selectedCategory", "disney");
         sessionStorage.setItem("autoStartGame", "true");
       } else {
-        // Regular community theme
+        // Regular community theme - use palavraComunidade mode
+        sessionStorage.setItem("selectedGameMode", "palavraComunidade");
         sessionStorage.setItem("selectedThemeId", theme.id);
         sessionStorage.setItem("selectedThemeCode", theme.accessCode);
         sessionStorage.setItem("autoStartGame", "true");
