@@ -1058,8 +1058,8 @@ const HomeScreen = () => {
       {/* Top Ad Block */}
       <AdBlockTop />
 
-      {/* Hero Banner - Oficina de Temas */}
-      <Link 
+      {/* Hero Banner - Oficina de Temas - TEMPORARIAMENTE DESABILITADO */}
+      {/* <Link 
         href="/criar-tema"
         className="hero-banner"
         data-testid="hero-banner-theme-workshop"
@@ -1068,7 +1068,7 @@ const HomeScreen = () => {
           <p className="hero-banner-text-small">Divirta-se com os amigos</p>
           <p className="hero-banner-text-main">Crie seu próprio tema por apenas R$ 1,50</p>
         </div>
-      </Link>
+      </Link> */}
 
       {/* Tripulante character - left side (desktop only) */}
       <img 

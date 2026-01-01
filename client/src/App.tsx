@@ -53,8 +53,9 @@ function Router() {
     <Switch>
       <Route path="/" component={ImpostorGame} />
       <Route path="/sala/:codigo" component={RoomRedirect} />
-      <Route path="/criar-tema" component={CriarTema} />
-      <Route path="/oficina" component={CriarTema} />
+      {/* Rotas de criação de temas temporariamente desabilitadas */}
+      {/* <Route path="/criar-tema" component={CriarTema} /> */}
+      {/* <Route path="/oficina" component={CriarTema} /> */}
       {/* Rotas de temas da comunidade temporariamente desabilitadas */}
       {/* <Route path="/temas" component={CommunityThemes} /> */}
       {/* <Route path="/temas-comunidade" component={CommunityThemes} /> */}
