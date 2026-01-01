@@ -366,6 +366,42 @@ const seedPosts = [
   }
 ];
 
+const seedThemes = [
+  {
+    titulo: "Futebol",
+    autor: "Maylon",
+    palavras: [
+      "Gol", "Pênalti", "Escanteio", "Impedimento", "Cartão", "Juiz", "Árbitro",
+      "Torcida", "Estádio", "Campo", "Bola", "Chuteira", "Uniforme", "Goleiro",
+      "Zagueiro", "Lateral", "Volante", "Meia", "Atacante", "Centroavante",
+      "Craque", "Drible", "Falta", "Barreira", "Cobrança", "Cabeçada", "Voleio",
+      "Defesa", "Rebatida", "Trave", "Rede", "Placar", "Vitória", "Empate",
+      "Derrota", "Campeonato", "Copa", "Liga", "Clássico", "Derby"
+    ],
+    isPublic: true,
+    accessCode: "FUTEBOL",
+    paymentStatus: "approved",
+    approved: true
+  },
+  {
+    titulo: "Disney",
+    autor: "@Luciana",
+    palavras: [
+      "Mickey", "Minnie", "Donald", "Pateta", "Pluto", "Cinderela", "Branca de Neve",
+      "Bela", "Fera", "Aladdin", "Jasmine", "Ariel", "Elsa", "Anna", "Olaf",
+      "Simba", "Nala", "Timon", "Pumba", "Woody", "Buzz", "Nemo", "Dory",
+      "Moana", "Maui", "Rapunzel", "Flynn", "Mulan", "Pocahontas", "Hércules",
+      "Megara", "Tarzan", "Jane", "Peter Pan", "Sininho", "Capitão Gancho",
+      "Dumbo", "Bambi", "Pinóquio", "Gepeto", "Jiminy", "Cruella", "Malévola",
+      "Ursula", "Jafar", "Scar", "Hades", "Gaston", "Rainha Má"
+    ],
+    isPublic: true,
+    accessCode: "DISNEY",
+    paymentStatus: "approved",
+    approved: true
+  }
+];
+
 async function seed() {
   console.log("Seeding " + seedPosts.length + " blog posts...");
   for (const postData of seedPosts) {
@@ -377,7 +413,19 @@ async function seed() {
       console.log("Skipping existing post: " + postData.slug);
     }
   }
-  console.log("Seeding complete!");
+  
+  console.log("\nSeeding " + seedThemes.length + " featured themes...");
+  for (const themeData of seedThemes) {
+    const existing = await storage.getThemeByAccessCode(themeData.accessCode);
+    if (!existing) {
+      await storage.createTheme(themeData);
+      console.log("Created theme: " + themeData.titulo + " (" + themeData.accessCode + ")");
+    } else {
+      console.log("Skipping existing theme: " + themeData.titulo);
+    }
+  }
+  
+  console.log("\nSeeding complete!");
 }
 
 seed().catch(console.error);
