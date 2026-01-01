@@ -6,6 +6,19 @@ import fs from "fs";
 import path from "path";
 
 const app = express();
+
+// Add cache-control headers to prevent stale assets
+app.use((req, res, next) => {
+  if (req.url === '/' || req.url.endsWith('.html')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  } else if (req.url.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg)$/)) {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+  next();
+});
+
 const httpServer = createServer(app);
 
 declare module "http" {
