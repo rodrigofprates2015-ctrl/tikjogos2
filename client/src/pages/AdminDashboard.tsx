@@ -101,36 +101,50 @@ export default function AdminDashboard() {
     setLoginError("");
     
     try {
+      // Clear any existing token before attempting new login
+      localStorage.removeItem("adminToken");
+      setToken(null);
+      
       const response = await apiRequest("POST", "/api/admin/login", { email, password });
       const data = await response.json();
       
       if (data.success) {
-        setToken(data.token);
+        const newToken = data.token;
+        setToken(newToken);
+        localStorage.setItem("adminToken", newToken);
         setIsAuthenticated(true);
-        localStorage.setItem("adminToken", data.token);
       }
     } catch (error: any) {
       setLoginError("Credenciais inválidas");
+      // Ensure clean state on error
+      setToken(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem("adminToken");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
-    setToken(null);
-    setRooms([]);
+    // Clear all authentication state
     localStorage.removeItem("adminToken");
+    setToken(null);
+    setIsAuthenticated(false);
+    setRooms([]);
+    setThemes([]);
+    setEmail("");
+    setPassword("");
+    setLoginError("");
   };
 
   const fetchRooms = async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !token) return;
     
     setIsRefreshing(true);
     try {
       const response = await fetch("/api/admin/rooms", {
         headers: {
-          "Authorization": `Bearer ${token || localStorage.getItem("adminToken")}`
+          "Authorization": `Bearer ${token}`
         }
       });
       
@@ -140,9 +154,7 @@ export default function AdminDashboard() {
       } else if (response.status === 401) {
         // Unauthorized - clear auth and redirect
         console.log('[Admin] Unauthorized, clearing auth');
-        localStorage.removeItem("adminToken");
-        setIsAuthenticated(false);
-        setToken(null);
+        handleLogout();
       } else {
         console.error(`[Admin] Error fetching rooms: ${response.status}`);
       }
@@ -154,13 +166,13 @@ export default function AdminDashboard() {
   };
 
   const fetchThemes = async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !token) return;
     
     setIsLoadingThemes(true);
     try {
       const response = await fetch("/api/admin/themes", {
         headers: {
-          "Authorization": `Bearer ${token || localStorage.getItem("adminToken")}`
+          "Authorization": `Bearer ${token}`
         }
       });
       
@@ -170,9 +182,7 @@ export default function AdminDashboard() {
       } else if (response.status === 401) {
         // Unauthorized - clear auth and redirect
         console.log('[Admin] Unauthorized, clearing auth');
-        localStorage.removeItem("adminToken");
-        setIsAuthenticated(false);
-        setToken(null);
+        handleLogout();
       } else {
         console.error(`[Admin] Error fetching themes: ${response.status}`);
       }
@@ -184,7 +194,7 @@ export default function AdminDashboard() {
   };
 
   const deleteTheme = async (themeId: string) => {
-    if (!confirm("Tem certeza que deseja excluir este tema? Esta ação não pode ser desfeita.")) {
+    if (!token || !confirm("Tem certeza que deseja excluir este tema? Esta ação não pode ser desfeita.")) {
       return;
     }
     
@@ -192,13 +202,15 @@ export default function AdminDashboard() {
       const response = await fetch(`/api/admin/themes/${themeId}`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${token || localStorage.getItem("adminToken")}`
+          "Authorization": `Bearer ${token}`
         }
       });
       
       if (response.ok) {
         setThemes(themes.filter(t => t.id !== themeId));
         alert("Tema excluído com sucesso!");
+      } else if (response.status === 401) {
+        handleLogout();
       } else {
         alert("Erro ao excluir tema");
       }
@@ -209,17 +221,21 @@ export default function AdminDashboard() {
   };
 
   const approveTheme = async (themeId: string) => {
+    if (!token) return;
+    
     try {
       const response = await fetch(`/api/admin/themes/${themeId}/approve`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token || localStorage.getItem("adminToken")}`
+          "Authorization": `Bearer ${token}`
         }
       });
       
       if (response.ok) {
         setThemes(themes.map(t => t.id === themeId ? { ...t, approved: true } : t));
         alert("Tema aprovado com sucesso!");
+      } else if (response.status === 401) {
+        handleLogout();
       } else {
         alert("Erro ao aprovar tema");
       }
@@ -230,17 +246,21 @@ export default function AdminDashboard() {
   };
 
   const rejectTheme = async (themeId: string) => {
+    if (!token) return;
+    
     try {
       const response = await fetch(`/api/admin/themes/${themeId}/reject`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token || localStorage.getItem("adminToken")}`
+          "Authorization": `Bearer ${token}`
         }
       });
       
       if (response.ok) {
         setThemes(themes.map(t => t.id === themeId ? { ...t, approved: false } : t));
         alert("Tema rejeitado!");
+      } else if (response.status === 401) {
+        handleLogout();
       } else {
         alert("Erro ao rejeitar tema");
       }
@@ -251,10 +271,12 @@ export default function AdminDashboard() {
   };
 
   const inspectRoom = async (code: string) => {
+    if (!token) return;
+    
     try {
       const response = await fetch(`/api/admin/rooms/${code}`, {
         headers: {
-          "Authorization": `Bearer ${token || localStorage.getItem("adminToken")}`
+          "Authorization": `Bearer ${token}`
         }
       });
       
@@ -262,6 +284,8 @@ export default function AdminDashboard() {
         const data = await response.json();
         setSelectedRoom(data);
         setIsSpectatorOpen(true);
+      } else if (response.status === 401) {
+        handleLogout();
       }
     } catch (error) {
       console.error("Error fetching room details:", error);
@@ -277,13 +301,13 @@ export default function AdminDashboard() {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && token) {
       fetchRooms();
       fetchThemes();
       const interval = setInterval(fetchRooms, 5000);
       return () => clearInterval(interval);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, token]);
 
   const totalPlayers = rooms.reduce((sum, room) => sum + room.players.length, 0);
   const activeRooms = rooms.filter(r => r.status === "playing").length;
