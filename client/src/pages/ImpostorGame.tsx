@@ -970,18 +970,8 @@ const HomeScreen = () => {
     const selectedGameMode = sessionStorage.getItem('selectedGameMode');
     const selectedCategory = sessionStorage.getItem('selectedCategory');
     
-    console.log('[AutoStart] Checking auto-start conditions:', {
-      autoStart,
-      selectedThemeCode,
-      selectedGameMode,
-      selectedCategory,
-      hasRoom: !!room
-    });
-    
     if (autoStart === 'true' && (selectedThemeCode || selectedGameMode)) {
       const saved = loadSavedNickname();
-      console.log('[AutoStart] Saved nickname:', saved);
-      
       if (saved) {
         setUser(saved);
         createRoom();
@@ -990,15 +980,12 @@ const HomeScreen = () => {
           ? "Preparando o jogo com o tema selecionado"
           : "Preparando o jogo com a categoria selecionada";
         
-        console.log('[AutoStart] Creating room with description:', description);
-        
         toast({ 
           title: "Criando sala...", 
           description 
         });
       } else {
         // If no saved nickname, just show a message
-        console.log('[AutoStart] No saved nickname, clearing session');
         toast({ 
           title: "Digite seu nome", 
           description: "Digite seu nome e crie uma sala para jogar" 
@@ -1008,7 +995,7 @@ const HomeScreen = () => {
         sessionStorage.removeItem('selectedCategory');
       }
     }
-  }, [loadSavedNickname, setUser, createRoom, toast, room]);
+  }, [loadSavedNickname, setUser, createRoom, toast]);
 
   const handleCreate = () => {
     console.log('[HandleCreate] Button clicked, name:', name);
@@ -1919,19 +1906,10 @@ const ModeSelectScreen = () => {
     const selectedThemeCode = sessionStorage.getItem('selectedThemeCode');
     const selectedGameMode = sessionStorage.getItem('selectedGameMode');
     
-    console.log('[AutoSelectMode] Checking:', {
-      autoStart,
-      selectedThemeCode,
-      selectedGameMode,
-      currentSelectedMode: selectedMode
-    });
-    
     if (autoStart === 'true' && !selectedMode) {
       if (selectedThemeCode) {
-        console.log('[AutoSelectMode] Selecting palavraComunidade mode');
         selectMode('palavraComunidade');
       } else if (selectedGameMode) {
-        console.log('[AutoSelectMode] Selecting mode:', selectedGameMode);
         selectMode(selectedGameMode as GameModeType);
       }
     }
@@ -1941,8 +1919,6 @@ const ModeSelectScreen = () => {
   useEffect(() => {
     const autoStart = sessionStorage.getItem('autoStartGame');
     
-    console.log('[ThemeLoad] Mode:', selectedMode, 'isHost:', isHost);
-    
     if (selectedMode === 'palavraComunidade') {
       loadCommunityThemes();
       
@@ -1950,21 +1926,11 @@ const ModeSelectScreen = () => {
       const themeCodeFromStorage = sessionStorage.getItem('selectedThemeCode');
       const selectedThemeId = sessionStorage.getItem('selectedThemeId');
       
-      console.log('[ThemeLoad] Theme data:', {
-        themeCodeFromStorage,
-        selectedThemeId,
-        currentSelectedThemeCode: selectedThemeCode,
-        autoStart,
-        isHost
-      });
-      
       if (themeCodeFromStorage && !selectedThemeCode) {
-        console.log('[ThemeLoad] Using theme code from storage:', themeCodeFromStorage);
         // Use the theme code directly from storage
         setSelectedThemeCode(themeCodeFromStorage);
         
         if (autoStart === 'true' && isHost) {
-          console.log('[ThemeLoad] Setting shouldAutoStart to true');
           setShouldAutoStart(true);
         }
         
@@ -1977,7 +1943,6 @@ const ModeSelectScreen = () => {
           description: "Tema da comunidade carregado com sucesso" 
         });
       } else if (selectedThemeId && !selectedThemeCode) {
-        console.log('[ThemeLoad] Fetching theme by ID:', selectedThemeId);
         // Fallback: fetch theme by ID if code not available
         fetch('/api/themes/public')
           .then(res => res.json())
