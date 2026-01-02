@@ -1,30 +1,1045 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useGameStore, type GameModeType, type PlayerVote, type PlayerAnswer } from "@/lib/gameStore";
 import { Link } from "wouter";
-import { Zap, Heart } from "lucide-react";
+import PalavraSuperSecretaSubmodeScreen from "@/pages/PalavraSuperSecretaSubmodeScreen";
+import { NotificationCenter } from "@/components/NotificationCenter";
+import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
+import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
+import { LobbyChat } from "@/components/LobbyChat";
+import { SiDiscord } from "react-icons/si";
+import { 
+  User, 
+  Users,
+  Zap, 
+  Copy, 
+  LogOut, 
+  Play, 
+  Crown,
+  Loader2,
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  Rocket,
+  MapPin,
+  Swords,
+  Target,
+  HelpCircle,
+  FileText,
+  Heart,
+  X,
+  Send,
+  RotateCcw,
+  Smartphone,
+  MessageSquare,
+  Home,
+  Check,
+  Vote,
+  Skull,
+  Trophy,
+  UserX,
+  Gamepad2,
+  Search,
+  Plus,
+  TrendingUp,
+  Clock,
+  Star,
+  Sparkles,
+  Info
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoImpostor from "@assets/logo_site_impostor_1765071990526.png";
 import tripulanteImg from "@assets/tripulante_natal_1765071995242.png";
 import impostorImg from "@assets/impostor_natal_1765071992843.png";
-import { AdBanner } from "@/components/ad-banner";
-import { getRandomAdByFormat } from "@/data/ad-data";
 
-export default function Prototipo() {
+const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
+
+const MIN_PALAVRAS = 10;
+const MAX_PALAVRAS = 20;
+
+type ThemeWorkshopTab = 'galeria' | 'criar';
+
+type PaymentState = {
+  status: 'idle' | 'loading' | 'awaiting_payment' | 'success' | 'error';
+  paymentId?: string;
+  qrCode?: string;
+  qrCodeBase64?: string;
+  accessCode?: string;
+  error?: string;
+};
+
+const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<ThemeWorkshopTab>('galeria');
+  const [publicThemes, setPublicThemes] = useState<PublicTheme[]>([]);
+  const [isLoadingThemes, setIsLoadingThemes] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterTab, setFilterTab] = useState<'trending' | 'new' | 'popular'>('trending');
+  
+  // Form state for creating new theme
+  const [titulo, setTitulo] = useState('');
+  const [autor, setAutor] = useState('');
+  const [palavras, setPalavras] = useState<string[]>(Array(MAX_PALAVRAS).fill(''));
+  const [isPublic, setIsPublic] = useState(true);
+  
+  // Payment state
+  const [payment, setPayment] = useState<PaymentState>({ status: 'idle' });
+  
+  // Load public themes when gallery tab is active
+  useEffect(() => {
+    if (isOpen && activeTab === 'galeria') {
+      loadPublicThemes();
+    }
+  }, [isOpen, activeTab]);
+  
+  // Poll payment status when awaiting payment
+  useEffect(() => {
+    if (payment.status !== 'awaiting_payment' || !payment.paymentId) return;
+    
+    let intervalId: NodeJS.Timeout | null = null;
+    let isActive = true;
+    
+    const pollPaymentStatus = async () => {
+      try {
+        const res = await fetch(`/api/payments/status/${payment.paymentId}`);
+        if (res.ok && isActive) {
+          const data = await res.json();
+          if (data.status === 'approved' && data.accessCode) {
+            if (intervalId) clearInterval(intervalId);
+            setPayment(prev => ({
+              ...prev,
+              status: 'success',
+              accessCode: data.accessCode
+            }));
+          }
+        }
+      } catch (err) {
+        console.error('Error polling payment status:', err);
+      }
+    };
+    
+    intervalId = setInterval(pollPaymentStatus, 5000);
+    
+    return () => {
+      isActive = false;
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [payment.status, payment.paymentId]);
+  
+  const loadPublicThemes = async () => {
+    setIsLoadingThemes(true);
+    try {
+      const res = await fetch('/api/themes/public');
+      if (res.ok) {
+        const themes = await res.json();
+        // Enrich themes with mock data for better UX
+        const enrichedThemes = themes.map((theme: PublicTheme, index: number) => ({
+          ...theme,
+          emoji: ['🎮', '🎯', '🎲', '🎪', '🎨', '🎭', '🎬', '🎤', '🎸', '⚽'][index % 10],
+          plays: Math.floor(Math.random() * 1000) + 50,
+          likes: Math.floor(Math.random() * 200) + 10,
+          isHot: index < 2 // First 2 themes are "hot"
+        }));
+        setPublicThemes(enrichedThemes);
+      }
+    } catch (err) {
+      console.error('Failed to load themes:', err);
+    } finally {
+      setIsLoadingThemes(false);
+    }
+  };
+  
+  const handlePalavraChange = (index: number, value: string) => {
+    const newPalavras = [...palavras];
+    newPalavras[index] = value;
+    setPalavras(newPalavras);
+  };
+  
+  const handleCreateTheme = async () => {
+    // Validate form
+    if (!titulo.trim()) {
+      toast({ title: "Erro", description: "Digite um titulo para o tema", variant: "destructive" });
+      return;
+    }
+    if (!autor.trim()) {
+      toast({ title: "Erro", description: "Digite o nome do autor", variant: "destructive" });
+      return;
+    }
+    
+    const validPalavras = palavras.filter(p => p.trim().length > 0);
+    if (validPalavras.length < MIN_PALAVRAS) {
+      toast({ title: "Erro", description: `Digite no mínimo ${MIN_PALAVRAS} palavras (${validPalavras.length}/${MIN_PALAVRAS})`, variant: "destructive" });
+      return;
+    }
+    if (validPalavras.length > MAX_PALAVRAS) {
+      toast({ title: "Erro", description: `Máximo de ${MAX_PALAVRAS} palavras permitidas`, variant: "destructive" });
+      return;
+    }
+    
+    setPayment({ status: 'loading' });
+    
+    try {
+      const res = await fetch('/api/payments/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          titulo: titulo.trim(),
+          autor: autor.trim(),
+          palavras: validPalavras.map(p => p.trim()),
+          isPublic
+        })
+      });
+      
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Falha ao criar pagamento');
+      }
+      
+      const data = await res.json();
+      setPayment({
+        status: 'awaiting_payment',
+        paymentId: data.paymentId,
+        qrCode: data.qrCode,
+        qrCodeBase64: data.qrCodeBase64
+      });
+      
+    } catch (err: any) {
+      setPayment({ status: 'error', error: err.message });
+      toast({ title: "Erro", description: err.message, variant: "destructive" });
+    }
+  };
+  
+  const copyPixCode = () => {
+    if (payment.qrCode) {
+      navigator.clipboard.writeText(payment.qrCode);
+      toast({ title: "Copiado!", description: "Codigo PIX copiado para a area de transferencia." });
+    }
+  };
+  
+  const resetForm = () => {
+    setTitulo('');
+    setAutor('');
+    setPalavras(Array(MAX_PALAVRAS).fill(''));
+    setIsPublic(true);
+    setPayment({ status: 'idle' });
+  };
+  
+  const handleClose = () => {
+    if (payment.status !== 'loading') {
+      resetForm();
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleClose}></div>
+      <div className="relative card-retro w-full max-w-lg max-h-[85vh] overflow-hidden animate-fade-in flex flex-col">
+        <div className="p-4 border-b border-[#3d4a5c] flex items-center justify-between">
+          <h2 className="text-xl font-bold text-[#6b4ba3] flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            Oficina de Temas
+          </h2>
+          <button 
+            onClick={handleClose}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {/* Tabs */}
+        <div className="flex border-b border-[#3d4a5c]">
+          <button
+            onClick={() => setActiveTab('galeria')}
+            className={cn(
+              "flex-1 py-3 text-sm font-semibold transition-colors",
+              activeTab === 'galeria' 
+                ? "text-[#6b4ba3] border-b-2 border-[#6b4ba3]" 
+                : "text-gray-400 hover:text-white"
+            )}
+            data-testid="tab-galeria"
+          >
+            Galeria
+          </button>
+          <button
+            onClick={() => setActiveTab('criar')}
+            className={cn(
+              "flex-1 py-3 text-sm font-semibold transition-colors",
+              activeTab === 'criar' 
+                ? "text-[#6b4ba3] border-b-2 border-[#6b4ba3]" 
+                : "text-gray-400 hover:text-white"
+            )}
+            data-testid="tab-criar"
+          >
+            Criar Novo
+          </button>
+        </div>
+        
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {activeTab === 'galeria' && (
+            <div className="space-y-4">
+              {/* Search and Filters */}
+              <div className="space-y-3">
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Buscar tema (ex: Futebol, Anime...)"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-[#16213e]/80 border border-[#3d4a5c] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#6b4ba3] transition-colors"
+                  />
+                </div>
+
+                {/* Filter Tabs */}
+                <div className="flex gap-2 p-1 bg-[#16213e]/50 rounded-xl border border-[#3d4a5c]">
+                  <button
+                    onClick={() => setFilterTab('trending')}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all",
+                      filterTab === 'trending'
+                        ? "bg-[#6b4ba3] text-white shadow-lg"
+                        : "text-gray-400 hover:text-white"
+                    )}
+                  >
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    Em Alta
+                  </button>
+                  <button
+                    onClick={() => setFilterTab('new')}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all",
+                      filterTab === 'new'
+                        ? "bg-[#6b4ba3] text-white shadow-lg"
+                        : "text-gray-400 hover:text-white"
+                    )}
+                  >
+                    <Clock className="w-3.5 h-3.5" />
+                    Novos
+                  </button>
+                  <button
+                    onClick={() => setFilterTab('popular')}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all",
+                      filterTab === 'popular'
+                        ? "bg-[#6b4ba3] text-white shadow-lg"
+                        : "text-gray-400 hover:text-white"
+                    )}
+                  >
+                    <Star className="w-3.5 h-3.5" />
+                    Popular
+                  </button>
+                </div>
+              </div>
+
+              {/* Themes Grid */}
+              {isLoadingThemes ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#6b4ba3]" />
+                </div>
+              ) : publicThemes.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-5xl mb-4">🎮</div>
+                  <h3 className="text-lg font-bold text-white mb-2">Nenhum tema disponível ainda</h3>
+                  <p className="text-sm text-gray-400 mb-4">Seja o primeiro a criar um tema incrível!</p>
+                  <button
+                    onClick={() => setActiveTab('criar')}
+                    className="btn-orange px-6 py-2 text-sm inline-flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Criar Tema
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-3">
+                  {/* Create New Card */}
+                  <button
+                    onClick={() => setActiveTab('criar')}
+                    className="group relative p-4 rounded-xl border-2 border-dashed border-[#3d4a5c] hover:border-[#6b4ba3] bg-[#16213e]/20 hover:bg-[#16213e]/40 transition-all duration-300 text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-[#6b4ba3]/10 group-hover:bg-[#6b4ba3]/20 flex items-center justify-center transition-colors">
+                        <Plus className="w-6 h-6 text-[#6b4ba3]" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white group-hover:text-[#6b4ba3] transition-colors">Criar Novo Tema</h3>
+                        <p className="text-xs text-gray-400">Sua ideia pode ser o próximo sucesso!</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Theme Cards */}
+                  {publicThemes
+                    .filter(theme => 
+                      theme.titulo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      theme.autor.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .map((theme) => (
+                      <div
+                        key={theme.id}
+                        className="group relative p-4 rounded-xl bg-[#16213e]/80 border border-[#3d4a5c] hover:border-[#6b4ba3] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                        data-testid={`theme-${theme.id}`}
+                      >
+                        <div className="flex items-start gap-3">
+                          {/* Theme Icon/Emoji */}
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#6b4ba3] to-[#4a3070] flex items-center justify-center text-2xl flex-shrink-0">
+                            {theme.emoji || '🎯'}
+                          </div>
+                          
+                          {/* Theme Info */}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-white group-hover:text-[#6b4ba3] transition-colors truncate">
+                              {theme.titulo}
+                            </h3>
+                            <p className="text-xs text-gray-400 mb-2">
+                              por <span className="text-gray-300">@{theme.autor}</span>
+                            </p>
+                            
+                            {/* Stats */}
+                            <div className="flex items-center gap-3 text-xs">
+                              <div className="flex items-center gap-1 text-gray-400">
+                                <Sparkles className="w-3 h-3" />
+                                <span>{theme.palavrasCount} palavras</span>
+                              </div>
+                              {theme.plays !== undefined && (
+                                <div className="flex items-center gap-1 text-gray-400">
+                                  <Play className="w-3 h-3 fill-gray-400" />
+                                  <span>{theme.plays}</span>
+                                </div>
+                              )}
+                              {theme.likes !== undefined && (
+                                <div className="flex items-center gap-1 text-pink-400">
+                                  <Heart className="w-3 h-3 fill-pink-400" />
+                                  <span>{theme.likes}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Play Button (appears on hover) */}
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button className="btn-orange px-4 py-2 text-xs flex items-center gap-1.5">
+                              <Play className="w-3 h-3 fill-white" />
+                              Jogar
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Hot Badge */}
+                        {theme.isHot && (
+                          <div className="absolute top-2 right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <TrendingUp className="w-2.5 h-2.5" />
+                            HOT
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {activeTab === 'criar' && (
+            <div className="space-y-4">
+              {payment.status === 'idle' || payment.status === 'loading' || payment.status === 'error' ? (
+                <>
+                  <div className="bg-[#16213e]/50 rounded-xl p-3 border border-[#3d4a5c]">
+                    <p className="text-sm text-gray-300 mb-2">
+                      Crie seu proprio tema com {MIN_PALAVRAS} a {MAX_PALAVRAS} palavras personalizadas!
+                    </p>
+                    <p className="text-xs text-[#e9c46a]">
+                      Valor: R$ 1,50 via PIX
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      placeholder="Titulo do tema (ex: Animais da Fazenda)"
+                      value={titulo}
+                      onChange={(e) => setTitulo(e.target.value)}
+                      maxLength={50}
+                      className="input-dark w-full"
+                      data-testid="input-theme-titulo"
+                    />
+                    
+                    <input
+                      type="text"
+                      placeholder="Seu nome (autor)"
+                      value={autor}
+                      onChange={(e) => setAutor(e.target.value)}
+                      maxLength={30}
+                      className="input-dark w-full"
+                      data-testid="input-theme-autor"
+                    />
+                    
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isPublic}
+                        onChange={(e) => setIsPublic(e.target.checked)}
+                        className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#6b4ba3]"
+                        data-testid="checkbox-is-public"
+                      />
+                      <span className="text-sm text-[#8aa0b0]">Disponibilizar na galeria publica</span>
+                    </label>
+                    
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-300 font-medium">
+                        Palavras ({palavras.filter(p => p.trim()).length}/{MIN_PALAVRAS}-{MAX_PALAVRAS})
+                        {palavras.filter(p => p.trim()).length >= MIN_PALAVRAS && (
+                          <span className="text-green-400 ml-2">
+                            <Check className="w-4 h-4 inline" />
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        Digite entre {MIN_PALAVRAS} e {MAX_PALAVRAS} palavras
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-2">
+                        {palavras.map((palavra, i) => (
+                          <input
+                            key={i}
+                            type="text"
+                            placeholder={`Palavra ${i + 1}${i < MIN_PALAVRAS ? ' *' : ''}`}
+                            value={palavra}
+                            onChange={(e) => handlePalavraChange(i, e.target.value)}
+                            maxLength={30}
+                            className="input-dark text-sm py-2"
+                            data-testid={`input-palavra-${i}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={handleCreateTheme}
+                    disabled={payment.status === 'loading'}
+                    className="btn-orange w-full"
+                    data-testid="button-create-theme"
+                  >
+                    {payment.status === 'loading' ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <>
+                        <Zap size={20} />
+                        GERAR PIX (R$ 1,50)
+                      </>
+                    )}
+                  </button>
+                  
+                  {payment.status === 'error' && (
+                    <p className="text-sm text-red-400 text-center">{payment.error}</p>
+                  )}
+                </>
+              ) : payment.status === 'awaiting_payment' ? (
+                <div className="space-y-4 text-center">
+                  <div className="bg-[#16213e]/50 rounded-xl p-4 border border-[#3d4a5c]">
+                    <p className="text-sm text-gray-300 mb-3">
+                      Escaneie o QR Code ou copie o codigo PIX
+                    </p>
+                    
+                    {payment.qrCodeBase64 && (
+                      <div className="bg-white rounded-xl p-3 mx-auto w-fit mb-3">
+                        <img 
+                          src={`data:image/png;base64,${payment.qrCodeBase64}`}
+                          alt="QR Code PIX" 
+                          className="w-48 h-48 object-contain"
+                        />
+                      </div>
+                    )}
+                    
+                    <button
+                      onClick={copyPixCode}
+                      className="btn-green w-full"
+                      data-testid="button-copy-pix"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Copiar Codigo PIX
+                    </button>
+                  </div>
+                  
+                  <div className="flex items-center justify-center gap-2 text-[#e9c46a]">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <p className="text-xs">
+                      Aguardando confirmacao do pagamento...
+                    </p>
+                  </div>
+                  
+                  <button
+                    onClick={resetForm}
+                    className="text-sm text-gray-400 hover:text-white transition-colors underline"
+                    data-testid="button-cancel-payment"
+                  >
+                    Cancelar e voltar
+                  </button>
+                </div>
+              ) : payment.status === 'success' ? (
+                <div className="space-y-4 text-center">
+                  <div className="bg-[#16213e]/50 rounded-xl p-4 border border-green-500/50">
+                    <div className="flex items-center justify-center gap-2 text-green-400 mb-3">
+                      <Check className="w-6 h-6" />
+                      <p className="text-lg font-bold">Tema criado com sucesso!</p>
+                    </div>
+                    
+                    <p className="text-sm text-gray-300 mb-4">
+                      Seu codigo de acesso:
+                    </p>
+                    
+                    <div className="bg-black/50 rounded-xl p-4 border border-[#6b4ba3]">
+                      <p className="text-2xl font-mono font-bold text-[#6b4ba3] tracking-widest" data-testid="text-access-code">
+                        {payment.accessCode}
+                      </p>
+                    </div>
+                    
+                    <button
+                      onClick={() => {
+                        if (payment.accessCode) {
+                          navigator.clipboard.writeText(payment.accessCode);
+                          toast({ title: "Copiado!", description: "Codigo de acesso copiado." });
+                        }
+                      }}
+                      className="btn-green w-full mt-3"
+                      data-testid="button-copy-access-code"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Copiar Codigo
+                    </button>
+                  </div>
+                  
+                  <p className="text-xs text-gray-400">
+                    Use este codigo ao iniciar uma partida no modo Palavra Secreta para jogar com seu tema personalizado.
+                  </p>
+                  
+                  <button
+                    onClick={resetForm}
+                    className="btn-orange w-full"
+                    data-testid="button-create-another"
+                  >
+                    Criar outro tema
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const { toast } = useToast();
+
+  const copyPixKey = () => {
+    navigator.clipboard.writeText(PIX_KEY);
+    toast({ title: "Copiado!", description: "Chave PIX copiada para a área de transferência." });
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose}></div>
+      <div className="relative card-retro w-full max-w-sm p-6 animate-fade-in">
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center gap-2 text-[#c44536]">
+            <Heart className="w-5 h-5 fill-current" />
+            <h2 className="text-xl font-bold">Apoie o Projeto</h2>
+          </div>
+          
+          <p className="text-gray-400 text-sm">
+            Se você está se divertindo, considere fazer uma doação! Isso ajuda a manter o projeto no ar.
+          </p>
+
+          <div className="space-y-3">
+            <p className="text-gray-300 text-sm font-medium flex items-center justify-center gap-2">
+              <span className="text-xs text-gray-500">BR</span>
+              <span className="font-bold">PIX</span>
+            </p>
+
+            <div className="bg-[#efefef] rounded-xl p-3 mx-auto w-fit">
+              <img 
+                src="/pix-qrcode.png" 
+                alt="QR Code PIX" 
+                className="w-40 h-40 object-contain"
+              />
+            </div>
+
+            <div className="bg-[#16213e] rounded-xl p-4 border border-[#3d4a5c]">
+              <p className="text-gray-500 text-xs mb-2">Chave PIX:</p>
+              <div className="flex items-center gap-2">
+                <p className="text-[#4a90a4] text-xs font-mono flex-1 break-all">{PIX_KEY}</p>
+                <Button
+                  onClick={copyPixKey}
+                  size="sm"
+                  className="btn-retro-primary text-xs px-3 py-1 h-8"
+                >
+                  Copiar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const HomeButton = ({ inline = false }: { inline?: boolean } = {}) => {
+  const { leaveGame } = useGameStore();
+  
+  const handleClick = () => {
+    leaveGame();
+    window.location.href = '/';
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className={cn(
+        "flex items-center gap-2 px-4 py-2 bg-[#4a90a4] border-2 border-[#3d7a8a] rounded-xl text-white hover:bg-[#5aa0b4] transition-all font-semibold shadow-md",
+        inline ? "w-full justify-center" : "fixed top-4 left-4 z-40"
+      )}
+      title="Voltar à tela inicial"
+    >
+      <ArrowLeft className="w-4 h-4" />
+      <span className="text-sm font-medium">Home</span>
+    </button>
+  );
+};
+
+const GameNavButtons = ({ 
+  onBackToLobby, 
+  isImpostor = false 
+}: { 
+  onBackToLobby: () => void; 
+  isImpostor?: boolean;
+}) => {
+  const { leaveGame } = useGameStore();
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  
+  const handleGoHome = () => {
+    leaveGame();
+  };
+
+  const handleBackToLobbyClick = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmBackToLobby = () => {
+    setShowConfirmDialog(false);
+    onBackToLobby();
+  };
+
+  return (
+    <>
+      <div className="w-full flex gap-2">
+        <Button 
+          onClick={handleGoHome}
+          size="icon"
+          className="rounded-lg bg-gray-700 hover:bg-gray-600 border-2 border-gray-600/50 text-gray-300"
+          data-testid="button-home"
+        >
+          <Home className="w-4 h-4" />
+        </Button>
+        <Button 
+          onClick={handleBackToLobbyClick}
+          className="flex-1 rounded-lg bg-gray-700 hover:bg-gray-600 border-2 border-gray-600/50 text-gray-300"
+          data-testid="button-back-lobby"
+        >
+          <ArrowLeft className="mr-2 w-4 h-4" /> Voltar ao Lobby
+        </Button>
+      </div>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent className="bg-[#16213e] border-2 border-[#3d4a5c] max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white text-center">
+              Voltar ao Lobby?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300 text-center">
+              Tem certeza que deseja voltar ao lobby? Caso saia não conseguirá entrar na mesma partida novamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row gap-2 sm:justify-center">
+            <AlertDialogCancel 
+              className="flex-1 bg-[#3d4a5c] hover:bg-[#4d5a6c] text-white border-none"
+              data-testid="button-cancel-back-lobby"
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmBackToLobby}
+              className="flex-1 border-none bg-white hover:bg-white/90 text-black"
+              data-testid="button-confirm-back-lobby"
+            >
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+};
+
+const TopRightButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
+  <>
+    {/* Desktop: All buttons on right - fixed position */}
+    <div className="hidden sm:flex fixed top-4 right-4 z-[60] items-center gap-2">
+      <Link 
+        href="/outros-jogos"
+        className="flex items-center gap-2 px-4 py-2 bg-[#e8a045] border-2 border-[#c88025] rounded-xl text-white hover:bg-[#f8b055] transition-all font-semibold shadow-lg"
+        data-testid="button-other-games"
+      >
+        <Gamepad2 className="w-4 h-4" />
+        <span className="text-sm font-medium">Outros Jogos</span>
+      </Link>
+      <Link 
+        href="/comojogar"
+        className="flex items-center gap-2 px-4 py-2 bg-[#4a90a4] border-2 border-[#3a7084] rounded-xl text-white hover:bg-[#5aa0b4] transition-all font-semibold shadow-lg"
+        data-testid="button-how-to-play"
+      >
+        <HelpCircle className="w-4 h-4" />
+        <span className="text-sm font-medium">Como Jogar</span>
+      </Link>
+      <a
+        href="https://discord.gg/rhZxA2ha"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 px-4 py-2 bg-[#5865F2] border-2 border-[#4752C4] rounded-xl text-white hover:bg-[#6875F3] transition-all font-semibold shadow-lg"
+        data-testid="button-discord"
+      >
+        <SiDiscord className="w-4 h-4" />
+        <span className="text-sm font-medium">Encontrar Nave</span>
+      </a>
+      <button
+        onClick={onDonateClick}
+        className="flex items-center gap-2 px-4 py-2 bg-[#c44536] border-2 border-[#a33526] rounded-xl text-white hover:bg-[#d45546] transition-all font-semibold shadow-lg"
+        data-testid="button-donate"
+      >
+        <Heart className="w-4 h-4 fill-current" />
+        <span className="text-sm font-medium">Doar</span>
+      </button>
+    </div>
+  </>
+);
+
+const MobileActionButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
+  <div className="sm:hidden flex items-center justify-center gap-2 w-full mb-3">
+    <Link 
+      href="/outros-jogos"
+      className="flex items-center gap-2 px-3 py-2 bg-[#e8a045] border-2 border-[#c88025] rounded-xl text-white hover:bg-[#f8b055] transition-all font-semibold shadow-lg"
+      data-testid="button-other-games-mobile"
+    >
+      <Gamepad2 className="w-4 h-4" />
+    </Link>
+    <Link 
+      href="/comojogar"
+      className="flex items-center gap-2 px-3 py-2 bg-[#4a90a4] border-2 border-[#3a7084] rounded-xl text-white hover:bg-[#5aa0b4] transition-all font-semibold shadow-lg"
+      data-testid="button-how-to-play-mobile"
+    >
+      <HelpCircle className="w-4 h-4" />
+    </Link>
+    <a
+      href="https://discord.gg/rhZxA2ha"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 px-3 py-2 bg-[#5865F2] border-2 border-[#4752C4] rounded-xl text-white hover:bg-[#6875F3] transition-all font-semibold shadow-lg"
+      data-testid="button-discord-mobile"
+    >
+      <SiDiscord className="w-4 h-4" />
+    </a>
+    <button
+      onClick={onDonateClick}
+      className="flex items-center gap-2 px-3 py-2 bg-[#c44536] border-2 border-[#a33526] rounded-xl text-white hover:bg-[#d45546] transition-all font-semibold shadow-lg"
+      data-testid="button-donate-mobile"
+    >
+      <Heart className="w-4 h-4 fill-current" />
+    </button>
+  </div>
+);
+
+
+const getModeEmoji = (modeId: string) => {
+  switch (modeId) {
+    case 'palavraSecreta': return '🔤';
+    case 'palavras': return '📍';
+    case 'duasFaccoes': return '⚔️';
+    case 'categoriaItem': return '🎯';
+    case 'perguntasDiferentes': return '🤔';
+    case 'palavraComunidade': return '👥';
+    default: return '🎮';
+  }
+};
+
+const getModeIcon = (modeId: string) => {
+  switch (modeId) {
+    case 'palavraSecreta': return MessageSquare;
+    case 'palavras': return MapPin;
+    case 'duasFaccoes': return Swords;
+    case 'categoriaItem': return Target;
+    case 'perguntasDiferentes': return HelpCircle;
+    case 'palavraComunidade': return Users;
+    default: return Gamepad2;
+  }
+};
+
+const getModeTheme = (modeId: string) => {
+  switch (modeId) {
+    case 'palavraSecreta': return 'blue';
+    case 'palavras': return 'green';
+    case 'duasFaccoes': return 'red';
+    case 'categoriaItem': return 'yellow';
+    case 'perguntasDiferentes': return 'purple';
+    case 'palavraComunidade': return 'pink';
+    default: return 'blue';
+  }
+};
+
+const getModeDifficulty = (modeId: string) => {
+  switch (modeId) {
+    case 'palavraSecreta': return 'Fácil';
+    case 'palavras': return 'Médio';
+    case 'duasFaccoes': return 'Difícil';
+    case 'categoriaItem': return 'Médio';
+    case 'perguntasDiferentes': return 'Difícil';
+    case 'palavraComunidade': return 'Custom';
+    default: return 'Médio';
+  }
+};
+
+const HomeScreen = () => {
+  const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname, clearSavedNickname, savedNickname } = useGameStore();
   const [name, setNameInput] = useState("");
   const [code, setCodeInput] = useState("");
   const [saveNicknameChecked, setSaveNicknameChecked] = useState(false);
+  const [isDonationOpen, setIsDonationOpen] = useState(false);
+  const { toast } = useToast();
 
-  // Selecionar anúncios aleatórios
-  const topAd = getRandomAdByFormat('728x90');
-  const bottomAd = getRandomAdByFormat('728x90');
-  const leftAd = getRandomAdByFormat('160x600');
-  const rightAd = getRandomAdByFormat('160x600');
+  useEffect(() => {
+    const saved = loadSavedNickname();
+    if (saved) {
+      setNameInput(saved);
+      setSaveNicknameChecked(true);
+    }
+
+    // Check if there's a room code from URL redirect
+    const autoJoinCode = sessionStorage.getItem('autoJoinRoomCode');
+    if (autoJoinCode) {
+      setCodeInput(autoJoinCode);
+      sessionStorage.removeItem('autoJoinRoomCode');
+      toast({ 
+        title: "Código da sala preenchido!", 
+        description: `Digite seu nome e clique em "Entrar na Sala" para começar.` 
+      });
+    }
+  }, [loadSavedNickname, toast]);
+
+  // Auto-create room when coming from gallery
+  useEffect(() => {
+    const autoStart = sessionStorage.getItem('autoStartGame');
+    const selectedThemeCode = sessionStorage.getItem('selectedThemeCode');
+    const selectedGameMode = sessionStorage.getItem('selectedGameMode');
+    const selectedCategory = sessionStorage.getItem('selectedCategory');
+    
+    if (autoStart === 'true' && (selectedThemeCode || selectedGameMode)) {
+      const saved = loadSavedNickname();
+      if (saved) {
+        setUser(saved);
+        createRoom();
+        
+        const description = selectedThemeCode 
+          ? "Preparando o jogo com o tema selecionado"
+          : "Preparando o jogo com a categoria selecionada";
+        
+        toast({ 
+          title: "Criando sala...", 
+          description 
+        });
+      } else {
+        // If no saved nickname, just show a message
+        toast({ 
+          title: "Digite seu nome", 
+          description: "Digite seu nome e crie uma sala para jogar" 
+        });
+        sessionStorage.removeItem('autoStartGame');
+        sessionStorage.removeItem('selectedGameMode');
+        sessionStorage.removeItem('selectedCategory');
+      }
+    }
+  }, [loadSavedNickname, setUser, createRoom, toast]);
 
   const handleCreate = () => {
-    // Lógica de criar sala será implementada aqui
+    console.log('[HandleCreate] Button clicked, name:', name);
+    
+    if (!name.trim()) {
+      console.log('[HandleCreate] Name is empty, showing toast');
+      toast({ title: "Nome necessário", description: "Por favor, digite seu nome.", variant: "destructive" });
+      return;
+    }
+    
+    console.log('[HandleCreate] Setting user and creating room');
+    
+    if (saveNicknameChecked) {
+      saveNickname(name);
+    }
+    setUser(name);
+    createRoom();
   };
 
-  const handleJoin = () => {
-    // Lógica de entrar na sala será implementada aqui
+  const handleJoin = async () => {
+    if (!name.trim()) {
+      toast({ title: "Nome necessário", description: "Por favor, digite seu nome.", variant: "destructive" });
+      return;
+    }
+    if (!code.trim()) {
+      toast({ title: "Código inválido", description: "Digite o código da sala.", variant: "destructive" });
+      return;
+    }
+    
+    if (saveNicknameChecked) {
+      saveNickname(name);
+    }
+    setUser(name);
+    const success = await joinRoom(code.toUpperCase());
+    if (!success) {
+      toast({ title: "Erro ao entrar", description: "Sala não encontrada ou código inválido.", variant: "destructive" });
+    }
+  };
+
+  const handleClearNickname = () => {
+    clearSavedNickname();
+    setNameInput("");
+    setSaveNicknameChecked(false);
+    toast({ title: "Nickname removido", description: "Próxima vez você precisará digitar novamente." });
   };
 
   return (
@@ -35,54 +1050,19 @@ export default function Prototipo() {
       }}
     >
       {/* Elementos decorativos de fundo */}
-      <div className="bg-blur-purple fixed top-20 left-10 w-64 h-64 opacity-30 pointer-events-none"></div>
-      <div className="bg-blur-blue fixed bottom-20 right-10 w-80 h-80 opacity-30 pointer-events-none"></div>
-      {/* BLOCO DE ANÚNCIO - LATERAL ESQUERDA (Desktop only) - 160x600 */}
-      {leftAd && (
-        <div className="hidden xl:block fixed left-0 top-20 z-10 pointer-events-auto">
-          <AdBanner
-            id={leftAd.id}
-            productName={leftAd.productName}
-            description={leftAd.description}
-            image={leftAd.image}
-            offers={leftAd.offers}
-            dimensions={leftAd.dimensions}
-          />
-        </div>
-      )}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
+      </div>
 
-      {/* BLOCO DE ANÚNCIO - LATERAL DIREITA (Desktop only) - 160x600 */}
-      {rightAd && (
-        <div className="hidden xl:block fixed right-0 top-20 z-10 pointer-events-auto">
-          <AdBanner
-            id={rightAd.id}
-            productName={rightAd.productName}
-            description={rightAd.description}
-            image={rightAd.image}
-            offers={rightAd.offers}
-            dimensions={rightAd.dimensions}
-          />
-        </div>
-      )}
-
-      {/* BLOCO DE ANÚNCIO - TOPO - 728x90 */}
-      {topAd && (
-        <div className="flex justify-center" style={{ margin: '1rem auto' }}>
-          <AdBanner
-            id={topAd.id}
-            productName={topAd.productName}
-            description={topAd.description}
-            image={topAd.image}
-            offers={topAd.offers}
-            dimensions={topAd.dimensions}
-          />
-        </div>
-      )}
+      {/* Top Ad Block */}
+      <AdBlockTop />
 
       {/* Hero Banner - Oficina de Temas - TEMPORARIAMENTE DESABILITADO */}
       {/* <Link 
         href="/criar-tema"
         className="hero-banner"
+        data-testid="hero-banner-theme-workshop"
       >
         <div className="hero-banner-overlay">
           <p className="hero-banner-text-small">Divirta-se com os amigos</p>
@@ -106,8 +1086,11 @@ export default function Prototipo() {
 
       {/* Main content area - flex-grow to push footer down */}
       <div className="flex-1 flex flex-col items-center justify-center pt-20 md:pt-24 px-4 relative z-20">
+        {/* Mobile action buttons - above the card */}
+        <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
+
         {/* Main card */}
-        <div className="panel w-[90%] max-w-md animate-fade-in">
+        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in">
           {/* Impostor logo with characters */}
           <div className="flex justify-center mb-3">
             <img src={logoImpostor} alt="Impostor" className="h-28 md:h-36 object-contain" />
@@ -122,14 +1105,22 @@ export default function Prototipo() {
               value={name}
               onChange={(e) => setNameInput(e.target.value)}
               className="input-dark"
+              data-testid="input-name"
             />
 
             {/* Create room button */}
             <button 
               onClick={handleCreate} 
-              className="btn btn-orange w-full justify-center"
+              disabled={isLoading}
+              className={cn(
+                "w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
+                !isLoading
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 border-orange-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
+                  : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+              )}
+              data-testid="button-create-room"
             >
-              <Zap size={20} />
+              {isLoading ? <Loader2 size={28} className="animate-spin" /> : <Zap size={28} className="animate-bounce" />}
               CRIAR SALA
             </button>
 
@@ -141,9 +1132,19 @@ export default function Prototipo() {
                   checked={saveNicknameChecked}
                   onChange={(e) => setSaveNicknameChecked(e.target.checked)}
                   className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]"
+                  data-testid="checkbox-save-nickname"
                 />
                 <span className="text-sm text-[#8aa0b0]">Guardar nickname</span>
               </label>
+              {savedNickname && (
+                <button
+                  onClick={handleClearNickname}
+                  className="text-xs text-[#6a8aaa] hover:text-white transition-colors underline"
+                  data-testid="button-clear-nickname"
+                >
+                  Limpar
+                </button>
+              )}
             </div>
 
             {/* OR divider */}
@@ -162,10 +1163,18 @@ export default function Prototipo() {
                 onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
                 maxLength={4}
                 className="input-code flex-1"
+                data-testid="input-room-code"
               />
               <button 
                 onClick={handleJoin}
-                className="btn btn-cta"
+                disabled={isLoading}
+                className={cn(
+                  "px-6 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-2 transition-all duration-300 border-b-[6px] shadow-2xl whitespace-nowrap",
+                  !isLoading
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
+                    : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+                )}
+                data-testid="button-join-room"
               >
                 ENTRAR
               </button>
@@ -181,11 +1190,11 @@ export default function Prototipo() {
             {/* Modo Local button */}
             <a 
               href="/modo-local"
-              className="btn w-full justify-center bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold border-0"
+              className="w-full px-6 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-2 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-purple-500 to-pink-500 border-purple-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
             >
               Jogar em um só celular
             </a>
-            <p className="text-xs text-center text-slate-400 -mt-2">
+            <p className="text-xs text-center text-[#6a8aaa] mt-1">
               Modo Local — ideal para jogar presencialmente
             </p>
 
@@ -193,19 +1202,8 @@ export default function Prototipo() {
         </div>
       </div>
 
-      {/* BLOCO DE ANÚNCIO - RODAPÉ - 728x90 */}
-      {bottomAd && (
-        <div className="flex justify-center" style={{ margin: '1rem auto' }}>
-          <AdBanner
-            id={bottomAd.id}
-            productName={bottomAd.productName}
-            description={bottomAd.description}
-            image={bottomAd.image}
-            offers={bottomAd.offers}
-            dimensions={bottomAd.dimensions}
-          />
-        </div>
-      )}
+      {/* Bottom Ad Block */}
+      <AdBlockBottom />
 
       {/* Footer - now below the content, takes full width */}
       <div className="w-full text-center py-6 px-4 bg-gradient-to-t from-black/40 to-transparent z-20 relative border-t border-[#3d4a5c]/30">
@@ -214,7 +1212,7 @@ export default function Prototipo() {
           Desenvolvido com <Heart className="inline w-3 h-3 text-gray-500 fill-current" /> por <span className="text-[#8aa0b0]">Rodrigo Freitas</span>
         </p>
         <div className="flex items-center justify-center gap-2 text-xs mt-1 flex-wrap">
-          <Link href="/blog" className="text-[#6a8aaa] hover:text-white transition-colors">
+          <Link href="/blog" className="text-[#6a8aaa] hover:text-white transition-colors" data-testid="link-blog">
             Blog
           </Link>
           <span className="text-[#4a6a8a]">|</span>
@@ -227,9 +1225,2452 @@ export default function Prototipo() {
           </Link>
         </div>
         <p className="text-[#4a6a8a] text-[10px] mt-2 leading-relaxed max-w-md mx-auto">
-          Página de teste - Sistema de anúncios TikJogos
+          O TikJogos é um projeto independente de fãs. Todas as marcas registradas (como nomes de personagens e franquias) pertencem aos seus respectivos proprietários e são usadas aqui apenas para fins de referência em contexto de jogo de palavras/trivia.
         </p>
       </div>
+
+      {/* Donation Button and Modal */}
+      <TopRightButtons onDonateClick={() => setIsDonationOpen(true)} />
+      <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />
+    </div>
+  );
+};
+
+type PublicTheme = {
+  id: string;
+  titulo: string;
+  autor: string;
+  palavrasCount: number;
+  accessCode: string;
+  createdAt: string;
+  emoji?: string;
+  plays?: number;
+  likes?: number;
+  isHot?: boolean;
+};
+
+const CommunityThemesModal = ({ isOpen, onClose, onSelectTheme }: { isOpen: boolean; onClose: () => void; onSelectTheme: (themeId: string) => void }) => {
+  const { toast } = useToast();
+  const [publicThemes, setPublicThemes] = useState<PublicTheme[]>([]);
+  const [isLoadingThemes, setIsLoadingThemes] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadPublicThemes();
+    }
+  }, [isOpen]);
+
+  const loadPublicThemes = async () => {
+    setIsLoadingThemes(true);
+    try {
+      const res = await fetch('/api/themes/public');
+      if (res.ok) {
+        const themes = await res.json();
+        // Enrich themes with mock data for better UX
+        const enrichedThemes = themes.map((theme: PublicTheme, index: number) => ({
+          ...theme,
+          emoji: ['🎮', '🎯', '🎲', '🎪', '🎨', '🎭', '🎬', '🎤', '🎸', '⚽'][index % 10],
+          plays: Math.floor(Math.random() * 1000) + 50,
+          likes: Math.floor(Math.random() * 200) + 10,
+          isHot: index < 2
+        }));
+        setPublicThemes(enrichedThemes);
+      }
+    } catch (err) {
+      console.error('Failed to load themes:', err);
+      toast({ title: "Erro", description: "Falha ao carregar temas", variant: "destructive" });
+    } finally {
+      setIsLoadingThemes(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose}></div>
+      <div className="relative card-retro w-full max-w-lg max-h-[75vh] overflow-hidden animate-fade-in flex flex-col">
+        <div className="p-4 border-b border-[#3d4a5c] flex items-center justify-between">
+          <h2 className="text-xl font-bold text-[#6b4ba3] flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            Temas da Comunidade
+          </h2>
+          <button 
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-4">
+          {isLoadingThemes ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-[#6b4ba3]" />
+            </div>
+          ) : publicThemes.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-5xl mb-4">🎮</div>
+              <h3 className="text-lg font-bold text-white mb-2">Nenhum tema disponível ainda</h3>
+              <p className="text-sm text-gray-400">Aguarde novos temas da comunidade!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {publicThemes.map((theme) => (
+                <button
+                  key={theme.id}
+                  onClick={() => {
+                    onSelectTheme(theme.id);
+                    onClose();
+                    toast({ title: "Tema selecionado!", description: `"${theme.titulo}" será usado na partida.` });
+                  }}
+                  className="group relative p-4 rounded-xl bg-[#16213e]/80 border border-[#3d4a5c] hover:border-[#6b4ba3] hover:-translate-y-1 transition-all duration-300 text-left"
+                  data-testid={`theme-select-${theme.id}`}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Theme Icon/Emoji */}
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#6b4ba3] to-[#4a3070] flex items-center justify-center text-2xl flex-shrink-0">
+                      {theme.emoji || '🎯'}
+                    </div>
+                    
+                    {/* Theme Info */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-white group-hover:text-[#6b4ba3] transition-colors truncate">
+                        {theme.titulo}
+                      </h3>
+                      <p className="text-xs text-gray-400 mb-2">
+                        por <span className="text-gray-300">@{theme.autor}</span>
+                      </p>
+                      
+                      {/* Stats */}
+                      <div className="flex items-center gap-3 text-xs">
+                        <div className="flex items-center gap-1 text-gray-400">
+                          <Sparkles className="w-3 h-3" />
+                          <span>{theme.palavrasCount} palavras</span>
+                        </div>
+                        {theme.plays !== undefined && (
+                          <div className="flex items-center gap-1 text-gray-400">
+                            <Play className="w-3 h-3 fill-gray-400" />
+                            <span>{theme.plays}</span>
+                          </div>
+                        )}
+                        {theme.likes !== undefined && (
+                          <div className="flex items-center gap-1 text-pink-400">
+                            <Heart className="w-3 h-3 fill-pink-400" />
+                            <span>{theme.likes}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Select Arrow */}
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="w-8 h-8 rounded-full bg-[#6b4ba3] flex items-center justify-center">
+                        <Play className="w-4 h-4 fill-white" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hot Badge */}
+                  {theme.isHot && (
+                    <div className="absolute top-2 right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <TrendingUp className="w-2.5 h-2.5" />
+                      HOT
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+type WordCategory = {
+  id: string;
+  name: string;
+  emoji: string;
+  words: string[];
+  difficulty: "fácil" | "médio" | "difícil";
+  plays?: number;
+  isHot?: boolean;
+};
+
+const WORD_CATEGORIES: WordCategory[] = [
+  {
+    id: "animais",
+    name: "Animais",
+    emoji: "🦁",
+    difficulty: "fácil",
+    words: ["Leão", "Elefante", "Girafa", "Zebra", "Tigre", "Urso", "Panda", "Coala", "Canguru", "Pinguim"],
+    plays: 1250,
+    isHot: true
+  },
+  {
+    id: "frutas",
+    name: "Frutas",
+    emoji: "🍎",
+    difficulty: "fácil",
+    words: ["Abacaxi", "Banana", "Manga", "Uva", "Melancia", "Morango", "Laranja", "Limão", "Kiwi", "Maçã"],
+    plays: 980
+  },
+  {
+    id: "objetos",
+    name: "Objetos",
+    emoji: "🔧",
+    difficulty: "médio",
+    words: ["Escada", "Relógio", "Espelho", "Garfo", "Almofada", "Janela", "Tesoura", "Guarda-chuva", "Chave", "Caneta"],
+    plays: 750,
+    isHot: true
+  },
+  {
+    id: "profissoes",
+    name: "Profissões",
+    emoji: "👨‍⚕️",
+    difficulty: "médio",
+    words: ["Médico", "Professor", "Bombeiro", "Policial", "Chef", "Piloto", "Dentista", "Mecânico", "Arquiteto", "Jornalista"],
+    plays: 620
+  },
+  {
+    id: "tecnologia",
+    name: "Tecnologia",
+    emoji: "💻",
+    difficulty: "médio",
+    words: ["Computador", "Celular", "Tablet", "Mouse", "Teclado", "Monitor", "Fone", "Carregador", "Webcam", "Impressora"],
+    plays: 890
+  },
+  {
+    id: "esportes",
+    name: "Esportes",
+    emoji: "⚽",
+    difficulty: "fácil",
+    words: ["Futebol", "Basquete", "Vôlei", "Tênis", "Natação", "Corrida", "Ciclismo", "Boxe", "Judô", "Skate"],
+    plays: 1100
+  },
+  {
+    id: "comidas",
+    name: "Comidas",
+    emoji: "🍕",
+    difficulty: "fácil",
+    words: ["Pizza", "Hambúrguer", "Sushi", "Pastel", "Feijoada", "Lasanha", "Tacos", "Panqueca", "Sorvete", "Bolo"],
+    plays: 1350,
+    isHot: true
+  },
+  {
+    id: "lugares",
+    name: "Lugares",
+    emoji: "🏖️",
+    difficulty: "médio",
+    words: ["Praia", "Montanha", "Deserto", "Floresta", "Cidade", "Fazenda", "Ilha", "Caverna", "Vulcão", "Cachoeira"],
+    plays: 540
+  },
+  {
+    id: "veiculos",
+    name: "Veículos",
+    emoji: "🚗",
+    difficulty: "fácil",
+    words: ["Carro", "Moto", "Avião", "Barco", "Trem", "Ônibus", "Bicicleta", "Helicóptero", "Caminhão", "Submarino"],
+    plays: 720
+  },
+  {
+    id: "instrumentos",
+    name: "Instrumentos",
+    emoji: "🎸",
+    difficulty: "médio",
+    words: ["Violão", "Piano", "Bateria", "Flauta", "Saxofone", "Trompete", "Violino", "Harpa", "Gaita", "Pandeiro"],
+    plays: 430
+  }
+];
+
+const PalavraSecretaCategoryModal = ({ isOpen, onClose, onSelectCategory }: { isOpen: boolean; onClose: () => void; onSelectCategory: (categoryId: string) => void }) => {
+  const { toast } = useToast();
+  const [categories] = useState<WordCategory[]>(WORD_CATEGORIES);
+  const [filterDifficulty, setFilterDifficulty] = useState<"todos" | "fácil" | "médio" | "difícil">("todos");
+
+  const filteredCategories = categories.filter((cat) => {
+    return filterDifficulty === "todos" || cat.difficulty === filterDifficulty;
+  });
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose}></div>
+      <div className="relative bg-[#242642] rounded-[3rem] p-6 md:p-8 shadow-2xl border-4 border-[#2f3252] w-full max-w-3xl max-h-[85vh] overflow-hidden animate-fade-in flex flex-col">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-500/10 rounded-xl border-2 border-purple-500/20">
+              <Sparkles className="w-6 h-6 text-purple-400" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-black text-white">
+              Categorias - Palavra Secreta
+            </h2>
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-2 bg-slate-800 rounded-xl hover:bg-rose-500 transition-all border-b-3 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white"
+          >
+            <X className="w-6 h-6" strokeWidth={3} />
+          </button>
+        </div>
+
+        {/* Difficulty Filter */}
+        <div className="mb-6">
+          <div className="flex gap-3">
+            <button
+              onClick={() => setFilterDifficulty("todos")}
+              className={cn(
+                "flex-1 px-4 py-3 rounded-2xl text-sm font-black transition-all duration-200 border-b-4",
+                filterDifficulty === "todos"
+                  ? "bg-purple-500 border-purple-800 text-white shadow-lg"
+                  : "bg-slate-800 border-slate-900 text-slate-400 hover:text-white hover:bg-slate-700"
+              )}
+            >
+              TODOS
+            </button>
+            <button
+              onClick={() => setFilterDifficulty("fácil")}
+              className={cn(
+                "flex-1 px-4 py-3 rounded-2xl text-sm font-black transition-all duration-200 border-b-4",
+                filterDifficulty === "fácil"
+                  ? "bg-green-500 border-green-800 text-white shadow-lg"
+                  : "bg-slate-800 border-slate-900 text-slate-400 hover:text-white hover:bg-slate-700"
+              )}
+            >
+              FÁCIL
+            </button>
+            <button
+              onClick={() => setFilterDifficulty("médio")}
+              className={cn(
+                "flex-1 px-4 py-3 rounded-2xl text-sm font-black transition-all duration-200 border-b-4",
+                filterDifficulty === "médio"
+                  ? "bg-yellow-500 border-yellow-800 text-white shadow-lg"
+                  : "bg-slate-800 border-slate-900 text-slate-400 hover:text-white hover:bg-slate-700"
+              )}
+            >
+              MÉDIO
+            </button>
+            <button
+              onClick={() => setFilterDifficulty("difícil")}
+              className={cn(
+                "flex-1 px-4 py-3 rounded-2xl text-sm font-black transition-all duration-200 border-b-4",
+                filterDifficulty === "difícil"
+                  ? "bg-rose-500 border-rose-800 text-white shadow-lg"
+                  : "bg-slate-800 border-slate-900 text-slate-400 hover:text-white hover:bg-slate-700"
+              )}
+            >
+              DIFÍCIL
+            </button>
+          </div>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto pr-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {filteredCategories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => {
+                  onSelectCategory(category.id);
+                  onClose();
+                  toast({ title: "Categoria selecionada!", description: `"${category.name}" será usada na partida.` });
+                }}
+                className="relative p-5 rounded-3xl bg-slate-800 border-4 border-slate-900 hover:bg-slate-750 hover:-translate-y-1 hover:border-slate-700 transition-all duration-200 text-left shadow-lg group"
+              >
+                <div className="flex items-start gap-4">
+                  {/* Category Icon/Emoji */}
+                  <div className={cn(
+                    "w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0 border-2 border-black/10",
+                    category.difficulty === "fácil" && "bg-gradient-to-br from-green-500 to-green-600",
+                    category.difficulty === "médio" && "bg-gradient-to-br from-yellow-500 to-yellow-600",
+                    category.difficulty === "difícil" && "bg-gradient-to-br from-rose-500 to-rose-600"
+                  )}>
+                    {category.emoji}
+                  </div>
+                  
+                  {/* Category Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-black text-lg text-slate-100 group-hover:text-white transition-colors mb-1">
+                      {category.name}
+                    </h3>
+                    <div className={cn(
+                      "inline-block text-xs font-bold px-2 py-0.5 rounded-full mb-2 capitalize",
+                      category.difficulty === "fácil" && "bg-green-500/20 text-green-400 border border-green-500/30",
+                      category.difficulty === "médio" && "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30",
+                      category.difficulty === "difícil" && "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                    )}>
+                      {category.difficulty}
+                    </div>
+                    
+                    {/* Stats */}
+                    <div className="flex items-center gap-3 text-xs text-slate-400">
+                      <div className="flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        <span className="font-medium">{category.words.length} palavras</span>
+                      </div>
+                      {category.plays !== undefined && (
+                        <div className="flex items-center gap-1">
+                          <Play className="w-3 h-3 fill-slate-400" />
+                          <span className="font-medium">{category.plays >= 1000 ? (category.plays / 1000).toFixed(1) + "k" : category.plays}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Select Arrow */}
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center border-2 border-purple-700">
+                      <Play className="w-4 h-4 fill-white" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Hot Badge */}
+                {category.isHot && (
+                  <div className="absolute top-2 right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                    🔥 HOT
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const LobbyScreen = () => {
+  const { room, user, goToModeSelect, leaveGame, kickPlayer } = useGameStore();
+  const { toast } = useToast();
+
+  if (!room) return null;
+
+  const isHost = room.hostId === user?.uid;
+  const players = room.players || [];
+  const currentPlayer = players.find(p => p.uid === user?.uid);
+  const isWaitingForNextRound = currentPlayer?.waitingForGame === true && room.status === 'playing';
+
+  const copyLink = () => {
+    const shareLink = `${window.location.origin}/sala/${room.code}`;
+    navigator.clipboard.writeText(shareLink);
+    toast({ title: "Copiado!", description: "Link da sala copiado para a área de transferência." });
+  };
+
+  return (
+    <div className="flex flex-col w-full max-w-2xl h-full py-6 px-4 animate-fade-in relative z-10">
+      {/* Elementos decorativos de fundo */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
+      </div>
+      
+      <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] relative z-10">
+        {/* Header com código da sala */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+          <div onClick={copyLink} className="cursor-pointer group flex-1 text-center md:text-left">
+            <p className="text-slate-400 text-xs uppercase tracking-widest mb-2 font-bold group-hover:text-orange-400 transition-colors">
+              Código da Sala
+            </p>
+            <div className="flex items-center justify-center md:justify-start gap-3">
+              <h2 className="text-5xl md:text-6xl font-black tracking-widest font-mono text-orange-500 group-hover:text-orange-400 transition-colors" data-testid="text-room-code">
+                {room.code}
+              </h2>
+              <div className="p-3 bg-orange-500/10 rounded-2xl border-2 border-orange-500/20 group-hover:bg-orange-500/20 transition-colors">
+                <Copy className="w-6 h-6 text-orange-500" />
+              </div>
+            </div>
+            <p className="text-slate-500 text-xs mt-2 font-medium">Clique para copiar o link</p>
+          </div>
+          
+          <button 
+            onClick={leaveGame}
+            className="p-3 bg-slate-800 rounded-2xl hover:bg-rose-500 transition-all border-b-4 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group"
+            data-testid="button-leave-room"
+          >
+            <LogOut size={24} strokeWidth={3} className="group-hover:animate-pulse" />
+          </button>
+        </div>
+
+      {/* Lista de Jogadores */}
+      <div className="flex-1 w-full mb-6 overflow-y-auto scrollbar-hide">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-blue-500/10 rounded-xl border-2 border-blue-500/20">
+            <Users className="w-5 h-5 text-blue-500" />
+          </div>
+          <h3 className="text-white text-lg font-black">
+            Tripulantes na Nave
+          </h3>
+          <div className="px-3 py-1 bg-blue-500 text-white text-sm font-black rounded-full border-2 border-blue-700">
+            {players.length}
+          </div>
+        </div>
+        
+        <ul className="space-y-3 pb-4">
+          {players.map((p) => {
+            const isMe = p.uid === user?.uid;
+            const isPlayerHost = p.uid === room.hostId;
+            const initial = p.name.charAt(0).toUpperCase();
+            
+            return (
+              <li 
+                key={p.uid} 
+                className={cn(
+                  "relative p-4 rounded-3xl flex items-center justify-between border-4 transition-all duration-200",
+                  isMe 
+                    ? "bg-emerald-500 border-emerald-700 shadow-[0_6px_0_0_rgba(0,0,0,0.2)]" 
+                    : "bg-slate-800 border-slate-900 hover:bg-slate-750 hover:-translate-y-1 shadow-lg"
+                )}
+                data-testid={`player-${p.uid}`}
+              >
+                {/* Badge Capitão */}
+                {isPlayerHost && (
+                  <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 rounded-full p-1.5 border-3 border-yellow-600 shadow-sm z-10">
+                    <Crown size={16} fill="currentColor" />
+                  </div>
+                )}
+                
+                <div className="flex items-center gap-4 flex-1">
+                  {/* Avatar */}
+                  <div className={cn(
+                    "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black border-2 border-black/10 shrink-0",
+                    isMe ? "bg-white/20 text-white" : "bg-blue-500 text-white"
+                  )}>
+                    {initial}
+                  </div>
+                  
+                  {/* Info */}
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={cn(
+                        "font-black text-lg leading-tight",
+                        isMe ? "text-white" : "text-slate-100"
+                      )}>
+                        {p.name}
+                      </span>
+                      {isMe && (
+                        <span className="text-xs font-bold px-2 py-0.5 bg-white/20 text-white rounded-full border border-white/30">
+                          VOCÊ
+                        </span>
+                      )}
+                    </div>
+                    
+                    {p.waitingForGame && (
+                      <span className="text-xs text-white/70 font-medium mt-1">
+                        ⏳ Aguardando partida acabar
+                      </span>
+                    )}
+                    
+                    {isPlayerHost && (
+                      <span className="text-xs text-yellow-400 font-bold mt-1 flex items-center gap-1">
+                        <Crown className="w-3 h-3" fill="currentColor" /> CAPITÃO DA NAVE
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Botão Expulsar */}
+                {isHost && !isMe && (
+                  <button
+                    onClick={() => kickPlayer(p.uid)}
+                    className="p-2 bg-slate-900 rounded-xl hover:bg-rose-500 transition-all border-b-3 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group ml-2"
+                    data-testid={`button-kick-${p.uid}`}
+                    title="Expulsar jogador"
+                  >
+                    <UserX className="w-5 h-5 group-hover:animate-pulse" strokeWidth={2.5} />
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* Ações do Lobby */}
+      {isWaitingForNextRound ? (
+        <div className="w-full text-center py-6 flex flex-col items-center gap-4 bg-amber-500/10 rounded-3xl border-4 border-amber-500/20">
+          <div className="p-4 bg-amber-500/20 rounded-2xl">
+            <Clock className="w-8 h-8 text-amber-400 animate-pulse" />
+          </div>
+          <div>
+            <p className="text-amber-400 font-black text-lg mb-1">Aguardando próxima rodada...</p>
+            <p className="text-slate-400 text-sm font-medium">Você entrará quando a rodada começar</p>
+          </div>
+          <div className="flex gap-2">
+            <div className="w-3 h-3 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-3 h-3 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-3 h-3 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
+        </div>
+      ) : isHost ? (
+        <div className="w-full animate-fade-in space-y-4">
+          <button 
+            onClick={goToModeSelect}
+            disabled={players.length < 3}
+            className={cn(
+              "w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
+              players.length >= 3
+                ? 'bg-gradient-to-r from-purple-500 to-violet-500 border-purple-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
+                : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+            )}
+            data-testid="button-start-game"
+          >
+            <Play size={28} className={players.length >= 3 ? 'animate-bounce fill-current' : 'fill-current'} />
+            {players.length >= 3 ? 'ESCOLHER MODO' : 'AGUARDANDO TRIPULANTES'}
+          </button>
+          {players.length < 3 && (
+            <div className="flex items-center justify-center gap-2 text-rose-400">
+              <Info size={16} />
+              <p className="text-sm font-bold">Mínimo de 3 tripulantes para iniciar</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="w-full text-center py-6 flex flex-col items-center gap-4 bg-blue-500/10 rounded-3xl border-4 border-blue-500/20">
+          <div className="p-4 bg-blue-500/20 rounded-2xl">
+            <Crown className="w-8 h-8 text-blue-400 animate-pulse" />
+          </div>
+          <div>
+            <p className="text-blue-400 font-black text-lg mb-1">Aguardando o capitão...</p>
+            <p className="text-slate-400 text-sm font-medium">O capitão escolherá o modo de jogo</p>
+          </div>
+          <div className="flex gap-2">
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
+        </div>
+      )}
+      </div>
+
+      <LobbyChat />
+    </div>
+  );
+};
+
+const ModeSelectScreen = () => {
+  const { room, user, gameModes, selectedMode, selectMode, startGame, backToLobby, fetchGameModes, showSpeakingOrderWheel, speakingOrder, setSpeakingOrder, setShowSpeakingOrderWheel } = useGameStore();
+  const { toast } = useToast();
+  const [isStarting, setIsStarting] = useState(false);
+  const [communityThemes, setCommunityThemes] = useState<PublicTheme[]>([]);
+  const [isLoadingThemes, setIsLoadingThemes] = useState(false);
+  const [selectedThemeCode, setSelectedThemeCode] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [shouldAutoStart, setShouldAutoStart] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+
+  const isHost = room && user && room.hostId === user.uid;
+
+  const loadCommunityThemes = async () => {
+    setIsLoadingThemes(true);
+    try {
+      const res = await fetch('/api/themes/public');
+      if (res.ok) {
+        const themes = await res.json();
+        setCommunityThemes(themes);
+      }
+    } catch (err) {
+      console.error('Failed to load themes:', err);
+      toast({ title: "Erro", description: "Falha ao carregar temas", variant: "destructive" });
+    } finally {
+      setIsLoadingThemes(false);
+    }
+  };
+
+  const handleStartGameWithSorteio = async () => {
+    if (!selectedMode || !room) return;
+    
+    setIsStarting(true);
+    
+    // Se é modo de perguntas diferentes, pula sorteio
+    if (selectedMode === 'perguntasDiferentes') {
+      await startGame();
+      setIsStarting(false);
+      return;
+    }
+    
+    // Se é palavraComunidade, precisa ter um tema selecionado
+    if (selectedMode === 'palavraComunidade') {
+      if (!selectedThemeCode) {
+        toast({ title: "Selecione um tema", description: "Escolha um tema da comunidade para jogar", variant: "destructive" });
+        setIsStarting(false);
+        return;
+      }
+      await startGame(selectedThemeCode);
+      setIsStarting(false);
+      return;
+    }
+    
+    // Para outros modos, inicia direto (sorteio aparecerá depois)
+    await startGame();
+    setIsStarting(false);
+  };
+
+  const handleBackClick = () => {
+    backToLobby();
+    if (isHost) {
+      toast({ title: "Retornando ao lobby...", description: "Todos os jogadores foram levados de volta." });
+    }
+  };
+
+  useEffect(() => {
+    fetchGameModes();
+  }, [fetchGameModes]);
+
+  // Auto-select mode when coming from gallery
+  useEffect(() => {
+    const autoStart = sessionStorage.getItem('autoStartGame');
+    const selectedThemeCode = sessionStorage.getItem('selectedThemeCode');
+    const selectedGameMode = sessionStorage.getItem('selectedGameMode');
+    
+    if (autoStart === 'true' && !selectedMode) {
+      if (selectedThemeCode) {
+        selectMode('palavraComunidade');
+      } else if (selectedGameMode) {
+        selectMode(selectedGameMode as GameModeType);
+      }
+    }
+  }, [selectedMode, selectMode]);
+
+  // Handle theme/mode selection and auto-start
+  useEffect(() => {
+    const autoStart = sessionStorage.getItem('autoStartGame');
+    
+    if (selectedMode === 'palavraComunidade') {
+      loadCommunityThemes();
+      
+      // Check if theme code is already in sessionStorage (from gallery)
+      const themeCodeFromStorage = sessionStorage.getItem('selectedThemeCode');
+      const selectedThemeId = sessionStorage.getItem('selectedThemeId');
+      
+      if (themeCodeFromStorage && !selectedThemeCode) {
+        // Use the theme code directly from storage
+        setSelectedThemeCode(themeCodeFromStorage);
+        
+        if (autoStart === 'true' && isHost) {
+          setShouldAutoStart(true);
+        }
+        
+        // Clean up after setting
+        sessionStorage.removeItem('selectedThemeId');
+        sessionStorage.removeItem('selectedThemeCode');
+        
+        toast({ 
+          title: "Tema selecionado!", 
+          description: "Tema da comunidade carregado com sucesso" 
+        });
+      } else if (selectedThemeId && !selectedThemeCode) {
+        // Fallback: fetch theme by ID if code not available
+        fetch('/api/themes/public')
+          .then(res => res.json())
+          .then(themes => {
+            const theme = themes.find((t: PublicTheme) => t.id === selectedThemeId);
+            if (theme) {
+              setSelectedThemeCode(theme.accessCode);
+              
+              if (autoStart === 'true' && isHost) {
+                setShouldAutoStart(true);
+              }
+              
+              sessionStorage.removeItem('selectedThemeId');
+              sessionStorage.removeItem('selectedThemeCode');
+              
+              toast({ 
+                title: "Tema selecionado!", 
+                description: `"${theme.titulo}" está pronto para jogar` 
+              });
+            }
+          })
+          .catch(err => console.error('Failed to load selected theme:', err));
+      }
+    } else if (selectedMode === 'palavraSecreta' && autoStart === 'true' && isHost) {
+      // Auto-start for palavra secreta from gallery
+      setShouldAutoStart(true);
+      sessionStorage.removeItem('selectedGameMode');
+      sessionStorage.removeItem('selectedCategory');
+    } else {
+      setSelectedThemeCode(null);
+    }
+  }, [selectedMode, isHost, toast, selectedThemeCode]);
+
+  // Auto-start game when ready
+  useEffect(() => {
+    if (shouldAutoStart && selectedThemeCode && isHost) {
+      sessionStorage.removeItem('autoStartGame');
+      setShouldAutoStart(false);
+      
+      setTimeout(() => {
+        handleStartGameWithSorteio();
+      }, 1000);
+    }
+  }, [shouldAutoStart, selectedThemeCode, isHost]);
+
+  if (!room) return null;
+
+  return (
+    <div className="flex flex-col w-full max-w-6xl h-full py-6 px-4 animate-fade-in relative z-10">
+      {/* Elementos decorativos de fundo */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
+      </div>
+      
+      <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] relative z-10">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mb-8 text-center md:text-left">
+          <button 
+            onClick={handleBackClick}
+            className="p-3 bg-slate-800 rounded-2xl hover:bg-slate-700 transition-colors border-b-4 border-slate-950 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white"
+            data-testid="button-back-to-lobby"
+            title={isHost ? "Voltar ao lobby (todos os jogadores serão levados)" : "Voltar ao lobby"}
+          >
+            <ArrowLeft size={24} strokeWidth={3} />
+          </button>
+          <div className="flex-1">
+            <h2 className="text-2xl md:text-3xl font-black text-white mb-2">
+              Como vamos jogar hoje?
+            </h2>
+            <p className="text-slate-400 font-medium text-base md:text-lg max-w-2xl">
+              Selecione o modo que mais combina com a sua galera. O Impostor está pronto...
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+          {gameModes
+            .filter(mode => mode.id !== 'palavraComunidade') // Esconde modo de temas customizados
+            .map((mode, index) => {
+            const Icon = getModeIcon(mode.id);
+            const theme = getModeTheme(mode.id);
+            const difficulty = getModeDifficulty(mode.id);
+            const isSelected = selectedMode === mode.id;
+            const isRecommended = mode.id === 'palavraSecreta';
+            
+            const themeColors = {
+              blue: { bg: 'bg-blue-500', border: 'border-blue-700', iconBg: 'bg-blue-600' },
+              green: { bg: 'bg-emerald-500', border: 'border-emerald-700', iconBg: 'bg-emerald-600' },
+              red: { bg: 'bg-rose-500', border: 'border-rose-700', iconBg: 'bg-rose-600' },
+              yellow: { bg: 'bg-amber-400', border: 'border-amber-600', iconBg: 'bg-amber-500' },
+              purple: { bg: 'bg-violet-500', border: 'border-violet-700', iconBg: 'bg-violet-600' },
+              pink: { bg: 'bg-pink-500', border: 'border-pink-700', iconBg: 'bg-pink-600' }
+            };
+            
+            const colors = themeColors[theme as keyof typeof themeColors];
+            
+            return (
+              <div 
+                key={mode.id}
+                onClick={() => {
+                  // Se for palavraComunidade (CUSTOM), redireciona para galeria
+                  if (mode.id === 'palavraComunidade') {
+                    window.location.href = '/temas';
+                  } else {
+                    selectMode(mode.id as GameModeType);
+                  }
+                }}
+                className={cn(
+                  "relative p-5 rounded-3xl cursor-pointer transition-all duration-200 flex flex-col gap-4 h-full border-4",
+                  isSelected 
+                    ? `${colors.bg} ${colors.border} -translate-y-2 shadow-[0_10px_0_0_rgba(0,0,0,0.2)]` 
+                    : 'bg-slate-800 border-slate-900 hover:bg-slate-750 hover:-translate-y-1 hover:border-slate-700 shadow-lg'
+                )}
+              >
+                {/* Badge Recomendado */}
+                {isRecommended && !isSelected && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-xs font-black px-3 py-1 rounded-full border-2 border-yellow-600 shadow-sm z-10 flex items-center gap-1 w-max">
+                    <Star size={12} fill="currentColor" /> RECOMENDADO
+                  </div>
+                )}
+
+                {/* Check Icon */}
+                {isSelected && (
+                  <div className="absolute -top-3 -right-3 bg-white text-green-600 rounded-full p-1 border-4 border-green-600 shadow-sm animate-in zoom-in spin-in-12 duration-300">
+                    <Check size={20} strokeWidth={4} />
+                  </div>
+                )}
+
+                {/* Header do Card */}
+                <div className="flex justify-between items-start">
+                  <div className={cn(
+                    "p-3 rounded-2xl border-2 border-black/10",
+                    isSelected ? 'bg-white/20 text-white' : `${colors.bg} text-white`
+                  )}>
+                    <Icon size={32} strokeWidth={2.5} />
+                  </div>
+                  
+                  <div className={cn(
+                    "text-xs font-bold px-3 py-1 rounded-full border-2 border-black/10",
+                    isSelected ? 'bg-black/20 text-white' : 'bg-slate-900 text-slate-400'
+                  )}>
+                    {difficulty.toUpperCase()}
+                  </div>
+                </div>
+
+                {/* Conteúdo */}
+                <div className="flex flex-col gap-1">
+                  <h3 className={cn(
+                    "font-black text-xl leading-tight",
+                    isSelected ? 'text-white' : 'text-slate-100'
+                  )}>
+                    {mode.title}
+                  </h3>
+                  <p className={cn(
+                    "text-sm font-medium leading-relaxed",
+                    isSelected ? 'text-white/90' : 'text-slate-400'
+                  )}>
+                    {mode.desc}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        {selectedMode === 'palavraComunidade' && (
+          <div className="mt-4 pt-4 border-t border-[#3d4a5c]">
+            <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+              <Users className="w-4 h-4 text-[#4a90a4]" />
+              Temas da Comunidade
+            </h3>
+            
+            {selectedThemeCode ? (
+              <div className="p-4 rounded-2xl border-2 border-[#6b4ba3] bg-[#6b4ba3]/10 mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6b4ba3] to-[#4a3070] flex items-center justify-center">
+                    <Check className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-[#6b4ba3]">Tema Selecionado</p>
+                    <p className="text-xs text-gray-400">Pronto para iniciar a partida!</p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedThemeCode(null)}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            
+            <Link href="/temas">
+              <div className="group relative p-6 rounded-2xl border-2 border-dashed border-[#3d4a5c] hover:border-[#6b4ba3] bg-[#16213e]/20 hover:bg-[#16213e]/40 transition-all duration-300 cursor-pointer text-center">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#6b4ba3] to-[#4a3070] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Sparkles className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-bold text-white group-hover:text-[#6b4ba3] transition-colors">
+                      {selectedThemeCode ? 'Trocar Tema' : 'Explorar Galeria de Temas'}
+                    </h4>
+                    <p className="text-sm text-gray-400 mt-1">
+                      Descubra temas incríveis criados pela comunidade!
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <Play className="w-3 h-3" />
+                    <span>Clique para ver todos os temas disponíveis</span>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+        )}
+
+        {selectedMode === 'palavraSecreta' && (
+          <div className="mt-4 pt-4 border-t border-[#3d4a5c]">
+            <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-[#4a90a4]" />
+              Categorias de Palavras
+            </h3>
+            
+            {selectedCategory ? (
+              <div className="p-4 rounded-2xl border-2 border-[#6b4ba3] bg-[#6b4ba3]/10 mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6b4ba3] to-[#4a3070] flex items-center justify-center">
+                    <Check className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-[#6b4ba3]">Categoria Selecionada</p>
+                    <p className="text-xs text-gray-400 capitalize">
+                      {WORD_CATEGORIES.find(c => c.id === selectedCategory)?.name || selectedCategory}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            
+            <button
+              onClick={() => setShowCategoryModal(true)}
+              className="group relative p-6 rounded-2xl border-2 border-dashed border-[#3d4a5c] hover:border-[#6b4ba3] bg-[#16213e]/20 hover:bg-[#16213e]/40 transition-all duration-300 cursor-pointer text-center w-full"
+            >
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#6b4ba3] to-[#4a3070] flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Sparkles className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold text-white group-hover:text-[#6b4ba3] transition-colors">
+                    {selectedCategory ? 'Trocar Categoria' : 'Escolher Categoria'}
+                  </h4>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Selecione uma categoria de palavras para jogar!
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Play className="w-3 h-3" />
+                  <span>10 categorias disponíveis</span>
+                </div>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* CTA Principal */}
+        <div className="flex flex-col items-center">
+          <button 
+            onClick={handleStartGameWithSorteio}
+            disabled={!selectedMode || isStarting || (selectedMode === 'palavraComunidade' && !selectedThemeCode)}
+            className={cn(
+              "w-full md:w-auto md:min-w-[300px] px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
+              selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode)
+                ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
+                : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+            )}
+          >
+            <Rocket size={28} className={selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode) ? 'animate-bounce' : ''} />
+            {selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode) ? 'INICIAR PARTIDA' : 'SELECIONE UM MODO'}
+          </button>
+        </div>
+      </div>
+
+      <PalavraSecretaCategoryModal 
+        isOpen={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        onSelectCategory={(categoryId) => setSelectedCategory(categoryId)}
+      />
+    </div>
+  );
+};
+
+type PerguntasDiferentesPhase = 'viewing' | 'answering' | 'waitingAnswers' | 'allAnswers' | 'crewQuestion' | 'voting' | 'waitingVotes' | 'result';
+
+const QuestionRevealedOverlay = ({ 
+  crewQuestion, 
+  myQuestion,
+  isImpostor, 
+  isHost, 
+  onNewRound,
+  onClose 
+}: { 
+  crewQuestion: string;
+  myQuestion: string;
+  isImpostor: boolean;
+  isHost: boolean;
+  onNewRound: () => void;
+  onClose: () => void;
+}) => {
+  const questionsDiffer = crewQuestion !== myQuestion;
+  
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#16213e]/95 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-md space-y-6">
+        <div className="w-full bg-gradient-to-br from-gray-700/20 to-gray-700/5 rounded-2xl p-6 border border-gray-600/30 space-y-4">
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 mx-auto rounded-xl border-2 border-gray-600 flex items-center justify-center mb-4"
+                 style={{ boxShadow: '0 4px 0 rgba(128, 128, 128, 0.2)' }}>
+              <Eye className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-gray-400 text-sm uppercase tracking-widest font-bold">Pergunta dos Tripulantes</p>
+            <p className="text-2xl text-white font-bold leading-relaxed">"{crewQuestion}"</p>
+          </div>
+          
+          {isImpostor && questionsDiffer && (
+            <div className="text-center pt-4 border-t border-gray-600/20 space-y-2">
+              <p className="text-gray-400 text-lg font-bold animate-pulse">
+                Sua pergunta era diferente!
+              </p>
+              <p className="text-gray-400 text-sm">
+                Tente se justificar e convencer que voce nao e o impostor!
+              </p>
+            </div>
+          )}
+          
+          {!isImpostor && (
+            <div className="text-center pt-4 border-t border-gray-600/20">
+              <p className="text-gray-400 text-sm">
+                Descubra quem recebeu uma pergunta diferente!
+              </p>
+            </div>
+          )}
+        </div>
+
+        <Button 
+          onClick={onClose}
+          className="w-full h-12 border-2 border-gray-700 bg-transparent text-gray-400 hover:border-[#4a90a4] hover:text-[#4a90a4] hover:bg-transparent rounded-lg"
+        >
+          <ArrowLeft className="mr-2 w-4 h-4" /> Voltar ao Jogo
+        </Button>
+
+        {isHost && (
+          <Button 
+            onClick={onNewRound}
+            className="w-full border-2 border-[#4a90a4] bg-transparent text-[#4a90a4] hover:bg-[#4a90a4]/10 rounded-lg"
+          >
+            <RotateCcw className="mr-2 w-4 h-4" /> Nova Rodada
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const PerguntasDiferentesScreen = () => {
+  const { user, room, returnToLobby } = useGameStore();
+  const [phase, setPhase] = useState<PerguntasDiferentesPhase>('viewing');
+  const [isRevealed, setIsRevealed] = useState(false);
+  const [answer, setAnswer] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedVote, setSelectedVote] = useState<string | null>(null);
+
+  if (!room || !room.gameData) return null;
+
+  const isHost = room.hostId === user?.uid;
+  const isImpostor = user?.uid === room.impostorId;
+  const gameData = room.gameData;
+  const answersRevealed = gameData.answersRevealed === true;
+  const crewQuestionRevealed = gameData.crewQuestionRevealed === true;
+  const votingStarted = gameData.votingStarted === true;
+  const votesRevealed = gameData.votesRevealed === true;
+  const answers = gameData.answers || [];
+  const votes = gameData.votes || [];
+  
+  const myQuestion = isImpostor ? gameData.impostorQuestion : gameData.question;
+  const crewQuestion = gameData.question || '';
+  
+  const activePlayers = room.players.filter(p => !p.waitingForGame);
+  const totalPlayers = activePlayers.length;
+  const answeredCount = answers.length;
+  const allAnswered = answeredCount >= totalPlayers;
+  const hasMyAnswer = answers.some((a: PlayerAnswer) => a.playerId === user?.uid);
+  const myAnswer = answers.find((a: PlayerAnswer) => a.playerId === user?.uid)?.answer || '';
+  
+  const votedCount = votes.length;
+  const allVoted = votedCount >= totalPlayers;
+  const hasMyVote = votes.some((v: PlayerVote) => v.playerId === user?.uid);
+
+  const handleNewRound = async () => {
+    try {
+      await returnToLobby();
+    } catch (error) {
+      console.error('Error in returnToLobby:', error);
+    }
+  };
+
+  const handleSubmitAnswer = async () => {
+    if (!answer.trim() || !room || !user) return;
+    
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/rooms/${room.code}/submit-answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerId: user.uid,
+          playerName: user.name,
+          answer: answer.trim()
+        })
+      });
+      
+      if (response.ok) {
+        setPhase('waitingAnswers');
+      }
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRevealAnswers = async () => {
+    if (!room) return;
+    try {
+      await fetch(`/api/rooms/${room.code}/reveal-answers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error('Error revealing answers:', error);
+    }
+  };
+
+  const handleRevealCrewQuestion = async () => {
+    if (!room) return;
+    try {
+      await fetch(`/api/rooms/${room.code}/reveal-crew-question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error('Error revealing crew question:', error);
+    }
+  };
+
+  const handleStartVoting = async () => {
+    if (!room) return;
+    try {
+      await fetch(`/api/rooms/${room.code}/start-voting`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error('Error starting voting:', error);
+    }
+  };
+
+  const handleSubmitVote = async () => {
+    if (!selectedVote || !room || !user) return;
+    
+    const targetPlayer = activePlayers.find(p => p.uid === selectedVote);
+    if (!targetPlayer) return;
+    
+    setIsSubmitting(true);
+    try {
+      await fetch(`/api/rooms/${room.code}/submit-vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerId: user.uid,
+          playerName: user.name,
+          targetId: selectedVote,
+          targetName: targetPlayer.name
+        })
+      });
+    } catch (error) {
+      console.error('Error submitting vote:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRevealImpostor = async () => {
+    if (!room) return;
+    try {
+      await fetch(`/api/rooms/${room.code}/reveal-impostor`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error('Error revealing impostor:', error);
+    }
+  };
+
+  const handleProceedToAnswer = () => {
+    setPhase('answering');
+  };
+
+  useEffect(() => {
+    if (votesRevealed && phase !== 'result') {
+      setPhase('result');
+    } else if (votingStarted && !votesRevealed && hasMyVote && phase !== 'waitingVotes' && phase !== 'result') {
+      setPhase('waitingVotes');
+    } else if (votingStarted && !votesRevealed && !hasMyVote && phase !== 'voting' && phase !== 'waitingVotes' && phase !== 'result') {
+      setPhase('voting');
+    } else if (crewQuestionRevealed && !votingStarted && phase !== 'crewQuestion' && phase !== 'voting' && phase !== 'waitingVotes' && phase !== 'result') {
+      setPhase('crewQuestion');
+    } else if (answersRevealed && !crewQuestionRevealed && phase !== 'allAnswers' && phase !== 'crewQuestion' && phase !== 'voting' && phase !== 'waitingVotes' && phase !== 'result') {
+      setPhase('allAnswers');
+    } else if (hasMyAnswer && phase === 'answering') {
+      setPhase('waitingAnswers');
+    }
+  }, [answersRevealed, crewQuestionRevealed, votingStarted, votesRevealed, hasMyAnswer, hasMyVote, phase]);
+
+  if (phase === 'viewing') {
+    return (
+      <div className="flex flex-col items-center justify-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10">
+        <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
+        
+        <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
+        <div 
+          className={cn(
+            "w-full aspect-[3/4] max-h-[500px] rounded-2xl p-8 flex flex-col items-center justify-center text-center relative transition-all duration-500 cursor-pointer overflow-hidden",
+            isRevealed 
+              ? "innocent-card"
+              : "bg-black border-2 border-[#3d4a5c]"
+          )}
+          onClick={() => !isRevealed && setIsRevealed(true)}
+          data-testid="card-reveal"
+        >
+          {!isRevealed ? (
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative">
+                <Eye className="w-20 h-20 text-gray-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-200">TOQUE PARA REVELAR</h3>
+              <p className="text-gray-400 text-sm">Veja sua pergunta</p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-6 animate-fade-in w-full">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setIsRevealed(false); }}
+                className="absolute top-4 right-4 w-10 h-10 rounded-lg border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
+              >
+                <EyeOff className="w-5 h-5 text-white/60" />
+              </button>
+              
+              <div className="w-24 h-24 rounded-xl border-2 border-[#4a90a4] flex items-center justify-center mb-2"
+                   style={{ boxShadow: '0 4px 0 rgba(74, 144, 164, 0.5)' }}>
+                <HelpCircle className="w-12 h-12 text-[#4a90a4]" />
+              </div>
+              
+              <div className="space-y-6 text-center">
+                <div className="space-y-2">
+                  <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Sua Pergunta</p>
+                  <h2 className="text-xl text-white font-bold leading-relaxed px-2">"{myQuestion}"</h2>
+                </div>
+                <p className="text-gray-400 text-sm">Memorize sua pergunta!</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <p className="text-gray-300 text-sm text-center">
+          {isRevealed ? "Toque no X para esconder" : "Toque para ver sua pergunta"}
+        </p>
+
+        {isRevealed && (
+          <Button 
+            onClick={handleProceedToAnswer}
+            className="w-full h-14 btn-retro-primary font-bold text-lg rounded-lg transition-all active:scale-[0.98]"
+          >
+            <MessageSquare className="mr-2 w-5 h-5" /> Responder Pergunta
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  if (phase === 'answering') {
+    return (
+      <div className="flex flex-col items-center justify-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10">
+        <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
+        
+        <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
+        <div className="w-full bg-[#16213e]/80 rounded-2xl p-6 border border-[#3d4a5c] space-y-6">
+          <div className="text-center space-y-2">
+            <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Sua Pergunta</p>
+            <h2 className="text-lg text-white font-bold leading-relaxed">"{myQuestion}"</h2>
+          </div>
+          
+          <div className="w-full h-[1px] bg-gray-700"></div>
+          
+          <div className="space-y-4">
+            <p className="text-gray-300 text-sm text-center">Digite sua resposta abaixo:</p>
+            <Textarea
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              placeholder="Sua resposta..."
+              className="w-full min-h-[120px] p-4 rounded-xl bg-black border-2 border-[#3d4a5c] text-white text-lg placeholder:text-gray-600 focus-visible:ring-0 focus-visible:border-[#4a90a4] transition-all resize-none"
+            />
+          </div>
+
+          <Button 
+            onClick={handleSubmitAnswer}
+            disabled={!answer.trim() || isSubmitting}
+            className="w-full h-14 btn-retro-primary font-bold text-lg rounded-lg transition-all active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <Send className="mr-2 w-5 h-5" /> {isSubmitting ? 'Enviando...' : 'Enviar Resposta'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'waitingAnswers') {
+    return (
+      <div className="flex flex-col items-center justify-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10">
+        <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
+        
+        <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
+        
+        <div className="w-full bg-[#16213e]/80 rounded-2xl p-6 border border-[#3d4a5c] space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 rounded-full bg-[#3d8b5f]/20 border-2 border-[#3d8b5f] flex items-center justify-center mx-auto mb-4">
+              <Check className="w-8 h-8 text-[#3d8b5f]" />
+            </div>
+            <p className="text-[#3d8b5f] text-sm uppercase tracking-widest font-bold">Resposta Enviada!</p>
+            <p className="text-white text-lg font-medium">"{myAnswer}"</p>
+          </div>
+          
+          <div className="w-full h-[1px] bg-gray-700"></div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-2">
+              <Users className="w-5 h-5 text-[#4a90a4]" />
+              <p className="text-gray-300">
+                <span className="text-[#4a90a4] font-bold">{answeredCount}</span> de <span className="font-bold">{totalPlayers}</span> responderam
+              </p>
+            </div>
+            
+            <div className="flex flex-wrap gap-2 justify-center">
+              {activePlayers.map(player => {
+                const hasAnswered = answers.some((a: PlayerAnswer) => a.playerId === player.uid);
+                return (
+                  <div 
+                    key={player.uid}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-sm font-medium transition-all",
+                      hasAnswered 
+                        ? "bg-[#3d8b5f]/20 text-[#3d8b5f] border border-[#3d8b5f]/30"
+                        : "bg-gray-700/50 text-gray-400 border border-gray-600/30"
+                    )}
+                  >
+                    {hasAnswered && <Check className="w-3 h-3 inline mr-1" />}
+                    {player.name}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          {!allAnswered && (
+            <p className="text-gray-400 text-sm text-center animate-pulse">
+              Aguardando outros jogadores...
+            </p>
+          )}
+        </div>
+
+        {isHost && allAnswered && (
+          <Button 
+            onClick={handleRevealAnswers}
+            className="w-full h-14 bg-[#e07b39] hover:bg-[#e07b39]/80 text-white font-bold text-lg rounded-lg transition-all"
+            style={{ boxShadow: '0 4px 0 rgba(224, 123, 57, 0.5)' }}
+          >
+            <Eye className="mr-2 w-5 h-5" /> Mostrar Respostas para Todos
+          </Button>
+        )}
+        
+        {!isHost && allAnswered && (
+          <p className="text-[#e07b39] text-sm text-center font-medium animate-pulse">
+            Aguardando o host mostrar as respostas...
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (phase === 'allAnswers') {
+    return (
+      <div className="flex flex-col items-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10 overflow-y-auto">
+        <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
+        
+        <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
+        
+        <div className="w-full space-y-4">
+          <div className="text-center mb-4">
+            <p className="text-[#e07b39] text-sm uppercase tracking-widest font-bold">Respostas de Todos</p>
+          </div>
+          
+          {answers.map((playerAnswer: PlayerAnswer, index: number) => {
+            const isCurrentUser = playerAnswer.playerId === user?.uid;
+            return (
+              <div 
+                key={playerAnswer.playerId}
+                className={cn(
+                  "w-full rounded-xl p-4 border-2 transition-all",
+                  isCurrentUser 
+                    ? "bg-[#4a90a4]/10 border-[#4a90a4]/50"
+                    : "bg-[#16213e]/80 border-[#3d4a5c]"
+                )}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
+                    isCurrentUser ? "bg-[#4a90a4] text-white" : "bg-gray-600 text-gray-200"
+                  )}>
+                    {index + 1}
+                  </div>
+                  <span className={cn(
+                    "font-bold",
+                    isCurrentUser ? "text-[#4a90a4]" : "text-gray-300"
+                  )}>
+                    {playerAnswer.playerName}
+                    {isCurrentUser && " (Voce)"}
+                  </span>
+                </div>
+                <p className="text-white text-lg pl-10">"{playerAnswer.answer}"</p>
+              </div>
+            );
+          })}
+        </div>
+
+        {isHost && (
+          <Button 
+            onClick={handleRevealCrewQuestion}
+            className="w-full h-14 bg-white hover:bg-white/80 text-black font-bold text-lg rounded-lg transition-all"
+            style={{ boxShadow: '0 4px 0 rgba(255, 255, 255, 0.2)' }}
+          >
+            <Eye className="mr-2 w-5 h-5" /> Revelar Pergunta dos Tripulantes
+          </Button>
+        )}
+        
+        {!isHost && (
+          <p className="text-gray-400 text-sm text-center font-medium animate-pulse">
+            Aguardando o host revelar a pergunta dos tripulantes...
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (phase === 'crewQuestion') {
+    return (
+      <div className="flex flex-col items-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10 overflow-y-auto">
+        <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
+        
+        <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
+        
+        <div className="w-full bg-gradient-to-br from-gray-700/20 to-gray-700/5 rounded-2xl p-6 border border-gray-600/30 space-y-4">
+          <div className="text-center space-y-2">
+            <p className="text-gray-400 text-xs uppercase tracking-widest font-bold">Pergunta dos Tripulantes</p>
+            <p className="text-xl text-white font-bold leading-relaxed">"{crewQuestion}"</p>
+          </div>
+          {isImpostor && (
+            <div className="text-center pt-4 border-t border-gray-600/20">
+              <p className="text-gray-400 text-sm font-medium">
+                Sua pergunta era diferente! Tente se justificar!
+              </p>
+            </div>
+          )}
+        </div>
+        
+        <div className="w-full space-y-4">
+          <div className="text-center">
+            <p className="text-[#e07b39] text-sm uppercase tracking-widest font-bold mb-4">Respostas</p>
+          </div>
+          
+          {answers.map((playerAnswer: PlayerAnswer, index: number) => {
+            const isCurrentUser = playerAnswer.playerId === user?.uid;
+            return (
+              <div 
+                key={playerAnswer.playerId}
+                className={cn(
+                  "w-full rounded-xl p-4 border-2 transition-all",
+                  isCurrentUser 
+                    ? "bg-[#4a90a4]/10 border-[#4a90a4]/50"
+                    : "bg-[#16213e]/80 border-[#3d4a5c]"
+                )}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold",
+                    isCurrentUser ? "bg-[#4a90a4] text-white" : "bg-gray-600 text-gray-200"
+                  )}>
+                    {index + 1}
+                  </div>
+                  <span className={cn(
+                    "font-bold",
+                    isCurrentUser ? "text-[#4a90a4]" : "text-gray-300"
+                  )}>
+                    {playerAnswer.playerName}
+                    {isCurrentUser && " (Voce)"}
+                  </span>
+                </div>
+                <p className="text-white text-lg pl-10">"{playerAnswer.answer}"</p>
+              </div>
+            );
+          })}
+        </div>
+
+        <Button 
+          onClick={handleStartVoting}
+          className="w-full h-14 bg-[#3d8b5f] hover:bg-[#3d8b5f]/80 text-white font-bold text-lg rounded-lg transition-all"
+          style={{ boxShadow: '0 4px 0 rgba(61, 139, 95, 0.5)' }}
+        >
+          <Vote className="mr-2 w-5 h-5" /> Iniciar Votacao
+        </Button>
+      </div>
+    );
+  }
+
+  if (phase === 'voting') {
+    return (
+      <div className="flex flex-col items-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10 overflow-y-auto">
+        <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
+        
+        <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
+        
+        <div className="w-full bg-[#16213e]/80 rounded-2xl p-6 border border-[#3d4a5c] space-y-6">
+          <div className="text-center space-y-2">
+            <Vote className="w-12 h-12 text-[#e9c46a] mx-auto" />
+            <p className="text-[#e9c46a] text-sm uppercase tracking-widest font-bold">Hora de Votar!</p>
+            <p className="text-gray-300 text-sm">Quem voce acha que e o impostor?</p>
+          </div>
+          
+          <div className="w-full h-[1px] bg-gray-700"></div>
+          
+          <div className="space-y-3">
+            {activePlayers.filter(p => p.uid !== user?.uid).map(player => (
+              <button
+                key={player.uid}
+                onClick={() => setSelectedVote(player.uid)}
+                className={cn(
+                  "w-full p-4 rounded-xl border-2 transition-all text-left flex items-center gap-3",
+                  selectedVote === player.uid
+                    ? "bg-[#e9c46a]/20 border-[#e9c46a] text-[#e9c46a]"
+                    : "bg-[#16213e] border-[#3d4a5c] text-gray-300 hover:border-[#e9c46a]/50"
+                )}
+              >
+                <div className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold",
+                  selectedVote === player.uid ? "bg-[#e9c46a] text-black" : "bg-gray-600 text-gray-200"
+                )}>
+                  {player.name.charAt(0).toUpperCase()}
+                </div>
+                <span className="font-bold text-lg">{player.name}</span>
+                {selectedVote === player.uid && (
+                  <Check className="w-5 h-5 ml-auto" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          <Button 
+            onClick={handleSubmitVote}
+            disabled={!selectedVote || isSubmitting}
+            className="w-full h-14 bg-[#e9c46a] hover:bg-[#e9c46a]/80 text-black font-bold text-lg rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            style={{ boxShadow: '0 4px 0 rgba(233, 196, 106, 0.5)' }}
+          >
+            <Send className="mr-2 w-5 h-5" /> {isSubmitting ? 'Votando...' : 'Confirmar Voto'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'waitingVotes') {
+    const myVote = votes.find((v: PlayerVote) => v.playerId === user?.uid);
+    return (
+      <div className="flex flex-col items-center justify-center w-full max-w-md h-full p-6 animate-fade-in space-y-6 relative z-10">
+        <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
+        
+        <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
+        
+        <div className="w-full bg-[#16213e]/80 rounded-2xl p-6 border border-[#3d4a5c] space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 rounded-full bg-[#3d8b5f]/20 border-2 border-[#3d8b5f] flex items-center justify-center mx-auto mb-4">
+              <Check className="w-8 h-8 text-[#3d8b5f]" />
+            </div>
+            <p className="text-[#3d8b5f] text-sm uppercase tracking-widest font-bold">Voto Enviado!</p>
+            <p className="text-white text-lg font-medium">Voce votou em: <span className="text-[#e9c46a]">{myVote?.targetName}</span></p>
+          </div>
+          
+          <div className="w-full h-[1px] bg-gray-700"></div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-2">
+              <Users className="w-5 h-5 text-[#4a90a4]" />
+              <p className="text-gray-300">
+                <span className="text-[#4a90a4] font-bold">{votedCount}</span> de <span className="font-bold">{totalPlayers}</span> votaram
+              </p>
+            </div>
+            
+            <div className="flex flex-wrap gap-2 justify-center">
+              {activePlayers.map(player => {
+                const hasVoted = votes.some((v: PlayerVote) => v.playerId === player.uid);
+                return (
+                  <div 
+                    key={player.uid}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-sm font-medium transition-all",
+                      hasVoted 
+                        ? "bg-[#3d8b5f]/20 text-[#3d8b5f] border border-[#3d8b5f]/30"
+                        : "bg-gray-700/50 text-gray-400 border border-gray-600/30"
+                    )}
+                  >
+                    {hasVoted && <Check className="w-3 h-3 inline mr-1" />}
+                    {player.name}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          {!allVoted && (
+            <p className="text-gray-400 text-sm text-center animate-pulse">
+              Aguardando outros jogadores votarem...
+            </p>
+          )}
+        </div>
+
+        {isHost && allVoted && (
+          <Button 
+            onClick={handleRevealImpostor}
+            className="w-full h-14 bg-[#c44536] hover:bg-[#c44536]/80 text-white font-bold text-lg rounded-lg transition-all"
+            style={{ boxShadow: '0 4px 0 rgba(196, 69, 54, 0.5)' }}
+          >
+            <Skull className="mr-2 w-5 h-5" /> Revelar o Impostor
+          </Button>
+        )}
+        
+        {!isHost && allVoted && (
+          <p className="text-[#c44536] text-sm text-center font-medium animate-pulse">
+            Aguardando o host revelar o impostor...
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (phase === 'result') {
+    const impostorPlayer = activePlayers.find(p => p.uid === room.impostorId);
+    const impostorName = impostorPlayer?.name || 'Desconhecido';
+    
+    const votesForImpostor = votes.filter((v: PlayerVote) => v.targetId === room.impostorId).length;
+    const crewWins = votesForImpostor > totalPlayers / 2;
+    
+    return (
+      <div className="flex flex-col items-center w-full max-w-md h-full p-4 animate-fade-in relative z-10 overflow-y-auto">
+        <div className="w-full bg-[#0a1628]/95 rounded-2xl p-6 space-y-6">
+          <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
+          
+          <div className="w-full rounded-2xl p-6 border-2 space-y-6 text-center bg-gradient-to-br from-gray-700/20 to-gray-700/5 border-gray-600">
+            <div className="space-y-4">
+              <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto bg-gray-600">
+                {crewWins ? (
+                  <Trophy className="w-10 h-10 text-white" />
+                ) : (
+                  <Skull className="w-10 h-10 text-white" />
+                )}
+              </div>
+              
+              <h2 className="text-3xl font-bold text-white">
+                {crewWins ? "TRIPULACAO VENCEU!" : "IMPOSTOR VENCEU!"}
+              </h2>
+              
+              <p className="text-gray-300 text-lg">
+                O impostor era: <span className="text-gray-400 font-bold">{impostorName}</span>
+              </p>
+            </div>
+            
+            <div className="w-full h-[1px] bg-gray-700"></div>
+            
+            <div className="space-y-4">
+              <p className="text-[#e9c46a] text-sm uppercase tracking-widest font-bold">Resultados da Votacao</p>
+              
+              <div className="space-y-2">
+                {activePlayers.map(player => {
+                  const votesReceived = votes.filter((v: PlayerVote) => v.targetId === player.uid).length;
+                  const isTheImpostor = player.uid === room.impostorId;
+                  return (
+                    <div 
+                      key={player.uid}
+                      className={cn(
+                        "w-full p-3 rounded-lg flex items-center justify-between",
+                        isTheImpostor 
+                          ? "bg-[#c44536]/20 border border-[#c44536]/50"
+                          : "bg-[#16213e]/50"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "font-bold",
+                          isTheImpostor ? "text-[#c44536]" : "text-gray-300"
+                        )}>
+                          {player.name}
+                          {isTheImpostor && " (Impostor)"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[#e9c46a] font-bold">{votesReceived}</span>
+                        <span className="text-gray-500 text-sm">votos</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {isHost && (
+            <Button 
+              onClick={handleNewRound}
+              className="w-full h-14 btn-retro-primary font-bold text-lg rounded-lg transition-all"
+            >
+              <RotateCcw className="mr-2 w-5 h-5" /> Nova Rodada
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+type RoundStage = 'WORD_REVEAL' | 'SPEAKING_ORDER' | 'VOTING' | 'VOTING_FEEDBACK' | 'ROUND_RESULT';
+
+const GameScreen = () => {
+  const { user, room, returnToLobby, speakingOrder, speakingOrderPlayerMap, setSpeakingOrder, showSpeakingOrderWheel, setShowSpeakingOrderWheel, triggerSpeakingOrderWheel } = useGameStore();
+  const [isRevealed, setIsRevealed] = useState(true);
+  const [isSubmittingVote, setIsSubmittingVote] = useState(false);
+
+  const handleNewRound = async () => {
+    try {
+      await returnToLobby();
+    } catch (error) {
+      console.error('Error in returnToLobby:', error);
+    }
+  };
+
+  const handleStartSorteio = () => {
+    triggerSpeakingOrderWheel();
+  };
+
+  const handleSpeakingOrderComplete = (order: string[]) => {
+    setSpeakingOrder(order);
+    setShowSpeakingOrderWheel(false);
+  };
+
+  const roomCode = room?.code;
+  const gameMode = room?.gameMode;
+
+  if (!room) return null;
+
+  const isHost = room.hostId === user?.uid;
+  const isImpostor = user?.uid === room.impostorId;
+  const gameData = room.gameData;
+  
+  const activePlayers = room.players.filter(p => !p.waitingForGame);
+  const votes: PlayerVote[] = gameData?.votes || [];
+  const votingStarted = gameData?.votingStarted === true;
+  const votesRevealed = gameData?.votesRevealed === true;
+  const hasMyVote = votes.some(v => v.playerId === user?.uid);
+
+  const deriveCurrentStage = (): RoundStage => {
+    if (votesRevealed) {
+      return 'ROUND_RESULT';
+    } else if (votingStarted && hasMyVote) {
+      return 'VOTING_FEEDBACK';
+    } else if (votingStarted && !hasMyVote) {
+      return 'VOTING';
+    } else if (showSpeakingOrderWheel) {
+      return 'SPEAKING_ORDER';
+    } else {
+      return 'WORD_REVEAL';
+    }
+  };
+
+  const currentStage = deriveCurrentStage();
+
+  if (gameMode === 'perguntasDiferentes') {
+    return <PerguntasDiferentesScreen />;
+  }
+
+  const handleStartVoting = async () => {
+    try {
+      await fetch(`/api/rooms/${roomCode}/start-voting`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error('Error starting voting:', error);
+    }
+  };
+
+  const handleSubmitVote = async (targetId: string) => {
+    if (!user) return;
+    
+    const targetPlayer = activePlayers.find(p => p.uid === targetId);
+    if (!targetPlayer) return;
+    
+    setIsSubmittingVote(true);
+    try {
+      await fetch(`/api/rooms/${roomCode}/submit-vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerId: user.uid,
+          playerName: user.name,
+          targetId: targetId,
+          targetName: targetPlayer.name
+        })
+      });
+    } catch (error) {
+      console.error('Error submitting vote:', error);
+    } finally {
+      setIsSubmittingVote(false);
+    }
+  };
+
+  const handleRevealImpostor = async () => {
+    try {
+      await fetch(`/api/rooms/${roomCode}/reveal-impostor`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (error) {
+      console.error('Error revealing impostor:', error);
+    }
+  };
+
+  const renderCrewContent = () => {
+    if (!gameData) return null;
+
+    switch (gameMode) {
+      case 'palavraSecreta':
+        return (
+          <div className="space-y-3 text-center p-4 bg-emerald-500/5 rounded-2xl border-2 border-emerald-500/20">
+            <p className="text-emerald-400 text-xs uppercase tracking-[0.3em] font-bold">Palavra Secreta</p>
+            <h2 className="text-3xl sm:text-4xl text-white font-black tracking-tight">{gameData.word}</h2>
+            <p className="text-slate-400 text-sm">Dê dicas sutis sobre a palavra!</p>
+          </div>
+        );
+      
+      case 'palavras':
+        const myRole = user?.uid ? gameData.roles?.[user.uid] : null;
+        return (
+          <div className="space-y-4 text-center p-4 bg-emerald-500/5 rounded-2xl border-2 border-emerald-500/20">
+            <div className="space-y-2">
+              <p className="text-emerald-400 text-xs uppercase tracking-[0.3em] font-bold">Local</p>
+              <h2 className="text-2xl sm:text-3xl text-white font-black">{gameData.location}</h2>
+            </div>
+            <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent mx-auto"></div>
+            <div className="space-y-2">
+              <p className="text-emerald-400 text-xs uppercase tracking-[0.3em] font-bold">Sua Função</p>
+              <h3 className="text-xl sm:text-2xl text-white font-bold">{myRole}</h3>
+            </div>
+          </div>
+        );
+      
+      case 'duasFaccoes':
+        const myFaction = user?.uid ? gameData.factionMap?.[user.uid] : null;
+        return (
+          <div className="space-y-2 text-center">
+            <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Sua Palavra</p>
+            <h2 className="text-2xl sm:text-3xl text-white font-black">{myFaction}</h2>
+            <p className="text-gray-400 text-xs">Descubra quem é do seu time!</p>
+          </div>
+        );
+      
+      case 'categoriaItem':
+        return (
+          <div className="space-y-3 text-center">
+            <div className="space-y-1">
+              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Categoria</p>
+              <h3 className="text-lg sm:text-xl text-white font-bold">{gameData.category}</h3>
+            </div>
+            <div className="w-12 h-[1px] bg-gray-600/30 mx-auto"></div>
+            <div className="space-y-1">
+              <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Item</p>
+              <h2 className="text-2xl sm:text-3xl text-white font-black">{gameData.item}</h2>
+            </div>
+          </div>
+        );
+      
+      case 'palavraComunidade':
+        return (
+          <div className="space-y-2 text-center">
+            <p className="text-gray-400 text-xs uppercase tracking-[0.2em] font-semibold">Palavra Secreta</p>
+            <h2 className="text-2xl sm:text-3xl text-white font-black">{gameData.word}</h2>
+            <p className="text-gray-400 text-xs">Dê dicas sutis sobre a palavra!</p>
+          </div>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
+  const renderImpostorContent = () => {
+    if (!gameData) return null;
+
+    switch (gameMode) {
+      case 'palavraSecreta':
+        return (
+          <div className="text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+            <p className="text-slate-300 text-sm font-medium leading-relaxed">
+              Finja que você sabe a palavra! Engane a todos.
+            </p>
+          </div>
+        );
+      
+      case 'palavras':
+        return (
+          <div className="text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+            <p className="text-slate-300 text-sm font-medium leading-relaxed">
+              Você não sabe o local! Tente descobrir através das dicas.
+            </p>
+          </div>
+        );
+      
+      case 'duasFaccoes':
+        return (
+          <div className="text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+            <p className="text-slate-300 text-sm font-medium leading-relaxed">
+              Duas palavras no jogo! Você não sabe nenhuma.
+            </p>
+          </div>
+        );
+      
+      case 'categoriaItem':
+        return (
+          <div className="space-y-3 text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+            <div className="space-y-2">
+              <p className="text-rose-400 text-xs uppercase tracking-[0.3em] font-bold">Categoria</p>
+              <h3 className="text-xl sm:text-2xl text-white font-bold">{gameData.category}</h3>
+            </div>
+            <p className="text-slate-400 text-sm">
+              Você só sabe a categoria! Descubra o item.
+            </p>
+          </div>
+        );
+      
+      case 'palavraComunidade':
+        return (
+          <div className="text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+            <p className="text-slate-300 text-sm font-medium leading-relaxed">
+              Finja que você sabe a palavra! Engane a todos.
+            </p>
+          </div>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
+  const handleBackToLobby = async () => {
+    try {
+      await returnToLobby();
+    } catch (error) {
+      console.error('Error in returnToLobby:', error);
+    }
+  };
+
+  const renderStageContent = () => {
+    switch (currentStage) {
+      case 'SPEAKING_ORDER':
+        return (
+          <SpeakingOrderWithVotingStage
+            players={activePlayers}
+            serverOrder={speakingOrder}
+            playerMap={speakingOrderPlayerMap}
+            userId={user?.uid || ''}
+            isHost={isHost}
+            onStartVoting={handleStartVoting}
+            onSubmitVote={handleSubmitVote}
+            isSubmitting={isSubmittingVote}
+            onNewRound={handleNewRound}
+          />
+        );
+
+      case 'VOTING':
+        return (
+          <div className="animate-stage-fade-in w-full space-y-5">
+            <div className="text-center space-y-3">
+              <div className="w-16 h-16 rounded-2xl bg-orange-500/10 border-2 border-orange-500/30 flex items-center justify-center mx-auto">
+                <Vote className="w-8 h-8 text-orange-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-white uppercase tracking-wider mb-1">
+                  Hora de Votar!
+                </h3>
+                <p className="text-slate-400 text-sm">Quem você acha que é o impostor?</p>
+              </div>
+            </div>
+            
+            <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
+            
+            <VotingPlayerList
+              activePlayers={activePlayers}
+              userId={user?.uid || ''}
+              onSubmitVote={handleSubmitVote}
+              isSubmitting={isSubmittingVote}
+            />
+          </div>
+        );
+
+      case 'VOTING_FEEDBACK':
+        const myVote = votes.find(v => v.playerId === user?.uid);
+        const totalPlayers = activePlayers.length;
+        const votedCount = votes.length;
+        const allVoted = votedCount >= totalPlayers;
+
+        return (
+          <div className="animate-stage-fade-in w-full space-y-5">
+            <div className="text-center space-y-3">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/30 flex items-center justify-center mx-auto">
+                <Check className="w-8 h-8 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-emerald-400 uppercase tracking-wider mb-2">
+                  Voto Enviado!
+                </h3>
+                <p className="text-white text-base">
+                  Você votou em: <span className="text-orange-400 font-bold">{myVote?.targetName}</span>
+                </p>
+              </div>
+            </div>
+            
+            <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
+            
+            <div className="space-y-4 p-4 bg-slate-700/20 rounded-2xl border border-slate-600/30">
+              <div className="flex items-center justify-center gap-2">
+                <Users className="w-5 h-5 text-blue-400" />
+                <p className="text-white text-base font-medium">
+                  <span className="text-blue-400 font-bold">{votedCount}</span> de <span className="font-bold">{totalPlayers}</span> votaram
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 justify-center">
+                {activePlayers.map(player => {
+                  const hasVoted = votes.some(v => v.playerId === player.uid);
+                  return (
+                    <div 
+                      key={player.uid}
+                      className={cn(
+                        "px-3 py-1.5 rounded-xl text-sm font-medium transition-all",
+                        hasVoted 
+                          ? "bg-emerald-500/20 text-emerald-300 border-2 border-emerald-500/40"
+                          : "bg-slate-700/50 text-slate-400 border-2 border-slate-600/30"
+                      )}
+                    >
+                      {hasVoted && <Check className="w-3 h-3 inline mr-1" />}
+                      {player.name}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {!allVoted && (
+              <p className="text-gray-400 text-xs text-center animate-pulse">
+                Aguardando outros jogadores votarem...
+              </p>
+            )}
+
+            {isHost && allVoted && (
+              <Button 
+                onClick={handleRevealImpostor}
+                className="w-full h-11 bg-[#c44536] hover:bg-[#c44536]/80 text-white font-bold text-sm rounded-xl transition-all"
+                style={{ boxShadow: '0 4px 0 rgba(196, 69, 54, 0.4)' }}
+                data-testid="button-reveal-impostor"
+              >
+                <Skull className="mr-2 w-4 h-4" /> Revelar o Impostor
+              </Button>
+            )}
+            
+            {!isHost && allVoted && (
+              <p className="text-[#c44536] text-xs text-center font-medium animate-pulse">
+                Aguardando o host revelar o impostor...
+              </p>
+            )}
+          </div>
+        );
+
+      case 'ROUND_RESULT':
+        const impostorPlayer = activePlayers.find(p => p.uid === room.impostorId);
+        const impostorName = impostorPlayer?.name || 'Desconhecido';
+        const votesForImpostor = votes.filter(v => v.targetId === room.impostorId).length;
+        const crewWins = votesForImpostor > activePlayers.length / 2;
+
+        return (
+          <div className="animate-stage-fade-in w-full space-y-6">
+            <div className="text-center space-y-4">
+              <div className={cn(
+                "w-20 h-20 rounded-2xl flex items-center justify-center mx-auto shadow-2xl border-4",
+                crewWins 
+                  ? "bg-gradient-to-br from-emerald-500 to-emerald-600 border-emerald-400/50" 
+                  : "bg-gradient-to-br from-rose-500 to-rose-600 border-rose-400/50"
+              )}>
+                {crewWins ? (
+                  <Trophy className="w-10 h-10 text-white" />
+                ) : (
+                  <Skull className="w-10 h-10 text-white" />
+                )}
+              </div>
+              
+              <div>
+                <h2 className={cn(
+                  "text-3xl font-black uppercase tracking-wider mb-2",
+                  crewWins ? "text-emerald-400" : "text-rose-400"
+                )}>
+                  {crewWins ? "Tripulação Venceu!" : "Impostor Venceu!"}
+                </h2>
+                
+                <p className="text-white text-base">
+                  O impostor era: <span className="text-rose-400 font-bold text-lg">{impostorName}</span>
+                </p>
+              </div>
+            </div>
+            
+            <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
+            
+            <div className="space-y-3 p-4 bg-slate-700/20 rounded-2xl border border-slate-600/30">
+              <p className="text-orange-400 text-sm uppercase tracking-widest font-bold text-center">
+                Resultados da Votação
+              </p>
+              
+              <div className="space-y-2 max-h-[140px] overflow-y-auto scrollbar-hide">
+                {activePlayers.map(player => {
+                  const votesReceived = votes.filter(v => v.targetId === player.uid).length;
+                  const isTheImpostor = player.uid === room.impostorId;
+                  return (
+                    <div 
+                      key={player.uid}
+                      className={cn(
+                        "w-full p-3 rounded-xl flex items-center justify-between transition-all",
+                        isTheImpostor 
+                          ? "bg-rose-500/20 border-2 border-rose-500/50 shadow-lg"
+                          : "bg-slate-700/50 border-2 border-slate-600/30"
+                      )}
+                    >
+                      <span className={cn(
+                        "font-bold text-sm",
+                        isTheImpostor ? "text-rose-300" : "text-slate-200"
+                      )}>
+                        {player.name}
+                        {isTheImpostor && " 👹"}
+                      </span>
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-800/50">
+                        <span className="text-orange-400 font-bold text-base">{votesReceived}</span>
+                        <span className="text-slate-400 text-xs">votos</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {isHost && (
+              <Button 
+                onClick={handleNewRound}
+                className="w-full h-12 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold text-sm rounded-2xl shadow-lg border-2 border-purple-400/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                data-testid="button-new-round"
+              >
+                <RotateCcw className="mr-2 w-5 h-5" /> Nova Rodada
+              </Button>
+            )}
+          </div>
+        );
+
+      case 'WORD_REVEAL':
+      default:
+        return (
+          <div className="animate-stage-fade-in w-full space-y-3">
+            {isHost ? (
+              <>
+                <Button 
+                  onClick={handleStartSorteio}
+                  className="w-full h-12 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-2xl font-bold text-sm shadow-lg border-2 border-purple-400/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  data-testid="button-sorteio"
+                >
+                  <Zap className="mr-2 w-5 h-5" /> Sortear Ordem de Fala
+                </Button>
+                <Button 
+                  onClick={handleStartVoting}
+                  className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold rounded-2xl text-sm shadow-lg border-2 border-orange-400/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  data-testid="button-start-voting"
+                >
+                  <Vote className="mr-2 w-5 h-5" /> Iniciar Votação
+                </Button>
+                <Button 
+                  onClick={handleNewRound}
+                  variant="ghost"
+                  className="w-full h-10 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl text-sm transition-all"
+                  data-testid="button-return-lobby"
+                >
+                  <ArrowLeft className="mr-2 w-4 h-4" /> Nova Rodada
+                </Button>
+              </>
+            ) : (
+              <div className="text-center py-4">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-700/50 border border-slate-600/30">
+                  <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></div>
+                  <p className="text-slate-300 text-sm font-medium">
+                    Aguardando o host iniciar a votação...
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center w-full max-w-2xl min-h-full py-6 px-4 animate-fade-in space-y-4 relative z-10">
+      {/* Elementos decorativos de fundo */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
+      </div>
+
+      <GameNavButtons onBackToLobby={handleBackToLobby} isImpostor={isImpostor} />
+
+      <div className="w-full bg-[#242642] rounded-[3rem] p-6 md:p-8 shadow-2xl border-4 border-[#2f3252] relative z-10 space-y-6">
+        <div 
+          className="w-full rounded-2xl p-6 flex flex-col items-center text-center relative transition-all duration-300 cursor-pointer bg-gradient-to-br from-[#2f3252] to-[#1e2036] border-2 border-[#3d4a5c] hover:border-[#4a5568] shadow-lg"
+          onClick={() => setIsRevealed(!isRevealed)}
+          data-testid="card-reveal"
+        >
+          {isRevealed ? (
+            <div className="flex flex-col items-center gap-4 animate-fade-in w-full">
+              <div className="flex items-center gap-4 w-full">
+                <div 
+                  className={cn(
+                    "w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 shadow-xl border-4",
+                    isImpostor ? "border-rose-500/50 bg-rose-500/10" : "border-emerald-500/50 bg-emerald-500/10"
+                  )}
+                >
+                  <img 
+                    src={isImpostor ? impostorImg : tripulanteImg} 
+                    alt={isImpostor ? "Impostor" : "Tripulante"}
+                    className="w-full h-auto"
+                    style={{ transform: 'scale(1.5) translateY(18%)' }}
+                  />
+                </div>
+                <div className="text-left flex-1">
+                  <h2 
+                    className={cn(
+                      "text-2xl sm:text-3xl font-black tracking-wider uppercase",
+                      isImpostor ? "text-rose-400" : "text-emerald-400"
+                    )}
+                    data-testid={isImpostor ? "text-role-impostor" : "text-role-crew"}
+                  >
+                    {isImpostor ? "IMPOSTOR" : "TRIPULANTE"}
+                  </h2>
+                  <p className="text-slate-400 text-xs mt-1">
+                    {isImpostor ? "Engane todos!" : "Descubra o impostor!"}
+                  </p>
+                </div>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setIsRevealed(false); }}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all bg-slate-700/50 hover:bg-slate-600/50 border-2 border-slate-600/30"
+                  data-testid="button-hide-role"
+                >
+                  <EyeOff className="w-5 h-5 text-slate-400" />
+                </button>
+              </div>
+
+              <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
+
+              <div className="w-full">
+                {isImpostor ? renderImpostorContent() : renderCrewContent()}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3 py-8">
+              <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border-2 border-purple-500/30 flex items-center justify-center">
+                <Eye className="w-8 h-8 text-purple-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white uppercase tracking-wider">
+                Toque para Revelar
+              </h3>
+              <p className="text-slate-400 text-sm">Descubra seu papel no jogo</p>
+            </div>
+          )}
+        </div>
+
+        <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
+
+        {renderStageContent()}
+      </div>
+    </div>
+  );
+};
+
+const VotingPlayerList = ({ 
+  activePlayers, 
+  userId, 
+  onSubmitVote, 
+  isSubmitting 
+}: { 
+  activePlayers: { uid: string; name: string }[]; 
+  userId: string; 
+  onSubmitVote: (targetId: string) => void; 
+  isSubmitting: boolean;
+}) => {
+  const [selectedVote, setSelectedVote] = useState<string | null>(null);
+
+  return (
+    <>
+      <div className="space-y-2 max-h-[200px] overflow-y-auto scrollbar-hide">
+        {activePlayers.filter(p => p.uid !== userId).map(player => (
+          <button
+            key={player.uid}
+            onClick={() => setSelectedVote(player.uid)}
+            className={cn(
+              "w-full p-2.5 rounded-xl border-2 transition-all text-left flex items-center gap-2",
+              selectedVote === player.uid
+                ? "bg-[#e9c46a]/15 border-[#e9c46a] text-[#e9c46a]"
+                : "bg-[#16213e]/50 border-[#3d4a5c] text-gray-300 hover:border-[#e9c46a]/50"
+            )}
+            data-testid={`button-vote-${player.uid}`}
+          >
+            <div className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center text-base font-bold",
+              selectedVote === player.uid ? "bg-[#e9c46a] text-black" : "bg-gray-600 text-gray-200"
+            )}>
+              {player.name.charAt(0).toUpperCase()}
+            </div>
+            <span className="font-bold text-sm">{player.name}</span>
+            {selectedVote === player.uid && (
+              <Check className="w-4 h-4 ml-auto" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      <Button 
+        onClick={() => selectedVote && onSubmitVote(selectedVote)}
+        disabled={!selectedVote || isSubmitting}
+        className="w-full h-11 bg-[#e9c46a] hover:bg-[#e9c46a]/80 text-black font-bold text-sm rounded-xl transition-all disabled:opacity-30"
+        style={{ boxShadow: '0 4px 0 rgba(233, 196, 106, 0.4)' }}
+        data-testid="button-confirm-vote"
+      >
+        <Send className="mr-2 w-4 h-4" /> {isSubmitting ? 'Votando...' : 'Confirmar Voto'}
+      </Button>
+    </>
+  );
+};
+
+
+export default function ImpostorGame() {
+  const { status } = useGameStore();
+  const [isDonationOpen, setIsDonationOpen] = useState(false);
+
+  if (status === 'home') {
+    return (
+      <>
+        <NotificationCenter />
+        <HomeScreen />
+      </>
+    );
+  }
+
+  return (
+    <div 
+      className="min-h-screen w-full flex items-center justify-center font-poppins text-white overflow-hidden relative"
+      style={{
+        backgroundColor: '#1C202C'
+      }}
+    >
+      <NotificationCenter />
+      
+      <TopRightButtons onDonateClick={() => setIsDonationOpen(true)} />
+      <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />
+
+      {status === 'lobby' && <LobbyScreen />}
+      {status === 'modeSelect' && <ModeSelectScreen />}
+      {status === 'submodeSelect' && <PalavraSuperSecretaSubmodeScreen />}
+      {status === 'playing' && <GameScreen />}
     </div>
   );
 }

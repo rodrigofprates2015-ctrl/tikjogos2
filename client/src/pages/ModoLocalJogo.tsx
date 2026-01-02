@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Eye, EyeOff, Play, AlertTriangle } from "lucide-react";
+import { Eye, EyeOff, Play, AlertTriangle, ArrowLeft, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 type Player = {
   name: string;
@@ -134,7 +135,7 @@ export default function ModoLocalJogo() {
 
   if (players.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a1f3a] via-[#2d1b4e] to-[#1a1f3a] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#1a2a3a] to-[#0a1628] flex items-center justify-center">
         <div className="text-white text-xl">Carregando...</div>
       </div>
     );
@@ -144,8 +145,19 @@ export default function ModoLocalJogo() {
 
   if (allPlayersRevealed && !gameStarted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a1f3a] via-[#2d1b4e] to-[#1a1f3a] flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-[#242642] rounded-3xl p-8 shadow-2xl border-4 border-[#2f3252] text-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#1a2a3a] to-[#0a1628] flex flex-col">
+        {/* Header */}
+        <div className="w-full bg-[#0a1628]/90 backdrop-blur-sm border-b border-[#3d4a5c]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="/" className="flex items-center gap-3 cursor-pointer group">
+              <Home className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+              <img src={logoTikjogos} alt="TikJogos" className="h-8" />
+            </a>
+          </div>
+        </div>
+        
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#16213e]/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border-2 border-[#3d4a5c] text-center">
           <div className="text-6xl mb-6">🎉</div>
           <h2 className="text-3xl font-black text-white mb-4">
             Todos receberam suas palavras!
@@ -167,6 +179,7 @@ export default function ModoLocalJogo() {
           >
             Voltar para Configuração
           </Button>
+          </div>
         </div>
       </div>
     );
@@ -174,8 +187,19 @@ export default function ModoLocalJogo() {
 
   if (gameStarted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a1f3a] via-[#2d1b4e] to-[#1a1f3a] flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-[#242642] rounded-3xl p-8 shadow-2xl border-4 border-[#2f3252] text-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#1a2a3a] to-[#0a1628] flex flex-col">
+        {/* Header */}
+        <div className="w-full bg-[#0a1628]/90 backdrop-blur-sm border-b border-[#3d4a5c]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="/" className="flex items-center gap-3 cursor-pointer group">
+              <Home className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+              <img src={logoTikjogos} alt="TikJogos" className="h-8" />
+            </a>
+          </div>
+        </div>
+        
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#16213e]/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border-2 border-[#3d4a5c] text-center">
           <div className="text-6xl mb-6">🎮</div>
           <h2 className="text-3xl font-black text-white mb-4">
             Jogo em Andamento
@@ -203,13 +227,28 @@ export default function ModoLocalJogo() {
           >
             Novo Jogo
           </Button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1f3a] via-[#2d1b4e] to-[#1a1f3a] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a1628] via-[#1a2a3a] to-[#0a1628] flex flex-col">
+      {/* Header */}
+      <div className="w-full bg-[#0a1628]/90 backdrop-blur-sm border-b border-[#3d4a5c]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <button 
+            onClick={handleBackToConfig}
+            className="flex items-center gap-3 cursor-pointer group"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+            <img src={logoTikjogos} alt="TikJogos" className="h-8" />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Indicador de progresso */}
         <div className="mb-4 text-center">
@@ -218,7 +257,7 @@ export default function ModoLocalJogo() {
           </span>
         </div>
 
-        <div className="bg-[#242642] rounded-3xl p-8 shadow-2xl border-4 border-[#2f3252]">
+        <div className="bg-[#16213e]/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border-2 border-[#3d4a5c]">
           {/* Nome do jogador */}
           <div className="text-center mb-8">
             <h2 className="text-2xl font-black text-white mb-2">
