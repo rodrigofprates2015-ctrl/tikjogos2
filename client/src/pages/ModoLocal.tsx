@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Users, Play, Plus, Minus, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,29 @@ export default function ModoLocal() {
   const [playerNames, setPlayerNames] = useState<string[]>(["", "", ""]);
   const [selectedTheme, setSelectedTheme] = useState("");
   const [selectedMode, setSelectedMode] = useState<GameMode>("palavraSecreta");
+  const [saveNamesChecked, setSaveNamesChecked] = useState(false);
+
+  // Carregar nomes salvos ao montar o componente
+  useEffect(() => {
+    const savedNames = localStorage.getItem("modoLocal_playerNames");
+    const savedNumPlayers = localStorage.getItem("modoLocal_numPlayers");
+    const savedNumImpostors = localStorage.getItem("modoLocal_numImpostors");
+    
+    if (savedNames) {
+      const names = JSON.parse(savedNames);
+      setPlayerNames(names);
+      setNumPlayers(names.length);
+      setSaveNamesChecked(true);
+    }
+    
+    if (savedNumPlayers) {
+      setNumPlayers(parseInt(savedNumPlayers));
+    }
+    
+    if (savedNumImpostors) {
+      setNumImpostors(parseInt(savedNumImpostors));
+    }
+  }, []);
 
   const handleNumPlayersChange = (delta: number) => {
     const newNum = Math.max(3, Math.min(10, numPlayers + delta));
@@ -45,12 +68,34 @@ export default function ModoLocal() {
     if (numImpostors >= newNum) {
       setNumImpostors(Math.max(1, newNum - 1));
     }
+    
+    // Salvar no localStorage apenas se checkbox estiver marcado
+    if (saveNamesChecked) {
+      localStorage.setItem("modoLocal_numPlayers", newNum.toString());
+    }
   };
 
   const handlePlayerNameChange = (index: number, name: string) => {
     const newNames = [...playerNames];
     newNames[index] = name;
     setPlayerNames(newNames);
+    
+    // Salvar no localStorage apenas se checkbox estiver marcado
+    if (saveNamesChecked) {
+      localStorage.setItem("modoLocal_playerNames", JSON.stringify(newNames));
+    }
+  };
+
+  const handleClearNames = () => {
+    localStorage.removeItem("modoLocal_playerNames");
+    localStorage.removeItem("modoLocal_numPlayers");
+    localStorage.removeItem("modoLocal_numImpostors");
+    setPlayerNames(Array(numPlayers).fill(""));
+    setSaveNamesChecked(false);
+    toast({
+      title: "Nomes limpos",
+      description: "Os nomes salvos foram removidos"
+    });
   };
 
   const handleStartGame = () => {
@@ -81,6 +126,13 @@ export default function ModoLocal() {
         variant: "destructive"
       });
       return;
+    }
+
+    // Salvar nomes e configurações no localStorage apenas se checkbox estiver marcado
+    if (saveNamesChecked) {
+      localStorage.setItem("modoLocal_playerNames", JSON.stringify(playerNames.filter(n => n.trim())));
+      localStorage.setItem("modoLocal_numPlayers", numPlayers.toString());
+      localStorage.setItem("modoLocal_numImpostors", numImpostors.toString());
     }
 
     // Salvar configuração no sessionStorage
@@ -167,6 +219,37 @@ export default function ModoLocal() {
               />
             ))}
           </div>
+          
+          {/* Checkbox para guardar nomes */}
+          <div className="flex items-center justify-between px-1 mt-3">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={saveNamesChecked}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setSaveNamesChecked(checked);
+                  
+                  if (checked) {
+                    // Salvar imediatamente quando marcar
+                    localStorage.setItem("modoLocal_playerNames", JSON.stringify(playerNames));
+                    localStorage.setItem("modoLocal_numPlayers", numPlayers.toString());
+                    localStorage.setItem("modoLocal_numImpostors", numImpostors.toString());
+                  }
+                }}
+                className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]"
+              />
+              <span className="text-sm text-[#8aa0b0]">Guardar nomes</span>
+            </label>
+            {saveNamesChecked && playerNames.some(n => n.trim()) && (
+              <button
+                onClick={handleClearNames}
+                className="text-xs text-[#6a8aaa] hover:text-white transition-colors underline"
+              >
+                Limpar
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Número de Impostores */}
@@ -176,7 +259,13 @@ export default function ModoLocal() {
           </Label>
           <div className="flex items-center gap-4">
             <Button
-              onClick={() => setNumImpostors(Math.max(1, numImpostors - 1))}
+              onClick={() => {
+                const newNum = Math.max(1, numImpostors - 1);
+                setNumImpostors(newNum);
+                if (saveNamesChecked) {
+                  localStorage.setItem("modoLocal_numImpostors", newNum.toString());
+                }
+              }}
               disabled={numImpostors <= 1}
               className="bg-slate-700 hover:bg-slate-600"
             >
@@ -186,7 +275,13 @@ export default function ModoLocal() {
               <span className="text-4xl font-black text-white">{numImpostors}</span>
             </div>
             <Button
-              onClick={() => setNumImpostors(Math.min(numPlayers - 1, numImpostors + 1))}
+              onClick={() => {
+                const newNum = Math.min(numPlayers - 1, numImpostors + 1);
+                setNumImpostors(newNum);
+                if (saveNamesChecked) {
+                  localStorage.setItem("modoLocal_numImpostors", newNum.toString());
+                }
+              }}
               disabled={numImpostors >= numPlayers - 1}
               className="bg-slate-700 hover:bg-slate-600"
             >

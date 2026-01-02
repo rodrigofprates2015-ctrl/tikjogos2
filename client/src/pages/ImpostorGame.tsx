@@ -1180,6 +1180,24 @@ const HomeScreen = () => {
               </button>
             </div>
 
+            {/* OR divider */}
+            <div className="flex items-center gap-4 py-2">
+              <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+              <span className="text-[#8aa0b0] text-sm font-bold">OU</span>
+              <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+            </div>
+
+            {/* Local mode button */}
+            <Link href="/modo-local">
+              <button 
+                className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-purple-500 to-pink-500 border-purple-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
+                data-testid="button-local-mode"
+              >
+                <Smartphone size={28} />
+                MODO LOCAL
+              </button>
+            </Link>
+
           </div>
         </div>
       </div>
