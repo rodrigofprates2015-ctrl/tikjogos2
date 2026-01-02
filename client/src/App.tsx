@@ -18,6 +18,9 @@ import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import CommunityThemes from "@/pages/CommunityThemes";
 import Prototipo from "@/pages/Prototipo";
+import Prototipo2 from "@/pages/Prototipo2";
+import ModoLocal from "@/pages/ModoLocal";
+import ModoLocalJogo from "@/pages/ModoLocalJogo";
 import AdTest from "@/pages/AdTest";
 import RoomRedirect from "@/pages/RoomRedirect";
 import { useAuth } from "@/hooks/useAuth";
@@ -60,6 +63,9 @@ function Router() {
       {/* <Route path="/temas" component={CommunityThemes} /> */}
       {/* <Route path="/temas-comunidade" component={CommunityThemes} /> */}
       <Route path="/prototipo" component={Prototipo} />
+      <Route path="/prototipo2" component={Prototipo2} />
+      <Route path="/modo-local" component={ModoLocal} />
+      <Route path="/modo-local/jogo" component={ModoLocalJogo} />
       <Route path="/ad-test" component={AdTest} />
       <Route path="/comojogar" component={ComoJogar} />
       <Route path="/como-jogar" component={ComoJogar} />
