@@ -6,6 +6,7 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
 import { LobbyChat } from "@/components/LobbyChat";
+import NewFeaturePopup from "@/components/NewFeaturePopup";
 import { SiDiscord } from "react-icons/si";
 import { 
   User, 
@@ -944,6 +945,7 @@ const HomeScreen = () => {
   const [code, setCodeInput] = useState("");
   const [saveNicknameChecked, setSaveNicknameChecked] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
+  const [showNewFeaturePopup, setShowNewFeaturePopup] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -962,6 +964,16 @@ const HomeScreen = () => {
         title: "Código da sala preenchido!", 
         description: `Digite seu nome e clique em "Entrar na Sala" para começar.` 
       });
+    }
+
+    // Check if new feature popup should be shown
+    const hasSeenPopup = localStorage.getItem('hasSeenNewFeaturePopup_v2');
+    if (!hasSeenPopup) {
+      // Show popup after 1 second
+      const timer = setTimeout(() => {
+        setShowNewFeaturePopup(true);
+      }, 1000);
+      return () => clearTimeout(timer);
     }
   }, [loadSavedNickname, toast]);
 
@@ -998,6 +1010,11 @@ const HomeScreen = () => {
       }
     }
   }, [loadSavedNickname, setUser, createRoom, toast]);
+
+  const handleClosePopup = () => {
+    setShowNewFeaturePopup(false);
+    localStorage.setItem('hasSeenNewFeaturePopup_v2', 'true');
+  };
 
   const handleCreate = () => {
     console.log('[HandleCreate] Button clicked, name:', name);
@@ -1234,6 +1251,9 @@ const HomeScreen = () => {
       {/* Donation Button and Modal */}
       <TopRightButtons onDonateClick={() => setIsDonationOpen(true)} />
       <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />
+      
+      {/* New Feature Popup */}
+      {showNewFeaturePopup && <NewFeaturePopup onClose={handleClosePopup} />}
     </div>
   );
 };
