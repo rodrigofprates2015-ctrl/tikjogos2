@@ -60,6 +60,9 @@ export type GameData = {
   answers?: PlayerAnswer[];
   answersRevealed?: boolean;
   crewQuestionRevealed?: boolean;
+  hint?: string;
+  gameConfig?: GameConfig;
+  impostorIds?: string[];
 };
 
 export type Room = {

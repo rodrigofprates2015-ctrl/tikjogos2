@@ -2156,13 +2156,25 @@ const LobbyScreen = () => {
             <p className="text-slate-500 text-xs mt-2 font-medium">Clique para copiar o link</p>
           </div>
           
-          <button 
-            onClick={leaveGame}
-            className="p-3 bg-slate-800 rounded-2xl hover:bg-rose-500 transition-all border-b-4 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group"
-            data-testid="button-leave-room"
-          >
-            <LogOut size={24} strokeWidth={3} className="group-hover:animate-pulse" />
-          </button>
+          <div className="flex gap-2">
+            {isHost && (
+              <button 
+                onClick={() => setShowConfigModal(true)}
+                className="p-3 bg-slate-800 rounded-2xl hover:bg-orange-500 transition-all border-b-4 border-slate-950 hover:border-orange-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group"
+                title="Configurações da Partida"
+              >
+                <Settings size={24} strokeWidth={3} className="group-hover:animate-pulse" />
+              </button>
+            )}
+            
+            <button 
+              onClick={leaveGame}
+              className="p-3 bg-slate-800 rounded-2xl hover:bg-rose-500 transition-all border-b-4 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group"
+              data-testid="button-leave-room"
+            >
+              <LogOut size={24} strokeWidth={3} className="group-hover:animate-pulse" />
+            </button>
+          </div>
         </div>
 
       {/* Lista de Jogadores */}
@@ -2277,30 +2289,20 @@ const LobbyScreen = () => {
         </div>
       ) : isHost ? (
         <div className="w-full animate-fade-in space-y-4">
-          <div className="flex gap-3">
-            <button 
-              onClick={goToModeSelect}
-              disabled={players.length < 3}
-              className={cn(
-                "flex-1 px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
-                players.length >= 3
-                  ? 'bg-gradient-to-r from-purple-500 to-violet-500 border-purple-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
-                  : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
-              )}
-              data-testid="button-start-game"
-            >
-              <Play size={28} className={players.length >= 3 ? 'animate-bounce fill-current' : 'fill-current'} />
-              {players.length >= 3 ? 'ESCOLHER MODO' : 'AGUARDANDO TRIPULANTES'}
-            </button>
-            
-            <button 
-              onClick={() => setShowConfigModal(true)}
-              className="px-6 py-5 rounded-2xl font-black transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-orange-500 to-amber-500 border-orange-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2 flex items-center justify-center"
-              title="Configurações da Partida"
-            >
-              <Settings size={28} />
-            </button>
-          </div>
+          <button 
+            onClick={goToModeSelect}
+            disabled={players.length < 3}
+            className={cn(
+              "w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
+              players.length >= 3
+                ? 'bg-gradient-to-r from-purple-500 to-violet-500 border-purple-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
+                : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+            )}
+            data-testid="button-start-game"
+          >
+            <Play size={28} className={players.length >= 3 ? 'animate-bounce fill-current' : 'fill-current'} />
+            {players.length >= 3 ? 'ESCOLHER MODO' : 'AGUARDANDO TRIPULANTES'}
+          </button>
           {players.length < 3 && (
             <div className="flex items-center justify-center gap-2 text-rose-400">
               <Info size={16} />
@@ -3700,11 +3702,22 @@ const GameScreen = () => {
 
     switch (gameMode) {
       case 'palavraSecreta':
+        const hint = gameData.hint;
         return (
-          <div className="text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
-            <p className="text-slate-300 text-sm font-medium leading-relaxed">
-              Finja que você sabe a palavra! Engane a todos.
-            </p>
+          <div className="space-y-3 text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+            {hint ? (
+              <>
+                <p className="text-rose-400 text-xs uppercase tracking-[0.3em] font-bold">Dica</p>
+                <h3 className="text-2xl sm:text-3xl text-white font-black">{hint}</h3>
+                <p className="text-slate-400 text-sm">
+                  Use a dica para fingir que sabe a palavra!
+                </p>
+              </>
+            ) : (
+              <p className="text-slate-300 text-sm font-medium leading-relaxed">
+                Finja que você sabe a palavra! Engane a todos.
+              </p>
+            )}
           </div>
         );
       

@@ -378,6 +378,31 @@ const PALAVRA_SECRETA_SUBMODES_DATA: Record<string, string[]> = {
   valorant: ['Spike', 'Plant', 'Defuse', 'Clutch', 'Ace', 'Headshot', 'Ranked', 'Radiant', 'Immortal', 'Ascendant', 'Diamond', 'Platinum', 'Gold', 'Jett', 'Phoenix', 'Sage', 'Sova', 'Viper', 'Cypher', 'Reyna', 'Killjoy', 'Breach', 'Omen', 'Raze', 'Skye', 'Yoru', 'Astra', 'KAY/O', 'Chamber', 'Neon', 'Fade', 'Harbor', 'Gekko', 'Deadlock', 'Iso', 'Clove', 'Vyse', 'Ascent', 'Bind', 'Haven', 'Split', 'Breeze', 'Fracture', 'Lotus', 'Icebox', 'Pearl', 'Sunset', 'Vandal', 'Phantom', 'Operator', 'Sheriff', 'Spectre', 'Guardian']
 };
 
+// Mapa de dicas para palavras (palavra -> dica)
+const WORD_HINTS: Record<string, string> = {
+  'Cadeira': 'Pernas', 'Mesa': 'Tampo', 'Sofá': 'Braços', 'Cama': 'Cabeceira', 'Guarda-roupa': 'Portas',
+  'Estante': 'Níveis', 'Abajur': 'Cúpula', 'Tapete': 'Fios', 'Cortina': 'Trilho', 'Espelho': 'Face',
+  'Poltrona': 'Encosto', 'Escrivaninha': 'Gavetas', 'Colchão': 'Molas', 'Berço': 'Grades', 'Rede': 'Ganchos',
+  'Banco': 'Assento', 'Prateleira': 'Suporte', 'Ventilador': 'Pás', 'Ar-condicionado': 'Filtro', 'Lareira': 'Chaminé',
+  'Geladeira': 'Prateleiras', 'Fogão': 'Bocas', 'Micro-ondas': 'Botões', 'Liquidificador': 'Lâminas', 'Garfo': 'Dentes',
+  'Colher': 'Concha', 'Faca': 'Cabo', 'Prato': 'Borda', 'Copo': 'Boca', 'Xícara': 'Asa',
+  'Panela': 'Cabo', 'Frigideira': 'Antiaderente', 'Tábua de carne': 'Sulco', 'Ralo': 'Furos', 'Peneira': 'Trama',
+  'Abridor de latas': 'Manivela', 'Saca-rolhas': 'Rosca', 'Palito de dente': 'Pontas', 'Guardanapo': 'Dobra',
+  'Toalha de mesa': 'Caimento', 'Detergente': 'Bolhas', 'Esponja': 'Furos', 'Lixeira': 'Pedal', 'Vassoura': 'Cabo',
+  'Rodo': 'Borracha', 'Pá': 'Cabo', 'Balde': 'Alça', 'Pregador': 'Mola', 'Varal': 'Corda',
+  'Ferro de passar': 'Base', 'Escova de dentes': 'Cerdas', 'Pasta de dente': 'Tampa', 'Pente': 'Dentes',
+  'Shampoo': 'Tampa', 'Sabonete': 'Espuma', 'Toalha': 'Felpas', 'Desodorante': 'Jato', 'Perfume': 'Válvula',
+  'Cortador de unha': 'Alavanca', 'Pinça': 'Pontas', 'Maquiagem': 'Cor', 'Batom': 'Bastão',
+  'Espelho de bolso': 'Vidro', 'Protetor solar': 'Fator', 'Óculos': 'Hastes', 'Relógio': 'Pulseira',
+  'Anel': 'Círculo', 'Colar': 'Fecho', 'Brinco': 'Tarraxa', 'Pulseira': 'Elo', 'Carteira': 'Divisórias',
+  'Bolsa': 'Zíper', 'Mochila': 'Alças', 'Mala': 'Rodinhas', 'Chave': 'Segredo', 'Guarda-chuva': 'Varetas',
+  'Isqueiro': 'Pedra', 'Fósforo': 'Cabeça', 'Caneta': 'Esfera', 'Lápis': 'Ponta', 'Borracha': 'Farelo',
+  'Apontador': 'Lâmina', 'Caderno': 'Espiral', 'Livro': 'Capa', 'Agenda': 'Dias', 'Tesoura': 'Elos',
+  'Cola': 'Bico', 'Régua': 'Traços', 'Grampeador': 'Mola', 'Clips': 'Metal', 'Post-it': 'Cola',
+  'Calculadora': 'Teclas', 'Envelope': 'Aba', 'Papel': 'Fibra', 'Pasta': 'Elástico', 'Estojo': 'Zíper',
+  'Quadro branco': 'Moldura', 'Giz': 'Pó', 'Canetão': 'Feltro', 'Compasso': 'Ponta', 'Dicionário': 'Letras'
+};
+
 function setupGameMode(mode: GameModeType, players: Player[], impostorId: string, selectedSubmode?: string, roomCode?: string, customWords?: string[], themeCode?: string): GameData {
   const code = roomCode || 'default';
   
@@ -1306,6 +1331,15 @@ export async function registerRoutes(
       if (gameConfig) {
         gameData.gameConfig = gameConfig;
         gameData.impostorIds = impostorIds;
+        
+        // Add hint for impostor if enabled and it's classic palavraSecreta
+        if (gameConfig.enableHints && gameMode === 'palavraSecreta' && !themeCode && gameData.word) {
+          const hint = WORD_HINTS[gameData.word];
+          if (hint) {
+            gameData.hint = hint;
+            console.log(`[StartGame] Added hint for word "${gameData.word}": "${hint}"`);
+          }
+        }
       }
       
       const modeInfo = GAME_MODES[gameMode];
