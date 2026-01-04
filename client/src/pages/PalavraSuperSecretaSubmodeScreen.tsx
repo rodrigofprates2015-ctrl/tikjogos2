@@ -6,7 +6,7 @@ import { ArrowLeft, Sparkles, Palette, Gamepad2, Rocket, Check, Star } from "luc
 import { cn } from "@/lib/utils";
 
 const PalavraSuperSecretaSubmodeScreen = () => {
-  const { startGame, backToLobby, user, room } = useGameStore();
+  const { startGame, startGameWithConfig, gameConfig, backToLobby, user, room } = useGameStore();
   const isHost = room && user && room.hostId === user.uid;
   const [themeCode, setThemeCode] = useState('');
 
@@ -14,13 +14,32 @@ const PalavraSuperSecretaSubmodeScreen = () => {
     if (isHost) {
       // Store submode for startGame to use
       localStorage.setItem('selectedSubmode', submode);
-      startGame(themeCode || undefined);
+      
+      // If it's classic submode and has gameConfig, use it
+      const isClassic = submode === 'classico';
+      const hasCustomTheme = themeCode && themeCode.length === 6;
+      
+      console.log('[PalavraSuperSecreta] Starting game:', {
+        submode,
+        isClassic,
+        hasCustomTheme,
+        hasGameConfig: !!gameConfig
+      });
+      
+      if (isClassic && !hasCustomTheme && gameConfig) {
+        console.log('[PalavraSuperSecreta] Using gameConfig:', gameConfig);
+        startGameWithConfig(gameConfig, undefined);
+      } else {
+        console.log('[PalavraSuperSecreta] Using normal start');
+        startGame(themeCode || undefined);
+      }
     }
   };
 
   const handleStartWithCustomTheme = () => {
     if (isHost && themeCode.length === 6) {
       localStorage.setItem('selectedSubmode', 'classico');
+      // Custom themes don't use gameConfig
       startGame(themeCode);
     }
   };

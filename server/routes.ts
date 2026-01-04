@@ -1328,18 +1328,35 @@ export async function registerRoutes(
       const gameData = setupGameMode(gameMode, connectedPlayers, impostorId, selectedSubmode, code.toUpperCase(), customWords, themeCode);
       
       // Store game config in gameData for later use
+      console.log(`[StartGame] gameConfig received:`, gameConfig);
+      console.log(`[StartGame] gameMode: ${gameMode}, themeCode: ${themeCode}, word: ${gameData.word}`);
+      
       if (gameConfig) {
         gameData.gameConfig = gameConfig;
         gameData.impostorIds = impostorIds;
         
+        console.log(`[StartGame] Checking hint conditions:`, {
+          enableHints: gameConfig.enableHints,
+          isPalavraSecreta: gameMode === 'palavraSecreta',
+          noThemeCode: !themeCode,
+          hasWord: !!gameData.word
+        });
+        
         // Add hint for impostor if enabled and it's classic palavraSecreta
         if (gameConfig.enableHints && gameMode === 'palavraSecreta' && !themeCode && gameData.word) {
           const hint = WORD_HINTS[gameData.word];
+          console.log(`[StartGame] Looking for hint for word "${gameData.word}":`, hint);
           if (hint) {
             gameData.hint = hint;
-            console.log(`[StartGame] Added hint for word "${gameData.word}": "${hint}"`);
+            console.log(`[StartGame] ✅ Added hint for word "${gameData.word}": "${hint}"`);
+          } else {
+            console.log(`[StartGame] ⚠️ No hint found for word "${gameData.word}"`);
           }
+        } else {
+          console.log(`[StartGame] ❌ Hint conditions not met, skipping hint`);
         }
+      } else {
+        console.log(`[StartGame] ⚠️ No gameConfig provided, using defaults`);
       }
       
       const modeInfo = GAME_MODES[gameMode];
