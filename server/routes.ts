@@ -892,6 +892,20 @@ export async function registerRoutes(
           }
         }
 
+        // Handle host entering game config screen
+        if (data.type === 'host-game-config' && data.roomCode) {
+          const roomCode = data.roomCode as string;
+          // Broadcast to all players in the room
+          broadcastToRoom(roomCode, { type: 'host-game-config' });
+        }
+
+        // Handle host going back to mode select from game config
+        if (data.type === 'host-back-to-mode-select' && data.roomCode) {
+          const roomCode = data.roomCode as string;
+          // Broadcast to all players in the room
+          broadcastToRoom(roomCode, { type: 'host-back-to-mode-select' });
+        }
+
         // Handle trigger speaking order wheel - broadcast to all players in room
         if (data.type === 'trigger-speaking-order' && data.roomCode) {
           const roomCode = data.roomCode as string;

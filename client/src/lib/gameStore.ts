@@ -210,11 +210,29 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   goToGameConfig: () => {
+    const { user, room, ws } = get();
     set({ status: 'gameConfig' });
+    
+    // If host, broadcast to all players
+    if (room && user && room.hostId === user.uid && ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ 
+        type: 'host-game-config',
+        roomCode: room.code
+      }));
+    }
   },
 
   backToModeSelect: () => {
+    const { user, room, ws } = get();
     set({ status: 'modeSelect' });
+    
+    // If host, broadcast to all players
+    if (room && user && room.hostId === user.uid && ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ 
+        type: 'host-back-to-mode-select',
+        roomCode: room.code
+      }));
+    }
   },
 
   backToLobby: () => {
@@ -473,6 +491,14 @@ export const useGameStore = create<GameState>((set, get) => ({
             message: data.message,
             timestamp: data.timestamp
           });
+        }
+        if (data.type === 'host-game-config') {
+          // Host is entering game config screen, all players should follow
+          set({ status: 'gameConfig' });
+        }
+        if (data.type === 'host-back-to-mode-select') {
+          // Host went back to mode select from game config
+          set({ status: 'modeSelect' });
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
