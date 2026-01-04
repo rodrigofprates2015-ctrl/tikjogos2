@@ -1343,6 +1343,7 @@ export async function registerRoutes(
         });
         
         // Add hint for impostor if enabled and it's classic palavraSecreta
+        // Note: firstPlayerHintOnly logic will be handled on frontend based on speaking order
         if (gameConfig.enableHints && gameMode === 'palavraSecreta' && !themeCode && gameData.word) {
           const hint = WORD_HINTS[gameData.word];
           console.log(`[StartGame] Looking for hint for word "${gameData.word}":`, hint);
@@ -1357,6 +1358,8 @@ export async function registerRoutes(
         }
       } else {
         console.log(`[StartGame] ⚠️ No gameConfig provided, using defaults`);
+        // Set default values for backward compatibility
+        gameData.impostorIds = impostorIds;
       }
       
       const modeInfo = GAME_MODES[gameMode];

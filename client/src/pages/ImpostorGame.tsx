@@ -2851,7 +2851,9 @@ const PerguntasDiferentesScreen = () => {
   if (!room || !room.gameData) return null;
 
   const isHost = room.hostId === user?.uid;
-  const isImpostor = user?.uid === room.impostorId;
+  // Check if user is impostor - support both single impostorId and multiple impostorIds
+  const impostorIds = room.gameData?.impostorIds || [];
+  const isImpostor = user?.uid === room.impostorId || impostorIds.includes(user?.uid || '');
   const gameData = room.gameData;
   const answersRevealed = gameData.answersRevealed === true;
   const crewQuestionRevealed = gameData.crewQuestionRevealed === true;
@@ -3438,11 +3440,15 @@ const PerguntasDiferentesScreen = () => {
   }
 
   if (phase === 'result') {
-    const impostorPlayer = activePlayers.find(p => p.uid === room.impostorId);
-    const impostorName = impostorPlayer?.name || 'Desconhecido';
+    // Support multiple impostors
+    const impostorIds = gameData?.impostorIds || [];
+    const allImpostorIds = impostorIds.length > 0 ? impostorIds : (room.impostorId ? [room.impostorId] : []);
+    const impostorPlayers = activePlayers.filter(p => allImpostorIds.includes(p.uid));
+    const impostorNames = impostorPlayers.map(p => p.name).join(', ') || 'Desconhecido';
     
-    const votesForImpostor = votes.filter((v: PlayerVote) => v.targetId === room.impostorId).length;
-    const crewWins = votesForImpostor > totalPlayers / 2;
+    // Count votes for any impostor
+    const votesForImpostors = votes.filter((v: PlayerVote) => allImpostorIds.includes(v.targetId)).length;
+    const crewWins = votesForImpostors > totalPlayers / 2;
     
     return (
       <div className="flex flex-col items-center w-full max-w-md h-full p-4 animate-fade-in relative z-10 overflow-y-auto">
@@ -3460,11 +3466,11 @@ const PerguntasDiferentesScreen = () => {
               </div>
               
               <h2 className="text-3xl font-bold text-white">
-                {crewWins ? "TRIPULACAO VENCEU!" : "IMPOSTOR VENCEU!"}
+                {crewWins ? "TRIPULACAO VENCEU!" : (impostorPlayers.length > 1 ? "IMPOSTORES VENCERAM!" : "IMPOSTOR VENCEU!")}
               </h2>
               
               <p className="text-gray-300 text-lg">
-                O impostor era: <span className="text-gray-400 font-bold">{impostorName}</span>
+                {impostorPlayers.length > 1 ? "Os impostores eram" : "O impostor era"}: <span className="text-gray-400 font-bold">{impostorNames}</span>
               </p>
             </div>
             
@@ -3476,7 +3482,7 @@ const PerguntasDiferentesScreen = () => {
               <div className="space-y-2">
                 {activePlayers.map(player => {
                   const votesReceived = votes.filter((v: PlayerVote) => v.targetId === player.uid).length;
-                  const isTheImpostor = player.uid === room.impostorId;
+                  const isTheImpostor = allImpostorIds.includes(player.uid);
                   return (
                     <div 
                       key={player.uid}
@@ -3553,7 +3559,9 @@ const GameScreen = () => {
   if (!room) return null;
 
   const isHost = room.hostId === user?.uid;
-  const isImpostor = user?.uid === room.impostorId;
+  // Check if user is impostor - support both single impostorId and multiple impostorIds
+  const impostorIds = room.gameData?.impostorIds || [];
+  const isImpostor = user?.uid === room.impostorId || impostorIds.includes(user?.uid || '');
   const gameData = room.gameData;
   
   const activePlayers = room.players.filter(p => !p.waitingForGame);
@@ -3703,9 +3711,26 @@ const GameScreen = () => {
     switch (gameMode) {
       case 'palavraSecreta':
         const hint = gameData.hint;
+        const gameConfig = gameData.gameConfig;
+        const firstPlayerHintOnly = gameConfig?.firstPlayerHintOnly || false;
+        const enableHints = gameConfig?.enableHints ?? true;
+        
+        // Determine if impostor should see the hint
+        let shouldShowHint = false;
+        if (hint && enableHints) {
+          if (firstPlayerHintOnly) {
+            // Only show hint if impostor is first in speaking order
+            const firstPlayerId = speakingOrder?.[0];
+            shouldShowHint = firstPlayerId === user?.uid;
+          } else {
+            // Always show hint if enabled
+            shouldShowHint = true;
+          }
+        }
+        
         return (
           <div className="space-y-3 text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
-            {hint ? (
+            {shouldShowHint ? (
               <>
                 <p className="text-rose-400 text-xs uppercase tracking-[0.3em] font-bold">Dica</p>
                 <h3 className="text-2xl sm:text-3xl text-white font-black">{hint}</h3>
@@ -3715,7 +3740,12 @@ const GameScreen = () => {
               </>
             ) : (
               <p className="text-slate-300 text-sm font-medium leading-relaxed">
-                Finja que você sabe a palavra! Engane a todos.
+                {!enableHints 
+                  ? "Modo Hardcore! Você não tem dica."
+                  : firstPlayerHintOnly && hint
+                  ? "Você não é o primeiro a falar, então não tem dica!"
+                  : "Finja que você sabe a palavra! Engane a todos."
+                }
               </p>
             )}
           </div>
@@ -3896,10 +3926,13 @@ const GameScreen = () => {
         );
 
       case 'ROUND_RESULT':
-        const impostorPlayer = activePlayers.find(p => p.uid === room.impostorId);
-        const impostorName = impostorPlayer?.name || 'Desconhecido';
-        const votesForImpostor = votes.filter(v => v.targetId === room.impostorId).length;
-        const crewWins = votesForImpostor > activePlayers.length / 2;
+        // Support multiple impostors
+        const resultImpostorIds = gameData?.impostorIds || [];
+        const resultAllImpostorIds = resultImpostorIds.length > 0 ? resultImpostorIds : (room.impostorId ? [room.impostorId] : []);
+        const resultImpostorPlayers = activePlayers.filter(p => resultAllImpostorIds.includes(p.uid));
+        const resultImpostorNames = resultImpostorPlayers.map(p => p.name).join(', ') || 'Desconhecido';
+        const resultVotesForImpostors = votes.filter(v => resultAllImpostorIds.includes(v.targetId)).length;
+        const crewWins = resultVotesForImpostors > activePlayers.length / 2;
 
         return (
           <div className="animate-stage-fade-in w-full space-y-6">
@@ -3922,11 +3955,11 @@ const GameScreen = () => {
                   "text-3xl font-black uppercase tracking-wider mb-2",
                   crewWins ? "text-emerald-400" : "text-rose-400"
                 )}>
-                  {crewWins ? "Tripulação Venceu!" : "Impostor Venceu!"}
+                  {crewWins ? "Tripulação Venceu!" : (resultImpostorPlayers.length > 1 ? "Impostores Venceram!" : "Impostor Venceu!")}
                 </h2>
                 
                 <p className="text-white text-base">
-                  O impostor era: <span className="text-rose-400 font-bold text-lg">{impostorName}</span>
+                  {resultImpostorPlayers.length > 1 ? "Os impostores eram" : "O impostor era"}: <span className="text-rose-400 font-bold text-lg">{resultImpostorNames}</span>
                 </p>
               </div>
             </div>
@@ -3941,7 +3974,7 @@ const GameScreen = () => {
               <div className="space-y-2 max-h-[140px] overflow-y-auto scrollbar-hide">
                 {activePlayers.map(player => {
                   const votesReceived = votes.filter(v => v.targetId === player.uid).length;
-                  const isTheImpostor = player.uid === room.impostorId;
+                  const isTheImpostor = resultAllImpostorIds.includes(player.uid);
                   return (
                     <div 
                       key={player.uid}
