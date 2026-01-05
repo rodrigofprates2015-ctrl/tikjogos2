@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { VersionBadge } from "@/components/VersionBadge";
+import { HelmetProvider } from "react-helmet-async";
 import { useEffect } from "react";
 import NotFound from "@/pages/not-found";
 import ImpostorGame from "@/pages/ImpostorGame";
@@ -22,6 +23,7 @@ import ModoLocal from "@/pages/ModoLocal";
 import ModoLocalJogo from "@/pages/ModoLocalJogo";
 import AdTest from "@/pages/AdTest";
 import RoomRedirect from "@/pages/RoomRedirect";
+import ThemePage from "@/pages/ThemePage";
 import { useAuth } from "@/hooks/useAuth";
 
 function VersionManager() {
@@ -76,6 +78,36 @@ function Router() {
       <Route path="/outros-jogos" component={OutrosJogos} />
       <Route path="/termo" component={Termo} />
       <Route path="/dashadmin" component={AdminDashboard} />
+      
+      {/* SEO Theme Pages */}
+      <Route path="/jogo-do-impostor/temas/disney">
+        {() => <ThemePage themeSlug="disney" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/clash-royale">
+        {() => <ThemePage themeSlug="clash-royale" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/valorant">
+        {() => <ThemePage themeSlug="valorant" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/natal">
+        {() => <ThemePage themeSlug="natal" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/animes">
+        {() => <ThemePage themeSlug="animes" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/herois">
+        {() => <ThemePage themeSlug="herois" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/stranger-things">
+        {() => <ThemePage themeSlug="stranger-things" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/futebol">
+        {() => <ThemePage themeSlug="futebol" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/classico">
+        {() => <ThemePage themeSlug="classico" />}
+      </Route>
+      
       <Route component={NotFound} />
     </Switch>
   );
@@ -83,14 +115,16 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <VersionManager />
-        <Router />
-        <Toaster />
-        <VersionBadge />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <VersionManager />
+          <Router />
+          <Toaster />
+          <VersionBadge />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 }
 

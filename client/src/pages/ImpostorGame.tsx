@@ -966,6 +966,25 @@ const HomeScreen = () => {
       });
     }
 
+    // Check for SEO theme redirect (from theme pages)
+    const urlParams = new URLSearchParams(window.location.search);
+    const themeParam = urlParams.get('tema');
+    const origemParam = urlParams.get('origem');
+    
+    if (themeParam && origemParam === 'seo') {
+      // Store theme selection for when user creates room
+      sessionStorage.setItem('selectedCategory', themeParam);
+      sessionStorage.setItem('selectedGameMode', 'palavraSecreta');
+      
+      toast({
+        title: `Tema ${themeParam} selecionado!`,
+        description: 'Digite seu nome e crie uma sala para jogar.'
+      });
+      
+      // Clean URL
+      window.history.replaceState({}, '', '/');
+    }
+
     // Check if new feature popup should be shown
     const hasSeenPopup = localStorage.getItem('hasSeenNewFeaturePopup_v2');
     if (!hasSeenPopup) {
