@@ -1860,16 +1860,11 @@ const GameConfigModal: React.FC<GameConfigModalProps> = ({ isOpen, onClose }) =>
       <div className="w-full max-w-2xl max-h-[95vh] md:max-h-none bg-[#242642] rounded-2xl md:rounded-[3rem] shadow-2xl border-4 border-[#2f3252] relative animate-scale-in flex flex-col md:block overflow-hidden md:overflow-visible">
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-10 pb-4 md:pb-0 md:mb-8 shrink-0">
-          <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-            <div className="p-1.5 md:p-2 bg-orange-500/10 rounded-xl border-2 border-orange-500/20 shrink-0">
-              <Settings className="w-5 h-5 md:w-6 md:h-6 text-orange-500" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h2 className="text-base md:text-2xl lg:text-3xl font-black text-white leading-tight md:leading-normal">
-                Configurações da Partida
-              </h2>
-              <p className="text-slate-400 text-xs md:text-sm font-medium leading-tight md:leading-normal">Apenas para tema clássico - Palavra Secreta</p>
-            </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base md:text-2xl lg:text-3xl font-black text-white leading-tight md:leading-normal">
+              Configurações da Partida
+            </h2>
+            <p className="text-slate-400 text-xs md:text-sm font-medium leading-tight md:leading-normal">Apenas para tema clássico - Palavra Secreta</p>
           </div>
           <button 
             onClick={onClose}
