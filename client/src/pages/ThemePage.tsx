@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Play, Users, Zap, ArrowRight, Home } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
 
 interface ThemeConfig {
   id: string;
@@ -154,7 +153,48 @@ export default function ThemePage({ themeSlug }: ThemePageProps) {
   useEffect(() => {
     // Scroll to top on mount
     window.scrollTo(0, 0);
-  }, [themeSlug]);
+
+    // Update meta tags
+    if (theme) {
+      document.title = `${theme.title} | TikJogos`;
+      
+      // Update or create meta description
+      let metaDescription = document.querySelector('meta[name="description"]');
+      if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.setAttribute('name', 'description');
+        document.head.appendChild(metaDescription);
+      }
+      metaDescription.setAttribute('content', theme.metaDescription);
+
+      // Update or create og:title
+      let ogTitle = document.querySelector('meta[property="og:title"]');
+      if (!ogTitle) {
+        ogTitle = document.createElement('meta');
+        ogTitle.setAttribute('property', 'og:title');
+        document.head.appendChild(ogTitle);
+      }
+      ogTitle.setAttribute('content', theme.title);
+
+      // Update or create og:description
+      let ogDescription = document.querySelector('meta[property="og:description"]');
+      if (!ogDescription) {
+        ogDescription = document.createElement('meta');
+        ogDescription.setAttribute('property', 'og:description');
+        document.head.appendChild(ogDescription);
+      }
+      ogDescription.setAttribute('content', theme.metaDescription);
+
+      // Update or create canonical link
+      let canonical = document.querySelector('link[rel="canonical"]');
+      if (!canonical) {
+        canonical = document.createElement('link');
+        canonical.setAttribute('rel', 'canonical');
+        document.head.appendChild(canonical);
+      }
+      canonical.setAttribute('href', `https://tikjogos.com.br/jogo-do-impostor/temas/${themeSlug}`);
+    }
+  }, [themeSlug, theme]);
 
   if (!theme) {
     return (
@@ -177,17 +217,7 @@ export default function ThemePage({ themeSlug }: ThemePageProps) {
   };
 
   return (
-    <>
-      <Helmet>
-        <title>{theme.title} | TikJogos</title>
-        <meta name="description" content={theme.metaDescription} />
-        <meta property="og:title" content={theme.title} />
-        <meta property="og:description" content={theme.metaDescription} />
-        <meta property="og:type" content="website" />
-        <link rel="canonical" href={`https://tikjogos.com.br/jogo-do-impostor/temas/${themeSlug}`} />
-      </Helmet>
-
-      <div className="min-h-screen bg-[#1C202C] text-white">
+    <div className="min-h-screen bg-[#1C202C] text-white">
         {/* Header */}
         <header className="bg-[#242642] border-b-4 border-[#2f3252] py-4 px-4">
           <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -381,6 +411,5 @@ export default function ThemePage({ themeSlug }: ThemePageProps) {
           </div>
         </footer>
       </div>
-    </>
   );
 }

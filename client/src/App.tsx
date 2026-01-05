@@ -4,7 +4,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { VersionBadge } from "@/components/VersionBadge";
-import { HelmetProvider } from "react-helmet-async";
 import { useEffect } from "react";
 import NotFound from "@/pages/not-found";
 import ImpostorGame from "@/pages/ImpostorGame";
@@ -115,16 +114,14 @@ function Router() {
 
 function App() {
   return (
-    <HelmetProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <VersionManager />
-          <Router />
-          <Toaster />
-          <VersionBadge />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <VersionManager />
+        <Router />
+        <Toaster />
+        <VersionBadge />
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 
