@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { db } from './db';
-import { analyticsEvents } from '@shared/schema';
-import { sql, count, countDistinct } from 'drizzle-orm';
+import { analyticsEvents, rooms } from '@shared/schema';
+import { sql, count, countDistinct, gte, and, lte } from 'drizzle-orm';
 
 const router = Router();
 
@@ -86,6 +86,76 @@ export function createAnalyticsRouter(verifyAdmin: any) {
       
       res.status(500).json({ 
         error: 'Failed to fetch analytics data',
+        message: error?.message || 'Unknown error'
+      });
+    }
+  });
+
+  // GET /api/analytics/rooms-stats
+  router.get('/rooms-stats', verifyAdmin, async (req, res) => {
+    try {
+      if (!db) {
+        return res.status(503).json({ 
+          error: 'Database not available',
+          message: 'DATABASE_URL environment variable is not configured.'
+        });
+      }
+
+      const now = new Date();
+      
+      // Start of today (00:00:00)
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      // Start of this month (first day at 00:00:00)
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+      // Rooms created today
+      const roomsTodayResult = await db
+        .select({ count: count() })
+        .from(rooms)
+        .where(gte(rooms.createdAt, startOfToday));
+      const roomsToday = roomsTodayResult[0]?.count || 0;
+      
+      // Rooms created this month
+      const roomsMonthResult = await db
+        .select({ count: count() })
+        .from(rooms)
+        .where(gte(rooms.createdAt, startOfMonth));
+      const roomsMonth = roomsMonthResult[0]?.count || 0;
+      
+      // Total rooms ever created
+      const roomsTotalResult = await db
+        .select({ count: count() })
+        .from(rooms);
+      const roomsTotal = roomsTotalResult[0]?.count || 0;
+      
+      // Rooms by day for the last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const roomsLast30Days = await db
+        .select({
+          date: sql<string>`DATE(${rooms.createdAt})`,
+          count: count(),
+        })
+        .from(rooms)
+        .where(gte(rooms.createdAt, thirtyDaysAgo))
+        .groupBy(sql`DATE(${rooms.createdAt})`)
+        .orderBy(sql`DATE(${rooms.createdAt})`);
+      
+      // Fill missing dates
+      const roomsTimeSeries = fillMissingDates(roomsLast30Days, 30);
+      
+      res.json({
+        roomsToday,
+        roomsMonth,
+        roomsTotal,
+        roomsLast30Days: roomsTimeSeries,
+      });
+    } catch (error: any) {
+      console.error('[Analytics API] Error fetching rooms stats:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch rooms statistics',
         message: error?.message || 'Unknown error'
       });
     }

@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { db } from './db';
 import { analyticsEvents, type InsertAnalyticsEvent } from '@shared/schema';
 import { randomUUID } from 'crypto';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 const COOKIE_NAME = 'visitor_id';
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60 * 1000; // 365 days
@@ -62,8 +62,12 @@ export async function analyticsMiddleware(req: Request, res: Response, next: Nex
       const existingVisitor = await db
         .select()
         .from(analyticsEvents)
-        .where(eq(analyticsEvents.visitorId, visitorId))
-        .where(eq(analyticsEvents.eventType, 'unique_visitor'))
+        .where(
+          and(
+            eq(analyticsEvents.visitorId, visitorId),
+            eq(analyticsEvents.eventType, 'unique_visitor')
+          )
+        )
         .limit(1);
       
       shouldTrackAsUnique = isNewVisitor || existingVisitor.length === 0;
@@ -96,11 +100,13 @@ export async function analyticsMiddleware(req: Request, res: Response, next: Nex
   recentPageviews.set(debounceKey, now);
   
   // Cleanup old entries (older than 10 seconds)
-  for (const [key, timestamp] of recentPageviews.entries()) {
+  const entriesToDelete: string[] = [];
+  recentPageviews.forEach((timestamp, key) => {
     if (now - timestamp > 10000) {
-      recentPageviews.delete(key);
+      entriesToDelete.push(key);
     }
-  }
+  });
+  entriesToDelete.forEach(key => recentPageviews.delete(key));
 
   // Track unique visitor event (only once per visitor, checked in DB)
   if (shouldTrackAsUnique) {

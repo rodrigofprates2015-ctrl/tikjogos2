@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart3, Users, Eye } from 'lucide-react';
+import { BarChart3, Users, Eye, Home, Calendar, TrendingUp } from 'lucide-react';
 import { AnalyticsChart } from '@/components/AnalyticsChart';
 
 type AnalyticsSummary = {
@@ -9,6 +9,13 @@ type AnalyticsSummary = {
   totalUniqueVisitors: number;
   pageviewsLast30Days: Array<{ date: string; count: number }>;
   uniqueVisitorsLast30Days: Array<{ date: string; count: number }>;
+};
+
+type RoomsStats = {
+  roomsToday: number;
+  roomsMonth: number;
+  roomsTotal: number;
+  roomsLast30Days: Array<{ date: string; count: number }>;
 };
 
 type AnalyticsDashboardProps = {
@@ -41,7 +48,32 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
     enabled: !!token, // Only run query if token exists
   });
 
-  if (isLoading) {
+  const { data: roomsData, isLoading: roomsLoading, error: roomsError } = useQuery<RoomsStats>({
+    queryKey: ['/api/analytics/rooms-stats', token],
+    queryFn: async () => {
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
+      
+      const response = await fetch('/api/analytics/rooms-stats', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `${response.status}: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    refetchOnWindowFocus: false,
+    enabled: !!token,
+  });
+
+  if (isLoading || roomsLoading) {
     return <AnalyticsLoadingSkeleton />;
   }
 
@@ -102,8 +134,10 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
         <h1 className="text-3xl font-bold">Analytics de Tráfego</h1>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Traffic KPI Cards */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Tráfego do Site</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Pageviews</CardTitle>
@@ -133,6 +167,58 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
             </p>
           </CardContent>
         </Card>
+        </div>
+      </div>
+
+      {/* Rooms KPI Cards */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Salas Criadas</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Hoje</CardTitle>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold">
+                {roomsData?.roomsToday.toLocaleString('pt-BR') || '0'}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Salas criadas hoje
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Este Mês</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold">
+                {roomsData?.roomsMonth.toLocaleString('pt-BR') || '0'}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Salas criadas neste mês
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total</CardTitle>
+              <Home className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold">
+                {roomsData?.roomsTotal.toLocaleString('pt-BR') || '0'}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Total de salas criadas
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Charts */}
@@ -162,6 +248,19 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
             />
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Salas Criadas - Últimos 30 Dias</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AnalyticsChart
+              data={roomsData?.roomsLast30Days || []}
+              dataKey="count"
+              color="#f59e0b"
+            />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -171,11 +270,29 @@ function AnalyticsLoadingSkeleton() {
   return (
     <div className="p-6 space-y-6">
       <Skeleton className="h-10 w-64" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Skeleton className="h-32" />
-        <Skeleton className="h-32" />
+      
+      {/* Traffic skeletons */}
+      <div className="space-y-4">
+        <Skeleton className="h-6 w-32" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+        </div>
       </div>
+      
+      {/* Rooms skeletons */}
+      <div className="space-y-4">
+        <Skeleton className="h-6 w-32" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+        </div>
+      </div>
+      
+      {/* Charts skeletons */}
       <div className="grid grid-cols-1 gap-6">
+        <Skeleton className="h-80" />
         <Skeleton className="h-80" />
         <Skeleton className="h-80" />
       </div>
