@@ -32,9 +32,11 @@ import {
   CheckCircle,
   XCircle,
   FileText,
-  Search
+  Search,
+  BarChart3
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import AnalyticsDashboard from "./AnalyticsDashboard";
 
 type Player = {
   uid: string;
@@ -663,6 +665,19 @@ export default function AdminDashboard() {
                 </Table>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Analytics Section */}
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <BarChart3 className="w-5 h-5" />
+              Analytics de Tráfego
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AnalyticsDashboard />
           </CardContent>
         </Card>
       </main>

@@ -4,6 +4,8 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import fs from "fs";
 import path from "path";
+import cookieParser from "cookie-parser";
+import { analyticsMiddleware } from "./analyticsMiddleware";
 
 const app = express();
 
@@ -36,6 +38,8 @@ app.use(
 );
 
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(analyticsMiddleware);
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {

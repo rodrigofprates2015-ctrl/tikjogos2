@@ -145,3 +145,25 @@ export const insertThemeSchema = createInsertSchema(themes).omit({
 
 export type InsertTheme = z.infer<typeof insertThemeSchema>;
 export type Theme = typeof themes.$inferSelect;
+
+export const analyticsEvents = pgTable(
+  "analytics_events",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    visitorId: varchar("visitor_id", { length: 36 }).notNull(),
+    eventType: varchar("event_type", { length: 20 }).notNull(),
+    ipAddress: varchar("ip_address", { length: 45 }),
+    userAgent: text("user_agent"),
+    pagePath: varchar("page_path", { length: 500 }),
+    referrer: varchar("referrer", { length: 500 }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("idx_analytics_visitor_id").on(table.visitorId),
+    index("idx_analytics_event_type").on(table.eventType),
+    index("idx_analytics_created_at").on(table.createdAt),
+  ]
+);
+
+export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
+export type InsertAnalyticsEvent = typeof analyticsEvents.$inferInsert;

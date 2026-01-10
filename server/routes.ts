@@ -8,6 +8,7 @@ import { randomBytes } from "crypto";
 import { setupAuth, isAuthenticated } from "./githubAuth";
 import { createPayment, getPaymentStatus, type ThemeData } from "./paymentController";
 import { randomBytes as cryptoRandomBytes } from "crypto";
+import { createAnalyticsRouter } from "./analyticsRoutes";
 
 // Note: All pending themes are now stored directly in PostgreSQL database
 // This ensures persistence across server restarts and works in all deployment environments
@@ -2818,6 +2819,9 @@ export async function registerRoutes(
     
     res.status(401).json({ error: "Não autorizado" });
   };
+
+  // Analytics routes
+  app.use('/api/analytics', createAnalyticsRouter(verifyAdmin));
 
   // Dashboard Stats API
   app.get("/api/admin/stats", verifyAdmin, async (req, res) => {
