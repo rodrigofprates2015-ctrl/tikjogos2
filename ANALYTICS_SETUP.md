@@ -18,6 +18,12 @@ O erro "Erro ao carregar dados de analytics" ocorre porque:
 export DATABASE_URL="postgresql://user:password@host:port/database"
 ```
 
+**No Render:**
+- Vá no seu Web Service → Environment
+- Adicione: `DATABASE_URL` = `sua_connection_string_postgresql`
+- Clique em "Save Changes"
+- O serviço será reiniciado automaticamente
+
 **No Railway/Vercel:**
 - Vá em Settings → Environment Variables
 - Adicione: `DATABASE_URL` = `sua_connection_string_postgresql`
@@ -115,6 +121,62 @@ Se você não tem um banco PostgreSQL:
 - Site: https://www.elephantsql.com
 - Plano gratuito: 20 MB
 - Simples e rápido
+
+### 5. Render PostgreSQL (Recomendado se já usa Render)
+- Site: https://render.com
+- Plano gratuito disponível
+- Integração perfeita com Web Services do Render
+- Connection string automática
+
+## Configuração Específica para Render
+
+Se você já usa Render para deploy, siga estes passos:
+
+### 1. Criar PostgreSQL Database no Render
+
+1. Acesse https://dashboard.render.com
+2. Clique em "New +" → "PostgreSQL"
+3. Configure:
+   - **Name**: tikjogos-db (ou outro nome)
+   - **Database**: tikjogos
+   - **User**: (gerado automaticamente)
+   - **Region**: Escolha a mesma do seu Web Service
+   - **Plan**: Free (ou pago se preferir)
+4. Clique em "Create Database"
+5. Aguarde a criação (1-2 minutos)
+
+### 2. Conectar ao Web Service
+
+1. Vá no seu Web Service (onde o site está rodando)
+2. Clique em "Environment"
+3. Adicione a variável:
+   - **Key**: `DATABASE_URL`
+   - **Value**: Copie a "Internal Database URL" do PostgreSQL que você criou
+     - Vá no PostgreSQL → "Info" → copie "Internal Database URL"
+4. Clique em "Save Changes"
+5. O deploy será feito automaticamente
+
+### 3. Executar Migração
+
+Após o deploy, você precisa criar a tabela. Existem duas opções:
+
+**Opção A: Via Render Shell**
+1. No Web Service, vá em "Shell"
+2. Execute: `npm run db:push`
+
+**Opção B: Localmente (se tiver acesso)**
+1. Copie a "External Database URL" do PostgreSQL
+2. No seu terminal local:
+   ```bash
+   DATABASE_URL="sua_external_url" npm run db:push
+   ```
+
+### 4. Verificar
+
+1. Acesse seu site no Render
+2. Faça login no `/dashadmin`
+3. Role até "Analytics de Tráfego"
+4. Deve mostrar os dados (inicialmente zerados)
 
 ## Exemplo de Connection String
 
