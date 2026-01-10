@@ -262,6 +262,33 @@ export const articles: Article[] = [
       <h3 class="text-xl font-semibold text-[#4a90a4] mb-2">Fluidez é tudo</h3>
       <p class="mb-4">A automação torna as partidas mais fluidas. Menos tempo gerenciando burocracia, mais tempo se divertindo com os amigos.</p>
     `
+  },
+  {
+    id: 16,
+    slug: "como-ganhar-no-jogo-do-impostor",
+    title: "COMO GANHAR NO JOGO DO IMPOSTOR",
+    type: "Estratégia",
+    readTime: "5 min",
+    summary: "Domine a arte da dissimulação e aprenda táticas avançadas para vencer como impostor.",
+    content: `
+      <h3 class="text-xl font-semibold text-[#4a90a4] mb-4">🔹 1. Não demonstre insegurança</h3>
+      <p class="mb-4">Evite frases como “não sei”, “tô confuso” ou “acho que errei”. Isso chama atenção. Fale com confiança, mesmo que esteja arriscando.</p>
+
+      <h3 class="text-xl font-semibold text-[#4a90a4] mb-4">🔹 2. Use palavras genéricas</h3>
+      <p class="mb-4">Sua palavra é diferente, então evite detalhes específicos. Prefira descrições vagas como:</p>
+      <ul class="list-disc pl-5 mb-4 space-y-2 text-gray-300">
+        <li>“É algo comum”</li>
+        <li>“Vejo isso no dia a dia”</li>
+        <li>“Acho fácil de lembrar”</li>
+      </ul>
+      <p class="mb-4">Assim, você foge de revelar que não tem a mesma palavra.</p>
+
+      <h3 class="text-xl font-semibold text-[#4a90a4] mb-4">🔹 3. Observe primeiro</h3>
+      <p class="mb-4">Se puder, fale por último. Ouça como os outros descrevem e tente seguir a mesma linha de raciocínio. Isso aumenta muito suas chances de passar despercebido.</p>
+
+      <h3 class="text-xl font-semibold text-[#4a90a4] mb-4">🔹 4. Acuse com cuidado</h3>
+      <p class="mb-4">Nada gera mais confiança do que um impostor que também acusa alguém. Mas cuidado: faça acusações com argumentos, não aleatoriamente.</p>
+    `
   }
 ];
 
