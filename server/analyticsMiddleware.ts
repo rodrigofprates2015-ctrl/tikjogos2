@@ -21,13 +21,17 @@ const registeredVisitors = new Set<string>();
 export function analyticsMiddleware(req: Request, res: Response, next: NextFunction) {
   // Skip tracking for ignored paths
   if (IGNORE_PATHS.some(pattern => pattern.test(req.path))) {
+    console.log(`[Analytics] Ignored path: ${req.method} ${req.path}`);
     return next();
   }
 
   // Only track GET requests for HTML pages
   if (req.method !== 'GET') {
+    console.log(`[Analytics] Ignored method: ${req.method} ${req.path}`);
     return next();
   }
+
+  console.log(`[Analytics] Tracking: ${req.method} ${req.path}`);
 
   // Extract or create visitor ID
   let visitorId = req.cookies?.[COOKIE_NAME];
@@ -48,6 +52,8 @@ export function analyticsMiddleware(req: Request, res: Response, next: NextFunct
   // Check if this is the first time we're seeing this visitor in this session
   const shouldTrackAsUnique = isNewVisitor && !registeredVisitors.has(visitorId);
   
+  console.log(`[Analytics] Visitor: ${visitorId.substring(0, 8)}... | New: ${isNewVisitor} | TrackUnique: ${shouldTrackAsUnique} | Registered: ${registeredVisitors.size}`);
+  
   if (shouldTrackAsUnique) {
     registeredVisitors.add(visitorId);
   }
@@ -60,6 +66,7 @@ export function analyticsMiddleware(req: Request, res: Response, next: NextFunct
 
   // Track unique visitor event (only once per visitor)
   if (shouldTrackAsUnique) {
+    console.log(`[Analytics] → Registering UNIQUE_VISITOR for ${visitorId.substring(0, 8)}...`);
     trackEvent({
       visitorId,
       eventType: 'unique_visitor',
@@ -73,6 +80,7 @@ export function analyticsMiddleware(req: Request, res: Response, next: NextFunct
   }
 
   // Always track pageview
+  console.log(`[Analytics] → Registering PAGEVIEW for ${visitorId.substring(0, 8)}...`);
   trackEvent({
     visitorId,
     eventType: 'pageview',
