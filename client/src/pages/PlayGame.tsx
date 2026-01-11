@@ -18,18 +18,18 @@ export default function PlayGame() {
     const style = document.createElement('style');
     style.id = 'hide-adsense-sidebars';
     style.innerHTML = `
+      /* Ocultar trilhos laterais e containers automáticos */
       .google-ads-side-rail,
       .google-ads-side-rail-container,
       .google-ads-side-rail-left,
       .google-ads-side-rail-right,
-      .adsbygoogle[data-ad-status="filled"],
-      .adsbygoogle[data-vignette-loaded="true"],
+      .google-ads-vignette,
       #google_ads_iframe_auto_ads,
-      iframe[name^="google_ads_iframe"],
+      div[id^="google_ads_iframe_auto_ads"],
+      div[class*="google-auto-placed"],
       ins.adsbygoogle[data-ad-format="vertical"],
       ins.adsbygoogle[data-ad-format="rectangle"],
-      div[id^="google_ads_iframe"],
-      div[class*="google-auto-placed"] {
+      ins.adsbygoogle[data-ad-format="auto"]:not(footer .adsbygoogle) {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
@@ -37,6 +37,21 @@ export default function PlayGame() {
         height: 0 !important;
         width: 0 !important;
       }
+
+      /* Tentar bloquear o iframe específico por nome se ele for injetado */
+      iframe[name^="google_ads_iframe"]:not(footer iframe),
+      iframe[id^="google_ads_iframe"]:not(footer iframe) {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+
+      /* Garantir que o jogo ocupe o espaço correto */
+      main {
+        z-index: 50 !important;
+      }
+
       /* Permitir apenas o anúncio do footer */
       footer .adsbygoogle,
       footer .adsbygoogle * {
