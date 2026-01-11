@@ -1,10 +1,11 @@
 import { Link } from "wouter";
-import { ArrowLeft, Gamepad2 } from "lucide-react";
+import { ArrowLeft, Gamepad2, ExternalLink } from "lucide-react";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoTermo from "@/assets/Termo_Logo_58x58_1765323385999.png";
 import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
+import gameFeed from "@/assets/feed_1768102619275.json";
 
-const games = [
+const internalGames = [
   {
     id: "wordle",
     name: "Termo",
@@ -22,7 +23,7 @@ export default function OutrosJogos() {
 
       <Link 
         href="/"
-        className="fixed top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-[#3a3a3c] rounded-lg text-white transition-all font-semibold"
+        className="fixed top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-[#3a3a3c] rounded-lg text-white transition-all font-semibold hover-elevate active-elevate-2"
         data-testid="button-back"
       >
         <ArrowLeft className="w-4 h-4" />
@@ -38,19 +39,46 @@ export default function OutrosJogos() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl">
-        {games.map((game) => (
+        {/* Jogos Internos */}
+        {internalGames.map((game) => (
           <Link
             key={game.id}
             href={game.href}
-            className="group relative overflow-hidden rounded-xl bg-[#1a1a1b] border border-[#3a3a3c] p-6 transition-all duration-300"
+            className="group relative overflow-hidden rounded-xl bg-[#1a1a1b] border border-[#3a3a3c] p-6 transition-all duration-300 hover-elevate active-elevate-2"
             data-testid={`card-game-${game.id}`}
           >
             <div className="relative z-10">
-              <img src={game.logo} alt={game.name} className="w-12 h-12 mb-3 rounded-lg" />
+              <img src={game.logo} alt={game.name} className="w-12 h-12 mb-3 rounded-lg object-cover" />
               <h3 className="text-xl font-bold text-white mb-2">{game.name}</h3>
               <p className="text-gray-400 text-sm">{game.description}</p>
             </div>
           </Link>
+        ))}
+
+        {/* Jogos do Feed Externo */}
+        {gameFeed.map((game) => (
+          <a
+            key={game.id}
+            href={game.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative overflow-hidden rounded-xl bg-[#1a1a1b] border border-[#3a3a3c] p-6 transition-all duration-300 hover-elevate active-elevate-2"
+            data-testid={`card-external-game-${game.id}`}
+          >
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-3">
+                <img src={game.thumb} alt={game.title} className="w-12 h-12 rounded-lg object-cover" />
+                <ExternalLink className="w-4 h-4 text-gray-500 group-hover:text-emerald-400 transition-colors" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2 line-clamp-1">{game.title}</h3>
+              <p className="text-gray-400 text-sm line-clamp-2">{game.description}</p>
+              <div className="mt-3 flex gap-2">
+                <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  {game.category}
+                </span>
+              </div>
+            </div>
+          </a>
         ))}
 
         <div className="relative overflow-hidden rounded-xl bg-[#1a1a1b]/50 border border-dashed border-[#3a3a3c] p-6 flex items-center justify-center">
@@ -64,8 +92,8 @@ export default function OutrosJogos() {
       {/* Bottom Ad Block */}
       <AdBlockBottom />
 
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center z-20 max-w-md px-4">
-        <img src={logoTikjogos} alt="TikJogos" className="h-4 md:h-5 mx-auto mb-2" />
+      <div className="mt-12 mb-8 text-center max-w-md px-4">
+        <img src={logoTikjogos} alt="TikJogos" className="h-4 md:h-5 mx-auto mb-2 opacity-50" />
         <p className="text-gray-600 text-[10px] leading-relaxed">
           O TikJogos é um projeto independente de fãs. Todas as marcas registradas (como nomes de personagens e franquias) pertencem aos seus respectivos proprietários e são usadas aqui apenas para fins de referência em contexto de jogo de palavras/trivia.
         </p>
