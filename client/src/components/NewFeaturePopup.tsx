@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 interface NewFeaturePopupProps {
   onClose?: () => void;
@@ -7,6 +8,7 @@ interface NewFeaturePopupProps {
 
 const NewFeaturePopup: React.FC<NewFeaturePopupProps> = ({ onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100);
@@ -17,6 +19,14 @@ const NewFeaturePopup: React.FC<NewFeaturePopupProps> = ({ onClose }) => {
     setIsVisible(false);
     setTimeout(() => {
       if (onClose) onClose();
+    }, 300);
+  };
+
+  const handleImageClick = () => {
+    setIsVisible(false);
+    setTimeout(() => {
+      if (onClose) onClose();
+      setLocation('/apoie');
     }, 300);
   };
 
@@ -42,12 +52,12 @@ const NewFeaturePopup: React.FC<NewFeaturePopupProps> = ({ onClose }) => {
           <X size={20} strokeWidth={3} />
         </button>
 
-        {/* Imagem do Popup */}
+        {/* Imagem do Popup - clica para ir para /apoie */}
         <img 
           src="/Popup.png" 
-          alt="Popup"
+          alt="Apoie o TikJogos"
           className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl cursor-pointer"
-          onClick={handleClose}
+          onClick={handleImageClick}
         />
       </div>
     </div>
