@@ -40,6 +40,7 @@ export interface ThemeData {
 export interface DonationData {
   donorName: string;
   message?: string;
+  amount: number;
 }
 
 export interface PaymentResponse {
@@ -73,8 +74,8 @@ export async function createDonationPayment(donationData: DonationData): Promise
     console.log('[Donation Payment] Creating payment with notification_url:', notificationUrl);
     
     const paymentData: any = {
-      transaction_amount: 5.00,
-      description: `Doação TikJogos - ${donationData.donorName}`,
+      transaction_amount: donationData.amount,
+      description: `Doação TikJogos R$${donationData.amount.toFixed(2)} - ${donationData.donorName}`,
       payment_method_id: 'pix',
       payer: {
         email: 'doador@tikjogos.com.br',

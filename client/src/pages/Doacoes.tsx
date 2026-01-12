@@ -19,11 +19,15 @@ type PaymentState = {
   error?: string;
 };
 
+const PRESET_AMOUNTS = [5, 10, 20, 50];
+
 export default function Doacoes() {
   const { toast } = useToast();
   
   const [donorName, setDonorName] = useState('');
   const [message, setMessage] = useState('');
+  const [amount, setAmount] = useState(5);
+  const [customAmount, setCustomAmount] = useState('');
   const [payment, setPayment] = useState<PaymentState>({ status: 'idle' });
 
   useEffect(() => {
@@ -58,9 +62,21 @@ export default function Doacoes() {
     };
   }, [payment.status, payment.paymentId]);
 
+  const finalAmount = customAmount ? parseFloat(customAmount) : amount;
+
   const handleDonate = async () => {
     if (!donorName.trim()) {
       toast({ title: "Erro", description: "Digite seu nome", variant: "destructive" });
+      return;
+    }
+    
+    if (!finalAmount || finalAmount < 1) {
+      toast({ title: "Erro", description: "Valor mínimo é R$ 1,00", variant: "destructive" });
+      return;
+    }
+
+    if (finalAmount > 1000) {
+      toast({ title: "Erro", description: "Valor máximo é R$ 1.000,00", variant: "destructive" });
       return;
     }
     
@@ -72,7 +88,8 @@ export default function Doacoes() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           donorName: donorName.trim(),
-          message: message.trim() || undefined
+          message: message.trim() || undefined,
+          amount: finalAmount
         })
       });
       
@@ -92,6 +109,18 @@ export default function Doacoes() {
     } catch (err: any) {
       setPayment({ status: 'error', error: err.message });
       toast({ title: "Erro", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleAmountSelect = (value: number) => {
+    setAmount(value);
+    setCustomAmount('');
+  };
+
+  const handleCustomAmountChange = (value: string) => {
+    setCustomAmount(value);
+    if (value) {
+      setAmount(0);
     }
   };
 
@@ -168,6 +197,42 @@ export default function Doacoes() {
                     </p>
                   </div>
 
+                  {/* Amount selection */}
+                  <div className="space-y-2">
+                    <p className="text-xs text-slate-400 font-bold">ESCOLHA O VALOR:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {PRESET_AMOUNTS.map((value) => (
+                        <button
+                          key={value}
+                          onClick={() => handleAmountSelect(value)}
+                          className={`px-4 py-2 rounded-xl font-black text-sm transition-all border-2 ${
+                            amount === value && !customAmount
+                              ? 'bg-rose-500 border-rose-600 text-white'
+                              : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500'
+                          }`}
+                        >
+                          R$ {value}
+                        </button>
+                      ))}
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">R$</span>
+                        <input
+                          type="number"
+                          placeholder="Outro"
+                          value={customAmount}
+                          onChange={(e) => handleCustomAmountChange(e.target.value)}
+                          min="1"
+                          max="1000"
+                          className={`w-24 pl-9 pr-3 py-2 rounded-xl font-bold text-sm transition-all border-2 bg-slate-800 text-white placeholder-slate-500 focus:outline-none ${
+                            customAmount
+                              ? 'border-rose-500'
+                              : 'border-slate-700 focus:border-slate-500'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Form - horizontal on desktop */}
                   <div className="flex flex-col md:flex-row gap-2">
                     <input
@@ -191,7 +256,7 @@ export default function Doacoes() {
                   {/* Donate button */}
                   <button
                     onClick={handleDonate}
-                    disabled={payment.status === 'loading'}
+                    disabled={payment.status === 'loading' || !finalAmount || finalAmount < 1}
                     className="w-full px-6 py-4 rounded-xl font-black text-lg tracking-wide flex items-center justify-center gap-2 transition-all duration-300 border-b-[5px] shadow-xl bg-gradient-to-r from-rose-500 to-pink-500 border-rose-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-1 disabled:bg-slate-700 disabled:border-slate-900 disabled:text-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {payment.status === 'loading' ? (
@@ -199,7 +264,7 @@ export default function Doacoes() {
                     ) : (
                       <Heart size={24} className="fill-current" />
                     )}
-                    DOAR R$ 5,00 VIA PIX
+                    DOAR R$ {finalAmount ? finalAmount.toFixed(2).replace('.', ',') : '0,00'} VIA PIX
                   </button>
                   
                   {payment.status === 'error' && (

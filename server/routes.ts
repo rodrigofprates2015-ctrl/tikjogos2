@@ -2545,7 +2545,8 @@ export async function registerRoutes(
   // Donation Payment Route
   const createDonationSchema = z.object({
     donorName: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").max(50, "Nome deve ter no máximo 50 caracteres"),
-    message: z.string().max(200, "Mensagem deve ter no máximo 200 caracteres").optional()
+    message: z.string().max(200, "Mensagem deve ter no máximo 200 caracteres").optional(),
+    amount: z.number().min(1, "Valor mínimo é R$ 1,00").max(1000, "Valor máximo é R$ 1.000,00")
   });
 
   app.post("/api/donations/create", async (req, res) => {
@@ -2554,7 +2555,8 @@ export async function registerRoutes(
       
       const donationData: DonationData = {
         donorName: validatedData.donorName,
-        message: validatedData.message
+        message: validatedData.message,
+        amount: validatedData.amount
       };
       
       const paymentResult = await createDonationPayment(donationData);
