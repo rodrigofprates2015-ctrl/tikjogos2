@@ -289,6 +289,27 @@ export const articles: Article[] = [
       <h3 class="text-xl font-semibold text-[#4a90a4] mb-4">🔹 4. Acuse com cuidado</h3>
       <p class="mb-4">Nada gera mais confiança do que um impostor que também acusa alguém. Mas cuidado: faça acusações com argumentos, não aleatoriamente.</p>
     `
+  },
+  {
+    id: 17,
+    slug: "jogo-impostor-palavra-online",
+    title: "Jogo Impostor Palavra Online",
+    type: "Produto",
+    readTime: "4 min",
+    summary: "Descubra como jogar o Jogo do Impostor com palavras de forma online e gratuita no TikJogos.",
+    content: `
+      <h2 class="text-2xl font-bold text-white mb-4">O que é o Jogo Impostor Palavra Online?</h2>
+      <p class="mb-4">O Jogo Impostor Palavra Online é uma versão digital do clássico jogo de dedução social onde os participantes recebem uma palavra secreta, exceto o impostor, que precisa descobrir qual é a palavra sem ser desmascarado. No TikJogos, você pode jogar essa modalidade diretamente do seu navegador, sem precisar baixar nenhum aplicativo. Basta criar uma sala, compartilhar o link com seus amigos e começar a diversão em segundos. A plataforma cuida de todo o sorteio e distribuição das palavras automaticamente.</p>
+
+      <h2 class="text-2xl font-bold text-white mb-4 mt-8">Como funciona no TikJogos?</h2>
+      <p class="mb-4">Nossa plataforma foi desenvolvida para tornar a experiência do jogo impostor palavra online a mais fluida possível. Ao entrar no TikJogos, você pode criar uma sala privada ou entrar em uma existente usando um código. O sistema sorteia aleatoriamente quem será o impostor e distribui a palavra secreta para todos os outros jogadores. Durante a partida, cada participante dá dicas sobre a palavra sem revelá-la diretamente, enquanto o impostor tenta se passar por alguém que conhece a palavra. No final, todos votam em quem acham que é o impostor.</p>
+
+      <h2 class="text-2xl font-bold text-white mb-4 mt-8">Por que jogar no TikJogos?</h2>
+      <p class="mb-4">O TikJogos oferece diversas vantagens para quem quer jogar impostor palavra online. A interface é intuitiva e funciona em qualquer dispositivo com acesso à internet, seja computador, tablet ou celular. Não há necessidade de cadastro obrigatório para participar de uma partida. Além disso, a plataforma conta com diversos temas de palavras para manter o jogo sempre interessante e desafiador. O timer automático e o sistema de votação integrado eliminam a necessidade de um mediador, permitindo que todos participem ativamente da diversão.</p>
+
+      <h2 class="text-2xl font-bold text-white mb-4 mt-8">Dicas para aproveitar ao máximo</h2>
+      <p class="mb-4">Para ter a melhor experiência no jogo impostor palavra online do TikJogos, reúna um grupo de pelo menos 4 pessoas. Quanto mais jogadores, mais divertida e desafiadora fica a partida. Use um canal de voz como Discord ou WhatsApp para a comunicação durante o jogo, já que a interação verbal é essencial para a dinâmica de dedução. Experimente os diferentes temas disponíveis na plataforma para variar as partidas e mantenha todos engajados. Lembre-se: o objetivo é se divertir com os amigos, então não leve as acusações para o lado pessoal!</p>
+    `
   }
 ];
 
