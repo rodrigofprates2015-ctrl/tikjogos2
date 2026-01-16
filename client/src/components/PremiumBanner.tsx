@@ -22,7 +22,7 @@ export const PremiumBanner = () => {
                 Crie seu Próprio Tema
               </h2>
               <p className="text-indigo-200 font-medium text-xs md:text-sm truncate hidden sm:block">
-                Jogue com suas piadas internas! Baralho exclusivo personalizado.
+                Animes, séries, memes ou aquela piada interna da galera? Crie um tema 100% seu e leve a diversão para outro nível!
               </p>
             </div>
           </div>
