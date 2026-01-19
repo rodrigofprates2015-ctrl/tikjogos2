@@ -1,9 +1,8 @@
 import { Link } from "wouter";
-import { ArrowLeft, Gamepad2, ExternalLink } from "lucide-react";
+import { ArrowLeft, Gamepad2 } from "lucide-react";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoTermo from "@/assets/Termo_Logo_58x58_1765323385999.png";
 import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
-import gameFeed from "@/assets/feed_1768102619275.json";
 
 const internalGames = [
   {
@@ -51,30 +50,6 @@ export default function OutrosJogos() {
               <img src={game.logo} alt={game.name} className="w-12 h-12 mb-3 rounded-lg object-cover" />
               <h3 className="text-xl font-bold text-white mb-2">{game.name}</h3>
               <p className="text-gray-400 text-sm">{game.description}</p>
-            </div>
-          </Link>
-        ))}
-
-        {/* Jogos do Feed Externo */}
-        {gameFeed.map((game) => (
-          <Link
-            key={game.id}
-            href={`/jogar/${game.id}`}
-            className="group relative overflow-hidden rounded-xl bg-[#1a1a1b] border border-[#3a3a3c] p-6 transition-all duration-300 hover-elevate active-elevate-2"
-            data-testid={`card-external-game-${game.id}`}
-          >
-            <div className="relative z-10">
-              <div className="flex justify-between items-start mb-3">
-                <img src={game.thumb} alt={game.title} className="w-12 h-12 rounded-lg object-cover" />
-                <Gamepad2 className="w-4 h-4 text-gray-500 group-hover:text-emerald-400 transition-colors" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2 line-clamp-1">{game.title}</h3>
-              <p className="text-gray-400 text-sm line-clamp-2">{game.description}</p>
-              <div className="mt-3 flex gap-2">
-                <span className="text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  {game.category}
-                </span>
-              </div>
             </div>
           </Link>
         ))}
