@@ -4,6 +4,7 @@ import { ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import { getArticleBySlug } from "@/data/articles";
+import { BlogAd } from "@/components/AdSense";
 
 function ArticleNotFound() {
   return (
@@ -83,6 +84,8 @@ export default function BlogPost() {
                 className="prose prose-invert prose-lg text-gray-300 max-w-none"
                 dangerouslySetInnerHTML={{ __html: article.content }}
               />
+              
+              <BlogAd />
             </article>
 
             <div className="bg-[#16213e]/80 border border-[#3d4a5c] rounded-lg p-8 text-center">

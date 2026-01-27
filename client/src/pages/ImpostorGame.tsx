@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import PalavraSuperSecretaSubmodeScreen from "@/pages/PalavraSuperSecretaSubmodeScreen";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
+import { DisplayAd } from "@/components/AdSense";
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
 import { LobbyChat } from "@/components/LobbyChat";
 
@@ -1081,6 +1082,8 @@ const HomeScreen = () => {
 
       {/* Top Ad Block */}
       <AdBlockTop />
+      
+      <DisplayAd className="mb-8" />
 
       {/* Hero Banner - Oficina de Temas - TEMPORARIAMENTE DESABILITADO */}
       {/* <Link 

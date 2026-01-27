@@ -1,0 +1,96 @@
+Você é um desenvolvedor web sênior especializado em Google AdSense, performance e boas práticas.
+
+Contexto:
+Tenho um site com múltiplas páginas e NÃO utilizo anúncios automáticos do AdSense.
+Quero controle total do posicionamento dos anúncios, com inserção manual e organizada.
+
+O site possui:
+- Páginas de blog (posts)
+- Página específica: /outros-jogos
+- Outras páginas gerais (institucionais, listas, etc.)
+
+Objetivo:
+Implementar corretamente blocos de anúncios do Google AdSense em páginas específicas,
+seguindo rigorosamente as boas práticas do Google:
+
+Regras obrigatórias:
+1. O script global do AdSense deve ser carregado apenas UMA vez em todo o site.
+2. Cada tipo de anúncio deve ser isolado em um componente reutilizável.
+3. Evitar múltiplos adsbygoogle.push() desnecessários.
+4. Garantir responsividade.
+5. Não quebrar o layout.
+6. Não usar anúncios automáticos.
+
+━━━━━━━━━━━━━━━━━━━━━━
+SCRIPT GLOBAL (carregar apenas uma vez no layout principal):
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9927561573478881"
+     crossorigin="anonymous"></script>
+
+━━━━━━━━━━━━━━━━━━━━━━
+ANÚNCIO PARA POSTS DO BLOG (in-article):
+
+<ins class="adsbygoogle"
+     style="display:block; text-align:center;"
+     data-ad-layout="in-article"
+     data-ad-format="fluid"
+     data-ad-client="ca-pub-9927561573478881"
+     data-ad-slot="2913946988"></ins>
+
+━━━━━━━━━━━━━━━━━━━━━━
+ANÚNCIO PARA A PÁGINA /outros-jogos:
+
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-format="fluid"
+     data-ad-layout-key="-fg+b+v-54+5s"
+     data-ad-client="ca-pub-9927561573478881"
+     data-ad-slot="4766433750"></ins>
+
+━━━━━━━━━━━━━━━━━━━━━━
+ANÚNCIO DISPLAY (uso geral em páginas cabíveis):
+
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9927561573478881"
+     data-ad-slot="7536067322"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+
+━━━━━━━━━━━━━━━━━━━━━━
+Execução do anúncio (usar dentro dos componentes, com proteção):
+
+<script>
+  if (window.adsbygoogle && !window.__adPushed) {
+    (adsbygoogle = window.adsbygoogle || []).push({});
+    window.__adPushed = true;
+  }
+</script>
+
+━━━━━━━━━━━━━━━━━━━━━━
+O que você deve implementar:
+
+1. Criar um componente BlogAd:
+   - Renderizado apenas em páginas de post
+   - Posicionado entre parágrafos do conteúdo
+
+2. Criar um componente OutrosJogosAd:
+   - Renderizado exclusivamente na rota /outros-jogos
+   - Inserido entre seções da página
+
+3. Criar um componente DisplayAd:
+   - Reutilizável
+   - Pode ser usado em páginas gerais (sidebar, rodapé ou meio do conteúdo)
+
+4. Garantir que:
+   - O script global do AdSense não seja duplicado
+   - O push do anúncio seja executado com segurança
+   - Não ocorram erros de anúncios em branco
+
+5. Explicar brevemente:
+   - Onde cada componente deve ser usado
+   - Em qual arquivo o script global deve ficar
+
+Tecnologia:
+Utilize a stack atual do projeto conforme detectada (HTML puro, Node.js, React ou Next.js),
+respeitando SSR caso exista.
