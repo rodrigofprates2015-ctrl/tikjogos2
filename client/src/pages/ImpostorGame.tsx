@@ -1118,17 +1118,17 @@ const HomeScreen = () => {
       />
 
       {/* Main content area - flex-grow to push footer down */}
-      <div className="flex-1 flex flex-col items-center justify-center pt-12 md:pt-16 px-4 relative z-20">
+      <div className="flex-1 flex flex-col items-center pt-8 md:pt-12 px-4 relative z-20">
         {/* Mobile action buttons - above the card */}
         <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
 
         {/* Premium Banner - Create your own theme */}
-        <div className="w-[95%] max-w-4xl mb-2">
+        <div className="w-[95%] max-w-4xl mb-0">
           <PremiumBanner />
         </div>
 
         {/* Main card */}
-        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in">
+        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in -mt-2">
           {/* Impostor logo with characters */}
           <div className="flex justify-center mb-3">
             <img 
