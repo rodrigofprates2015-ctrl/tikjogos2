@@ -7,6 +7,7 @@ import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
 import { DisplayAd } from "@/components/AdSense";
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
 import { LobbyChat } from "@/components/LobbyChat";
+import { VoiceChat } from "@/components/VoiceChat";
 
 import { PremiumBanner } from "@/components/PremiumBanner";
 import { SiDiscord } from "react-icons/si";
@@ -4304,6 +4305,8 @@ export default function ImpostorGame() {
       {status === 'modeSelect' && <ModeSelectScreen />}
       {status === 'submodeSelect' && <PalavraSuperSecretaSubmodeScreen />}
       {status === 'playing' && <GameScreen />}
+      
+      <VoiceChat />
     </div>
   );
 }
