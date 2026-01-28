@@ -860,7 +860,7 @@ const TopRightButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
 );
 
 const MobileActionButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
-  <div className="sm:hidden flex items-center justify-center gap-2 w-full mb-3">
+  <div className="sm:hidden flex items-center justify-center gap-2 w-full mb-1">
     <Link 
       href="/outros-jogos"
       className="flex items-center gap-2 px-3 py-2 bg-[#e8a045] border-2 border-[#c88025] rounded-xl text-white hover:bg-[#f8b055] transition-all font-semibold shadow-lg"
@@ -1125,7 +1125,7 @@ const HomeScreen = () => {
         <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
 
         {/* Premium Banner - Create your own theme */}
-        <div className="w-[95%] max-w-4xl mb-4">
+        <div className="w-[95%] max-w-4xl mb-2">
           <PremiumBanner />
         </div>
 
