@@ -818,7 +818,7 @@ const GameNavButtons = ({
 const TopRightButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
   <>
     {/* Desktop: All buttons on right - fixed position */}
-    <div className="hidden sm:flex fixed top-4 right-4 z-[60] items-center gap-2">
+    <div className="hidden sm:flex fixed top-10 right-4 z-[60] items-center gap-2">
       <Link 
         href="/outros-jogos"
         className="flex items-center gap-2 px-4 py-2 bg-[#e8a045] border-2 border-[#c88025] rounded-xl text-white hover:bg-[#f8b055] transition-all font-semibold shadow-lg"
@@ -1118,17 +1118,17 @@ const HomeScreen = () => {
       />
 
       {/* Main content area - flex-grow to push footer down */}
-      <div className="flex-1 flex flex-col items-center pt-2 md:pt-4 px-4 relative z-20">
+      <div className="flex-1 flex flex-col items-center pt-24 md:pt-32 px-4 relative z-20">
         {/* Mobile action buttons - above the card */}
         <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
 
         {/* Premium Banner - Create your own theme */}
-        <div className="w-[95%] max-w-4xl mb-0">
+        <div className="w-[95%] max-w-4xl mb-4">
           <PremiumBanner />
         </div>
 
         {/* Main card */}
-        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in -mt-2">
+        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in">
           {/* Impostor logo with characters */}
           <div className="flex justify-center mb-3">
             <img 
