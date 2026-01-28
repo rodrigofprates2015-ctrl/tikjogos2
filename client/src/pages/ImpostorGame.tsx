@@ -7,7 +7,8 @@ import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
 import { DisplayAd } from "@/components/AdSense";
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
 import { LobbyChat } from "@/components/LobbyChat";
-import { VoiceChat } from "@/components/VoiceChat";
+import { VoiceControlButton, VoiceChatJoinButton, SpeakingIndicator } from "@/components/InlineVoiceControls";
+import { useVoiceChatContext } from "@/hooks/VoiceChatContext";
 
 import { PremiumBanner } from "@/components/PremiumBanner";
 import { SiDiscord } from "react-icons/si";
@@ -2224,16 +2225,19 @@ const LobbyScreen = () => {
 
       {/* Lista de Jogadores */}
       <div className="flex-1 w-full mb-6 overflow-y-auto scrollbar-hide">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-blue-500/10 rounded-xl border-2 border-blue-500/20">
-            <Users className="w-5 h-5 text-blue-500" />
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-500/10 rounded-xl border-2 border-blue-500/20">
+              <Users className="w-5 h-5 text-blue-500" />
+            </div>
+            <h3 className="text-white text-lg font-black">
+              Tripulantes na Nave
+            </h3>
+            <div className="px-3 py-1 bg-blue-500 text-white text-sm font-black rounded-full border-2 border-blue-700">
+              {players.length}
+            </div>
           </div>
-          <h3 className="text-white text-lg font-black">
-            Tripulantes na Nave
-          </h3>
-          <div className="px-3 py-1 bg-blue-500 text-white text-sm font-black rounded-full border-2 border-blue-700">
-            {players.length}
-          </div>
+          <VoiceChatJoinButton />
         </div>
         
         <ul className="space-y-3 pb-4">
@@ -2261,12 +2265,15 @@ const LobbyScreen = () => {
                 )}
                 
                 <div className="flex items-center gap-4 flex-1">
-                  {/* Avatar */}
-                  <div className={cn(
-                    "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black border-2 border-black/10 shrink-0",
-                    isMe ? "bg-white/20 text-white" : "bg-blue-500 text-white"
-                  )}>
-                    {initial}
+                  {/* Avatar com indicador de fala */}
+                  <div className="relative">
+                    <div className={cn(
+                      "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black border-2 border-black/10 shrink-0",
+                      isMe ? "bg-white/20 text-white" : "bg-blue-500 text-white"
+                    )}>
+                      {initial}
+                    </div>
+                    <SpeakingIndicator playerId={p.uid} isCurrentUser={isMe} />
                   </div>
                   
                   {/* Info */}
@@ -2299,17 +2306,22 @@ const LobbyScreen = () => {
                   </div>
                 </div>
                 
-                {/* Botão Expulsar */}
-                {isHost && !isMe && (
-                  <button
-                    onClick={() => kickPlayer(p.uid)}
-                    className="p-2 bg-slate-900 rounded-xl hover:bg-rose-500 transition-all border-b-3 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group ml-2"
-                    data-testid={`button-kick-${p.uid}`}
-                    title="Expulsar jogador"
-                  >
-                    <UserX className="w-5 h-5 group-hover:animate-pulse" strokeWidth={2.5} />
-                  </button>
-                )}
+                {/* Controles de voz e expulsar */}
+                <div className="flex items-center">
+                  <VoiceControlButton playerId={p.uid} isCurrentUser={isMe} />
+                  
+                  {/* Botão Expulsar */}
+                  {isHost && !isMe && (
+                    <button
+                      onClick={() => kickPlayer(p.uid)}
+                      className="p-2 bg-slate-900 rounded-xl hover:bg-rose-500 transition-all border-b-3 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group ml-2"
+                      data-testid={`button-kick-${p.uid}`}
+                      title="Expulsar jogador"
+                    >
+                      <UserX className="w-5 h-5 group-hover:animate-pulse" strokeWidth={2.5} />
+                    </button>
+                  )}
+                </div>
               </li>
             );
           })}
@@ -4305,8 +4317,6 @@ export default function ImpostorGame() {
       {status === 'modeSelect' && <ModeSelectScreen />}
       {status === 'submodeSelect' && <PalavraSuperSecretaSubmodeScreen />}
       {status === 'playing' && <GameScreen />}
-      
-      <VoiceChat />
     </div>
   );
 }
