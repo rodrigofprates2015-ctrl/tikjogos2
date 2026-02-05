@@ -50,7 +50,10 @@ import {
   Sparkles,
   Info,
   AlertTriangle,
-  Settings
+  Settings,
+  Youtube,
+  Instagram,
+  MessageCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1100,7 +1103,7 @@ const HomeScreen = () => {
         width="300"
         height="420"
         loading="lazy"
-        className="hidden md:block absolute bottom-32 left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-10"
+        className="hidden md:block absolute bottom-[320px] left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-10"
       />
 
       {/* Impostor character - right side (desktop only) */}
@@ -1110,7 +1113,7 @@ const HomeScreen = () => {
         width="300"
         height="420"
         loading="lazy"
-        className="hidden md:block absolute bottom-32 right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-10"
+        className="hidden md:block absolute bottom-[320px] right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-10"
       />
 
       {/* Main content area - flex-grow to push footer down */}
@@ -1240,34 +1243,73 @@ const HomeScreen = () => {
         </div>
       </div>
 
-      {/* Footer - now below the content, takes full width */}
-      <div className="w-full text-center py-6 px-4 bg-gradient-to-t from-black/40 to-transparent z-20 relative border-t border-[#3d4a5c]/30">
-        <img 
-          src={logoTikjogos} 
-          alt="TikJogos - Jogos Online Grátis" 
-          loading="lazy"
-          className="h-4 md:h-5 mx-auto mb-2" 
-        />
-        <p className="text-[#6a8aaa] text-xs">
-          Desenvolvido com <Heart className="inline w-3 h-3 text-gray-500 fill-current" /> por <span className="text-[#8aa0b0]">Rodrigo Freitas</span>
-        </p>
-        <div className="flex items-center justify-center gap-2 text-xs mt-1 flex-wrap">
-          <Link href="/blog" className="text-[#6a8aaa] hover:text-white transition-colors" data-testid="link-blog">
-            Blog
-          </Link>
-          <span className="text-[#4a6a8a]">|</span>
-          <Link href="/privacidade" className="text-[#6a8aaa] hover:text-white transition-colors">
-            Privacidade
-          </Link>
-          <span className="text-[#4a6a8a]">|</span>
-          <Link href="/termos" className="text-[#6a8aaa] hover:text-white transition-colors">
-            Termos
-          </Link>
+      {/* Footer */}
+      <footer className="w-full bg-[#0f172a] border-t-8 border-[#242642] pt-16 pb-8 z-20 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div className="col-span-1 md:col-span-2 space-y-6">
+              <Link href="/" className="flex items-center cursor-pointer">
+                <img 
+                  src={logoTikjogos} 
+                  alt="TikJogos Impostor" 
+                  className="h-16 w-auto object-contain"
+                />
+              </Link>
+              <p className="text-slate-400 max-w-md text-lg font-medium">
+                A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.
+              </p>
+              <div className="flex gap-4">
+                <a href="https://www.youtube.com/@RAPMUGEN?sub_confirmation=1" target="_blank" rel="noopener noreferrer" title="YouTube" className="w-12 h-12 bg-slate-800 hover:bg-purple-600 rounded-2xl flex items-center justify-center transition-all hover:-translate-y-1">
+                  <Youtube className="w-6 h-6 text-white" />
+                </a>
+                <a href="https://www.instagram.com/jogodoimpostor/" target="_blank" rel="noopener noreferrer" title="Instagram" className="w-12 h-12 bg-slate-800 hover:bg-purple-600 rounded-2xl flex items-center justify-center transition-all hover:-translate-y-1">
+                  <Instagram className="w-6 h-6 text-white" />
+                </a>
+                <a href="https://discord.gg/H3cjkcd7Pz" target="_blank" rel="noopener noreferrer" title="Discord" className="w-12 h-12 bg-slate-800 hover:bg-purple-600 rounded-2xl flex items-center justify-center transition-all hover:-translate-y-1">
+                  <MessageCircle className="w-6 h-6 text-white" />
+                </a>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">NAVEGAÇÃO</h4>
+              <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
+                <li><Link href="/" className="hover:text-purple-400 transition-colors">Início</Link></li>
+                <li><Link href="/comojogar" className="hover:text-purple-400 transition-colors">Como Jogar</Link></li>
+                <li><Link href="/modos" className="hover:text-purple-400 transition-colors">Modos de Jogo</Link></li>
+                <li><Link href="/termos" className="hover:text-purple-400 transition-colors">Termos de Uso</Link></li>
+                <li><Link href="/privacidade" className="hover:text-purple-400 transition-colors">Privacidade</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">SUPORTE</h4>
+              <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
+                <li><Link href="/" className="hover:text-purple-400 transition-colors">FAQ</Link></li>
+                <li><Link href="/" className="hover:text-purple-400 transition-colors">Reportar Bug</Link></li>
+                <li><Link href="/" className="hover:text-purple-400 transition-colors">Contato</Link></li>
+                <li>
+                  <a href="https://discord.gg/H3cjkcd7Pz" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 transition-colors">
+                    Discord Oficial
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
+            <div className="space-y-2">
+              <p className="text-slate-500 font-bold">© 2026 TikJogos Entertainment. Todos os direitos reservados.</p>
+              <p className="text-slate-600 text-[10px] md:text-xs italic max-w-3xl leading-relaxed">
+                O TikJogos é um projeto independente de fãs. Todas as marcas registradas (como nomes de personagens e franquias) pertencem aos seus respectivos proprietários e são usadas aqui apenas para fins de referência em contexto de jogo de palavras/trivia.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-slate-500 font-bold whitespace-nowrap">
+              <span>Feito com 💜 na Galáxia TikJogos</span>
+            </div>
+          </div>
         </div>
-        <p className="text-[#4a6a8a] text-[10px] mt-2 leading-relaxed max-w-md mx-auto">
-          O TikJogos é um projeto independente de fãs. Todas as marcas registradas (como nomes de personagens e franquias) pertencem aos seus respectivos proprietários e são usadas aqui apenas para fins de referência em contexto de jogo de palavras/trivia.
-        </p>
-      </div>
+      </footer>
 
       {/* Donation Button and Modal */}
       <TopRightButtons onDonateClick={() => setIsDonationOpen(true)} />
