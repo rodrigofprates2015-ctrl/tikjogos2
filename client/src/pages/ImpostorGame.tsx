@@ -75,6 +75,7 @@ import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoImpostor from "@assets/logo_site_impostor_1765071990526.png";
 import tripulanteImg from "@assets/tripulante_natal_1765071995242.png";
 import impostorImg from "@assets/impostor_natal_1765071992843.png";
+import { SideAds, BottomAd } from "@/components/AdSense";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
 
@@ -1041,6 +1042,12 @@ const HomeScreen = () => {
     <div className="min-h-screen w-full flex flex-col bg-[#1a1b2e] selection:bg-purple-500/30">
       {/* Navigation */}
       <MobileNav />
+
+      {/* Side Ads - Desktop only */}
+      <SideAds />
+
+      {/* Bottom Ad with hide button */}
+      <BottomAd />
 
       {/* Social and Action Buttons - Floating Desktop */}
       {/* Removido conforme solicitado */}
