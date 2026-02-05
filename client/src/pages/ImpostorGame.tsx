@@ -1089,7 +1089,7 @@ const HomeScreen = () => {
         width="300"
         height="420"
         loading="lazy"
-        className="hidden md:block absolute bottom-[320px] left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-10"
+        className="hidden md:block absolute bottom-[220px] left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-10"
       />
 
       {/* Impostor character - right side (desktop only) */}
@@ -1099,7 +1099,7 @@ const HomeScreen = () => {
         width="300"
         height="420"
         loading="lazy"
-        className="hidden md:block absolute bottom-[320px] right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-10"
+        className="hidden md:block absolute bottom-[220px] right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-10"
       />
 
       {/* Main content area - flex-grow to push footer down */}
