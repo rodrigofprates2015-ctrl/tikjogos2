@@ -3,8 +3,7 @@ import { useGameStore, type GameModeType, type PlayerVote, type PlayerAnswer, ty
 import { Link } from "wouter";
 import PalavraSuperSecretaSubmodeScreen from "@/pages/PalavraSuperSecretaSubmodeScreen";
 import { NotificationCenter } from "@/components/NotificationCenter";
-import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
-import { DisplayAd } from "@/components/AdSense";
+
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
 import { LobbyChat } from "@/components/LobbyChat";
 import { VoiceControlButton, VoiceChatJoinButton, SpeakingIndicator } from "@/components/InlineVoiceControls";
@@ -1082,11 +1081,6 @@ const HomeScreen = () => {
         <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
       </div>
 
-      {/* Top Ad Block */}
-      <AdBlockTop />
-      
-      <DisplayAd className="mb-8" />
-
       {/* Hero Banner - Oficina de Temas - TEMPORARIAMENTE DESABILITADO */}
       {/* <Link 
         href="/criar-tema"
@@ -1245,9 +1239,6 @@ const HomeScreen = () => {
           </div>
         </div>
       </div>
-
-      {/* Bottom Ad Block */}
-      <AdBlockBottom />
 
       {/* Footer - now below the content, takes full width */}
       <div className="w-full text-center py-6 px-4 bg-gradient-to-t from-black/40 to-transparent z-20 relative border-t border-[#3d4a5c]/30">
