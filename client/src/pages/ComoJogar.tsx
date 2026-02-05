@@ -15,6 +15,7 @@ import {
   MessageCircle
 } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import { DisplayAd } from "@/components/AdSense";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 export default function ComoJogar() {
@@ -208,6 +209,9 @@ export default function ComoJogar() {
               />
             </div>
           </section>
+
+          {/* AdSense Display Ad */}
+          <DisplayAd className="mt-16" />
 
           {/* Final CTA */}
           <section className="mt-32 p-16 rounded-[4rem] bg-gradient-to-br from-[#242642] to-[#1a1b2e] border-4 border-purple-500 text-center relative overflow-hidden">
