@@ -821,43 +821,7 @@ const GameNavButtons = ({
 
 const TopRightButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
   <>
-    {/* Desktop: All buttons on right - fixed position */}
-    <div className="hidden sm:flex fixed top-10 right-4 z-[60] items-center gap-2">
-      <Link 
-        href="/outros-jogos"
-        className="flex items-center gap-2 px-4 py-2 bg-[#e8a045] border-2 border-[#c88025] rounded-xl text-white hover:bg-[#f8b055] transition-all font-semibold shadow-lg"
-        data-testid="button-other-games"
-      >
-        <Gamepad2 className="w-4 h-4" />
-        <span className="text-sm font-medium">Outros Jogos</span>
-      </Link>
-      <Link 
-        href="/comojogar"
-        className="flex items-center gap-2 px-4 py-2 bg-[#4a90a4] border-2 border-[#3a7084] rounded-xl text-white hover:bg-[#5aa0b4] transition-all font-semibold shadow-lg"
-        data-testid="button-how-to-play"
-      >
-        <HelpCircle className="w-4 h-4" />
-        <span className="text-sm font-medium">Como Jogar</span>
-      </Link>
-      <a
-        href="https://discord.gg/H3cjkcd7Pz"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-2 px-4 py-2 bg-[#5865F2] border-2 border-[#4752C4] rounded-xl text-white hover:bg-[#6875F3] transition-all font-semibold shadow-lg"
-        data-testid="button-discord"
-      >
-        <SiDiscord className="w-4 h-4" />
-        <span className="text-sm font-medium">Encontrar Nave</span>
-      </a>
-      <button
-        onClick={onDonateClick}
-        className="flex items-center gap-2 px-4 py-2 bg-[#c44536] border-2 border-[#a33526] rounded-xl text-white hover:bg-[#d45546] transition-all font-semibold shadow-lg"
-        data-testid="button-donate"
-      >
-        <Heart className="w-4 h-4 fill-current" />
-        <span className="text-sm font-medium">Doar</span>
-      </button>
-    </div>
+    {/* Desktop: All buttons on right - removed fixed buttons as requested */}
   </>
 );
 
