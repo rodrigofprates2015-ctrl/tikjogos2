@@ -211,7 +211,7 @@ export default function ComoJogar() {
           </section>
 
           {/* AdSense Display Ad */}
-          <DisplayAd className="mt-16" />
+          <DisplayAd className="mt-16" format="horizontal" />
 
           {/* Final CTA */}
           <section className="mt-32 p-16 rounded-[4rem] bg-gradient-to-br from-[#242642] to-[#1a1b2e] border-4 border-purple-500 text-center relative overflow-hidden">

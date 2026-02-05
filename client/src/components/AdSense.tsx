@@ -79,10 +79,10 @@ export const OutrosJogosAd = () => (
   />
 );
 
-export const DisplayAd = ({ className }: { className?: string }) => (
+export const DisplayAd = ({ className, format = "auto" }: { className?: string; format?: "auto" | "horizontal" | "vertical" | "rectangle" }) => (
   <AdSenseBlock 
     slot="7536067322" 
-    format="auto" 
+    format={format} 
     className={className}
   />
 );
