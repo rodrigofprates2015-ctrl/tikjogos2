@@ -1,9 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 declare global {
   interface Window {
     adsbygoogle: any[];
-    __adPushed?: boolean;
   }
 }
 
@@ -24,19 +23,31 @@ const AdSenseBlock = ({
   layoutKey, 
   responsive = true 
 }: AdSenseProps) => {
+  const adRef = useRef<HTMLModElement>(null);
+  const pushed = useRef(false);
+
   useEffect(() => {
-    try {
-      if (window.adsbygoogle) {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
+    // Só faz push uma vez por instância do componente
+    if (pushed.current) return;
+    
+    const timer = setTimeout(() => {
+      try {
+        // Inicializa o array se não existir
+        window.adsbygoogle = window.adsbygoogle || [];
+        window.adsbygoogle.push({});
+        pushed.current = true;
+      } catch (e) {
+        console.error("AdSense push error:", e);
       }
-    } catch (e) {
-      console.error("AdSense error:", e);
-    }
+    }, 100); // Pequeno delay para garantir que o <ins> está no DOM
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (
     <div className={`adsense-container my-8 overflow-hidden flex justify-center ${className}`}>
       <ins
+        ref={adRef}
         className="adsbygoogle"
         style={{ display: "block", minWidth: "250px" }}
         data-ad-client="ca-pub-9927561573478881"

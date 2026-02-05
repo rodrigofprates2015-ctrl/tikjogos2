@@ -74,7 +74,7 @@ function Router() {
       <Route path="/comojogar" component={ComoJogar} />
       <Route path="/como-jogar" component={ComoJogar} />
       <Route path="/blog" component={Blog} />
-      <Route path="/blog/:slug" component={BlogPost} />
+      <Route path="/blog/:id" component={BlogPost} />
       <Route path="/privacidade" component={PrivacyPolicy} />
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/termos" component={TermsOfUse} />
