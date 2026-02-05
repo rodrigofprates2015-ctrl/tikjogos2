@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikJogos Impostor - Blog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Changa+One&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #1a1b2e;
+            --bg-panel: #242642;
+            --bg-panel-dark: #1e2036;
+            --purple: #8b5cf6;
+            --purple-dark: #6d28d9;
+            --blue: #3b82f6;
+            --green: #22c55e;
+            --emerald: #10b981;
+            --yellow: #facc15;
+            --rose: #f43f5e;
+            --orange: #f97316;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-700: #334155;
+            --slate-400: #94a3b8;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-main);
+            color: #fff;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .font-heading {
+            font-family: "Impact", "Arial Narrow", sans-serif;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .font-alt {
+            font-family: 'Changa One', cursive;
+        }
+
+        /* Animations from Design System */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .animate-scale-in {
+            animation: scaleIn 0.3s ease-out forwards;
+        }
+
+        @keyframes bounce-soft {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .animate-bounce-soft {
+            animation: bounce-soft 2s infinite;
+        }
+
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+
+        .animate-pulse-soft {
+            animation: pulse-soft 3s infinite;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--slate-700);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--purple);
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
