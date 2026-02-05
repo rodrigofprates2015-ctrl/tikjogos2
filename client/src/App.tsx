@@ -26,6 +26,7 @@ import ModoLocalJogo from "@/pages/ModoLocalJogo";
 import AdTest from "@/pages/AdTest";
 import RoomRedirect from "@/pages/RoomRedirect";
 import ThemePage from "@/pages/ThemePage";
+import GameModes from "@/pages/GameModes";
 import { useAuth } from "@/hooks/useAuth";
 
 function VersionManager() {
@@ -79,6 +80,8 @@ function Router() {
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/termos" component={TermsOfUse} />
       <Route path="/terms" component={TermsOfUse} />
+      <Route path="/modos" component={GameModes} />
+      <Route path="/modos-de-jogo" component={GameModes} />
       <Route path="/outros-jogos" component={OutrosJogos} />
       <Route path="/termo" component={Termo} />
       <Route path="/jogar/:id" component={PlayGame} />
