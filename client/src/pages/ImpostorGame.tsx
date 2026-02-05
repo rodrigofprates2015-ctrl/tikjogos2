@@ -1127,7 +1127,7 @@ const HomeScreen = () => {
         </div>
 
         {/* Main card */}
-        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in">
+        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-24">
           {/* Impostor logo with characters */}
           <div className="flex justify-center mb-3">
             <img 
