@@ -194,6 +194,7 @@ export default function BlogPost() {
               <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">NAVEGAÇÃO</h4>
               <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
                 <li><Link href="/" className="hover:text-purple-400 transition-colors">Início</Link></li>
+                <li><Link href="/blog" className="hover:text-purple-400 transition-colors">Blog</Link></li>
                 <li><Link href="/comojogar" className="hover:text-purple-400 transition-colors">Como Jogar</Link></li>
                 <li><Link href="/modos" className="hover:text-purple-400 transition-colors">Modos de Jogo</Link></li>
                 <li><Link href="/termos" className="hover:text-purple-400 transition-colors">Termos de Uso</Link></li>
