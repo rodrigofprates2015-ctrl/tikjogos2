@@ -4,7 +4,7 @@ import { Sparkles, TrendingUp, Zap, Youtube, Instagram, MessageCircle } from "lu
 import BlogCard from "@/components/BlogCard";
 import { BLOG_POSTS } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
-import { BlogFluidAd } from "@/components/AdSense";
+import { BlogFluidAd, SideAds, BottomAd } from "@/components/AdSense";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 export default function Blog() {
@@ -29,6 +29,12 @@ export default function Blog() {
     >
       {/* Navigation */}
       <MobileNav />
+
+      {/* Side Ads */}
+      <SideAds />
+
+      {/* Bottom Ad */}
+      <BottomAd />
 
       <main className="flex-grow w-full">
         {/* Hero / Featured Section */}

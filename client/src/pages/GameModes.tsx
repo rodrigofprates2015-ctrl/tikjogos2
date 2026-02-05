@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import { Rocket, Star, Key, MapPin, Package, Users, HelpCircle, Youtube, Instagram, MessageCircle } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import { SideAds, BottomAd } from "@/components/AdSense";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 interface GameMode {
@@ -86,6 +87,12 @@ export default function GameModes() {
     <div className="min-h-screen w-full flex flex-col" style={{ backgroundColor: '#1a1b2e' }}>
       {/* Navigation */}
       <MobileNav />
+
+      {/* Side Ads */}
+      <SideAds />
+
+      {/* Bottom Ad */}
+      <BottomAd />
 
       <main className="flex-grow pb-20 pt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

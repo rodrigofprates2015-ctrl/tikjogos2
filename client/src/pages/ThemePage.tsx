@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Play, Users, Zap, ArrowRight, Home } from 'lucide-react';
+import { SideAds, BottomAd } from "@/components/AdSense";
 
 interface ThemeConfig {
   id: string;
@@ -218,6 +219,12 @@ export default function ThemePage({ themeSlug }: ThemePageProps) {
 
   return (
     <div className="min-h-screen bg-[#1C202C] text-white">
+        {/* Side Ads */}
+        <SideAds />
+
+        {/* Bottom Ad */}
+        <BottomAd />
+
         {/* Header */}
         <header className="bg-[#242642] border-b-4 border-[#2f3252] py-4 px-4">
           <div className="max-w-6xl mx-auto flex items-center justify-between">

@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { ArrowLeft, Clock, Calendar, Share2, MessageSquare, ThumbsUp, Youtube, Instagram, MessageCircle } from "lucide-react";
 import { getBlogPostById, BLOG_POSTS } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
+import { SideAds, BottomAd } from "@/components/AdSense";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 function ArticleNotFound() {
@@ -49,6 +50,12 @@ export default function BlogPost() {
     <div className="min-h-screen w-full flex flex-col" style={{ backgroundColor: '#1a1b2e' }}>
       {/* Navigation */}
       <MobileNav />
+
+      {/* Side Ads */}
+      <SideAds />
+
+      {/* Bottom Ad */}
+      <BottomAd />
 
       <main className="flex-grow pb-20">
         {/* Article Header */}

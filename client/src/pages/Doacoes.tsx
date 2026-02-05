@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { SideAds, BottomAd } from "@/components/AdSense";
 import { 
   ArrowLeft,
   Loader2,
@@ -144,6 +145,12 @@ export default function Doacoes() {
       className="min-h-screen w-full flex flex-col items-center relative overflow-hidden"
       style={{ backgroundColor: '#1a1b2e' }}
     >
+      {/* Side Ads */}
+      <SideAds />
+
+      {/* Bottom Ad */}
+      <BottomAd />
+
       {/* Background blur effects */}
       <div className="absolute top-20 left-10 w-64 h-64 bg-purple-500/20 rounded-full blur-[100px]" />
       <div className="absolute bottom-20 right-10 w-64 h-64 bg-blue-500/20 rounded-full blur-[100px]" />

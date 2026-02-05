@@ -15,7 +15,7 @@ import {
   MessageCircle
 } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
-import { DisplayAd } from "@/components/AdSense";
+import { DisplayAd, SideAds, BottomAd } from "@/components/AdSense";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 export default function ComoJogar() {
@@ -28,6 +28,12 @@ export default function ComoJogar() {
     <div className="min-h-screen w-full flex flex-col" style={{ backgroundColor: '#1a1b2e' }}>
       {/* Navigation */}
       <MobileNav />
+
+      {/* Side Ads */}
+      <SideAds />
+
+      {/* Bottom Ad */}
+      <BottomAd />
 
       <main className="flex-grow pt-12 pb-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -4,6 +4,7 @@ import { ArrowLeft, Delete, CornerDownLeft, Share2, Trophy, Clock, HelpCircle } 
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoTermo from "@/assets/Termo_Logo_58x58_1765323385999.png";
 import { useToast } from "@/hooks/use-toast";
+import { SideAds, BottomAd } from "@/components/AdSense";
 
 const WORD_LENGTH = 5;
 const MAX_ATTEMPTS = 6;
@@ -350,6 +351,11 @@ export default function Termo() {
 
   return (
     <div className="min-h-screen text-white flex flex-col items-center font-sans antialiased" style={{ backgroundColor: '#063970' }}>
+      {/* Side Ads */}
+      <SideAds />
+
+      {/* Bottom Ad */}
+      <BottomAd />
       
       {/* Header */}
       <header className="w-full max-w-lg pt-4 pb-4 px-4 flex flex-col items-center relative border-b border-[#3a3a3c]">

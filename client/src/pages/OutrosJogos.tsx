@@ -3,7 +3,7 @@ import { ArrowLeft, Gamepad2 } from "lucide-react";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 import logoTermo from "@/assets/Termo_Logo_58x58_1765323385999.png";
 import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
-import { OutrosJogosAd } from "@/components/AdSense";
+import { OutrosJogosAd, SideAds, BottomAd } from "@/components/AdSense";
 
 const internalGames = [
   {
@@ -18,6 +18,12 @@ const internalGames = [
 export default function OutrosJogos() {
   return (
     <div className="min-h-screen w-full flex flex-col items-center bg-[#121a31] py-8 px-4">
+      {/* Side Ads */}
+      <SideAds />
+
+      {/* Bottom Ad */}
+      <BottomAd />
+
       {/* Top Ad Block */}
       <AdBlockTop />
       

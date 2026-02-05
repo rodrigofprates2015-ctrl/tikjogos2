@@ -88,7 +88,7 @@ export const DisplayAd = ({ className, format = "auto" }: { className?: string; 
   />
 );
 
-// Anúncios laterais verticais fixos
+// Anúncios laterais verticais fixos (300x600 - Half Page)
 export const SideAds = () => {
   const leftPushed = useRef(false);
   const rightPushed = useRef(false);
@@ -115,20 +115,20 @@ export const SideAds = () => {
   return (
     <>
       {/* Left Side Ad */}
-      <div className="fixed left-0 top-1/2 -translate-y-1/2 z-40 hidden xl:block">
+      <div className="fixed left-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block">
         <ins
           className="adsbygoogle"
-          style={{ display: "block", width: "160px", height: "600px" }}
+          style={{ display: "block", width: "300px", height: "600px" }}
           data-ad-client="ca-pub-9927561573478881"
           data-ad-slot="7536067322"
           data-ad-format="vertical"
         />
       </div>
       {/* Right Side Ad */}
-      <div className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden xl:block">
+      <div className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block">
         <ins
           className="adsbygoogle"
-          style={{ display: "block", width: "160px", height: "600px" }}
+          style={{ display: "block", width: "300px", height: "600px" }}
           data-ad-client="ca-pub-9927561573478881"
           data-ad-slot="7536067322"
           data-ad-format="vertical"
