@@ -951,6 +951,7 @@ const HomeScreen = () => {
   const [code, setCodeInput] = useState("");
   const [saveNicknameChecked, setSaveNicknameChecked] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
+  const [isThemeWorkshopOpen, setIsThemeWorkshopOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -1072,12 +1073,68 @@ const HomeScreen = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen w-full flex flex-col relative"
-      style={{
-        backgroundColor: '#1C202C'
-      }}
-    >
+    <div className="min-h-screen w-full flex flex-col bg-[#1a1b2e] selection:bg-purple-500/30">
+      {/* Navigation */}
+      <nav className="bg-[#242642]/90 backdrop-blur-sm border-b border-[#2f3252] sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center cursor-pointer">
+            <img src={logoTikjogos} alt="TikJogos" className="h-8" />
+          </Link>
+          <div className="flex items-center gap-4 flex-wrap">
+            <Link href="/" className="text-slate-400 hover:text-white transition-colors text-sm font-bold flex items-center gap-1.5">
+              <Home className="w-4 h-4" /> Início
+            </Link>
+            <Link href="/blog" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">
+              Blog
+            </Link>
+            <Link href="/comojogar" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">
+              Como Jogar
+            </Link>
+            <Link href="/" className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-sm font-black rounded-full border-2 border-purple-800 transition-all">
+              Jogar Agora
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Social and Action Buttons - Floating Desktop */}
+      <div className="hidden sm:flex fixed top-20 right-4 z-[60] items-center gap-2">
+        <a 
+          href="https://www.youtube.com/@RAPMUGEN?sub_confirmation=1" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="w-10 h-10 bg-[#242642] border-2 border-[#2f3252] rounded-xl flex items-center justify-center text-white hover:bg-red-600 hover:border-red-500 transition-all hover:-translate-y-1 shadow-lg"
+          title="YouTube"
+        >
+          <Youtube className="w-5 h-5" />
+        </a>
+        <a 
+          href="https://www.instagram.com/jogodoimpostor/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="w-10 h-10 bg-[#242642] border-2 border-[#2f3252] rounded-xl flex items-center justify-center text-white hover:bg-pink-600 hover:border-pink-500 transition-all hover:-translate-y-1 shadow-lg"
+          title="Instagram"
+        >
+          <Instagram className="w-5 h-5" />
+        </a>
+        <a 
+          href="https://discord.gg/H3cjkcd7Pz" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="w-10 h-10 bg-[#242642] border-2 border-[#2f3252] rounded-xl flex items-center justify-center text-white hover:bg-[#5865F2] hover:border-[#5865F2] transition-all hover:-translate-y-1 shadow-lg"
+          title="Discord"
+        >
+          <MessageCircle className="w-5 h-5" />
+        </a>
+        <button
+          onClick={() => setIsThemeWorkshopOpen(true)}
+          className="h-10 px-4 bg-orange-500 border-2 border-orange-700 rounded-xl flex items-center gap-2 text-white font-bold hover:bg-orange-400 transition-all hover:-translate-y-1 shadow-lg"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Criar Tema</span>
+        </button>
+      </div>
+
       {/* Elementos decorativos de fundo */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
@@ -1122,7 +1179,7 @@ const HomeScreen = () => {
         <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
 
         {/* Premium Banner - Create your own theme */}
-        <div className="w-[95%] max-w-4xl mb-2">
+        <div className="w-[95%] max-w-4xl mt-8 mb-4">
           <PremiumBanner />
         </div>
 
@@ -1314,8 +1371,7 @@ const HomeScreen = () => {
       {/* Donation Button and Modal */}
       <TopRightButtons onDonateClick={() => setIsDonationOpen(true)} />
       <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />
-      
-
+      <ThemeWorkshopModal isOpen={isThemeWorkshopOpen} onClose={() => setIsThemeWorkshopOpen(false)} />
     </div>
   );
 };
