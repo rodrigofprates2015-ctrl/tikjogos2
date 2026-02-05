@@ -1,9 +1,10 @@
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useEffect } from "react";
 import { Sparkles, TrendingUp, Zap, Youtube, Instagram, MessageCircle } from "lucide-react";
 import BlogCard from "@/components/BlogCard";
 import { BLOG_POSTS } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
+import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 export default function Blog() {
   const [, setLocation] = useLocation();

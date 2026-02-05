@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import { Rocket, Star, Key, MapPin, Package, Users, HelpCircle, Youtube, Instagram, MessageCircle } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 interface GameMode {
   id: string;

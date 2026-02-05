@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import { FileText, ChevronLeft, Youtube, Instagram, MessageCircle } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 const termsData = [
   { id: 1, title: 'Aceitação dos Termos', content: 'Ao usar este site, você concorda em cumprir estes Termos de Uso e todas as leis e regulamentos aplicáveis. Se você não concorda com algum destes termos, não use este site.' },

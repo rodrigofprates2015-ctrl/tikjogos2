@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { ArrowLeft, Clock, Calendar, Share2, MessageSquare, ThumbsUp, Youtube, Instagram, MessageCircle } from "lucide-react";
 import { getBlogPostById, BLOG_POSTS } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
+import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 function ArticleNotFound() {
   return (
