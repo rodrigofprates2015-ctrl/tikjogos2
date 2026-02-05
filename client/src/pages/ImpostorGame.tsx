@@ -1090,50 +1090,15 @@ const HomeScreen = () => {
             <Link href="/comojogar" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">
               Como Jogar
             </Link>
-            <Link href="/" className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-sm font-black rounded-full border-2 border-purple-800 transition-all">
-              Jogar Agora
+            <Link href="/outrosjogos" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">
+              Outros Jogos
             </Link>
           </div>
         </div>
       </nav>
 
       {/* Social and Action Buttons - Floating Desktop */}
-      <div className="hidden sm:flex fixed top-20 right-4 z-[60] items-center gap-2">
-        <a 
-          href="https://www.youtube.com/@RAPMUGEN?sub_confirmation=1" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="w-10 h-10 bg-[#242642] border-2 border-[#2f3252] rounded-xl flex items-center justify-center text-white hover:bg-red-600 hover:border-red-500 transition-all hover:-translate-y-1 shadow-lg"
-          title="YouTube"
-        >
-          <Youtube className="w-5 h-5" />
-        </a>
-        <a 
-          href="https://www.instagram.com/jogodoimpostor/" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="w-10 h-10 bg-[#242642] border-2 border-[#2f3252] rounded-xl flex items-center justify-center text-white hover:bg-pink-600 hover:border-pink-500 transition-all hover:-translate-y-1 shadow-lg"
-          title="Instagram"
-        >
-          <Instagram className="w-5 h-5" />
-        </a>
-        <a 
-          href="https://discord.gg/H3cjkcd7Pz" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="w-10 h-10 bg-[#242642] border-2 border-[#2f3252] rounded-xl flex items-center justify-center text-white hover:bg-[#5865F2] hover:border-[#5865F2] transition-all hover:-translate-y-1 shadow-lg"
-          title="Discord"
-        >
-          <MessageCircle className="w-5 h-5" />
-        </a>
-        <button
-          onClick={() => setIsThemeWorkshopOpen(true)}
-          className="h-10 px-4 bg-orange-500 border-2 border-orange-700 rounded-xl flex items-center gap-2 text-white font-bold hover:bg-orange-400 transition-all hover:-translate-y-1 shadow-lg"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Criar Tema</span>
-        </button>
-      </div>
+      {/* Removido conforme solicitado */}
 
       {/* Elementos decorativos de fundo */}
       <div className="fixed inset-0 pointer-events-none z-0">
