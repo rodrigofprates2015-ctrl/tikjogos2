@@ -226,8 +226,8 @@ export default function ComoJogar() {
             </div>
           </section>
         </div>
-      </main>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9927561573478881"
+
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9927561573478881"
      crossorigin="anonymous"></script>
 <!-- Display -->
 <ins class="adsbygoogle"
@@ -239,6 +239,8 @@ export default function ComoJogar() {
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
+      </main>
+
       {/* Footer */}
       <footer className="bg-[#0f172a] border-t-8 border-[#242642] pt-16 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
