@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Search, Plus, Heart, Play, TrendingUp, Clock, Star, Sparkles, ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import { MobileNav } from "@/components/MobileNav";
 
 type PublicTheme = {
   id: string;
@@ -168,18 +168,7 @@ export default function CommunityThemes() {
       }}
     >
       {/* Navigation */}
-      <nav className="bg-[#0a1628]/90 backdrop-blur-sm border-b border-[#3d4a5c] sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center cursor-pointer">
-            <img src={logoTikjogos} alt="TikJogos" className="h-8" />
-          </Link>
-          <div className="flex items-center gap-4 flex-wrap">
-            <Link href="/" className="text-gray-300 hover:text-white transition-colors text-sm font-medium">
-              Voltar ao Jogo
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <MobileNav />
 
       {/* Main Content */}
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

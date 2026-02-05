@@ -10,6 +10,7 @@ import { VoiceControlButton, VoiceChatJoinButton, SpeakingIndicator } from "@/co
 import { useVoiceChatContext } from "@/hooks/VoiceChatContext";
 
 import { PremiumBanner } from "@/components/PremiumBanner";
+import { MobileNav } from "@/components/MobileNav";
 import { SiDiscord } from "react-icons/si";
 import { 
   User, 
@@ -1039,27 +1040,7 @@ const HomeScreen = () => {
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#1a1b2e] selection:bg-purple-500/30">
       {/* Navigation */}
-      <nav className="bg-[#242642]/90 backdrop-blur-sm border-b border-[#2f3252] sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center cursor-pointer">
-            <img src={logoTikjogos} alt="TikJogos" className="h-8" />
-          </Link>
-          <div className="flex items-center gap-4 flex-wrap">
-            <Link href="/" className="text-slate-400 hover:text-white transition-colors text-sm font-bold flex items-center gap-1.5">
-              <Home className="w-4 h-4" /> Início
-            </Link>
-            <Link href="/blog" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">
-              Blog
-            </Link>
-            <Link href="/comojogar" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">
-              Como Jogar
-            </Link>
-            <Link href="/outrosjogos" className="text-slate-400 hover:text-white transition-colors text-sm font-bold">
-              Outros Jogos
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <MobileNav />
 
       {/* Social and Action Buttons - Floating Desktop */}
       {/* Removido conforme solicitado */}
