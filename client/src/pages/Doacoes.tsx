@@ -69,17 +69,17 @@ export default function Doacoes() {
 
   const handleDonate = async () => {
     if (!donorName.trim()) {
-      toast({ title: "Erro", description: "Digite seu nome", variant: "destructive" });
+      toast({ title: t('alerts.error', 'Erro'), description: t('donate.enterName', 'Digite seu nome'), variant: "destructive" });
       return;
     }
     
     if (!finalAmount || finalAmount < 1) {
-      toast({ title: "Erro", description: "Valor mínimo é R$ 1,00", variant: "destructive" });
+      toast({ title: t('alerts.error', 'Erro'), description: t('donate.minAmount', 'Valor mínimo é R$ 1,00'), variant: "destructive" });
       return;
     }
 
     if (finalAmount > 1000) {
-      toast({ title: "Erro", description: "Valor máximo é R$ 1.000,00", variant: "destructive" });
+      toast({ title: t('alerts.error', 'Erro'), description: t('donate.maxAmount', 'Valor máximo é R$ 1.000,00'), variant: "destructive" });
       return;
     }
     
@@ -130,7 +130,7 @@ export default function Doacoes() {
   const copyPixCode = () => {
     if (payment.qrCode) {
       navigator.clipboard.writeText(payment.qrCode);
-      toast({ title: "Copiado!", description: "Código PIX copiado para a área de transferência." });
+      toast({ title: t('donate.copied', 'Copiado!'), description: t('donate.copiedDesc', 'Código PIX copiado para a área de transferência.') });
     }
   };
 
@@ -162,11 +162,11 @@ export default function Doacoes() {
         {/* Back button */}
         <div className="w-full max-w-4xl mb-4">
           <Link 
-            href="/" 
+            href={langPath("/")} 
             className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 border-2 border-slate-700 rounded-xl text-white hover:bg-slate-700 transition-all font-bold text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
-            Voltar para Home
+            {t('donate.backToHome', 'Voltar para Home')}
           </Link>
         </div>
 
@@ -189,10 +189,10 @@ export default function Doacoes() {
               <div className="text-center lg:text-left mb-4">
                 <h1 className="text-2xl md:text-3xl font-black text-white flex items-center justify-center lg:justify-start gap-2 mb-1">
                   <Heart className="w-6 h-6 md:w-7 md:h-7 text-rose-500 fill-rose-500 flex-shrink-0" />
-                  <span>APOIE O TIKJOGOS</span>
+                  <span>{t('donate.heroTitle', 'APOIE O TIKJOGOS')}</span>
                 </h1>
                 <p className="text-slate-400 text-sm">
-                  Ajude a manter o jogo online e gratuito!
+                  {t('donate.heroDesc', 'Ajude a manter o jogo online e gratuito!')}
                 </p>
               </div>
 
@@ -202,16 +202,16 @@ export default function Doacoes() {
                   <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700">
                     <div className="flex items-center gap-2 text-[#facc15] mb-1">
                       <Coffee className="w-4 h-4 flex-shrink-0" />
-                      <span className="font-black text-xs">POR QUE DOAR?</span>
+                      <span className="font-black text-xs">{t('donate.whyDonate', 'POR QUE DOAR?')}</span>
                     </div>
                     <p className="text-xs text-slate-400">
-                      Servidores • Novos modos • Melhorias • Jogo 100% gratuito
+                      {t('donate.whyDonateDesc', 'Servidores • Novos modos • Melhorias • Jogo 100% gratuito')}
                     </p>
                   </div>
 
                   {/* Amount selection */}
                   <div className="space-y-2">
-                    <p className="text-xs text-slate-400 font-bold">ESCOLHA O VALOR:</p>
+                    <p className="text-xs text-slate-400 font-bold">{t('donate.chooseAmount', 'ESCOLHA O VALOR:')}</p>
                     <div className="flex flex-wrap gap-2">
                       {PRESET_AMOUNTS.map((value) => (
                         <button
@@ -230,7 +230,7 @@ export default function Doacoes() {
                         <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-bold">R$</span>
                         <input
                           type="number"
-                          placeholder="Outro"
+                          placeholder={t('donate.other', 'Outro')}
                           value={customAmount}
                           onChange={(e) => handleCustomAmountChange(e.target.value)}
                           min="1"
@@ -249,7 +249,7 @@ export default function Doacoes() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <input
                       type="text"
-                      placeholder="Seu nickname"
+                      placeholder={t('donate.nicknamePlaceholder', 'Seu nickname')}
                       value={donorName}
                       onChange={(e) => setDonorName(e.target.value)}
                       maxLength={50}
@@ -257,7 +257,7 @@ export default function Doacoes() {
                     />
                     <input
                       type="text"
-                      placeholder="Mensagem (opcional)"
+                      placeholder={t('donate.message', 'Mensagem (opcional)')}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       maxLength={100}
@@ -276,7 +276,7 @@ export default function Doacoes() {
                     ) : (
                       <Heart size={22} className="fill-current" />
                     )}
-                    DOAR R$ {finalAmount ? finalAmount.toFixed(2).replace('.', ',') : '0,00'} VIA PIX
+                    {t('donate.donateViaPix', 'DOAR VIA PIX')} - R$ {finalAmount ? finalAmount.toFixed(2).replace('.', ',') : '0,00'}
                   </button>
                   
                   {payment.status === 'error' && (
@@ -298,7 +298,7 @@ export default function Doacoes() {
                       )}
                       <div className="flex-1 w-full text-center sm:text-left">
                         <p className="text-sm text-slate-300 mb-3 font-bold">
-                          Escaneie o QR Code ou copie o código PIX
+                          {t('donate.scanOrCopy', 'Escaneie o QR Code ou copie o código PIX')}
                         </p>
                         <p className="text-lg font-black text-[#facc15] mb-3">
                           R$ {finalAmount.toFixed(2).replace('.', ',')}
@@ -308,7 +308,7 @@ export default function Doacoes() {
                           className="w-full px-4 py-3 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all border-b-[4px] bg-gradient-to-r from-emerald-500 to-green-500 border-emerald-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-1"
                         >
                           <Copy className="w-4 h-4" />
-                          COPIAR CÓDIGO PIX
+                          {t('donate.copyPixCode', 'COPIAR CÓDIGO PIX')}
                         </button>
                       </div>
                     </div>
@@ -317,13 +317,13 @@ export default function Doacoes() {
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2 text-[#facc15]">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <p className="text-xs font-bold">Aguardando pagamento...</p>
+                      <p className="text-xs font-bold">{t('donate.awaitingPayment', 'Aguardando pagamento...')}</p>
                     </div>
                     <button
                       onClick={resetForm}
                       className="text-xs text-slate-400 hover:text-white transition-colors underline font-bold"
                     >
-                      Cancelar
+                      {t('buttons.cancel', 'Cancelar')}
                     </button>
                   </div>
                 </div>
@@ -332,10 +332,10 @@ export default function Doacoes() {
                   <div className="bg-emerald-500/10 rounded-xl p-4 border border-emerald-500/30">
                     <div className="flex items-center gap-2 text-emerald-400 mb-2">
                       <Check className="w-6 h-6 flex-shrink-0" />
-                      <p className="text-lg font-black">OBRIGADO, {donorName}!</p>
+                      <p className="text-lg font-black">{t('donate.thankYou', 'OBRIGADO')}, {donorName}!</p>
                     </div>
                     <p className="text-sm text-slate-300">
-                      Sua contribuição ajuda a manter o TikJogos online e gratuito para todos.
+                      {t('donate.thankYouDesc', 'Sua contribuição ajuda a manter o TikJogos online e gratuito para todos.')}
                     </p>
                   </div>
                   
@@ -345,14 +345,14 @@ export default function Doacoes() {
                       className="px-4 py-3 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all border-b-[4px] bg-gradient-to-r from-rose-500 to-pink-500 border-rose-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-1"
                     >
                       <Heart className="w-4 h-4" />
-                      Doar novamente
+                      {t('donate.donateAgain', 'Doar novamente')}
                     </button>
                     <Link 
-                      href="/" 
+                      href={langPath("/")} 
                       className="px-4 py-3 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all border-b-[4px] bg-gradient-to-r from-emerald-500 to-green-500 border-emerald-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-1"
                     >
                       <Zap className="w-4 h-4" />
-                      Ir jogar
+                      {t('donate.goPlay', 'Ir jogar')}
                     </Link>
                   </div>
                 </div>

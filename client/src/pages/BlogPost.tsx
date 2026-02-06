@@ -23,10 +23,12 @@ function ArticleNotFound() {
 }
 
 export default function BlogPost() {
-  const [, params] = useRoute("/blog/:id");
+  const [, paramsPt] = useRoute("/blog/:id");
+  const [, paramsEn] = useRoute("/en/blog/:id");
+  const [, paramsEs] = useRoute("/es/blog/:id");
   const [, setLocation] = useLocation();
   const { t, langPath, lang } = useLanguage();
-  const id = params?.id || "";
+  const id = paramsPt?.id || paramsEn?.id || paramsEs?.id || "";
   const post = getBlogPostById(id);
 
   // Use translated blog post content when available
