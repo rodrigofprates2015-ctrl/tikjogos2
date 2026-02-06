@@ -309,8 +309,20 @@ export default function AdminDashboard() {
   useEffect(() => {
     const savedToken = localStorage.getItem("adminToken");
     if (savedToken) {
-      setToken(savedToken);
-      setIsAuthenticated(true);
+      // Verify the token is still valid server-side before trusting it
+      fetch("/api/admin/verify", {
+        headers: { "Authorization": `Bearer ${savedToken}` }
+      }).then(res => {
+        if (res.ok) {
+          setToken(savedToken);
+          setIsAuthenticated(true);
+        } else {
+          // Token is invalid or expired - clear it
+          localStorage.removeItem("adminToken");
+        }
+      }).catch(() => {
+        localStorage.removeItem("adminToken");
+      });
     }
   }, []);
 

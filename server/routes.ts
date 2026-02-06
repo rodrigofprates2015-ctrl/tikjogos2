@@ -15,6 +15,28 @@ const { RtcTokenBuilder, RtcRole } = agoraToken;
 // Note: All pending themes are now stored directly in PostgreSQL database
 // This ensures persistence across server restarts and works in all deployment environments
 
+// Server-side admin token store with expiration (24h)
+const ADMIN_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+const adminTokens = new Map<string, number>(); // token -> expiry timestamp
+
+function storeAdminToken(token: string): void {
+  adminTokens.set(token, Date.now() + ADMIN_TOKEN_TTL_MS);
+}
+
+function isValidAdminToken(token: string): boolean {
+  const expiry = adminTokens.get(token);
+  if (!expiry) return false;
+  if (Date.now() > expiry) {
+    adminTokens.delete(token);
+    return false;
+  }
+  return true;
+}
+
+function revokeAdminToken(token: string): void {
+  adminTokens.delete(token);
+}
+
 const GAME_MODES = {
   palavraSecreta: {
     title: "Palavra Secreta",
@@ -2851,14 +2873,9 @@ export async function registerRoutes(
       }
       
       if (email === adminEmail && password === adminPassword) {
-        // Generate a simple session token
+        // Generate a cryptographically secure token and store it server-side
         const token = randomBytes(32).toString('hex');
-        
-        // Clear any existing admin session data first
-        if (req.session) {
-          delete (req.session as any).adminToken;
-          delete (req.session as any).isAdmin;
-        }
+        storeAdminToken(token);
         
         console.log('[Admin] Login successful');
         return res.json({ success: true, token });
@@ -2872,43 +2889,29 @@ export async function registerRoutes(
     }
   });
   
-  // Admin logout endpoint - clears session and cookie
+  // Admin logout endpoint - revokes the token server-side
   app.post("/api/admin/logout", (req, res) => {
     try {
-      if (req.session) {
-        delete (req.session as any).adminToken;
-        delete (req.session as any).isAdmin;
-        req.session.destroy((err) => {
-          if (err) {
-            console.error('[Admin] Session destroy error:', err);
-          }
-          // Clear the session cookie
-          res.clearCookie('tikjogos.sid', {
-            path: '/',
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax'
-          });
-          console.log('[Admin] Logout successful - session and cookie cleared');
-          res.json({ success: true });
-        });
-      } else {
-        console.log('[Admin] Logout successful - no session to clear');
-        res.json({ success: true });
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        revokeAdminToken(token);
       }
+      console.log('[Admin] Logout successful - token revoked');
+      res.json({ success: true });
     } catch (error) {
       console.error('[Admin] Logout error:', error);
       res.status(400).json({ error: "Erro no logout" });
     }
   });
   
-  // Admin middleware to verify admin token - ONLY checks Bearer token, not session
+  // Admin middleware - validates token against server-side store
   const verifyAdmin = (req: any, res: any, next: any) => {
     const authHeader = req.headers.authorization;
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
-      if (token && token.length > 0) {
+      if (token && isValidAdminToken(token)) {
         next();
         return;
       }
@@ -2916,6 +2919,11 @@ export async function registerRoutes(
     
     res.status(401).json({ error: "Não autorizado" });
   };
+
+  // Verify token endpoint - client calls this on page load to check if stored token is still valid
+  app.get("/api/admin/verify", verifyAdmin, (_req, res) => {
+    res.json({ valid: true });
+  });
 
   // Analytics routes
   app.use('/api/analytics', createAnalyticsRouter(verifyAdmin));

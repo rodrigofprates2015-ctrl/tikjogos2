@@ -829,38 +829,9 @@ const TopRightButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
 );
 
 const MobileActionButtons = ({ onDonateClick }: { onDonateClick: () => void }) => (
-  <div className="sm:hidden flex items-center justify-center gap-2 w-full mb-1">
-    <Link 
-      href="/outros-jogos"
-      className="flex items-center gap-2 px-3 py-2 bg-[#e8a045] border-2 border-[#c88025] rounded-xl text-white hover:bg-[#f8b055] transition-all font-semibold shadow-lg"
-      data-testid="button-other-games-mobile"
-    >
-      <Gamepad2 className="w-4 h-4" />
-    </Link>
-    <Link 
-      href="/comojogar"
-      className="flex items-center gap-2 px-3 py-2 bg-[#4a90a4] border-2 border-[#3a7084] rounded-xl text-white hover:bg-[#5aa0b4] transition-all font-semibold shadow-lg"
-      data-testid="button-how-to-play-mobile"
-    >
-      <HelpCircle className="w-4 h-4" />
-    </Link>
-    <a
-      href="https://discord.gg/H3cjkcd7Pz"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-2 px-3 py-2 bg-[#5865F2] border-2 border-[#4752C4] rounded-xl text-white hover:bg-[#6875F3] transition-all font-semibold shadow-lg"
-      data-testid="button-discord-mobile"
-    >
-      <SiDiscord className="w-4 h-4" />
-    </a>
-    <button
-      onClick={onDonateClick}
-      className="flex items-center gap-2 px-3 py-2 bg-[#c44536] border-2 border-[#a33526] rounded-xl text-white hover:bg-[#d45546] transition-all font-semibold shadow-lg"
-      data-testid="button-donate-mobile"
-    >
-      <Heart className="w-4 h-4 fill-current" />
-    </button>
-  </div>
+  <>
+    {/* Mobile action buttons removed as requested */}
+  </>
 );
 
 
