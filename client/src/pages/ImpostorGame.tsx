@@ -1067,13 +1067,13 @@ const HomeScreen = () => {
         {/* Mobile action buttons - above the card */}
         <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
 
-        {/* Premium Banner - Create your own theme */}
-        <div className="w-[95%] max-w-4xl mt-8 mb-4">
+        {/* Premium Banner - Desktop only (above form) */}
+        <div className="hidden md:block w-[95%] max-w-4xl mt-8 mb-4">
           <PremiumBanner />
         </div>
 
         {/* Main card */}
-        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-24">
+        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24">
           {/* Impostor logo with characters */}
           <div className="flex justify-center mb-3">
             <img 
@@ -1186,6 +1186,11 @@ const HomeScreen = () => {
             </Link>
 
           </div>
+        </div>
+
+        {/* Premium Banner - Mobile only (below form) */}
+        <div className="md:hidden w-[90%] max-w-md mb-24">
+          <PremiumBanner />
         </div>
       </div>
 
