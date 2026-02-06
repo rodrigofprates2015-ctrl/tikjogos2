@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Rocket, Star, Key, MapPin, Package, Users, HelpCircle, Youtube, Instagram, MessageCircle } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 import { SideAds, BottomAd } from "@/components/AdSense";
+import { useLanguage } from "@/hooks/useLanguage";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 interface GameMode {
@@ -60,8 +61,10 @@ const iconMap: Record<string, React.ComponentType<{ size?: number; strokeWidth?:
 };
 
 export default function GameModes() {
+  const { t, langPath } = useLanguage();
+
   useEffect(() => {
-    document.title = "Modos de Jogo - TikJogos Impostor";
+    document.title = t('gameModes.title', 'Modos de Jogo') + " - TikJogos Impostor";
     window.scrollTo(0, 0);
   }, []);
 

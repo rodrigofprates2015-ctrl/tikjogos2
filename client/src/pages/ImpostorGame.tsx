@@ -11,6 +11,7 @@ import { useVoiceChatContext } from "@/hooks/VoiceChatContext";
 
 import { PremiumBanner } from "@/components/PremiumBanner";
 import { MobileNav } from "@/components/MobileNav";
+import { useLanguage } from "@/hooks/useLanguage";
 import { SiDiscord } from "react-icons/si";
 import { 
   User, 
@@ -919,6 +920,7 @@ const HomeScreen = () => {
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isThemeWorkshopOpen, setIsThemeWorkshopOpen] = useState(false);
   const { toast } = useToast();
+  const { t, langPath } = useLanguage();
 
   useEffect(() => {
     const saved = loadSavedNickname();
@@ -1116,7 +1118,7 @@ const HomeScreen = () => {
             {/* Nickname input */}
             <input
               type="text"
-              placeholder="Seu nickname"
+              placeholder={t('home.nickname', 'Seu nickname')}
               value={name}
               onChange={(e) => setNameInput(e.target.value)}
               className="input-dark"
@@ -1136,7 +1138,7 @@ const HomeScreen = () => {
               data-testid="button-create-room"
             >
               {isLoading ? <Loader2 size={28} className="animate-spin" /> : <Zap size={28} className="animate-bounce" />}
-              CRIAR SALA
+              {t('home.createRoom', 'CRIAR SALA').toUpperCase()}
             </button>
 
             {/* Save nickname checkbox */}
@@ -1149,7 +1151,7 @@ const HomeScreen = () => {
                   className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]"
                   data-testid="checkbox-save-nickname"
                 />
-                <span className="text-sm text-[#8aa0b0]">Guardar nickname</span>
+                <span className="text-sm text-[#8aa0b0]">{t('home.saveNickname', 'Guardar nickname')}</span>
               </label>
               {savedNickname && (
                 <button
@@ -1157,7 +1159,7 @@ const HomeScreen = () => {
                   className="text-xs text-[#6a8aaa] hover:text-white transition-colors underline"
                   data-testid="button-clear-nickname"
                 >
-                  Limpar
+                  {t('buttons.delete', 'Limpar')}
                 </button>
               )}
             </div>
@@ -1173,7 +1175,7 @@ const HomeScreen = () => {
             <div className="flex gap-3">
               <input
                 type="text"
-                placeholder="CÓDIGO"
+                placeholder={t('home.roomCode', 'CÓDIGO').toUpperCase()}
                 value={code}
                 onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
                 maxLength={4}
@@ -1191,7 +1193,7 @@ const HomeScreen = () => {
                 )}
                 data-testid="button-join-room"
               >
-                ENTRAR
+                {t('home.enterCode', 'ENTRAR').toUpperCase()}
               </button>
             </div>
 
@@ -1203,13 +1205,13 @@ const HomeScreen = () => {
             </div>
 
             {/* Local mode button */}
-            <Link href="/modo-local">
+            <Link href={langPath("/modo-local")}>
               <button 
                 className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-purple-500 to-pink-500 border-purple-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
                 data-testid="button-local-mode"
               >
                 <Smartphone size={28} />
-                MODO LOCAL
+                {t('home.playLocal', 'MODO LOCAL').toUpperCase()}
               </button>
             </Link>
 
@@ -1230,7 +1232,7 @@ const HomeScreen = () => {
                 />
               </Link>
               <p className="text-slate-400 max-w-md text-lg font-medium">
-                A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.
+                {t('home.description', 'A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.')}
               </p>
               <div className="flex gap-4">
                 <a href="https://www.youtube.com/@RAPMUGEN?sub_confirmation=1" target="_blank" rel="noopener noreferrer" title="YouTube" className="w-12 h-12 bg-slate-800 hover:bg-purple-600 rounded-2xl flex items-center justify-center transition-all hover:-translate-y-1">
@@ -1246,14 +1248,14 @@ const HomeScreen = () => {
             </div>
             
             <div>
-              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">NAVEGAÇÃO</h4>
+              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.home', 'NAVEGAÇÃO')}</h4>
               <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">Início</Link></li>
-                <li><Link href="/blog" className="hover:text-purple-400 transition-colors">Blog</Link></li>
-                <li><Link href="/comojogar" className="hover:text-purple-400 transition-colors">Como Jogar</Link></li>
-                <li><Link href="/modos" className="hover:text-purple-400 transition-colors">Modos de Jogo</Link></li>
-                <li><Link href="/termos" className="hover:text-purple-400 transition-colors">Termos de Uso</Link></li>
-                <li><Link href="/privacidade" className="hover:text-purple-400 transition-colors">Privacidade</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.home', 'Início')}</Link></li>
+                <li><Link href={langPath("/blog")} className="hover:text-purple-400 transition-colors">{t('nav.blog', 'Blog')}</Link></li>
+                <li><Link href={langPath("/comojogar")} className="hover:text-purple-400 transition-colors">{t('nav.howToPlay', 'Como Jogar')}</Link></li>
+                <li><Link href={langPath("/modos")} className="hover:text-purple-400 transition-colors">{t('gameModes.title', 'Modos de Jogo')}</Link></li>
+                <li><Link href={langPath("/termos")} className="hover:text-purple-400 transition-colors">{t('nav.terms', 'Termos de Uso')}</Link></li>
+                <li><Link href={langPath("/privacidade")} className="hover:text-purple-400 transition-colors">{t('nav.privacy', 'Privacidade')}</Link></li>
               </ul>
             </div>
 
@@ -1274,7 +1276,7 @@ const HomeScreen = () => {
           
           <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <div className="space-y-2">
-              <p className="text-slate-500 font-bold">© 2026 TikJogos Entertainment. Todos os direitos reservados.</p>
+              <p className="text-slate-500 font-bold">{t('legal.copyright', '© 2026 TikJogos Entertainment. Todos os direitos reservados.')}</p>
               <p className="text-slate-600 text-[10px] md:text-xs italic max-w-3xl leading-relaxed">
                 O TikJogos é um projeto independente de fãs. Todas as marcas registradas (como nomes de personagens e franquias) pertencem aos seus respectivos proprietários e são usadas aqui apenas para fins de referência em contexto de jogo de palavras/trivia.
               </p>

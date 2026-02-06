@@ -16,11 +16,14 @@ import {
 } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 import { DisplayAd, SideAds, BottomAd } from "@/components/AdSense";
+import { useLanguage } from "@/hooks/useLanguage";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 export default function ComoJogar() {
+  const { t, langPath } = useLanguage();
+
   useEffect(() => {
-    document.title = "Como Jogar - TikJogos Impostor";
+    document.title = t('howToPlay.title', 'Como Jogar') + " - TikJogos Impostor";
     window.scrollTo(0, 0);
   }, []);
 
@@ -43,7 +46,7 @@ export default function ComoJogar() {
               <Gamepad2 className="w-5 h-5" /> MANUAL DO TRIPULANTE
             </div>
             <h1 className="text-5xl md:text-7xl lg:text-8xl text-white font-black mb-6 leading-none">
-              Como Jogar <span className="text-purple-500">Jogo do Impostor</span>
+              {t('howToPlay.title', 'Como Jogar')} <span className="text-purple-500">{t('home.title', 'Jogo do Impostor')}</span>
             </h1>
             <p className="text-slate-400 text-xl md:text-2xl max-w-3xl mx-auto font-medium">
               Um jogo de dedução social online para jogar com amigos! Descubra quem é o impostor através de dicas, perguntas e muita estratégia.

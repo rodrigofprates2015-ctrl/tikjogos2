@@ -5,10 +5,12 @@ import BlogCard from "@/components/BlogCard";
 import { BLOG_POSTS } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
 import { BlogFluidAd, SideAds, BottomAd } from "@/components/AdSense";
+import { useLanguage } from "@/hooks/useLanguage";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 export default function Blog() {
   const [, setLocation] = useLocation();
+  const { t, langPath } = useLanguage();
 
   useEffect(() => {
     document.title = "Blog do Impostor - TikJogos";
@@ -47,13 +49,15 @@ export default function Blog() {
             <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-3 text-purple-400 font-black uppercase tracking-widest text-sm">
-                  <Sparkles className="w-5 h-5" /> CENTRAL DE COMANDO
+                  <Sparkles className="w-5 h-5" /> {t('blog.subtitle', 'CENTRAL DE COMANDO')}
                 </div>
                 <h1 className="text-5xl md:text-7xl text-white font-black">
-                  Blog do <span className="text-purple-500">Impostor</span>
+                  {t('blog.title', 'Blog do Impostor').split(' ').map((word, i, arr) => 
+                    i === arr.length - 1 ? <span key={i} className="text-purple-500">{word}</span> : word + ' '
+                  )}
                 </h1>
                 <p className="text-slate-400 text-xl max-w-2xl font-medium">
-                  Notícias galácticas, estratégias de sabotagem e atualizações direto da central TikJogos.
+                  {t('blog.description', 'Notícias galácticas, estratégias de sabotagem e atualizações direto da central TikJogos.')}
                 </p>
               </div>
             </header>
@@ -87,7 +91,7 @@ export default function Blog() {
                     <img src={featured.author.avatar} alt={featured.author.name} className="w-12 h-12 rounded-2xl border-2 border-purple-500/50" />
                     <div>
                       <p className="text-white font-black">{featured.author.name}</p>
-                      <p className="text-slate-500 text-sm font-bold">{featured.date} • {featured.readTime} leitura</p>
+                      <p className="text-slate-500 text-sm font-bold">{featured.date} • {featured.readTime} {t('blog.readTime', 'leitura')}</p>
                     </div>
                   </div>
                 </div>
@@ -148,14 +152,14 @@ export default function Blog() {
             </div>
             
             <div>
-              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">NAVEGAÇÃO</h4>
+              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.home', 'NAVEGAÇÃO')}</h4>
               <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">Início</Link></li>
-                <li><Link href="/blog" className="hover:text-purple-400 transition-colors">Blog</Link></li>
-                <li><Link href="/comojogar" className="hover:text-purple-400 transition-colors">Como Jogar</Link></li>
-                <li><Link href="/modos" className="hover:text-purple-400 transition-colors">Modos de Jogo</Link></li>
-                <li><Link href="/termos" className="hover:text-purple-400 transition-colors">Termos de Uso</Link></li>
-                <li><Link href="/privacidade" className="hover:text-purple-400 transition-colors">Privacidade</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.home', 'Início')}</Link></li>
+                <li><Link href={langPath("/blog")} className="hover:text-purple-400 transition-colors">{t('nav.blog', 'Blog')}</Link></li>
+                <li><Link href={langPath("/comojogar")} className="hover:text-purple-400 transition-colors">{t('nav.howToPlay', 'Como Jogar')}</Link></li>
+                <li><Link href={langPath("/modos")} className="hover:text-purple-400 transition-colors">{t('gameModes.title', 'Modos de Jogo')}</Link></li>
+                <li><Link href={langPath("/termos")} className="hover:text-purple-400 transition-colors">{t('nav.terms', 'Termos de Uso')}</Link></li>
+                <li><Link href={langPath("/privacidade")} className="hover:text-purple-400 transition-colors">{t('nav.privacy', 'Privacidade')}</Link></li>
               </ul>
             </div>
 

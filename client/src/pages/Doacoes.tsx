@@ -11,6 +11,7 @@ import {
   Coffee,
   Zap
 } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 type PaymentState = {
   status: 'idle' | 'loading' | 'awaiting_payment' | 'success' | 'error';
@@ -24,6 +25,7 @@ const PRESET_AMOUNTS = [5, 10, 20, 50];
 
 export default function Doacoes() {
   const { toast } = useToast();
+  const { t, langPath } = useLanguage();
   
   const [donorName, setDonorName] = useState('');
   const [message, setMessage] = useState('');

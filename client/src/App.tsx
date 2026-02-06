@@ -28,6 +28,7 @@ import RoomRedirect from "@/pages/RoomRedirect";
 import ThemePage from "@/pages/ThemePage";
 import GameModes from "@/pages/GameModes";
 import { useAuth } from "@/hooks/useAuth";
+import { LanguageProvider } from "@/hooks/useLanguage";
 
 function VersionManager() {
   useEffect(() => {
@@ -53,40 +54,94 @@ function VersionManager() {
   return null;
 }
 
-function Router() {
+/**
+ * Generates route entries for a given path and component, producing
+ * the PT (no prefix), EN (/en/...), and ES (/es/...) variants.
+ */
+function i18nRoutes(path: string, Component: React.ComponentType<any>) {
+  return (
+    <>
+      <Route path={path} component={Component} />
+      <Route path={`/en${path}`} component={Component} />
+      <Route path={`/es${path}`} component={Component} />
+    </>
+  );
+}
+
+function AppRouter() {
   const { user, isLoading, isAuthenticated } = useAuth();
 
   return (
     <Switch>
+      {/* Home — PT default (no prefix), EN, ES */}
       <Route path="/" component={ImpostorGame} />
-      <Route path="/sala/:codigo" component={RoomRedirect} />
-      {/* Rotas de criação de temas */}
-      <Route path="/criar-tema" component={CriarTema} />
-      <Route path="/oficina" component={CriarTema} />
-      {/* Rotas de temas da comunidade temporariamente desabilitadas */}
-      {/* <Route path="/temas" component={CommunityThemes} /> */}
-      {/* <Route path="/temas-comunidade" component={CommunityThemes} /> */}
-      <Route path="/doacoes" component={Doacoes} />
-      <Route path="/apoie" component={Doacoes} />
-      <Route path="/prototipo" component={Prototipo} />
-      <Route path="/modo-local" component={ModoLocal} />
-      <Route path="/modo-local/jogo" component={ModoLocalJogo} />
-      <Route path="/ad-test" component={AdTest} />
-      <Route path="/comojogar" component={ComoJogar} />
-      <Route path="/como-jogar" component={ComoJogar} />
-      <Route path="/blog" component={Blog} />
-      <Route path="/blog/:id" component={BlogPost} />
-      <Route path="/privacidade" component={PrivacyPolicy} />
-      <Route path="/privacy" component={PrivacyPolicy} />
-      <Route path="/termos" component={TermsOfUse} />
-      <Route path="/terms" component={TermsOfUse} />
-      <Route path="/modos" component={GameModes} />
-      <Route path="/modos-de-jogo" component={GameModes} />
-      <Route path="/outros-jogos" component={OutrosJogos} />
-      <Route path="/termo" component={Termo} />
-      <Route path="/jogar/:id" component={PlayGame} />
-      <Route path="/dashadmin" component={AdminDashboard} />
-      
+      <Route path="/en" component={ImpostorGame} />
+      <Route path="/es" component={ImpostorGame} />
+
+      {i18nRoutes("/sala/:codigo", RoomRedirect)}
+
+      {/* Criar tema */}
+      {i18nRoutes("/criar-tema", CriarTema)}
+      {i18nRoutes("/create-theme", CriarTema)}
+      {i18nRoutes("/crear-tema", CriarTema)}
+      {i18nRoutes("/oficina", CriarTema)}
+
+      {/* Doações */}
+      {i18nRoutes("/doacoes", Doacoes)}
+      {i18nRoutes("/donations", Doacoes)}
+      {i18nRoutes("/donaciones", Doacoes)}
+      {i18nRoutes("/apoie", Doacoes)}
+
+      {i18nRoutes("/prototipo", Prototipo)}
+
+      {/* Modo local */}
+      {i18nRoutes("/modo-local", ModoLocal)}
+      {i18nRoutes("/local-mode", ModoLocal)}
+      {i18nRoutes("/modo-local/jogo", ModoLocalJogo)}
+      {i18nRoutes("/local-mode/game", ModoLocalJogo)}
+
+      {i18nRoutes("/ad-test", AdTest)}
+
+      {/* Como jogar */}
+      {i18nRoutes("/comojogar", ComoJogar)}
+      {i18nRoutes("/como-jogar", ComoJogar)}
+      {i18nRoutes("/how-to-play", ComoJogar)}
+      {i18nRoutes("/como-jugar", ComoJogar)}
+
+      {/* Blog */}
+      {i18nRoutes("/blog", Blog)}
+      {i18nRoutes("/blog/:id", BlogPost)}
+
+      {/* Privacidade */}
+      {i18nRoutes("/privacidade", PrivacyPolicy)}
+      {i18nRoutes("/privacy", PrivacyPolicy)}
+      {i18nRoutes("/privacidad", PrivacyPolicy)}
+
+      {/* Termos */}
+      {i18nRoutes("/termos", TermsOfUse)}
+      {i18nRoutes("/terms", TermsOfUse)}
+      {i18nRoutes("/terminos", TermsOfUse)}
+
+      {/* Modos de jogo */}
+      {i18nRoutes("/modos", GameModes)}
+      {i18nRoutes("/modos-de-jogo", GameModes)}
+      {i18nRoutes("/game-modes", GameModes)}
+      {i18nRoutes("/modos-de-juego", GameModes)}
+
+      {/* Outros jogos */}
+      {i18nRoutes("/outros-jogos", OutrosJogos)}
+      {i18nRoutes("/other-games", OutrosJogos)}
+      {i18nRoutes("/otros-juegos", OutrosJogos)}
+
+      {i18nRoutes("/termo", Termo)}
+
+      {/* Jogar */}
+      {i18nRoutes("/jogar/:id", PlayGame)}
+      {i18nRoutes("/play/:id", PlayGame)}
+      {i18nRoutes("/jugar/:id", PlayGame)}
+
+      {i18nRoutes("/dashadmin", AdminDashboard)}
+
       {/* SEO Theme Pages */}
       <Route path="/jogo-do-impostor/temas/disney">
         {() => <ThemePage themeSlug="disney" />}
@@ -115,7 +170,7 @@ function Router() {
       <Route path="/jogo-do-impostor/temas/classico">
         {() => <ThemePage themeSlug="classico" />}
       </Route>
-      
+
       <Route component={NotFound} />
     </Switch>
   );
@@ -126,10 +181,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <VoiceChatProvider>
-          <VersionManager />
-          <Router />
-          <Toaster />
-          <YouTubeMiniPlayer />
+          <LanguageProvider>
+            <VersionManager />
+            <AppRouter />
+            <Toaster />
+            <YouTubeMiniPlayer />
+          </LanguageProvider>
         </VoiceChatProvider>
       </TooltipProvider>
     </QueryClientProvider>

@@ -10,40 +10,43 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/hooks/useLanguage";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 interface NavItem {
   href: string;
-  label: string;
+  labelKey: string;
   icon: React.ReactNode;
 }
 
-const navItems: NavItem[] = [
-  { href: "/", label: "Início", icon: <Home className="w-5 h-5" /> },
-  { href: "/blog", label: "Blog", icon: <Newspaper className="w-5 h-5" /> },
-  { href: "/comojogar", label: "Como Jogar", icon: <BookOpen className="w-5 h-5" /> },
-  { href: "/outros-jogos", label: "Outros Jogos", icon: <Gamepad2 className="w-5 h-5" /> },
-  { href: "/doacoes", label: "Apoie", icon: <Gift className="w-5 h-5" /> },
+const navItemsDef: NavItem[] = [
+  { href: "/", labelKey: "nav.home", icon: <Home className="w-5 h-5" /> },
+  { href: "/blog", labelKey: "nav.blog", icon: <Newspaper className="w-5 h-5" /> },
+  { href: "/comojogar", labelKey: "nav.howToPlay", icon: <BookOpen className="w-5 h-5" /> },
+  { href: "/outros-jogos", labelKey: "gameModes.title", icon: <Gamepad2 className="w-5 h-5" /> },
+  { href: "/doacoes", labelKey: "nav.donate", icon: <Gift className="w-5 h-5" /> },
 ];
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
+  const { t, langPath } = useLanguage();
 
   return (
     <nav className="bg-[#242642]/90 backdrop-blur-sm border-b border-[#2f3252] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center cursor-pointer">
+        <Link href={langPath("/")} className="flex items-center cursor-pointer">
           <img src={logoTikjogos} alt="TikJogos" className="h-8" />
         </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-4">
-          {navItems.map((item) => (
+          {navItemsDef.map((item) => (
             <Link
               key={item.href}
-              href={item.href}
+              href={langPath(item.href)}
               className={`text-sm font-bold flex items-center gap-1.5 transition-colors ${
                 location === item.href
                   ? "text-white"
@@ -51,9 +54,10 @@ export function MobileNav() {
               }`}
             >
               {item.icon}
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           ))}
+          <LanguageSwitcher />
         </div>
 
         {/* Mobile Menu Button */}
@@ -65,7 +69,7 @@ export function MobileNav() {
               className="text-white hover:bg-[#2f3252]"
             >
               <Menu className="h-6 w-6" />
-              <span className="sr-only">Abrir menu</span>
+              <span className="sr-only">Menu</span>
             </Button>
           </SheetTrigger>
           <SheetContent
@@ -79,10 +83,10 @@ export function MobileNav() {
             </SheetHeader>
             
             <div className="flex flex-col py-4">
-              {navItems.map((item) => (
+              {navItemsDef.map((item) => (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={langPath(item.href)}
                   onClick={() => setOpen(false)}
                   className={`flex items-center gap-3 px-6 py-4 text-base font-semibold transition-colors ${
                     location === item.href
@@ -91,15 +95,20 @@ export function MobileNav() {
                   }`}
                 >
                   {item.icon}
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               ))}
+
+              {/* Language switcher in mobile menu */}
+              <div className="px-6 py-4 border-t border-[#2f3252] mt-2">
+                <LanguageSwitcher />
+              </div>
             </div>
 
             {/* Social Links */}
             <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-[#2f3252]">
               <p className="text-xs text-slate-500 mb-3 uppercase tracking-wider font-bold">
-                Siga-nos
+                {t("buttons.share", "Siga-nos")}
               </p>
               <div className="flex items-center gap-3">
                 <a

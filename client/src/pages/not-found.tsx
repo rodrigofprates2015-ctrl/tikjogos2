@@ -1,8 +1,11 @@
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function NotFound() {
+  const { t, langPath } = useLanguage();
+
   return (
     <div className="min-h-screen w-full bg-black text-white font-poppins flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md mx-auto">
@@ -13,17 +16,17 @@ export default function NotFound() {
           
           <div className="space-y-2">
             <h1 className="text-4xl font-bold text-[#ff0050]">404</h1>
-            <p className="text-xl text-gray-300">Página não encontrada</p>
+            <p className="text-xl text-gray-300">{t('errors.notFound', 'Página não encontrada')}</p>
           </div>
 
           <p className="text-gray-400 text-sm">
-            Desculpe, a página que você está procurando não existe.
+            {t('errors.notFoundDesc', 'Desculpe, a página que você está procurando não existe.')}
           </p>
 
-          <Link href="/" className="block">
+          <Link href={langPath("/")} className="block">
             <Button className="w-full h-12 border-2 border-[#00c8c0] bg-[#00f2ea] text-black hover:bg-[#33f5ee] rounded-lg font-medium flex items-center justify-center gap-2 shadow-md">
               <ArrowLeft className="w-4 h-4" />
-              Voltar à Tela Inicial
+              {t('errors.backHome', 'Voltar à Tela Inicial')}
             </Button>
           </Link>
         </div>
