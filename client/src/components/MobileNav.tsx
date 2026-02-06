@@ -24,7 +24,7 @@ const navItemsDef: NavItem[] = [
   { href: "/", labelKey: "nav.home", icon: <Home className="w-5 h-5" /> },
   { href: "/blog", labelKey: "nav.blog", icon: <Newspaper className="w-5 h-5" /> },
   { href: "/comojogar", labelKey: "nav.howToPlay", icon: <BookOpen className="w-5 h-5" /> },
-  { href: "/outros-jogos", labelKey: "gameModes.title", icon: <Gamepad2 className="w-5 h-5" /> },
+  { href: "/outros-jogos", labelKey: "nav.otherGames", icon: <Gamepad2 className="w-5 h-5" /> },
   { href: "/doacoes", labelKey: "nav.donate", icon: <Gift className="w-5 h-5" /> },
 ];
 

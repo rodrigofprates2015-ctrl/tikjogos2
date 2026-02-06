@@ -20,8 +20,14 @@ export default function Blog() {
   const featured = BLOG_POSTS.find(p => p.featured) || BLOG_POSTS[0];
   const others = BLOG_POSTS.filter(p => p.id !== featured.id);
 
+  // Translated featured post
+  const featuredTitle = t(`blogPosts.post${featured.id}.title`, featured.title);
+  const featuredExcerpt = t(`blogPosts.post${featured.id}.excerpt`, featured.excerpt);
+  const featuredDate = t(`blogPosts.post${featured.id}.date`, featured.date);
+  const featuredAuthorName = t(`blogPosts.post${featured.id}.author`, featured.author.name);
+
   const handleSelectPost = (id: string) => {
-    setLocation(`/blog/${id}`);
+    setLocation(langPath(`/blog/${id}`));
   };
 
   return (
@@ -76,22 +82,22 @@ export default function Blog() {
                 
                 <div className="lg:w-2/5 p-8 lg:p-12 flex flex-col justify-center space-y-6">
                   <div className="flex items-center gap-2 px-4 py-1.5 bg-purple-600 rounded-full w-fit border-2 border-purple-800 font-black text-xs uppercase text-white animate-pulse">
-                    <TrendingUp className="w-4 h-4" /> DESTAQUE DA SEMANA
+                    <TrendingUp className="w-4 h-4" /> {t('blogPage.weekHighlight', 'DESTAQUE DA SEMANA')}
                   </div>
                   
                   <h2 className="text-4xl md:text-5xl text-white leading-tight font-black group-hover:text-purple-400 transition-colors">
-                    {featured.title}
+                    {featuredTitle}
                   </h2>
                   
                   <p className="text-slate-400 text-lg font-medium leading-relaxed">
-                    {featured.excerpt}
+                    {featuredExcerpt}
                   </p>
                   
                   <div className="flex items-center gap-4 pt-4 border-t border-white/5">
-                    <img src={featured.author.avatar} alt={featured.author.name} className="w-12 h-12 rounded-2xl border-2 border-purple-500/50" />
+                    <img src={featured.author.avatar} alt={featuredAuthorName} className="w-12 h-12 rounded-2xl border-2 border-purple-500/50" />
                     <div>
-                      <p className="text-white font-black">{featured.author.name}</p>
-                      <p className="text-slate-500 text-sm font-bold">{featured.date} • {featured.readTime} {t('blog.readTime', 'leitura')}</p>
+                      <p className="text-white font-black">{featuredAuthorName}</p>
+                      <p className="text-slate-500 text-sm font-bold">{featuredDate} • {featured.readTime} {t('blog.readTime', 'leitura')}</p>
                     </div>
                   </div>
                 </div>
@@ -107,8 +113,8 @@ export default function Blog() {
               <Zap className="w-6 h-6 text-blue-400" />
             </div>
             <div>
-              <h2 className="text-3xl font-black text-white">MAIS TRANSMISSÕES</h2>
-              <p className="text-slate-500 font-medium">Fique por dentro das últimas comunicações da nave</p>
+              <h2 className="text-3xl font-black text-white">{t('blogPage.moreTransmissions', 'MAIS TRANSMISSÕES')}</h2>
+              <p className="text-slate-500 font-medium">{t('blogPage.moreTransmissionsDesc', 'Fique por dentro das últimas comunicações da nave')}</p>
             </div>
           </div>
 
@@ -136,7 +142,7 @@ export default function Blog() {
                 />
               </Link>
               <p className="text-slate-400 max-w-md text-lg font-medium">
-                A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.
+                {t('blogPage.footerDesc', 'A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.')}
               </p>
               <div className="flex gap-4">
                 <a href="https://www.youtube.com/@RAPMUGEN?sub_confirmation=1" target="_blank" rel="noopener noreferrer" title="YouTube" className="w-12 h-12 bg-slate-800 hover:bg-purple-600 rounded-2xl flex items-center justify-center transition-all hover:-translate-y-1">
@@ -152,26 +158,26 @@ export default function Blog() {
             </div>
             
             <div>
-              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.home', 'NAVEGAÇÃO')}</h4>
+              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.navigation', 'NAVEGAÇÃO')}</h4>
               <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
                 <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.home', 'Início')}</Link></li>
                 <li><Link href={langPath("/blog")} className="hover:text-purple-400 transition-colors">{t('nav.blog', 'Blog')}</Link></li>
                 <li><Link href={langPath("/comojogar")} className="hover:text-purple-400 transition-colors">{t('nav.howToPlay', 'Como Jogar')}</Link></li>
-                <li><Link href={langPath("/modos")} className="hover:text-purple-400 transition-colors">{t('gameModes.title', 'Modos de Jogo')}</Link></li>
+                <li><Link href={langPath("/outros-jogos")} className="hover:text-purple-400 transition-colors">{t('nav.otherGames', 'Outros Jogos')}</Link></li>
                 <li><Link href={langPath("/termos")} className="hover:text-purple-400 transition-colors">{t('nav.terms', 'Termos de Uso')}</Link></li>
                 <li><Link href={langPath("/privacidade")} className="hover:text-purple-400 transition-colors">{t('nav.privacy', 'Privacidade')}</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">SUPORTE</h4>
+              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.support', 'SUPORTE')}</h4>
               <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">FAQ</Link></li>
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">Reportar Bug</Link></li>
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">Contato</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.faq', 'FAQ')}</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.reportBug', 'Reportar Bug')}</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.contact', 'Contato')}</Link></li>
                 <li>
                   <a href="https://discord.gg/H3cjkcd7Pz" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 transition-colors">
-                    Discord Oficial
+                    {t('nav.officialDiscord', 'Discord Oficial')}
                   </a>
                 </li>
               </ul>
@@ -180,13 +186,13 @@ export default function Blog() {
           
           <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <div className="space-y-2">
-              <p className="text-slate-500 font-bold">© 2026 TikJogos Entertainment. Todos os direitos reservados.</p>
+              <p className="text-slate-500 font-bold">{t('blogPage.copyright', '© 2026 TikJogos Entertainment. Todos os direitos reservados.')}</p>
               <p className="text-slate-600 text-[10px] md:text-xs italic max-w-3xl leading-relaxed">
-                O TikJogos é um projeto independente de fãs. Todas as marcas registradas (como nomes de personagens e franquias) pertencem aos seus respectivos proprietários e são usadas aqui apenas para fins de referência em contexto de jogo de palavras/trivia.
+                {t('blogPage.disclaimer', 'O TikJogos é um projeto independente de fãs. Todas as marcas registradas (como nomes de personagens e franquias) pertencem aos seus respectivos proprietários e são usadas aqui apenas para fins de referência em contexto de jogo de palavras/trivia.')}
               </p>
             </div>
             <div className="flex items-center gap-2 text-slate-500 font-bold whitespace-nowrap">
-              <span>Feito com 💜 na Galáxia TikJogos</span>
+              <span>{t('blogPage.madeWith', 'Feito com 💜 na Galáxia TikJogos')}</span>
             </div>
           </div>
         </div>

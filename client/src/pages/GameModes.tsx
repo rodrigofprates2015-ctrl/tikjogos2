@@ -8,46 +8,46 @@ import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 interface GameMode {
   id: string;
-  title: string;
-  desc: string;
-  difficulty: 'Fácil' | 'Médio' | 'Difícil';
+  titleKey: string;
+  descKey: string;
+  difficultyKey: string;
   iconName: string;
 }
 
 const GAME_MODES: GameMode[] = [
   {
     id: 'palavra-secreta',
-    title: 'Palavra Secreta',
-    desc: 'Uma palavra para todos. O Impostor tenta adivinhar!',
-    difficulty: 'Fácil',
+    titleKey: 'gameModesPage.palavraSecreta',
+    descKey: 'gameModesPage.palavraSecretaDesc',
+    difficultyKey: 'gameModesPage.easy',
     iconName: 'Key'
   },
   {
     id: 'locais-funcoes',
-    title: 'Locais & Funções',
-    desc: 'Cada um recebe um Local e uma Função. O Impostor não sabe o local.',
-    difficulty: 'Médio',
+    titleKey: 'gameModesPage.locaisFuncoes',
+    descKey: 'gameModesPage.locaisFuncoesDesc',
+    difficultyKey: 'gameModesPage.medium',
     iconName: 'MapPin'
   },
   {
     id: 'categoria-item',
-    title: 'Categoria + Item',
-    desc: 'Todos sabem a categoria e o item. O Impostor só sabe a categoria.',
-    difficulty: 'Médio',
+    titleKey: 'gameModesPage.categoriaItem',
+    descKey: 'gameModesPage.categoriaItemDesc',
+    difficultyKey: 'gameModesPage.medium',
     iconName: 'Package'
   },
   {
     id: 'duas-faccoes',
-    title: 'Duas Facções',
-    desc: 'Dois times com palavras diferentes. O Impostor não sabe nenhuma.',
-    difficulty: 'Difícil',
+    titleKey: 'gameModesPage.duasFaccoes',
+    descKey: 'gameModesPage.duasFaccoesDesc',
+    difficultyKey: 'gameModesPage.hard',
     iconName: 'Users'
   },
   {
     id: 'perguntas-diferentes',
-    title: 'Perguntas Diferentes',
-    desc: 'Tripulantes e Impostor recebem perguntas parecidas, mas diferentes.',
-    difficulty: 'Difícil',
+    titleKey: 'gameModesPage.perguntasDiferentes',
+    descKey: 'gameModesPage.perguntasDiferentesDesc',
+    difficultyKey: 'gameModesPage.hard',
     iconName: 'HelpCircle'
   }
 ];
@@ -68,22 +68,18 @@ export default function GameModes() {
     window.scrollTo(0, 0);
   }, []);
 
-  const getDifficultyColor = (diff: string) => {
-    switch (diff) {
-      case 'Fácil': return 'bg-emerald-500 text-white border-emerald-700';
-      case 'Médio': return 'bg-orange-500 text-white border-orange-700';
-      case 'Difícil': return 'bg-rose-500 text-white border-rose-700';
-      default: return 'bg-slate-700 text-white border-slate-900';
-    }
+  const getDifficultyColor = (diffKey: string) => {
+    if (diffKey.includes('easy')) return 'bg-emerald-500 text-white border-emerald-700';
+    if (diffKey.includes('medium')) return 'bg-orange-500 text-white border-orange-700';
+    if (diffKey.includes('hard')) return 'bg-rose-500 text-white border-rose-700';
+    return 'bg-slate-700 text-white border-slate-900';
   };
 
-  const getIconColor = (diff: string) => {
-    switch (diff) {
-      case 'Fácil': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-      case 'Médio': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
-      case 'Difícil': return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-      default: return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-    }
+  const getIconColor = (diffKey: string) => {
+    if (diffKey.includes('easy')) return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+    if (diffKey.includes('medium')) return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+    if (diffKey.includes('hard')) return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+    return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
   };
 
   return (
@@ -101,19 +97,22 @@ export default function GameModes() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <header className="mb-16 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600/10 rounded-2xl border-2 border-purple-500/20 text-purple-400 font-black text-sm uppercase tracking-widest mb-6">
-              <Rocket className="w-5 h-5" /> PREPARE SUA TRIPULAÇÃO
+              <Rocket className="w-5 h-5" /> {t('gameModesPage.prepareCrew', 'PREPARE SUA TRIPULAÇÃO')}
             </div>
             <h1 className="text-5xl md:text-7xl lg:text-8xl text-white font-black mb-6 leading-none">
-              Modos de <span className="text-purple-500">Jogo</span>
+              {t('gameModesPage.title', 'Modos de')} <span className="text-purple-500">{t('gameModesPage.titleHighlight', 'Jogo')}</span>
             </h1>
             <p className="text-slate-400 text-xl md:text-2xl max-w-3xl mx-auto font-medium">
-              Escolha sua missão. Cada modo oferece uma dinâmica única de dedução e estratégia.
+              {t('gameModesPage.description', 'Escolha sua missão. Cada modo oferece uma dinâmica única de dedução e estratégia.')}
             </p>
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {GAME_MODES.map((mode) => {
               const IconComponent = iconMap[mode.iconName] || HelpCircle;
+              const modeTitle = t(mode.titleKey, mode.titleKey);
+              const modeDesc = t(mode.descKey, mode.descKey);
+              const modeDifficulty = t(mode.difficultyKey, mode.difficultyKey);
               
               return (
                 <div
@@ -122,22 +121,22 @@ export default function GameModes() {
                 >
                   {/* Header do Card */}
                   <div className="flex justify-between items-start mb-8">
-                    <div className={`p-4 rounded-3xl border-2 transition-all group-hover:scale-110 ${getIconColor(mode.difficulty)}`}>
+                    <div className={`p-4 rounded-3xl border-2 transition-all group-hover:scale-110 ${getIconColor(mode.difficultyKey)}`}>
                       <IconComponent size={32} strokeWidth={2.5} />
                     </div>
                     
-                    <div className={`text-xs font-black px-4 py-1.5 rounded-full border-2 uppercase tracking-widest ${getDifficultyColor(mode.difficulty)}`}>
-                      {mode.difficulty}
+                    <div className={`text-xs font-black px-4 py-1.5 rounded-full border-2 uppercase tracking-widest ${getDifficultyColor(mode.difficultyKey)}`}>
+                      {modeDifficulty}
                     </div>
                   </div>
 
                   {/* Conteúdo */}
                   <div className="space-y-4">
                     <h3 className="text-3xl text-white font-black leading-tight group-hover:text-purple-400 transition-colors">
-                      {mode.title}
+                      {modeTitle}
                     </h3>
                     <p className="text-slate-400 text-lg font-medium leading-relaxed">
-                      {mode.desc}
+                      {modeDesc}
                     </p>
                   </div>
 
@@ -151,7 +150,7 @@ export default function GameModes() {
                       ))}
                     </div>
                     <button className="px-6 py-2 bg-slate-800 hover:bg-purple-600 rounded-xl font-black text-xs text-white uppercase tracking-wider transition-all">
-                      Selecionar
+                      {t('gameModesPage.select', 'Selecionar')}
                     </button>
                   </div>
                 </div>
@@ -163,15 +162,15 @@ export default function GameModes() {
           <section className="mt-24 p-12 rounded-[4rem] bg-gradient-to-br from-purple-600 to-indigo-900 border-4 border-white/10 relative overflow-hidden text-center">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
             <div className="relative z-10">
-              <h2 className="text-4xl md:text-5xl text-white font-black mb-6">PRONTO PARA A SABOTAGEM?</h2>
+              <h2 className="text-4xl md:text-5xl text-white font-black mb-6">{t('gameModesPage.readyForSabotage', 'PRONTO PARA A SABOTAGEM?')}</h2>
               <p className="text-white/80 text-xl font-medium max-w-2xl mx-auto mb-10">
-                A nave está prestes a decolar. Reúna seus amigos e descubra quem é o impostor agora mesmo!
+                {t('gameModesPage.readyDesc', 'A nave está prestes a decolar. Reúna seus amigos e descubra quem é o impostor agora mesmo!')}
               </p>
               <Link 
-                href="/"
+                href={langPath("/")}
                 className="inline-block px-12 py-5 bg-white text-purple-900 rounded-3xl font-black text-2xl shadow-2xl hover:scale-105 active:scale-95 transition-all border-b-8 border-purple-200"
               >
-                LANÇAR NAVE
+                {t('gameModesPage.launchShip', 'LANÇAR NAVE')}
               </Link>
             </div>
           </section>
@@ -187,7 +186,7 @@ export default function GameModes() {
                 <img src={logoTikjogos} alt="TikJogos Impostor" className="h-16 w-auto object-contain" />
               </Link>
               <p className="text-slate-400 max-w-md text-lg font-medium">
-                A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.
+                {t('blogPage.footerDesc', 'A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.')}
               </p>
               <div className="flex gap-4">
                 <a href="https://www.youtube.com/@RAPMUGEN?sub_confirmation=1" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-slate-800 hover:bg-purple-600 rounded-2xl flex items-center justify-center transition-all hover:-translate-y-1">
@@ -203,37 +202,37 @@ export default function GameModes() {
             </div>
             
             <div>
-              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">NAVEGAÇÃO</h4>
+              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.navigation', 'NAVEGAÇÃO')}</h4>
               <ul className="flex flex-col gap-3 text-slate-400 font-bold">
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">Início</Link></li>
-                <li><Link href="/blog" className="hover:text-purple-400 transition-colors">Blog</Link></li>
-                <li><Link href="/comojogar" className="hover:text-purple-400 transition-colors">Como Jogar</Link></li>
-                <li><Link href="/modos" className="hover:text-purple-400 transition-colors">Modos de Jogo</Link></li>
-                <li><Link href="/termos" className="hover:text-purple-400 transition-colors">Termos de Uso</Link></li>
-                <li><Link href="/privacidade" className="hover:text-purple-400 transition-colors">Privacidade</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.home', 'Início')}</Link></li>
+                <li><Link href={langPath("/blog")} className="hover:text-purple-400 transition-colors">{t('nav.blog', 'Blog')}</Link></li>
+                <li><Link href={langPath("/comojogar")} className="hover:text-purple-400 transition-colors">{t('nav.howToPlay', 'Como Jogar')}</Link></li>
+                <li><Link href={langPath("/outros-jogos")} className="hover:text-purple-400 transition-colors">{t('nav.otherGames', 'Outros Jogos')}</Link></li>
+                <li><Link href={langPath("/termos")} className="hover:text-purple-400 transition-colors">{t('nav.terms', 'Termos de Uso')}</Link></li>
+                <li><Link href={langPath("/privacidade")} className="hover:text-purple-400 transition-colors">{t('nav.privacy', 'Privacidade')}</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">SUPORTE</h4>
+              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.support', 'SUPORTE')}</h4>
               <ul className="flex flex-col gap-3 text-slate-400 font-bold">
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">FAQ</Link></li>
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">Reportar Bug</Link></li>
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">Contato</Link></li>
-                <li><a href="https://discord.gg/H3cjkcd7Pz" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 transition-colors">Discord Oficial</a></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.faq', 'FAQ')}</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.reportBug', 'Reportar Bug')}</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.contact', 'Contato')}</Link></li>
+                <li><a href="https://discord.gg/H3cjkcd7Pz" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 transition-colors">{t('nav.officialDiscord', 'Discord Oficial')}</a></li>
               </ul>
             </div>
           </div>
           
           <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <div className="space-y-2">
-              <p className="text-slate-500 font-bold">© 2026 TikJogos Entertainment. Todos os direitos reservados.</p>
+              <p className="text-slate-500 font-bold">{t('blogPage.copyright', '© 2026 TikJogos Entertainment. Todos os direitos reservados.')}</p>
               <p className="text-slate-600 text-[10px] md:text-xs italic max-w-3xl leading-relaxed">
-                O TikJogos é um projeto independente de fãs. Todas as marcas registradas pertencem aos seus respectivos proprietários.
+                {t('blogPage.disclaimer', 'O TikJogos é um projeto independente de fãs. Todas as marcas registradas pertencem aos seus respectivos proprietários.')}
               </p>
             </div>
             <div className="flex items-center gap-2 text-slate-500 font-bold whitespace-nowrap">
-              <span>Feito com 💜 na Galáxia TikJogos</span>
+              <span>{t('blogPage.madeWith', 'Feito com 💜 na Galáxia TikJogos')}</span>
             </div>
           </div>
         </div>

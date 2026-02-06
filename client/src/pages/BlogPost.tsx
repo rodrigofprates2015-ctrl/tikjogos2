@@ -4,16 +4,18 @@ import { ArrowLeft, Clock, Calendar, Share2, MessageSquare, ThumbsUp, Youtube, I
 import { getBlogPostById, BLOG_POSTS } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
 import { SideAds, BottomAd } from "@/components/AdSense";
+import { useLanguage } from "@/hooks/useLanguage";
 import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 function ArticleNotFound() {
+  const { t, langPath } = useLanguage();
   return (
     <div className="max-w-4xl mx-auto px-4 py-20">
       <div className="text-center bg-[#242642] border-4 border-[#2f3252] rounded-[3rem] p-12">
-        <h1 className="text-3xl font-black text-white mb-4">Artigo não encontrado</h1>
-        <p className="text-slate-400 mb-8 text-lg">O conteúdo que você está procurando não existe ou foi movido.</p>
-        <Link href="/blog" className="inline-flex px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-full border-2 border-purple-800 transition-all">
-          Voltar ao Blog
+        <h1 className="text-3xl font-black text-white mb-4">{t('blogPostPage.articleNotFound', 'Artigo não encontrado')}</h1>
+        <p className="text-slate-400 mb-8 text-lg">{t('blogPostPage.articleNotFoundDesc', 'O conteúdo que você está procurando não existe ou foi movido.')}</p>
+        <Link href={langPath("/blog")} className="inline-flex px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-full border-2 border-purple-800 transition-all">
+          {t('blogPostPage.backToBlog', 'Voltar ao Blog')}
         </Link>
       </div>
     </div>
@@ -23,18 +25,28 @@ function ArticleNotFound() {
 export default function BlogPost() {
   const [, params] = useRoute("/blog/:id");
   const [, setLocation] = useLocation();
+  const { t, langPath, lang } = useLanguage();
   const id = params?.id || "";
   const post = getBlogPostById(id);
+
+  // Use translated blog post content when available
+  const postTitle = post ? t(`blogPosts.post${post.id}.title`, post.title) : '';
+  const postExcerpt = post ? t(`blogPosts.post${post.id}.excerpt`, post.excerpt) : '';
+  const postContent = post ? t(`blogPosts.post${post.id}.content`, post.content) : '';
+  const postAuthorName = post ? t(`blogPosts.post${post.id}.author`, post.author.name) : '';
+  const postAuthorRole = post ? t(`blogPosts.post${post.id}.role`, post.author.role) : '';
+  const postDate = post ? t(`blogPosts.post${post.id}.date`, post.date) : '';
+  const postCategory = post ? t(`blogPosts.post${post.id}.category`, post.category) : '';
 
   useEffect(() => {
     window.scrollTo(0, 0);
     if (post) {
-      document.title = `${post.title} - TikJogos Blog`;
+      document.title = `${postTitle} - TikJogos Blog`;
     }
-  }, [post]);
+  }, [post, postTitle]);
 
   const handleBack = () => {
-    setLocation("/blog");
+    setLocation(langPath("/blog"));
   };
 
   if (!post) {
@@ -73,16 +85,16 @@ export default function BlogPost() {
                 onClick={handleBack}
                 className="mb-8 flex items-center gap-2 px-6 py-2 bg-slate-900/80 backdrop-blur-md rounded-xl border-2 border-slate-700 text-white font-black hover:bg-slate-800 transition-all active:scale-95 shadow-lg"
               >
-                <ArrowLeft className="w-5 h-5" /> VOLTAR AO BLOG
+                <ArrowLeft className="w-5 h-5" /> {t('blogPostPage.backToBlog', 'VOLTAR AO BLOG').toUpperCase()}
               </button>
               
               <div className="space-y-6">
                 <div className="flex flex-wrap gap-4">
                   <span className="px-4 py-1.5 bg-purple-600 rounded-full border-2 border-purple-800 font-black text-xs uppercase tracking-wider text-white shadow-lg">
-                    {post.category}
+                    {postCategory}
                   </span>
                   <span className="flex items-center gap-1.5 text-slate-300 font-bold text-sm bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full">
-                    <Calendar className="w-4 h-4 text-purple-400" /> {post.date}
+                    <Calendar className="w-4 h-4 text-purple-400" /> {postDate}
                   </span>
                   <span className="flex items-center gap-1.5 text-slate-300 font-bold text-sm bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full">
                     <Clock className="w-4 h-4 text-blue-400" /> {post.readTime}
@@ -90,7 +102,7 @@ export default function BlogPost() {
                 </div>
                 
                 <h1 className="text-4xl md:text-6xl lg:text-7xl text-white leading-tight font-black drop-shadow-2xl">
-                  {post.title}
+                  {postTitle}
                 </h1>
               </div>
             </div>
@@ -108,7 +120,7 @@ export default function BlogPost() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/5 blur-[80px] rounded-full"></div>
                 
                 <div className="prose prose-invert prose-purple max-w-none relative z-10">
-                  {post.content.split('\n').map((line, i) => {
+                  {postContent.split('\n').map((line, i) => {
                     if (line.startsWith('###')) {
                       return <h3 key={i} className="text-3xl font-black text-white mt-12 mb-6 uppercase tracking-tight border-b-2 border-purple-500/20 pb-2">{line.replace('###', '')}</h3>;
                     }
@@ -143,7 +155,7 @@ export default function BlogPost() {
                       <ThumbsUp className="w-5 h-5" /> 245
                     </button>
                     <button className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 rounded-2xl text-slate-300 font-black transition-all hover:scale-105 active:scale-95">
-                      <MessageSquare className="w-5 h-5" /> 18 Comentários
+                      <MessageSquare className="w-5 h-5" /> 18 {t('blogPostPage.comments', 'Comentários')}
                     </button>
                   </div>
                   <button className="p-4 bg-slate-800 hover:bg-blue-600 rounded-2xl border-2 border-slate-700 transition-all text-white group shadow-lg">
@@ -154,14 +166,14 @@ export default function BlogPost() {
 
               {/* Author Card */}
               <div className="bg-gradient-to-r from-purple-900/20 to-indigo-900/20 rounded-[3rem] p-8 border-4 border-purple-500/20 flex flex-col md:flex-row items-center gap-8 shadow-xl">
-                <img src={post.author.avatar} alt={post.author.name} className="w-32 h-32 rounded-[2rem] border-4 border-purple-500 shadow-xl object-cover" />
+                <img src={post.author.avatar} alt={postAuthorName} className="w-32 h-32 rounded-[2rem] border-4 border-purple-500 shadow-xl object-cover" />
                 <div className="text-center md:text-left flex-1">
-                  <p className="text-purple-400 font-black text-sm uppercase tracking-widest mb-1">SOBRE O AUTOR</p>
-                  <h4 className="text-3xl font-black text-white mb-2">{post.author.name}</h4>
-                  <p className="text-slate-400 text-lg font-medium mb-4">{post.author.role}</p>
+                  <p className="text-purple-400 font-black text-sm uppercase tracking-widest mb-1">{t('blogPostPage.aboutAuthor', 'SOBRE O AUTOR')}</p>
+                  <h4 className="text-3xl font-black text-white mb-2">{postAuthorName}</h4>
+                  <p className="text-slate-400 text-lg font-medium mb-4">{postAuthorRole}</p>
                   <div className="flex justify-center md:justify-start gap-4">
-                    <button className="text-slate-500 hover:text-white transition-colors font-bold text-sm uppercase tracking-wider">Ver Perfil</button>
-                    <button className="text-slate-500 hover:text-white transition-colors font-bold text-sm uppercase tracking-wider">Mais Artigos</button>
+                    <button className="text-slate-500 hover:text-white transition-colors font-bold text-sm uppercase tracking-wider">{t('blogPostPage.viewProfile', 'Ver Perfil')}</button>
+                    <button className="text-slate-500 hover:text-white transition-colors font-bold text-sm uppercase tracking-wider">{t('blogPostPage.moreArticles', 'Mais Artigos')}</button>
                   </div>
                 </div>
               </div>
@@ -183,7 +195,7 @@ export default function BlogPost() {
                 />
               </Link>
               <p className="text-slate-400 max-w-md text-lg font-medium">
-                A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.
+                {t('blogPage.footerDesc', 'A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.')}
               </p>
               <div className="flex gap-4">
                 <a href="https://www.youtube.com/@RAPMUGEN?sub_confirmation=1" target="_blank" rel="noopener noreferrer" title="YouTube" className="w-12 h-12 bg-slate-800 hover:bg-purple-600 rounded-2xl flex items-center justify-center transition-all hover:-translate-y-1">
@@ -199,26 +211,26 @@ export default function BlogPost() {
             </div>
             
             <div>
-              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">NAVEGAÇÃO</h4>
+              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.navigation', 'NAVEGAÇÃO')}</h4>
               <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">Início</Link></li>
-                <li><Link href="/blog" className="hover:text-purple-400 transition-colors">Blog</Link></li>
-                <li><Link href="/comojogar" className="hover:text-purple-400 transition-colors">Como Jogar</Link></li>
-                <li><Link href="/modos" className="hover:text-purple-400 transition-colors">Modos de Jogo</Link></li>
-                <li><Link href="/termos" className="hover:text-purple-400 transition-colors">Termos de Uso</Link></li>
-                <li><Link href="/privacidade" className="hover:text-purple-400 transition-colors">Privacidade</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.home', 'Início')}</Link></li>
+                <li><Link href={langPath("/blog")} className="hover:text-purple-400 transition-colors">{t('nav.blog', 'Blog')}</Link></li>
+                <li><Link href={langPath("/comojogar")} className="hover:text-purple-400 transition-colors">{t('nav.howToPlay', 'Como Jogar')}</Link></li>
+                <li><Link href={langPath("/outros-jogos")} className="hover:text-purple-400 transition-colors">{t('nav.otherGames', 'Outros Jogos')}</Link></li>
+                <li><Link href={langPath("/termos")} className="hover:text-purple-400 transition-colors">{t('nav.terms', 'Termos de Uso')}</Link></li>
+                <li><Link href={langPath("/privacidade")} className="hover:text-purple-400 transition-colors">{t('nav.privacy', 'Privacidade')}</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">SUPORTE</h4>
+              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.support', 'SUPORTE')}</h4>
               <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">FAQ</Link></li>
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">Reportar Bug</Link></li>
-                <li><Link href="/" className="hover:text-purple-400 transition-colors">Contato</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.faq', 'FAQ')}</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.reportBug', 'Reportar Bug')}</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.contact', 'Contato')}</Link></li>
                 <li>
                   <a href="https://discord.gg/H3cjkcd7Pz" target="_blank" rel="noopener noreferrer" className="hover:text-purple-400 transition-colors">
-                    Discord Oficial
+                    {t('nav.officialDiscord', 'Discord Oficial')}
                   </a>
                 </li>
               </ul>
@@ -227,13 +239,13 @@ export default function BlogPost() {
           
           <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <div className="space-y-2">
-              <p className="text-slate-500 font-bold">© 2026 TikJogos Entertainment. Todos os direitos reservados.</p>
+              <p className="text-slate-500 font-bold">{t('blogPage.copyright', '© 2026 TikJogos Entertainment. Todos os direitos reservados.')}</p>
               <p className="text-slate-600 text-[10px] md:text-xs italic max-w-3xl leading-relaxed">
-                O TikJogos é um projeto independente de fãs. Todas as marcas registradas (como nomes de personagens e franquias) pertencem aos seus respectivos proprietários e são usadas aqui apenas para fins de referência em contexto de jogo de palavras/trivia.
+                {t('blogPage.disclaimer', 'O TikJogos é um projeto independente de fãs. Todas as marcas registradas (como nomes de personagens e franquias) pertencem aos seus respectivos proprietários e são usadas aqui apenas para fins de referência em contexto de jogo de palavras/trivia.')}
               </p>
             </div>
             <div className="flex items-center gap-2 text-slate-500 font-bold whitespace-nowrap">
-              <span>Feito com 💜 na Galáxia TikJogos</span>
+              <span>{t('blogPage.madeWith', 'Feito com 💜 na Galáxia TikJogos')}</span>
             </div>
           </div>
         </div>
