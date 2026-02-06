@@ -285,6 +285,35 @@ O jogo é uma maratona psicológica, não um sprint. Desenvolver uma visão peri
         date: '28 Jan 2026',
         category: 'Dicas',
       },
+      post9: {
+        title: 'Jogo do Impostor: Guia de Estratégias e Análise do Metagame no TikJogos',
+        excerpt: 'Domine o jogo do impostor com táticas de especialista, análise comportamental e lógica sistêmica. Guia técnico completo.',
+        content: `O **jogo do impostor** tornou-se o epicentro da dedução social moderna. No TikJogos, a experiência do **jogo do impostor** é otimizada para oferecer o máximo de competitividade e profundidade estratégica. Se você busca entender as nuances de como ganhar no **jogo do impostor**, este guia técnico foi estruturado com foco na análise comportamental e lógica sistêmica.
+
+### A Psicologia por trás do Jogo do Impostor
+O sucesso no **jogo do impostor** não é aleatório. Ele reside na gestão eficiente da assimetria de informação. Enquanto a Tripulação utiliza dados concretos para identificar padrões, quem assume o papel no **jogo do impostor** deve dominar a arte do mimetismo semântico. A sobrevivência no **jogo do impostor** exige que você neutralize contradições em tempo real.
+
+### Tutorial Exclusivo: O Metagame do Jogo do Impostor
+Para jogadores que buscam excelência no **jogo do impostor online**, a instrução visual é indispensável. O tutorial abaixo detalha as fases críticas de uma partida no TikJogos, desde a recepção da palavra secreta até a resolução definitiva na votação.
+
+{{youtube:TInLJ2F_G58}}
+
+### Táticas de Especialista para o Jogo do Impostor
+Para elevar sua taxa de vitória no **jogo do impostor**, aplique os seguintes protocolos:
+
+1. **Protocolo de Verificação (Tripulação)**: No **jogo do impostor**, as perguntas devem ser elaboradas para expor lacunas de conhecimento. Utilize termos vagos que apenas quem conhece o segredo pode decodificar.
+2. **Protocolo de Infiltração (Impostor)**: O segredo para vencer o **jogo do impostor** como traidor é a antecipação. Identifique os líderes de opinião e replique seus padrões de linguagem.
+3. **Análise de Variáveis (Sistêmica)**: Cada modo do **jogo do impostor** no TikJogos (como 'Palavra Secreta' ou 'Locais & Funções') exige uma abordagem lógica distinta.
+
+### TikJogos: A Referência Técnica no Jogo do Impostor
+Nossa plataforma foi desenvolvida para ser a casa definitiva do **jogo do impostor**. Através de sorteios imparciais e uma interface que favorece a imersão, o **jogo do impostor** no TikJogos permite que a habilidade pura de dedução seja o único fator determinante para o resultado.
+
+Ao dominar o **jogo do impostor**, você desenvolve competências valiosas de comunicação, análise crítica e inteligência emocional. Prepare sua tripulação, inicie a missão e descubra por que somos a autoridade máxima quando o assunto é o **jogo do impostor**.`,
+        author: 'Estrategista Chefe',
+        role: 'Analista de Metagame',
+        date: '06 Fev 2026',
+        category: 'Dicas',
+      },
     },
 
     // Página Como Jogar - conteúdo completo
@@ -759,6 +788,35 @@ The game is a psychological marathon, not a sprint. Developing peripheral vision
         date: 'Jan 28, 2026',
         category: 'Tips',
       },
+      post9: {
+        title: 'Impostor Game: Strategy Guide and Metagame Analysis on TikJogos',
+        excerpt: 'Master the impostor game with expert tactics, behavioral analysis, and systemic logic. Complete technical guide.',
+        content: `The **impostor game** has become the epicenter of modern social deduction. On TikJogos, the **impostor game** experience is optimized to deliver maximum competitiveness and strategic depth. If you're looking to understand the nuances of how to win the **impostor game**, this technical guide is structured with a focus on behavioral analysis and systemic logic.
+
+### The Psychology Behind the Impostor Game
+Success in the **impostor game** is not random. It lies in the efficient management of information asymmetry. While the Crew uses concrete data to identify patterns, whoever assumes the role in the **impostor game** must master the art of semantic mimicry. Survival in the **impostor game** requires neutralizing contradictions in real time.
+
+### Exclusive Tutorial: The Impostor Game Metagame
+For players seeking excellence in the **online impostor game**, visual instruction is indispensable. The tutorial below details the critical phases of a match on TikJogos, from receiving the secret word to the final resolution during the vote.
+
+{{youtube:TInLJ2F_G58}}
+
+### Expert Tactics for the Impostor Game
+To raise your win rate in the **impostor game**, apply the following protocols:
+
+1. **Verification Protocol (Crew)**: In the **impostor game**, questions should be designed to expose knowledge gaps. Use vague terms that only someone who knows the secret can decode.
+2. **Infiltration Protocol (Impostor)**: The key to winning the **impostor game** as the traitor is anticipation. Identify opinion leaders and replicate their language patterns.
+3. **Variable Analysis (Systemic)**: Each mode of the **impostor game** on TikJogos (such as "Secret Word" or "Locations & Roles") requires a distinct logical approach.
+
+### TikJogos: The Technical Reference for the Impostor Game
+Our platform was developed to be the definitive home of the **impostor game**. Through unbiased draws and an interface that enhances immersion, the **impostor game** on TikJogos ensures that pure deductive skill is the only determining factor in the outcome.
+
+By mastering the **impostor game**, you develop valuable skills in communication, critical analysis, and emotional intelligence. Prepare your crew, start the mission, and discover why we are the ultimate authority when it comes to the **impostor game**.`,
+        author: 'Chief Strategist',
+        role: 'Metagame Analyst',
+        date: 'Feb 06, 2026',
+        category: 'Tips',
+      },
     },
 
     // How to Play Page - full content
@@ -1226,6 +1284,35 @@ El juego es una maratón psicológica, no un sprint. Desarrollar visión perifé
         author: 'Comandante Nova',
         role: 'Instructora de Vuelo',
         date: '28 Jan 2026',
+        category: 'Consejos',
+      },
+      post9: {
+        title: 'Juego del Impostor: Guía de Estrategias y Análisis del Metajuego en TikJogos',
+        excerpt: 'Domina el juego del impostor con tácticas de experto, análisis del comportamiento y lógica sistémica. Guía técnica completa.',
+        content: `El **juego del impostor** se ha convertido en el epicentro de la deducción social moderna. En TikJogos, la experiencia del **juego del impostor** está optimizada para ofrecer el máximo nivel de competitividad y profundidad estratégica. Si buscas comprender los matices de cómo ganar en el **juego del impostor**, esta guía técnica ha sido estructurada con un enfoque en el análisis del comportamiento y la lógica sistémica.
+
+### La Psicología Detrás del Juego del Impostor
+El éxito en el **juego del impostor** no es aleatorio. Reside en la gestión eficiente de la asimetría de la información. Mientras la Tripulación utiliza datos concretos para identificar patrones, quien asume el rol en el **juego del impostor** debe dominar el arte del mimetismo semántico. La supervivencia en el **juego del impostor** exige neutralizar contradicciones en tiempo real.
+
+### Tutorial Exclusivo: El Metajuego del Juego del Impostor
+Para los jugadores que buscan excelencia en el **juego del impostor online**, la instrucción visual es indispensable. El tutorial a continuación detalla las fases críticas de una partida en TikJogos, desde la recepción de la palabra secreta hasta la resolución final en la votación.
+
+{{youtube:TInLJ2F_G58}}
+
+### Tácticas de Experto para el Juego del Impostor
+Para aumentar tu tasa de victorias en el **juego del impostor**, aplica los siguientes protocolos:
+
+1. **Protocolo de Verificación (Tripulación)**: En el **juego del impostor**, las preguntas deben formularse para exponer lagunas de conocimiento. Utiliza términos ambiguos que solo quien conoce el secreto puede descifrar.
+2. **Protocolo de Infiltración (Impostor)**: El secreto para ganar el **juego del impostor** como traidor es la anticipación. Identifica a los líderes de opinión y replica sus patrones de lenguaje.
+3. **Análisis de Variables (Sistémico)**: Cada modo del **juego del impostor** en TikJogos (como "Palabra Secreta" o "Lugares y Funciones") requiere un enfoque lógico distinto.
+
+### TikJogos: La Referencia Técnica del Juego del Impostor
+Nuestra plataforma fue desarrollada para ser el hogar definitivo del **juego del impostor**. Mediante sorteos imparciales y una interfaz que favorece la inmersión, el **juego del impostor** en TikJogos permite que la habilidad pura de deducción sea el único factor determinante del resultado.
+
+Al dominar el **juego del impostor**, desarrollas valiosas competencias de comunicación, análisis crítico e inteligencia emocional. Prepara a tu tripulación, inicia la misión y descubre por qué somos la máxima autoridad cuando se trata del **juego del impostor**.`,
+        author: 'Estratega Jefe',
+        role: 'Analista de Metajuego',
+        date: '06 Feb 2026',
         category: 'Consejos',
       },
     },

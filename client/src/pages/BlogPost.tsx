@@ -123,29 +123,47 @@ export default function BlogPost() {
                 
                 <div className="prose prose-invert prose-purple max-w-none relative z-10">
                   {postContent.split('\n').map((line, i) => {
+                    // YouTube embed
+                    const ytMatch = line.match(/\{\{youtube:([^}]+)\}\}/);
+                    if (ytMatch) {
+                      return (
+                        <div key={i} className="my-8 rounded-2xl overflow-hidden border-4 border-purple-500/30 shadow-2xl">
+                          <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                            <iframe
+                              className="absolute inset-0 w-full h-full"
+                              src={`https://www.youtube.com/embed/${ytMatch[1]}`}
+                              title="YouTube video"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </div>
+                        </div>
+                      );
+                    }
                     if (line.startsWith('###')) {
                       return <h3 key={i} className="text-3xl font-black text-white mt-12 mb-6 uppercase tracking-tight border-b-2 border-purple-500/20 pb-2">{line.replace('###', '')}</h3>;
                     }
                     if (line.startsWith('1.') || line.startsWith('2.') || line.startsWith('3.')) {
+                      const num = line.split('.')[0];
+                      const text = line.split('.').slice(1).join('.').trim();
                       return (
                         <div key={i} className="flex items-start gap-4 mb-4 bg-slate-800/50 p-6 rounded-2xl border-l-4 border-rose-500 shadow-md">
-                          <span className="text-rose-400 font-black text-2xl">{line.split('.')[0]}.</span>
-                          <p className="text-slate-200 text-lg leading-relaxed">{line.split('.').slice(1).join('.').trim()}</p>
+                          <span className="text-rose-400 font-black text-2xl">{num}.</span>
+                          <p className="text-slate-200 text-lg leading-relaxed" dangerouslySetInnerHTML={{ __html: text.replace(/\*\*(.+?)\*\*/g, '<strong class="text-white">$1</strong>') }} />
                         </div>
                       );
                     }
                     if (line.startsWith('-')) {
+                      const text = line.replace(/^-\s*/, '');
                       return (
                         <div key={i} className="flex items-start gap-4 mb-4">
                           <div className="w-2.5 h-2.5 rounded-full bg-purple-500 mt-2.5 shrink-0 shadow-[0_0_8px_rgba(139,92,246,0.6)]"></div>
-                          <p className="text-slate-300 text-lg font-medium leading-relaxed">{line.replace('-', '').trim()}</p>
+                          <p className="text-slate-300 text-lg font-medium leading-relaxed" dangerouslySetInnerHTML={{ __html: text.replace(/\*\*(.+?)\*\*/g, '<strong class="text-white">$1</strong>') }} />
                         </div>
                       );
                     }
                     return line.trim() ? (
-                      <p key={i} className="text-slate-400 text-xl font-medium leading-relaxed mb-6">
-                        {line}
-                      </p>
+                      <p key={i} className="text-slate-400 text-xl font-medium leading-relaxed mb-6" dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.+?)\*\*/g, '<strong class="text-white">$1</strong>') }} />
                     ) : null;
                   })}
                 </div>
