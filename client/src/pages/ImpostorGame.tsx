@@ -883,6 +883,21 @@ const getModeDifficulty = (modeId: string) => {
   }
 };
 
+const HOME_META: Record<string, { title: string; description: string }> = {
+  pt: {
+    title: 'TikJogos - Jogo do Impostor Online Grátis Com Amigos | Impostor Game',
+    description: 'Jogue Impostor online grátis! Encontre amigos, estratégias e desafie outros jogadores no TikJogos. Sem downloads.',
+  },
+  en: {
+    title: 'TikJogos - Free Online Impostor Game With Friends | Play Now',
+    description: 'Play Impostor online for free! Find friends, strategies and challenge other players on TikJogos. No downloads.',
+  },
+  es: {
+    title: 'TikJogos - Juego del Impostor Online Gratis Con Amigos | Juega Ahora',
+    description: '¡Juega Impostor online gratis! Encuentra amigos, estrategias y desafía a otros jugadores en TikJogos. Sin descargas.',
+  },
+};
+
 const HomeScreen = () => {
   const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname, clearSavedNickname, savedNickname } = useGameStore();
   const [name, setNameInput] = useState("");
@@ -891,7 +906,23 @@ const HomeScreen = () => {
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isThemeWorkshopOpen, setIsThemeWorkshopOpen] = useState(false);
   const { toast } = useToast();
-  const { t, langPath } = useLanguage();
+  const { t, langPath, lang } = useLanguage();
+
+  // Set page title and meta description per language
+  useEffect(() => {
+    const meta = HOME_META[lang] || HOME_META.pt;
+    document.title = meta.title;
+    const descTag = document.querySelector('meta[name="description"]');
+    if (descTag) descTag.setAttribute('content', meta.description);
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', meta.title);
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', meta.description);
+    const twTitle = document.querySelector('meta[name="twitter:title"]');
+    if (twTitle) twTitle.setAttribute('content', meta.title);
+    const twDesc = document.querySelector('meta[name="twitter:description"]');
+    if (twDesc) twDesc.setAttribute('content', meta.description);
+  }, [lang]);
 
   useEffect(() => {
     const saved = loadSavedNickname();
