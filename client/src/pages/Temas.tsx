@@ -243,9 +243,9 @@ export default function Temas() {
                       </div>
                     </div>
 
-                    {/* Description */}
+                    {/* SEO Description */}
                     <p className="text-slate-400 text-sm font-medium leading-relaxed mb-4">
-                      {theme.shortDescription}
+                      {themeSeo.description}
                     </p>
 
                     {/* Example words */}
