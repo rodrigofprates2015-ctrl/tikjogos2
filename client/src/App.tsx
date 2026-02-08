@@ -26,6 +26,7 @@ import ModoLocalJogo from "@/pages/ModoLocalJogo";
 import AdTest from "@/pages/AdTest";
 import RoomRedirect from "@/pages/RoomRedirect";
 import ThemePage from "@/pages/ThemePage";
+import Temas from "@/pages/Temas";
 import GameModes from "@/pages/GameModes";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
@@ -107,6 +108,11 @@ function AppRouter() {
       {i18nRoutes("/como-jogar", ComoJogar)}
       {i18nRoutes("/how-to-play", ComoJogar)}
       {i18nRoutes("/como-jugar", ComoJogar)}
+
+      {/* Temas */}
+      {i18nRoutes("/temas", Temas)}
+      {i18nRoutes("/themes", Temas)}
+      {i18nRoutes("/temas-del-juego", Temas)}
 
       {/* Blog */}
       {i18nRoutes("/blog", Blog)}
