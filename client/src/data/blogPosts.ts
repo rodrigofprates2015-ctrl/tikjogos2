@@ -3,6 +3,7 @@ import { BlogPost } from '@/components/BlogCard';
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: '9',
+    slug: 'jogo-do-impostor-guia-de-estrategias-e-analise-do-metagame',
     title: 'Jogo do Impostor: Guia de Estratégias e Análise do Metagame no TikJogos',
     excerpt: 'Domine o jogo do impostor com táticas de especialista, análise comportamental e lógica sistêmica. Guia técnico completo.',
     content: `O **jogo do impostor** tornou-se o epicentro da dedução social moderna. No TikJogos, a experiência do **jogo do impostor** é otimizada para oferecer o máximo de competitividade e profundidade estratégica. Se você busca entender as nuances de como ganhar no **jogo do impostor**, este guia técnico foi estruturado com foco na análise comportamental e lógica sistêmica.
@@ -39,6 +40,7 @@ Ao dominar o **jogo do impostor**, você desenvolve competências valiosas de co
   },
   {
     id: '1',
+    slug: 'a-alma-dos-games-sociais-por-que-a-desconfianca-nos-fascina',
     title: 'A alma dos games sociais: Por que a desconfiança nos fascina?',
     excerpt: 'O Jogo do Impostor consolidou-se como um verdadeiro fenômeno cultural ao transformar a desconfiança em uma experiênca profunda.',
     content: `O Jogo do Impostor consolidou-se como um verdadeiro fenômeno cultural entre gamers e diversos grupos de amigos por conseguir transformar uma premissa extremamente simples em uma experiência psicológica profunda e muito intensa. Diferente da maioria dos jogos tradicionais, onde o objetivo principal é competir contra regras matemáticas fixas ou mecânicas de reflexo rápidas, aqui os participantes são colocados para enfrentar diretamente a mente e a intuição uns dos outros.
@@ -63,6 +65,7 @@ Um dos aspectos mais fascinantes é que nenhuma partida jamais será igual à ou
   },
   {
     id: '2',
+    slug: 'tikjogos-partidas-mais-organizadas-e-estrategicas',
     title: 'TikJogos: Partidas mais organizadas e estratégicas',
     excerpt: 'Descubra como o TikJogos elimina a burocracia dos papéis e foca na pura diversão e dedução social.',
     content: `Qualquer pessoa que já tenha tentado organizar uma partida do Jogo do Impostor de maneira estritamente tradicional sabe o quão frustrante a desorganização logística pode ser. O uso de papéis picados e canetas que falham acabam quebrando o ritmo necessário para manter a imersão psicológica.
@@ -87,6 +90,7 @@ A facilidade de iniciar uma nova rodada com apenas alguns cliques permite que os
   },
   {
     id: '3',
+    slug: 'estrategias-essenciais-para-quem-joga-como-impostor',
     title: 'Estratégias essenciais para quem joga como impostor',
     excerpt: 'Assumir o papel de vilão exige coerência narrativa e controle emocional. Aprenda a dominar a arte da camuflagem.',
     content: `Assumir o papel de impostor exige muito mais do que apenas a capacidade de inventar mentiras. O verdadeiro desafio reside na manutenção de uma coerência narrativa impecável durante todo o desenrolar da partida, enquanto se controla o próprio comportamento não-verbal.
@@ -109,6 +113,7 @@ A vitória depende da capacidade de plantar incertezas sem parecer o autor diret
   },
   {
     id: '4',
+    slug: 'como-identificar-o-impostor-usando-logica-e-paciencia',
     title: 'Como identificar o impostor usando lógica e paciência',
     excerpt: 'Encontrar o impostor não é sorte, mas um processo rigoroso de análise comportamental e lógica.',
     content: `Encontrar o impostor em meio a um grupo de amigos não é uma questão de sorte ou intuição mística, mas sim um processo rigoroso de análise lógica e paciência estratégica.
@@ -131,6 +136,7 @@ A primeira regra para uma detecção eficiente é observar o fluxo das informaç
   },
   {
     id: '5',
+    slug: 'por-que-a-comunicacao-define-o-vencedor-da-partida',
     title: 'Por que a comunicação define o vencedor da partida',
     excerpt: 'Saber falar com clareza e ouvir com atenção são as competências decisivas que separam vencedores de perdedores.',
     content: `Diferente do que muitos acreditam, o Jogo do Impostor não premia necessariamente aquele que possui a maior habilidade de mentir friamente, mas sim quem domina a arte da comunicação interpessoal.
@@ -152,6 +158,7 @@ Uma comunicação fragmentada ou caótica favorece o impostor, que utiliza o ru�
   },
   {
     id: '6',
+    slug: 'o-segredo-psicologico-por-tras-do-sucesso-do-genero',
     title: 'O segredo psicológico por trás do sucesso do gênero',
     excerpt: 'Entenda o conceito do "círculo mágico" e como ele nos permite explorar facetas da nossa personalidade de forma segura.',
     content: `Os jogos de dedução social operam em um campo psicológico fascinante onde as normas sociais são suspensas para dar lugar ao lúdico. Eles criam o "círculo mágico", um espaço seguro onde mentir e manipular são incentivados pela mecânica da diversão.
@@ -173,6 +180,7 @@ Sentir que você foi capaz de ver através da máscara de um amigo ou que conseg
   },
   {
     id: '7',
+    slug: 'desenvolvimento-cognitivo-exercitando-a-mente-no-espaco',
     title: 'Desenvolvimento Cognitivo: Exercitando a mente no espaço',
     excerpt: 'Participar ativamente de rodadas do Jogo do Impostor é um exercício excelente para a tomada de decisões rápidas e análise crítica.',
     content: `O jogador nunca está em uma posição passiva; ele precisa avaliar cada informação recebida, compará-la com fatos anteriores e decidir se deve confiar. Esse processo de filtragem de dados é a base do método científico aplicado à vida cotidiana.
@@ -195,6 +203,7 @@ O Jogo do Impostor transforma o lazer em uma academia para o cérebro, refinando
   },
   {
     id: '8',
+    slug: 'erros-comuns-de-iniciantes-e-como-evita-los',
     title: 'Erros comuns de iniciantes e como evitá-los',
     excerpt: 'Não caia em armadilhas comportamentais! Saiba por que falar demais pode ser o seu fim no jogo.',
     content: `Muitos jogadores novatos acabam caindo em armadilhas que revelam sua identidade ou os tornam alvos fáceis. Um dos erros mais clássicos é acreditar que falar sem parar prova a sua inocência.
@@ -219,4 +228,76 @@ O jogo é uma maratona psicológica, não um sprint. Desenvolver uma visão peri
 
 export function getBlogPostById(id: string): BlogPost | undefined {
   return BLOG_POSTS.find(p => p.id === id);
+}
+
+export function getBlogPostBySlug(slug: string): BlogPost | undefined {
+  return BLOG_POSTS.find(p => p.slug === slug);
+}
+
+/**
+ * Translated slugs per language. The keys match post IDs.
+ * PT slugs are the default (stored in the post object).
+ */
+export const BLOG_SLUGS: Record<string, { en: string; es: string }> = {
+  '9': {
+    en: 'impostor-game-strategy-guide-and-metagame-analysis',
+    es: 'juego-del-impostor-guia-de-estrategias-y-analisis-del-metagame',
+  },
+  '1': {
+    en: 'the-soul-of-social-games-why-distrust-fascinates-us',
+    es: 'el-alma-de-los-juegos-sociales-por-que-la-desconfianza-nos-fascina',
+  },
+  '2': {
+    en: 'tikjogos-more-organized-and-strategic-matches',
+    es: 'tikjogos-partidas-mas-organizadas-y-estrategicas',
+  },
+  '3': {
+    en: 'essential-strategies-for-playing-as-impostor',
+    es: 'estrategias-esenciales-para-jugar-como-impostor',
+  },
+  '4': {
+    en: 'how-to-identify-the-impostor-using-logic-and-patience',
+    es: 'como-identificar-al-impostor-usando-logica-y-paciencia',
+  },
+  '5': {
+    en: 'why-communication-defines-the-winner',
+    es: 'por-que-la-comunicacion-define-al-ganador',
+  },
+  '6': {
+    en: 'the-psychological-secret-behind-the-genres-success',
+    es: 'el-secreto-psicologico-detras-del-exito-del-genero',
+  },
+  '7': {
+    en: 'cognitive-development-exercising-the-mind-in-space',
+    es: 'desarrollo-cognitivo-ejercitando-la-mente-en-el-espacio',
+  },
+  '8': {
+    en: 'common-beginner-mistakes-and-how-to-avoid-them',
+    es: 'errores-comunes-de-principiantes-y-como-evitarlos',
+  },
+};
+
+/** Get the slug for a post in a given language */
+export function getPostSlug(postId: string, lang: string): string {
+  const post = getBlogPostById(postId);
+  if (!post) return '';
+  if (lang === 'pt') return post.slug;
+  return BLOG_SLUGS[postId]?.[lang as 'en' | 'es'] || post.slug;
+}
+
+/** Find a blog post by any language slug */
+export function getBlogPostByAnySlug(slug: string): BlogPost | undefined {
+  // Check PT slugs first
+  const byPtSlug = BLOG_POSTS.find(p => p.slug === slug);
+  if (byPtSlug) return byPtSlug;
+
+  // Check EN/ES slugs
+  for (const [postId, slugs] of Object.entries(BLOG_SLUGS)) {
+    if (slugs.en === slug || slugs.es === slug) {
+      return getBlogPostById(postId);
+    }
+  }
+
+  // Fallback: try matching by old numeric ID for backwards compatibility
+  return getBlogPostById(slug);
 }

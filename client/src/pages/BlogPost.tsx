@@ -1,7 +1,7 @@
 import { Link, useRoute, useLocation } from "wouter";
 import { useEffect } from "react";
-import { ArrowLeft, Clock, Calendar, Share2, MessageSquare, ThumbsUp, Youtube, Instagram, MessageCircle } from "lucide-react";
-import { getBlogPostById, BLOG_POSTS } from "@/data/blogPosts";
+import { ArrowLeft, Clock, Calendar, Share2, MessageSquare, ThumbsUp, Youtube, Instagram, MessageCircle, ChevronRight } from "lucide-react";
+import { getBlogPostByAnySlug, getPostSlug, BLOG_POSTS } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
 import { SideAds, BottomAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -23,13 +23,13 @@ function ArticleNotFound() {
 }
 
 export default function BlogPost() {
-  const [, paramsPt] = useRoute("/blog/:id");
-  const [, paramsEn] = useRoute("/en/blog/:id");
-  const [, paramsEs] = useRoute("/es/blog/:id");
+  const [, paramsPt] = useRoute("/blog/:slug");
+  const [, paramsEn] = useRoute("/en/blog/:slug");
+  const [, paramsEs] = useRoute("/es/blog/:slug");
   const [, setLocation] = useLocation();
   const { t, langPath, lang } = useLanguage();
-  const id = paramsPt?.id || paramsEn?.id || paramsEs?.id || "";
-  const post = getBlogPostById(id);
+  const slug = paramsPt?.slug || paramsEn?.slug || paramsEs?.slug || "";
+  const post = getBlogPostByAnySlug(slug);
 
   // Use translated blog post content when available
   const postTitle = post ? t(`blogPosts.post${post.id}.title`, post.title) : '';
@@ -40,12 +40,113 @@ export default function BlogPost() {
   const postDate = post ? t(`blogPosts.post${post.id}.date`, post.date) : '';
   const postCategory = post ? t(`blogPosts.post${post.id}.category`, post.category) : '';
 
+  const postSlug = post ? getPostSlug(post.id, lang) : '';
+  const blogUrl = langPath("/blog");
+  const postUrl = post ? langPath(`/blog/${postSlug}`) : '';
+
+  // Breadcrumb JSON-LD structured data
+  const breadcrumbJsonLd = post ? JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "TikJogos",
+        "item": window.location.origin + langPath("/")
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": window.location.origin + blogUrl
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": postTitle,
+        "item": window.location.origin + postUrl
+      }
+    ]
+  }) : '';
+
+  // FAQ Schema Markup — extract Q&A-style sections from content
+  const faqJsonLd = post ? (() => {
+    const faqItems: { question: string; answer: string }[] = [];
+    const lines = postContent.split('\n');
+    let currentHeading = '';
+    let currentAnswer: string[] = [];
+
+    for (const line of lines) {
+      if (line.startsWith('###')) {
+        if (currentHeading && currentAnswer.length > 0) {
+          faqItems.push({
+            question: currentHeading,
+            answer: currentAnswer.join(' ').replace(/\*\*(.+?)\*\*/g, '$1').trim()
+          });
+        }
+        currentHeading = line.replace('###', '').trim();
+        currentAnswer = [];
+      } else if (currentHeading && line.trim()) {
+        currentAnswer.push(line.replace(/^[-\d.]+\s*/, '').trim());
+      }
+    }
+    if (currentHeading && currentAnswer.length > 0) {
+      faqItems.push({
+        question: currentHeading,
+        answer: currentAnswer.join(' ').replace(/\*\*(.+?)\*\*/g, '$1').trim()
+      });
+    }
+
+    if (faqItems.length === 0) return '';
+
+    return JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqItems.map(item => ({
+        "@type": "Question",
+        "name": item.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": item.answer
+        }
+      }))
+    });
+  })() : '';
+
   useEffect(() => {
     window.scrollTo(0, 0);
     if (post) {
       document.title = `${postTitle} - TikJogos Blog`;
     }
-  }, [post, postTitle]);
+
+    // Inject structured data
+    const existingBreadcrumb = document.getElementById('breadcrumb-jsonld');
+    const existingFaq = document.getElementById('faq-jsonld');
+    if (existingBreadcrumb) existingBreadcrumb.remove();
+    if (existingFaq) existingFaq.remove();
+
+    if (breadcrumbJsonLd) {
+      const script = document.createElement('script');
+      script.id = 'breadcrumb-jsonld';
+      script.type = 'application/ld+json';
+      script.textContent = breadcrumbJsonLd;
+      document.head.appendChild(script);
+    }
+
+    if (faqJsonLd) {
+      const script = document.createElement('script');
+      script.id = 'faq-jsonld';
+      script.type = 'application/ld+json';
+      script.textContent = faqJsonLd;
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      document.getElementById('breadcrumb-jsonld')?.remove();
+      document.getElementById('faq-jsonld')?.remove();
+    };
+  }, [post, postTitle, breadcrumbJsonLd, faqJsonLd]);
 
   const handleBack = () => {
     setLocation(langPath("/blog"));
@@ -72,6 +173,27 @@ export default function BlogPost() {
       <BottomAd />
 
       <main className="flex-grow pb-20">
+        {/* Visible Breadcrumbs */}
+        <nav aria-label="Breadcrumb" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-2">
+          <ol className="flex items-center gap-1 text-sm font-bold flex-wrap">
+            <li>
+              <Link href={langPath("/")} className="text-slate-500 hover:text-purple-400 transition-colors">
+                TikJogos
+              </Link>
+            </li>
+            <li><ChevronRight className="w-3.5 h-3.5 text-slate-600" /></li>
+            <li>
+              <Link href={blogUrl} className="text-slate-500 hover:text-purple-400 transition-colors">
+                Blog
+              </Link>
+            </li>
+            <li><ChevronRight className="w-3.5 h-3.5 text-slate-600" /></li>
+            <li className="text-purple-400 truncate max-w-[300px]" title={postTitle}>
+              {postTitle}
+            </li>
+          </ol>
+        </nav>
+
         {/* Article Header */}
         <div className="relative h-[400px] md:h-[600px] w-full">
           <img 

@@ -2,7 +2,7 @@ import { useLocation, Link } from "wouter";
 import { useEffect } from "react";
 import { Sparkles, TrendingUp, Zap, Youtube, Instagram, MessageCircle } from "lucide-react";
 import BlogCard from "@/components/BlogCard";
-import { BLOG_POSTS } from "@/data/blogPosts";
+import { BLOG_POSTS, getPostSlug } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
 import { BlogFluidAd, SideAds, BottomAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -10,7 +10,7 @@ import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
 
 export default function Blog() {
   const [, setLocation] = useLocation();
-  const { t, langPath } = useLanguage();
+  const { t, langPath, lang } = useLanguage();
 
   useEffect(() => {
     document.title = "Blog do Impostor - TikJogos";
@@ -27,7 +27,8 @@ export default function Blog() {
   const featuredAuthorName = t(`blogPosts.post${featured.id}.author`, featured.author.name);
 
   const handleSelectPost = (id: string) => {
-    setLocation(langPath(`/blog/${id}`));
+    const slug = getPostSlug(id, lang);
+    setLocation(langPath(`/blog/${slug}`));
   };
 
   return (

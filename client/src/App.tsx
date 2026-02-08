@@ -110,7 +110,7 @@ function AppRouter() {
 
       {/* Blog */}
       {i18nRoutes("/blog", Blog)}
-      {i18nRoutes("/blog/:id", BlogPost)}
+      {i18nRoutes("/blog/:slug", BlogPost)}
 
       {/* Privacidade */}
       {i18nRoutes("/privacidade", PrivacyPolicy)}
