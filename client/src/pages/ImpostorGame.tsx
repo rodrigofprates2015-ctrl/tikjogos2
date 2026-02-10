@@ -4066,6 +4066,14 @@ const GameScreen = () => {
                   {crewWins ? "Tripulação Venceu!" : (resultImpostorPlayers.length > 1 ? "Impostores Venceram!" : "Impostor Venceu!")}
                 </h2>
                 
+                {/* Impostor sees the secret word; crew sees who the impostor was */}
+                {isImpostor && gameData?.word && (
+                  <div className="mt-2 mb-1 px-4 py-3 rounded-xl bg-purple-500/20 border-2 border-purple-500/40">
+                    <p className="text-purple-300 text-xs font-bold uppercase tracking-wider mb-1">A palavra secreta era:</p>
+                    <p className="text-white text-2xl font-black">{gameData.word}</p>
+                  </div>
+                )}
+
                 <p className="text-white text-base">
                   {resultImpostorPlayers.length > 1 ? "Os impostores eram" : "O impostor era"}: <span className="text-rose-400 font-bold text-lg">{resultImpostorNames}</span>
                 </p>
