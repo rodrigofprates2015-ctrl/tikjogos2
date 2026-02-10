@@ -407,6 +407,489 @@ export const THEMES: ThemeData[] = [
     shortDescription: 'Termos do universo de terror dos animatrônicos',
     examples: ['Freddy', 'Bonnie', 'Chica', 'Foxy', 'Purple Guy'],
   },
+  {
+    slug: 'fortnite',
+    categoryId: 'fortnite',
+    name: 'Fortnite',
+    wordCount: 30,
+    icon: '🔫',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Fortnite Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Fortnite! Battle Royale, skins e termos do jogo da Epic Games. Grátis e online.',
+      },
+      en: {
+        title: 'Fortnite Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Fortnite theme! Battle Royale, skins and terms from the Epic Games hit. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Fortnite Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Fortnite. Battle Royale, skins y términos del juego de Epic Games. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do Battle Royale da Epic Games',
+    examples: ['Battle Royale', 'Skin', 'V-Bucks', 'Victory Royale', 'Storm'],
+  },
+  {
+    slug: 'free-fire',
+    categoryId: 'freefire',
+    name: 'Free Fire',
+    wordCount: 30,
+    icon: '🔥',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Free Fire Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Free Fire! Termos do Battle Royale da Garena. Descubra o impostor entre os jogadores. Grátis e online.',
+      },
+      en: {
+        title: 'Free Fire Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Free Fire theme! Terms from Garena Battle Royale. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Free Fire Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Free Fire. Términos del Battle Royale de Garena. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do Battle Royale da Garena',
+    examples: ['Booyah', 'Headshot', 'Diamante', 'Ranked', 'Squad'],
+  },
+  {
+    slug: 'brawl-stars',
+    categoryId: 'brawlstars',
+    name: 'Brawl Stars',
+    wordCount: 25,
+    icon: '💥',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Brawl Stars Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Brawl Stars! Brawlers, modos e termos do jogo da Supercell. Grátis e online.',
+      },
+      en: {
+        title: 'Brawl Stars Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Brawl Stars theme! Brawlers, modes and terms from the Supercell game. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Brawl Stars Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Brawl Stars. Brawlers, modos y términos del juego de Supercell. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do jogo de arena da Supercell',
+    examples: ['Brawler', 'Showdown', 'Brawl Ball', 'Gem Grab', 'Troféu'],
+  },
+  {
+    slug: 'pokemon',
+    categoryId: 'pokemon',
+    name: 'Pokémon',
+    wordCount: 38,
+    icon: '⚡',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Pokémon Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Pokémon! Treinadores, pokémons e termos do universo Pokémon. Grátis e online.',
+      },
+      en: {
+        title: 'Pokémon Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Pokémon theme! Trainers, pokémon and terms from the Pokémon universe. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Pokémon Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Pokémon. Entrenadores, pokémon y términos del universo Pokémon. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do universo Pokémon',
+    examples: ['Pikachu', 'Pokébola', 'Ash', 'Evolução', 'Ginásio'],
+  },
+  {
+    slug: 'god-of-war',
+    categoryId: 'godofwar',
+    name: 'God of War',
+    wordCount: 25,
+    icon: '⚔️',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor God of War Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema God of War! Kratos, mitologia e termos da saga épica. Grátis e online.',
+      },
+      en: {
+        title: 'God of War Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the God of War theme! Kratos, mythology and terms from the epic saga. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor God of War Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema God of War. Kratos, mitología y términos de la saga épica. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos da saga épica de Kratos',
+    examples: ['Kratos', 'Atreus', 'Ragnarok', 'Leviathan', 'Thor'],
+  },
+  {
+    slug: 'kpop',
+    categoryId: 'kpop',
+    name: 'K-POP (Grupos)',
+    wordCount: 30,
+    icon: '🎤',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor K-POP Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema K-POP! Grupos como BTS, BLACKPINK, TWICE e mais. Grátis e online.',
+      },
+      en: {
+        title: 'K-POP Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the K-POP theme! Groups like BTS, BLACKPINK, TWICE and more. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor K-POP Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema K-POP. Grupos como BTS, BLACKPINK, TWICE y más. Gratis y online.',
+      },
+    },
+    shortDescription: 'Grupos do universo K-POP',
+    examples: ['BTS', 'BLACKPINK', 'TWICE', 'STRAY KIDS', 'NEWJEANS'],
+  },
+  {
+    slug: 'bts',
+    categoryId: 'bts',
+    name: 'BTS',
+    wordCount: 33,
+    icon: '💜',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor BTS Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema BTS! Membros, músicas e termos do grupo de K-POP mais famoso do mundo. Grátis e online.',
+      },
+      en: {
+        title: 'BTS Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the BTS theme! Members, songs and terms from the world\'s biggest K-POP group. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor BTS Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema BTS. Miembros, canciones y términos del grupo de K-POP más famoso del mundo. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do grupo BTS e do universo ARMY',
+    examples: ['RM', 'Jungkook', 'Dynamite', 'ARMY', 'Butter'],
+  },
+  {
+    slug: 'harry-potter',
+    categoryId: 'harrypotter',
+    name: 'Harry Potter',
+    wordCount: 33,
+    icon: '⚡',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Harry Potter Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Harry Potter! Personagens, feitiços e locais do mundo bruxo. Grátis e online.',
+      },
+      en: {
+        title: 'Harry Potter Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Harry Potter theme! Characters, spells and locations from the wizarding world. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Harry Potter Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Harry Potter. Personajes, hechizos y lugares del mundo mágico. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do mundo bruxo de Hogwarts',
+    examples: ['Hogwarts', 'Voldemort', 'Dumbledore', 'Grifinória', 'Horcrux'],
+  },
+  {
+    slug: 'star-wars',
+    categoryId: 'starwars',
+    name: 'Star Wars',
+    wordCount: 35,
+    icon: '🌌',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Star Wars Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Star Wars! Jedis, Siths e termos da galáxia muito distante. Grátis e online.',
+      },
+      en: {
+        title: 'Star Wars Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Star Wars theme! Jedis, Siths and terms from a galaxy far, far away. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Star Wars Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Star Wars. Jedis, Siths y términos de una galaxia muy lejana. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos da galáxia de Star Wars',
+    examples: ['Darth Vader', 'Luke Skywalker', 'Yoda', 'Jedi', 'Sabre de Luz'],
+  },
+  {
+    slug: 'the-walking-dead',
+    categoryId: 'walkingdead',
+    name: 'The Walking Dead',
+    wordCount: 31,
+    icon: '🧟',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor The Walking Dead Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema The Walking Dead! Personagens e termos do apocalipse zumbi. Grátis e online.',
+      },
+      en: {
+        title: 'The Walking Dead Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with The Walking Dead theme! Characters and terms from the zombie apocalypse. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor The Walking Dead Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema The Walking Dead. Personajes y términos del apocalipsis zombi. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do apocalipse zumbi',
+    examples: ['Rick Grimes', 'Daryl Dixon', 'Negan', 'Caminhantes', 'Alexandria'],
+  },
+  {
+    slug: 'la-casa-de-papel',
+    categoryId: 'lacasadepapel',
+    name: 'La Casa de Papel',
+    wordCount: 31,
+    icon: '🎭',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor La Casa de Papel Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema La Casa de Papel! Personagens e termos da série de assaltos. Grátis e online.',
+      },
+      en: {
+        title: 'La Casa de Papel Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with La Casa de Papel theme! Characters and terms from the heist series. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor La Casa de Papel Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema La Casa de Papel. Personajes y términos de la serie de atracos. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos da série de assaltos',
+    examples: ['Professor', 'Tóquio', 'Berlim', 'Máscara de Dalí', 'Bella Ciao'],
+  },
+  {
+    slug: 'the-boys',
+    categoryId: 'theboys',
+    name: 'The Boys',
+    wordCount: 24,
+    icon: '🦸‍♂️',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor The Boys Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema The Boys! Supes, Vought e termos da série de anti-heróis. Grátis e online.',
+      },
+      en: {
+        title: 'The Boys Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with The Boys theme! Supes, Vought and terms from the anti-hero series. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor The Boys Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema The Boys. Supes, Vought y términos de la serie de antihéroes. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos da série de anti-heróis',
+    examples: ['Homelander', 'Billy Butcher', 'Starlight', 'Vought', 'Compound V'],
+  },
+  {
+    slug: 'game-of-thrones',
+    categoryId: 'got',
+    name: 'Game of Thrones',
+    wordCount: 34,
+    icon: '👑',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Game of Thrones Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Game of Thrones! Casas, personagens e termos de Westeros. Grátis e online.',
+      },
+      en: {
+        title: 'Game of Thrones Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Game of Thrones theme! Houses, characters and terms from Westeros. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Game of Thrones Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Game of Thrones. Casas, personajes y términos de Westeros. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do universo de Westeros',
+    examples: ['Jon Snow', 'Daenerys', 'Trono de Ferro', 'Dragões', 'Winterfell'],
+  },
+  {
+    slug: 'round-6',
+    categoryId: 'round6',
+    name: 'Round 6 (Squid Game)',
+    wordCount: 24,
+    icon: '🔴',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Round 6 Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Round 6 (Squid Game)! Jogos, personagens e termos da série coreana. Grátis e online.',
+      },
+      en: {
+        title: 'Squid Game Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Squid Game theme! Games, characters and terms from the Korean series. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Round 6 Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Round 6 (Squid Game). Juegos, personajes y términos de la serie coreana. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos da série coreana Squid Game',
+    examples: ['Jogador 456', 'Boneca Gigante', 'Dalgona', 'Front Man', 'VIPs'],
+  },
+  {
+    slug: 'one-piece',
+    categoryId: 'onepiece',
+    name: 'One Piece',
+    wordCount: 36,
+    icon: '🏴‍☠️',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor One Piece Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema One Piece! Piratas, Akuma no Mi e termos do Grand Line. Grátis e online.',
+      },
+      en: {
+        title: 'One Piece Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the One Piece theme! Pirates, Devil Fruits and terms from the Grand Line. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor One Piece Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema One Piece. Piratas, Akuma no Mi y términos del Grand Line. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do universo pirata de One Piece',
+    examples: ['Luffy', 'Zoro', 'Chapéu de Palha', 'Akuma no Mi', 'Haki'],
+  },
+  {
+    slug: 'attack-on-titan',
+    categoryId: 'aot',
+    name: 'Attack on Titan',
+    wordCount: 24,
+    icon: '🗡️',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Attack on Titan Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Attack on Titan! Titãs, personagens e termos de Shingeki no Kyojin. Grátis e online.',
+      },
+      en: {
+        title: 'Attack on Titan Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Attack on Titan theme! Titans, characters and terms from Shingeki no Kyojin. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Attack on Titan Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Attack on Titan. Titanes, personajes y términos de Shingeki no Kyojin. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do universo de Shingeki no Kyojin',
+    examples: ['Eren', 'Mikasa', 'Levi', 'Titã Colossal', 'Muralha Maria'],
+  },
+  {
+    slug: 'jujutsu-kaisen',
+    categoryId: 'jjk',
+    name: 'Jujutsu Kaisen',
+    wordCount: 23,
+    icon: '👁️',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Jujutsu Kaisen Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Jujutsu Kaisen! Feiticeiros, maldições e termos do anime. Grátis e online.',
+      },
+      en: {
+        title: 'Jujutsu Kaisen Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Jujutsu Kaisen theme! Sorcerers, curses and terms from the anime. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Jujutsu Kaisen Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Jujutsu Kaisen. Hechiceros, maldiciones y términos del anime. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do universo de feiticeiros e maldições',
+    examples: ['Gojo', 'Sukuna', 'Yuji', 'Domínio', 'Energia Amaldiçoada'],
+  },
+  {
+    slug: 'demon-slayer',
+    categoryId: 'demonslayer',
+    name: 'Demon Slayer',
+    wordCount: 23,
+    icon: '🔥',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Demon Slayer Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Demon Slayer! Caçadores, respirações e termos de Kimetsu no Yaiba. Grátis e online.',
+      },
+      en: {
+        title: 'Demon Slayer Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Demon Slayer theme! Hunters, breathing styles and terms from Kimetsu no Yaiba. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Demon Slayer Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Demon Slayer. Cazadores, respiraciones y términos de Kimetsu no Yaiba. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos de Kimetsu no Yaiba',
+    examples: ['Tanjiro', 'Nezuko', 'Muzan', 'Hashira', 'Respiração da Água'],
+  },
+  {
+    slug: 'my-hero-academia',
+    categoryId: 'mha',
+    name: 'My Hero Academia',
+    wordCount: 25,
+    icon: '💪',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor My Hero Academia Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema My Hero Academia! Heróis, vilões e Quirks do universo de Boku no Hero. Grátis e online.',
+      },
+      en: {
+        title: 'My Hero Academia Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the My Hero Academia theme! Heroes, villains and Quirks from Boku no Hero. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor My Hero Academia Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema My Hero Academia. Héroes, villanos y Quirks de Boku no Hero. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do universo de Boku no Hero',
+    examples: ['Deku', 'All Might', 'Bakugo', 'Quirk', 'Plus Ultra'],
+  },
+  {
+    slug: 'tokyo-ghoul',
+    categoryId: 'tokyoghoul',
+    name: 'Tokyo Ghoul',
+    wordCount: 22,
+    icon: '👹',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Tokyo Ghoul Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Tokyo Ghoul! Ghouls, investigadores e termos do anime sombrio. Grátis e online.',
+      },
+      en: {
+        title: 'Tokyo Ghoul Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Tokyo Ghoul theme! Ghouls, investigators and terms from the dark anime. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Tokyo Ghoul Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Tokyo Ghoul. Ghouls, investigadores y términos del anime oscuro. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do universo sombrio de Tokyo Ghoul',
+    examples: ['Kaneki', 'Touka', 'Kagune', 'CCG', 'Anteiku'],
+  },
+  {
+    slug: 'chainsaw-man',
+    categoryId: 'chainsawman',
+    name: 'Chainsaw Man',
+    wordCount: 22,
+    icon: '🪚',
+    seo: {
+      pt: {
+        title: 'Jogo do Impostor Chainsaw Man Online – Tema Oficial | TikJogos',
+        description: 'Jogue Impostor com tema Chainsaw Man! Demônios, caçadores e termos do anime. Grátis e online.',
+      },
+      en: {
+        title: 'Chainsaw Man Impostor Game Online – Official Theme | TikJogos',
+        description: 'Play Impostor with the Chainsaw Man theme! Devils, hunters and terms from the anime. Free and online.',
+      },
+      es: {
+        title: 'Juego del Impostor Chainsaw Man Online – Tema Oficial | TikJogos',
+        description: 'Juega Impostor con tema Chainsaw Man. Demonios, cazadores y términos del anime. Gratis y online.',
+      },
+    },
+    shortDescription: 'Termos do universo de Chainsaw Man',
+    examples: ['Denji', 'Pochita', 'Makima', 'Power', 'Motoserra'],
+  },
 ];
 
 export function getThemeBySlug(slug: string): ThemeData | undefined {

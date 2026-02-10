@@ -4,7 +4,7 @@ import { Link } from "wouter";
 export const PremiumBanner = () => {
   return (
     <Link href="/criar-tema">
-      <div className="relative group overflow-hidden rounded-2xl border-2 border-purple-700 shadow-lg cursor-pointer hover:border-purple-500 transition-all duration-300">
+      <div className="hidden md:block relative group overflow-hidden rounded-2xl border-2 border-purple-700 shadow-lg cursor-pointer hover:border-purple-500 transition-all duration-300">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-800 z-0"></div>
         
         {/* Decorative crown element */}

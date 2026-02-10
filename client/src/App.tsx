@@ -176,6 +176,69 @@ function AppRouter() {
       <Route path="/jogo-do-impostor/temas/classico">
         {() => <ThemePage themeSlug="classico" />}
       </Route>
+      <Route path="/jogo-do-impostor/temas/fortnite">
+        {() => <ThemePage themeSlug="fortnite" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/free-fire">
+        {() => <ThemePage themeSlug="free-fire" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/brawl-stars">
+        {() => <ThemePage themeSlug="brawl-stars" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/pokemon">
+        {() => <ThemePage themeSlug="pokemon" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/god-of-war">
+        {() => <ThemePage themeSlug="god-of-war" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/kpop">
+        {() => <ThemePage themeSlug="kpop" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/bts">
+        {() => <ThemePage themeSlug="bts" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/harry-potter">
+        {() => <ThemePage themeSlug="harry-potter" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/star-wars">
+        {() => <ThemePage themeSlug="star-wars" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/the-walking-dead">
+        {() => <ThemePage themeSlug="the-walking-dead" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/la-casa-de-papel">
+        {() => <ThemePage themeSlug="la-casa-de-papel" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/the-boys">
+        {() => <ThemePage themeSlug="the-boys" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/game-of-thrones">
+        {() => <ThemePage themeSlug="game-of-thrones" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/round-6">
+        {() => <ThemePage themeSlug="round-6" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/one-piece">
+        {() => <ThemePage themeSlug="one-piece" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/attack-on-titan">
+        {() => <ThemePage themeSlug="attack-on-titan" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/jujutsu-kaisen">
+        {() => <ThemePage themeSlug="jujutsu-kaisen" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/demon-slayer">
+        {() => <ThemePage themeSlug="demon-slayer" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/my-hero-academia">
+        {() => <ThemePage themeSlug="my-hero-academia" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/tokyo-ghoul">
+        {() => <ThemePage themeSlug="tokyo-ghoul" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/chainsaw-man">
+        {() => <ThemePage themeSlug="chainsaw-man" />}
+      </Route>
 
       <Route component={NotFound} />
     </Switch>
