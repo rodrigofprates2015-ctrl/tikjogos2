@@ -155,6 +155,7 @@ export default function PrivacyPolicy() {
                 <li><Link href="/" className="hover:text-purple-400 transition-colors">Início</Link></li>
                 <li><Link href="/blog" className="hover:text-purple-400 transition-colors">Blog</Link></li>
                 <li><Link href="/comojogar" className="hover:text-purple-400 transition-colors">Como Jogar</Link></li>
+                <li><Link href="/jogo-do-impostor/temas" className="hover:text-purple-400 transition-colors">Temas</Link></li>
                 <li><Link href="/modos" className="hover:text-purple-400 transition-colors">Modos de Jogo</Link></li>
                 <li><Link href="/termos" className="hover:text-purple-400 transition-colors">Termos de Uso</Link></li>
                 <li><Link href="/privacidade" className="hover:text-purple-400 transition-colors">Privacidade</Link></li>

@@ -403,7 +403,7 @@ export default function Temas() {
               <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.navigation', 'NAVEGAÇÃO')}</h4>
               <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
                 <li><Link href={langPath('/')} className="hover:text-purple-400 transition-colors">{t('nav.home', 'Início')}</Link></li>
-                <li><Link href={langPath('/temas')} className="hover:text-purple-400 transition-colors">Temas</Link></li>
+                <li><Link href="/jogo-do-impostor/temas" className="hover:text-purple-400 transition-colors">Temas</Link></li>
                 <li><Link href={langPath('/blog')} className="hover:text-purple-400 transition-colors">{t('nav.blog', 'Blog')}</Link></li>
                 <li><Link href={langPath('/comojogar')} className="hover:text-purple-400 transition-colors">{t('nav.howToPlay', 'Como Jogar')}</Link></li>
                 <li><Link href={langPath('/outros-jogos')} className="hover:text-purple-400 transition-colors">{t('nav.otherGames', 'Outros Jogos')}</Link></li>
