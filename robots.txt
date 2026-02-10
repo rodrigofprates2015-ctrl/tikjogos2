@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: /path-to-disallow/
-
-Sitemap: https://www.tikjogos.com.br/sitemap.xml

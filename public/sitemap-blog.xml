@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Blog Index -->
+  <url>
+    <loc>https://tikjogos.com.br/blog</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/blog" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/blog" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/blog" />
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Post: Guia de Estratégias e Análise do Metagame -->
+  <url>
+    <loc>https://tikjogos.com.br/blog/jogo-do-impostor-guia-de-estrategias-e-analise-do-metagame</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/blog/jogo-do-impostor-guia-de-estrategias-e-analise-do-metagame" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/blog/impostor-game-strategy-guide-and-metagame-analysis" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/blog/juego-del-impostor-guia-de-estrategias-y-analisis-del-metagame" />
+    <lastmod>2026-02-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Post: A alma dos games sociais -->
+  <url>
+    <loc>https://tikjogos.com.br/blog/a-alma-dos-games-sociais-por-que-a-desconfianca-nos-fascina</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/blog/a-alma-dos-games-sociais-por-que-a-desconfianca-nos-fascina" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/blog/the-soul-of-social-games-why-distrust-fascinates-us" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/blog/el-alma-de-los-juegos-sociales-por-que-la-desconfianza-nos-fascina" />
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Post: Partidas mais organizadas e estratégicas -->
+  <url>
+    <loc>https://tikjogos.com.br/blog/tikjogos-partidas-mais-organizadas-e-estrategicas</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/blog/tikjogos-partidas-mais-organizadas-e-estrategicas" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/blog/tikjogos-more-organized-and-strategic-matches" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/blog/tikjogos-partidas-mas-organizadas-y-estrategicas" />
+    <lastmod>2026-02-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Post: Estratégias essenciais para quem joga como impostor -->
+  <url>
+    <loc>https://tikjogos.com.br/blog/estrategias-essenciais-para-quem-joga-como-impostor</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/blog/estrategias-essenciais-para-quem-joga-como-impostor" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/blog/essential-strategies-for-playing-as-impostor" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/blog/estrategias-esenciales-para-jugar-como-impostor" />
+    <lastmod>2026-02-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Post: Como identificar o impostor usando lógica e paciência -->
+  <url>
+    <loc>https://tikjogos.com.br/blog/como-identificar-o-impostor-usando-logica-e-paciencia</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/blog/como-identificar-o-impostor-usando-logica-e-paciencia" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/blog/how-to-identify-the-impostor-using-logic-and-patience" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/blog/como-identificar-al-impostor-usando-logica-y-paciencia" />
+    <lastmod>2026-02-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Post: Por que a comunicação define o vencedor -->
+  <url>
+    <loc>https://tikjogos.com.br/blog/por-que-a-comunicacao-define-o-vencedor-da-partida</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/blog/por-que-a-comunicacao-define-o-vencedor-da-partida" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/blog/why-communication-defines-the-winner" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/blog/por-que-la-comunicacion-define-al-ganador" />
+    <lastmod>2026-01-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Post: O segredo psicológico por trás do sucesso do gênero -->
+  <url>
+    <loc>https://tikjogos.com.br/blog/o-segredo-psicologico-por-tras-do-sucesso-do-genero</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/blog/o-segredo-psicologico-por-tras-do-sucesso-do-genero" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/blog/the-psychological-secret-behind-the-genres-success" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/blog/el-secreto-psicologico-detras-del-exito-del-genero" />
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Post: Desenvolvimento Cognitivo -->
+  <url>
+    <loc>https://tikjogos.com.br/blog/desenvolvimento-cognitivo-exercitando-a-mente-no-espaco</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/blog/desenvolvimento-cognitivo-exercitando-a-mente-no-espaco" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/blog/cognitive-development-exercising-the-mind-in-space" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/blog/desarrollo-cognitivo-ejercitando-la-mente-en-el-espacio" />
+    <lastmod>2026-01-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Post: Erros comuns de iniciantes -->
+  <url>
+    <loc>https://tikjogos.com.br/blog/erros-comuns-de-iniciantes-e-como-evita-los</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/blog/erros-comuns-de-iniciantes-e-como-evita-los" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/blog/common-beginner-mistakes-and-how-to-avoid-them" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/blog/errores-comunes-de-principiantes-y-como-evitarlos" />
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+</urlset>

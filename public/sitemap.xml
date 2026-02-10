@@ -1,118 +1,126 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
-  <!-- Homepage - Prioridade Máxima -->
+  <!-- Homepage -->
   <url>
     <loc>https://tikjogos.com.br/</loc>
-    <lastmod>2026-01-06</lastmod>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es" />
+    <lastmod>2026-02-10</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- Páginas Principais -->
+  <!-- Como Jogar -->
   <url>
     <loc>https://tikjogos.com.br/como-jogar</loc>
-    <lastmod>2026-01-06</lastmod>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/como-jogar" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/how-to-play" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/como-jugar" />
+    <lastmod>2026-02-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
+  <!-- Modo Local -->
   <url>
     <loc>https://tikjogos.com.br/modo-local</loc>
-    <lastmod>2026-01-06</lastmod>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/modo-local" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/local-mode" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/modo-local" />
+    <lastmod>2026-02-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/outros-jogos</loc>
-    <lastmod>2026-01-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Páginas de Temas (SEO) -->
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/disney</loc>
-    <lastmod>2026-01-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/clash-royale</loc>
-    <lastmod>2026-01-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/valorant</loc>
-    <lastmod>2026-01-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/natal</loc>
-    <lastmod>2026-01-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/animes</loc>
-    <lastmod>2026-01-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/herois</loc>
-    <lastmod>2026-01-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/stranger-things</loc>
-    <lastmod>2026-01-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Blog -->
-  <url>
-    <loc>https://tikjogos.com.br/blog</loc>
-    <lastmod>2026-01-06</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <!-- Páginas Legais -->
-  <url>
-    <loc>https://tikjogos.com.br/privacidade</loc>
-    <lastmod>2026-01-06</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/termos</loc>
-    <lastmod>2026-01-06</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
   </url>
 
   <!-- Outros Jogos -->
   <url>
-    <loc>https://tikjogos.com.br/termo</loc>
-    <lastmod>2026-01-06</lastmod>
+    <loc>https://tikjogos.com.br/outros-jogos</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/outros-jogos" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/other-games" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/otros-juegos" />
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Temas -->
+  <url>
+    <loc>https://tikjogos.com.br/temas</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/temas" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/themes" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/temas-del-juego" />
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Modos de Jogo -->
+  <url>
+    <loc>https://tikjogos.com.br/modos-de-jogo</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/modos-de-jogo" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/game-modes" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/modos-de-juego" />
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Doações -->
+  <url>
+    <loc>https://tikjogos.com.br/doacoes</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/doacoes" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/donations" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/donaciones" />
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Criar Tema / Oficina -->
+  <url>
+    <loc>https://tikjogos.com.br/criar-tema</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/criar-tema" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/create-theme" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/crear-tema" />
+    <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+
+  <!-- Termo (jogo) -->
+  <url>
+    <loc>https://tikjogos.com.br/termo</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/termo" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/termo" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/termo" />
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Privacidade -->
+  <url>
+    <loc>https://tikjogos.com.br/privacidade</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/privacidade" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/privacy" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/privacidad" />
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Termos de Uso -->
+  <url>
+    <loc>https://tikjogos.com.br/termos</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/termos" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/terms" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/terminos" />
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 
 </urlset>
