@@ -148,6 +148,9 @@ function AppRouter() {
 
       {i18nRoutes("/dashadmin", AdminDashboard)}
 
+      {/* SEO Theme HUB */}
+      <Route path="/jogo-do-impostor/temas" component={Temas} />
+
       {/* SEO Theme Pages */}
       <Route path="/jogo-do-impostor/temas/disney">
         {() => <ThemePage themeSlug="disney" />}
@@ -238,6 +241,33 @@ function AppRouter() {
       </Route>
       <Route path="/jogo-do-impostor/temas/chainsaw-man">
         {() => <ThemePage themeSlug="chainsaw-man" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/roblox">
+        {() => <ThemePage themeSlug="roblox" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/supernatural">
+        {() => <ThemePage themeSlug="supernatural" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/dragon-ball">
+        {() => <ThemePage themeSlug="dragon-ball" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/naruto">
+        {() => <ThemePage themeSlug="naruto" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/bandas-de-rock">
+        {() => <ThemePage themeSlug="bandas-de-rock" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/minecraft">
+        {() => <ThemePage themeSlug="minecraft" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/gta">
+        {() => <ThemePage themeSlug="gta" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/fnaf">
+        {() => <ThemePage themeSlug="fnaf" />}
+      </Route>
+      <Route path="/jogo-do-impostor/temas/super-herois">
+        {() => <ThemePage themeSlug="super-herois" />}
       </Route>
 
       <Route component={NotFound} />

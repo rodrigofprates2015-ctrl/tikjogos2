@@ -1,15 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
+  <!-- HUB: Todos os Temas -->
   <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/classico</loc>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/animes</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/natal</loc>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/attack-on-titan</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/bandas-de-rock</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/brawl-stars</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/bts</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/chainsaw-man</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -23,28 +59,14 @@
   </url>
 
   <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/animes</loc>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/classico</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/herois</loc>
-    <lastmod>2026-02-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/stranger-things</loc>
-    <lastmod>2026-02-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/futebol</loc>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/demon-slayer</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -58,7 +80,14 @@
   </url>
 
   <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/valorant</loc>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/dragon-ball</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/fnaf</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -79,70 +108,7 @@
   </url>
 
   <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/brawl-stars</loc>
-    <lastmod>2026-02-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/pokemon</loc>
-    <lastmod>2026-02-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/god-of-war</loc>
-    <lastmod>2026-02-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/kpop</loc>
-    <lastmod>2026-02-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/bts</loc>
-    <lastmod>2026-02-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/harry-potter</loc>
-    <lastmod>2026-02-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/star-wars</loc>
-    <lastmod>2026-02-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/the-walking-dead</loc>
-    <lastmod>2026-02-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/la-casa-de-papel</loc>
-    <lastmod>2026-02-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/the-boys</loc>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/futebol</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -156,21 +122,28 @@
   </url>
 
   <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/round-6</loc>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/god-of-war</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/one-piece</loc>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/gta</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/attack-on-titan</loc>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/harry-potter</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/herois</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -184,7 +157,21 @@
   </url>
 
   <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/demon-slayer</loc>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/kpop</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/la-casa-de-papel</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/minecraft</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -198,6 +185,90 @@
   </url>
 
   <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/naruto</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/natal</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/one-piece</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/pokemon</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/roblox</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/round-6</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/star-wars</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/stranger-things</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/super-herois</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/supernatural</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/the-boys</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/the-walking-dead</loc>
+    <lastmod>2026-02-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
     <loc>https://tikjogos.com.br/jogo-do-impostor/temas/tokyo-ghoul</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
@@ -205,7 +276,7 @@
   </url>
 
   <url>
-    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/chainsaw-man</loc>
+    <loc>https://tikjogos.com.br/jogo-do-impostor/temas/valorant</loc>
     <lastmod>2026-02-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

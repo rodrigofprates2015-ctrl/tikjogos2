@@ -263,15 +263,23 @@ export default function Temas() {
                       </span>
                     </div>
 
-                    {/* Play button */}
-                    <button
-                      onClick={() => handlePlay(theme.categoryId)}
-                      className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 border-b-4 border-green-800 text-white font-black text-sm rounded-2xl hover:brightness-110 transition-all active:border-b-0 active:translate-y-1 group/btn"
-                    >
-                      <Play className="w-4 h-4 fill-current" />
-                      {seo.playNow}
-                      <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                    </button>
+                    {/* Buttons */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handlePlay(theme.categoryId)}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 border-b-4 border-green-800 text-white font-black text-sm rounded-2xl hover:brightness-110 transition-all active:border-b-0 active:translate-y-1 group/btn"
+                      >
+                        <Play className="w-4 h-4 fill-current" />
+                        {seo.playNow}
+                      </button>
+                      <Link
+                        href={`/jogo-do-impostor/temas/${theme.slug}`}
+                        className="flex items-center justify-center gap-1 px-4 py-3 bg-[#1a1b2e] border-2 border-purple-500/30 text-purple-400 font-bold text-sm rounded-2xl hover:border-purple-500 hover:text-white transition-all"
+                      >
+                        {seo.seeTheme}
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
                   </div>
                 </article>
               );
