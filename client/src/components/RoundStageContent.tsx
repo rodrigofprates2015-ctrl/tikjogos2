@@ -49,14 +49,14 @@ export function SpeakingOrderStage({ players, serverOrder, playerMap, onComplete
       setRotation(360 * 3 + 45);
       
       setTimeout(() => setShowResults(true), 500);
-      setTimeout(() => onComplete(order), 5000);
+      // No auto-advance — host must manually proceed
     }, 3000);
 
     return () => {
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [isComplete, players, onComplete, serverOrder]);
+  }, [isComplete, players, serverOrder]);
 
   const displayOrder = speakingOrder.length > 0 
     ? speakingOrder.map(uid => {
@@ -149,6 +149,8 @@ export function SpeakingOrderWithVotingStage({
   const [speakingOrder, setSpeakingOrder] = useState<string[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [selectedVote, setSelectedVote] = useState<string | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [votingUnlocked, setVotingUnlocked] = useState(false);
 
   useEffect(() => {
     if (isSpinComplete) return;
@@ -219,27 +221,26 @@ export function SpeakingOrderWithVotingStage({
           <p className="text-center text-gray-400 text-xs font-bold uppercase tracking-wider">
             Ordem Definida
           </p>
-          <p className="text-center text-[#e9c46a] text-xs">
-            Vote em quem você acha ser o impostor
-          </p>
+
+          {/* Order list — always visible */}
           <div className="space-y-1.5">
             {displayOrder.map(({ uid, name }, idx) => {
               const isMe = uid === userId;
-              const canVote = !isMe;
+              const canVote = votingUnlocked && !isMe;
               const isSelected = selectedVote === uid;
               
               return (
                 <button
                   key={uid}
                   onClick={() => canVote && setSelectedVote(uid)}
-                  disabled={isMe}
+                  disabled={!votingUnlocked || isMe}
                   className={cn(
                     "w-full flex items-center gap-2 px-3 py-2.5 rounded-xl transition-all text-left",
                     isSelected
                       ? "bg-white/15 border-2 border-white/40"
                       : "bg-gray-900/40 border border-gray-700/50",
                     canVote && !isSelected && "hover:border-white/30",
-                    isMe && "opacity-50 cursor-not-allowed"
+                    (!votingUnlocked || isMe) && "opacity-50 cursor-not-allowed"
                   )}
                   style={{ animation: `stageSlideIn 0.3s ease-out ${idx * 0.08}s backwards` }}
                   data-testid={`button-vote-order-${uid}`}
@@ -270,34 +271,96 @@ export function SpeakingOrderWithVotingStage({
 
           <div className="w-full h-[1px] bg-gray-700/30 my-2"></div>
 
-          <div className="space-y-2">
-            <Button 
-              onClick={() => {
-                if (selectedVote) {
-                  onStartVoting();
-                  onSubmitVote(selectedVote);
-                }
-              }}
-              disabled={!selectedVote || isSubmitting}
-              className="w-full h-11 bg-white text-black font-bold text-sm rounded-xl transition-all disabled:opacity-30"
-              style={{ boxShadow: '0 4px 0 rgba(255, 255, 255, 0.2)' }}
-              data-testid="button-vote-from-order"
-            >
-              <Vote className="mr-2 w-4 h-4" /> 
-              {isSubmitting ? 'Votando...' : selectedVote ? 'Votar no Impostor' : 'Selecione o Impostor'}
-            </Button>
-            
-            {isHost && (
+          {/* Before voting is unlocked — host sees "Iniciar Votação" button, others see waiting message */}
+          {!votingUnlocked && (
+            <div className="space-y-2">
+              {isHost ? (
+                <Button 
+                  onClick={() => setShowConfirmDialog(true)}
+                  className="w-full h-11 bg-[#e9c46a] hover:bg-[#d4a843] text-black font-bold text-sm rounded-xl transition-all"
+                  style={{ boxShadow: '0 4px 0 rgba(233, 196, 106, 0.3)' }}
+                  data-testid="button-host-start-voting"
+                >
+                  <Vote className="mr-2 w-4 h-4" /> Iniciar Votação
+                </Button>
+              ) : (
+                <p className="text-gray-400 text-sm text-center py-4">
+                  Aguardando o host iniciar a votação...
+                </p>
+              )}
+
+              {isHost && (
+                <Button 
+                  onClick={onNewRound}
+                  variant="ghost"
+                  className="w-full h-9 text-gray-400 hover:text-gray-200 rounded-xl text-sm"
+                  data-testid="button-skip-to-lobby"
+                >
+                  <ArrowRight className="mr-2 w-4 h-4" /> Pular para Nova Rodada
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* After voting is unlocked — everyone can vote */}
+          {votingUnlocked && (
+            <div className="space-y-2">
+              <p className="text-center text-[#e9c46a] text-xs font-bold">
+                Vote em quem você acha ser o impostor
+              </p>
               <Button 
-                onClick={onNewRound}
-                variant="ghost"
-                className="w-full h-9 text-gray-400 hover:text-gray-200 rounded-xl text-sm"
-                data-testid="button-skip-to-lobby"
+                onClick={() => {
+                  if (selectedVote) {
+                    onStartVoting();
+                    onSubmitVote(selectedVote);
+                  }
+                }}
+                disabled={!selectedVote || isSubmitting}
+                className="w-full h-11 bg-white text-black font-bold text-sm rounded-xl transition-all disabled:opacity-30"
+                style={{ boxShadow: '0 4px 0 rgba(255, 255, 255, 0.2)' }}
+                data-testid="button-vote-from-order"
               >
-                <ArrowRight className="mr-2 w-4 h-4" /> Pular para Nova Rodada
+                <Vote className="mr-2 w-4 h-4" /> 
+                {isSubmitting ? 'Votando...' : selectedVote ? 'Votar no Impostor' : 'Selecione o Impostor'}
               </Button>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* Confirmation dialog */}
+          {showConfirmDialog && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+              <div className="bg-[#1a1b2e] border-2 border-gray-600 rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl animate-stage-fade-in">
+                <div className="text-center space-y-4">
+                  <div className="w-14 h-14 rounded-full bg-[#e9c46a]/20 border-2 border-[#e9c46a]/40 flex items-center justify-center mx-auto">
+                    <Vote className="w-7 h-7 text-[#e9c46a]" />
+                  </div>
+                  <h3 className="text-white font-black text-lg">Quer mesmo iniciar a votação?</h3>
+                  <p className="text-gray-400 text-sm">
+                    Todos os jogadores poderão votar em quem acham ser o impostor.
+                  </p>
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      onClick={() => setShowConfirmDialog(false)}
+                      variant="ghost"
+                      className="flex-1 h-11 border border-gray-600 text-gray-300 hover:text-white rounded-xl font-bold"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setShowConfirmDialog(false);
+                        setVotingUnlocked(true);
+                        onStartVoting();
+                      }}
+                      className="flex-1 h-11 bg-[#e9c46a] hover:bg-[#d4a843] text-black font-bold rounded-xl"
+                    >
+                      Sim, iniciar!
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
