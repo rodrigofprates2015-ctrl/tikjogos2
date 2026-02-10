@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /private/
+Sitemap: https://tikjogos.com.br/sitemap.xml
