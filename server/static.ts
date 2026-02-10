@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
+import { getSeoForPath, injectSeoIntoHtml } from "./seo";
 
 export function serveStatic(app: Express) {
   // esbuild bundles everything into dist/, so __dirname is /app/dist
@@ -11,6 +12,8 @@ export function serveStatic(app: Express) {
     console.error(`Could not find index.html at: ${indexPath}`);
     throw new Error(`index.html not found in ${distPath}`);
   }
+
+  const indexHtml = fs.readFileSync(indexPath, 'utf-8');
 
   app.use(express.static(distPath, {
     setHeaders: (res, filePath) => {
@@ -26,8 +29,16 @@ export function serveStatic(app: Express) {
   }));
 
   // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  // Inject SEO meta tags based on the requested URL
+  app.use("*", (req, res) => {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.sendFile(indexPath);
+
+    const seo = getSeoForPath(req.originalUrl);
+    if (seo) {
+      const html = injectSeoIntoHtml(indexHtml, seo);
+      res.send(html);
+    } else {
+      res.send(indexHtml);
+    }
   });
 }

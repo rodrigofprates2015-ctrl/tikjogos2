@@ -5,6 +5,7 @@ import viteConfig from "../vite.config";
 import fs from "fs";
 import path from "path";
 import { nanoid } from "nanoid";
+import { getSeoForPath, injectSeoIntoHtml } from "./seo";
 
 const viteLogger = createLogger();
 
@@ -49,7 +50,13 @@ export async function setupVite(server: Server, app: Express) {
         `src="/src/main.tsx"`,
         `src="/src/main.tsx?v=${nanoid()}"`,
       );
-      const page = await vite.transformIndexHtml(url, template);
+      let page = await vite.transformIndexHtml(url, template);
+
+      const seo = getSeoForPath(url);
+      if (seo) {
+        page = injectSeoIntoHtml(page, seo);
+      }
+
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
       console.error('[Vite Transform Error]:', e);
