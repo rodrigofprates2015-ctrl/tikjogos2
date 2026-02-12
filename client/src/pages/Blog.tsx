@@ -64,7 +64,7 @@ export default function Blog() {
                   )}
                 </h1>
                 <p className="text-slate-400 text-xl max-w-2xl font-medium">
-                  {t('blog.description', 'Notícias galácticas, estratégias de sabotagem e atualizações direto da central TikJogos.')}
+                  {t('blog.description', 'O Blog do Impostor é o espaço oficial com novidades, atualizações, estratégias e curiosidades sobre o Jogo do impostor. Descubra novos temas, dicas para vencer partidas, melhorias da plataforma e tudo que envolve a comunidade do jogo.')}
                 </p>
               </div>
             </header>

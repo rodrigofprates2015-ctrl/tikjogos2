@@ -145,7 +145,7 @@ export const translations = {
     blog: {
       title: 'Blog do Impostor',
       subtitle: 'Central de Comando',
-      description: 'Notícias galácticas, estratégias de sabotagem e atualizações direto da central TikJogos.',
+      description: 'O Blog do Impostor é o espaço oficial com novidades, atualizações, estratégias e curiosidades sobre o Jogo do impostor. Descubra novos temas, dicas para vencer partidas, melhorias da plataforma e tudo que envolve a comunidade do jogo.',
       readMore: 'Ler Mais',
       readTime: 'min de leitura',
       published: 'Publicado em',
@@ -648,7 +648,7 @@ Ao dominar o **jogo do impostor**, você desenvolve competências valiosas de co
     blog: {
       title: 'Impostor Blog',
       subtitle: 'Command Center',
-      description: 'Galactic news, sabotage strategies, and updates directly from the TikJogos command center.',
+      description: 'The Impostor Blog is the official space with news, updates, strategies and fun facts about the Impostor Game. Discover new themes, tips to win matches, platform improvements and everything about the game community.',
       readMore: 'Read More',
       readTime: 'min read',
       published: 'Published on',
@@ -1146,7 +1146,7 @@ By mastering the **impostor game**, you develop valuable skills in communication
     blog: {
       title: 'Blog del Impostor',
       subtitle: 'Centro de Comando',
-      description: 'Noticias galácticas, estrategias de sabotaje y actualizaciones directas del centro de comando de TikJogos.',
+      description: 'El Blog del Impostor es el espacio oficial con novedades, actualizaciones, estrategias y curiosidades sobre el Juego del impostor. Descubre nuevos temas, consejos para ganar partidas, mejoras de la plataforma y todo lo que involucra a la comunidad del juego.',
       readMore: 'Leer Más',
       readTime: 'min de lectura',
       published: 'Publicado en',
