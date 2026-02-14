@@ -1401,7 +1401,7 @@ const HomeScreen = () => {
             className="hidden md:block absolute bottom-0 right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-0 pointer-events-none"
           />
 
-          <div className="relative z-10">
+          <div className="relative z-10 w-full flex justify-center">
             <DrawingGameCard />
           </div>
         </div>
