@@ -25,6 +25,7 @@ export type DrawingGamePhase =
   | 'lobby'
   | 'themeSelect'   // host picks a theme
   | 'playing'       // drawing phase
+  | 'roundEnd'      // all players drew — host decides: another round or discussion
   | 'discussion'    // after drawing, before voting
   | 'voting'
   | 'result';
@@ -72,6 +73,8 @@ export type DrawingGameState = {
   goToThemeSelect: () => void;
   startGame: (config?: { turnTimeLimit?: number; theme?: string }) => Promise<void>;
   completeTurn: () => Promise<void>;
+  requestNewRound: () => Promise<void>;
+  goToDiscussion: () => Promise<void>;
   submitVote: (targetId: string) => Promise<void>;
   revealVotes: () => Promise<void>;
   returnToLobby: () => Promise<void>;
@@ -228,6 +231,10 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
           }
         }
 
+        if (data.type === 'drawing-round-end') {
+          set({ phase: 'roundEnd' });
+        }
+
         if (data.type === 'drawing-phase-end') {
           set({ phase: 'discussion' });
         }
@@ -278,6 +285,7 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
     let phase: DrawingGamePhase = get().phase;
     if (room.status === 'waiting') phase = 'lobby';
     else if (room.status === 'drawing') phase = 'playing';
+    else if (room.status === 'roundEnd') phase = 'roundEnd';
     else if (room.status === 'discussion') phase = 'discussion';
     else if (room.status === 'voting') phase = 'voting';
     else if (room.status === 'result') phase = 'result';
@@ -318,6 +326,32 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
       roomCode: room.code,
       playerId: user.uid,
     }));
+  },
+
+  requestNewRound: async () => {
+    const { room } = get();
+    if (!room) return;
+    try {
+      await fetch(`/api/drawing-rooms/${room.code}/new-round`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      console.error('Error requesting new round:', error);
+    }
+  },
+
+  goToDiscussion: async () => {
+    const { room } = get();
+    if (!room) return;
+    try {
+      await fetch(`/api/drawing-rooms/${room.code}/go-to-discussion`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      console.error('Error going to discussion:', error);
+    }
   },
 
   submitVote: async (targetId: string) => {

@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 import {
   User, Users, Zap, Copy, LogOut, Play, Crown,
   Loader2, ArrowLeft, Send, Check, Vote, Skull,
-  Trophy, Clock, Paintbrush, Home, Undo2, Star
+  Trophy, Clock, Paintbrush, Home, Undo2, Star,
+  RotateCcw, MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DrawingCanvas } from "@/components/DrawingCanvas";
@@ -343,6 +344,50 @@ const DrawingGameScreen = () => {
 };
 
 // ─── DISCUSSION SCREEN ───
+// ─── ROUND END SCREEN ───
+const RoundEndScreen = () => {
+  const { room, user, strokes, requestNewRound, goToDiscussion } = useDrawingGameStore();
+
+  if (!room) return null;
+  const isHost = room.hostId === user?.uid;
+
+  return (
+    <div className="flex flex-col w-full max-w-2xl py-4 px-4 animate-fade-in relative z-10">
+      <div className="bg-[#242642] rounded-[3rem] p-4 md:p-8 shadow-2xl border-4 border-[#2f3252] relative z-10">
+        <div className="text-center mb-4">
+          <h2 className="text-2xl font-black text-white mb-2">Rodada Completa!</h2>
+          <p className="text-slate-400 text-sm">Todos desenharam. Querem mais uma rodada?</p>
+        </div>
+
+        {/* Canvas preview (read-only) */}
+        <DrawingCanvas isDrawing={false} strokes={strokes} onStroke={() => {}} />
+
+        {isHost ? (
+          <div className="flex flex-col gap-3 mt-4">
+            <button
+              onClick={requestNewRound}
+              className="w-full px-8 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-emerald-500 to-green-500 border-emerald-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
+            >
+              <RotateCcw size={24} />
+              MAIS UMA RODADA
+            </button>
+            <button
+              onClick={goToDiscussion}
+              className="w-full px-8 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-amber-500 to-orange-500 border-amber-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
+            >
+              <MessageSquare size={24} />
+              IR PARA DISCUSSÃO
+            </button>
+          </div>
+        ) : (
+          <p className="text-center text-slate-500 text-sm font-bold mt-4">Aguardando o host decidir...</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ─── DISCUSSION SCREEN ───
 const DiscussionScreen = () => {
   const { room, user, strokes } = useDrawingGameStore();
   const [showVoteButton, setShowVoteButton] = useState(false);
@@ -599,6 +644,7 @@ export default function DesenhoImpostor() {
       {phase === 'lobby' && <DrawingLobbyScreen />}
       {phase === 'themeSelect' && <DrawingThemeSelectScreen />}
       {phase === 'playing' && <DrawingGameScreen />}
+      {phase === 'roundEnd' && <RoundEndScreen />}
       {phase === 'discussion' && <DiscussionScreen />}
       {phase === 'voting' && <VotingScreen />}
       {phase === 'result' && <ResultScreen />}

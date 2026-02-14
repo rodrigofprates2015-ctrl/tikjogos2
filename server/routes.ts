@@ -3131,7 +3131,7 @@ export async function registerRoutes(
   type DrawingRoom = {
     code: string;
     hostId: string;
-    status: string; // waiting | drawing | discussion | voting | result
+    status: string; // waiting | drawing | roundEnd | discussion | voting | result
     gameData: DrawingGameData | null;
     players: DrawingPlayer[];
     createdAt: string;
@@ -3248,6 +3248,43 @@ export async function registerRoutes(
 
     broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
     console.log(`[Drawing] Game started in room ${code}, word: ${word}, impostor: ${impostorId}`);
+    res.json(room);
+  });
+
+  // REST: New drawing round (host wants another round)
+  app.post("/api/drawing-rooms/:code/new-round", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = drawingRooms.get(code);
+    if (!room || !room.gameData) return res.status(404).json({ error: "Room not found" });
+
+    // Reset drawing order to a new shuffle, restart turns
+    const activePlayers = room.players.filter(p => p.connected !== false);
+    const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
+    room.gameData.drawingOrder = shuffled.map(p => p.uid);
+    room.gameData.currentDrawerIndex = 0;
+    room.gameData.currentDrawerId = room.gameData.drawingOrder[0];
+    room.status = 'drawing';
+
+    broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
+    broadcastToDrawingRoom(code, {
+      type: 'drawing-turn-start',
+      drawerId: room.gameData.currentDrawerId,
+      turnIndex: 0,
+    });
+    console.log(`[Drawing] New round started in room ${code}`);
+    res.json(room);
+  });
+
+  // REST: Go to discussion (host decides no more rounds)
+  app.post("/api/drawing-rooms/:code/go-to-discussion", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = drawingRooms.get(code);
+    if (!room || !room.gameData) return res.status(404).json({ error: "Room not found" });
+
+    room.status = 'discussion';
+    room.gameData.currentDrawerId = undefined;
+    broadcastToDrawingRoom(code, { type: 'drawing-phase-end' });
+    broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
     res.json(room);
   });
 
@@ -3382,10 +3419,10 @@ export async function registerRoutes(
           const nextIndex = (room.gameData.currentDrawerIndex || 0) + 1;
 
           if (nextIndex >= room.gameData.drawingOrder.length) {
-            // All turns done — move to discussion
-            room.status = 'discussion';
+            // All turns done — ask host if they want another round
+            room.status = 'roundEnd';
             room.gameData.currentDrawerId = undefined;
-            broadcastToDrawingRoom(data.roomCode, { type: 'drawing-phase-end' });
+            broadcastToDrawingRoom(data.roomCode, { type: 'drawing-round-end' });
           } else {
             // Next turn
             room.gameData.currentDrawerIndex = nextIndex;
