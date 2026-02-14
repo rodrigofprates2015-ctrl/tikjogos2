@@ -2,6 +2,118 @@ import { BlogPost } from '@/components/BlogCard';
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    id: '10',
+    slug: 'jogo-do-impostor-desenho',
+    title: 'Jogo do Impostor Desenho: A Nova Sensação que Combina Gartic e Impostor',
+    excerpt: 'Descubra o Jogo do Impostor Desenho, a variante que une desenho colaborativo com dedução social. Saiba como jogar, estratégias e por que é tão viciante.',
+    content: `Você já jogou **Jogo do Impostor Desenho**? Se ainda não, prepare-se para descobrir a forma mais criativa, engraçada e desafiadora de jogar o clássico jogo de dedução social. Essa inovadora variante une o melhor do Gartic (desenho colaborativo) com a tensão do Impostor, criando uma experiência única que vai transformar suas noites com amigos.
+
+### O que é Jogo do Impostor Desenho?
+O **Jogo do Impostor Desenho** é uma evolução do tradicional Jogo do Impostor. Em vez de simplesmente adivinhar palavras através de pistas verbais, aqui todos os jogadores desenham colaborativamente uma palavra secreta. Mas tem um detalhe: o impostor não sabe qual é a palavra!
+
+A mecânica é simples, mas gera momentos hilariantes:
+1. **Sorteio**: Um jogador é escolhido como impostor
+2. **Palavra Secreta**: Todos recebem a mesma palavra para desenhar (menos o impostor)
+3. **Desenho Colaborativo**: Cada jogador desenha por 30-45 segundos e passa o desenho adiante
+4. **Discussão**: Todos analisam o resultado final
+5. **Votação**: Decidem quem era o impostor
+
+### Por que o Jogo do Impostor Desenho é tão Viciante?
+
+#### 1. O Impostor em Desvantagem Real
+Diferente do Jogo do Impostor tradicional, aqui é muito mais difícil blefar. Quando você não sabe a palavra, desenhar algo que faz sentido é quase impossível. Você fica nervoso, hesita, e essas atitudes são captadas pelos outros jogadores.
+
+#### 2. Pistas Visuais Inequívocas
+Cada traço conta uma história. Um desenho que deveria ser de "gato" mas saiu parecendo "espaguete" é uma bandeira vermelha GIGANTE. Os honestos naturalmente seguem uma lógica visual, enquanto o impostor frequentemente quebra essa lógica.
+
+#### 3. Dinâmica de Discord
+A maioria joga o **Jogo do Impostor Desenho** enquanto está em uma call do Discord com os amigos. Isso é o game-changer! A reação em tempo real, o tom de voz, as pausas nervosas — tudo isso revela o impostor:
+- **Impostor**: "Hmm... círculo interessante" (nervoso, tentando entender)
+- **Honesto**: "Claro! Âncora!" (confiante, reconhece a palavra)
+
+#### 4. Diversão Garantida
+O desenho final é SEMPRE estranho. Ninguém consegue desenhar perfeitamente passando de mão em mão, então o resultado é um caos criativo que gera risadas. Mesmo que o impostor ganhe, todos se divertem.
+
+### Como Funciona a Mecânica do Jogo do Impostor Desenho
+
+#### A Fase de Desenho
+Imagine a seguinte situação com a palavra "Âncora":
+- Jogador 1 (Honesto): Desenha um círculo (é uma âncora)
+- Jogador 2 (IMPOSTOR): Vê o círculo, desenha linhas aleatórias
+- Jogador 3 (Honesto): Pensa "âncora com corrente" e completa
+- Jogador 4 (Honesto): Vê tudo e adiciona o gancho
+
+**O que torna único**: Cada jogador vê o desenho anterior COMPLETO antes de desenhar, mas o impostor fica tentando adivinhar o que é enquanto contribui.
+
+#### A Fase de Discussão
+Aqui é onde a mágica acontece, especialmente no Discord: os jogadores discutem o desenho, analisam quem desenhou o quê, o impostor tenta se defender ("Achei que você estava indo por outro caminho!") e os honestos observam reações nervosas.
+
+#### A Votação
+Todos votam em quem acham que é o impostor. Se acertarem, os honestos ganham. Se errarem, o impostor vence.
+
+### Estratégias para Ganhar no Jogo do Impostor Desenho
+
+#### Para os Honestos:
+1. **Observe o fluxo visual**: Procure por traços que não fazem sentido com a palavra
+2. **Escute o Discord**: Tom nervoso, pausas longas, explicações confusas
+3. **Identifique mudanças drásticas**: Se alguém desenhou algo completamente diferente, pode ser o impostor
+4. **Concordância suspeita**: Impostor tende a concordar com tudo para não parecer suspeito
+
+#### Para o Impostor:
+1. **Desenhe vagamente**: Linhas abstratas são menos reveladoras
+2. **Finja certeza**: "Ah, verdade! Âncora!" mesmo que não tenha ideia
+3. **Tome turnos curtos**: Quanto mais rápido terminar, menos chance de errar
+4. **Concorde estrategicamente**: Aceite as interpretações dos outros
+
+### Variações Divertidas
+
+#### Impostor Sabe a Categoria
+Todos sabem que é um "Animal", mas o impostor não sabe qual animal. Mais justo, menos frustrante, ainda assim muito desafiador!
+
+#### Tema Customizado
+Ao invés de palavras aleatórias, escolha temas como "Filmes famosos", "Personagens de anime", "Memes da internet" ou "Marcas famosas". Isso torna o jogo mais cultural e divertido!
+
+### Jogo do Impostor Desenho vs. Jogo do Impostor Tradicional
+
+| Aspecto | Impostor Tradicional | Impostor Desenho |
+|---|---|---|
+| Mecânica | Pistas verbais | Desenho colaborativo |
+| Dificuldade p/ impostor | Moderado | MUITO difícil |
+| Reação em tempo real | Conversas | Discord + Visual |
+| Fator diversão | Alto | Altíssimo |
+| Duração | 10-15 min | 10-20 min |
+| Criatividade | Média | Muito Alta |
+
+### Por que Jogar com Amigos?
+1. **Laços mais fortes**: A dinâmica de Discord cria momentos memoráveis
+2. **Menos agressivo**: Não há "morte em jogo", apenas desenho estranho
+3. **Adequado para qualquer grupo**: Desde casuals até competitivos
+4. **Sem limite de criatividade**: Cada partida é única
+5. **Fácil de aprender, difícil de dominar**
+
+### Conclusão
+O **Jogo do Impostor Desenho** é prova de que jogos de festa nunca saem de moda — eles apenas evoluem. Ao combinar a criatividade do Gartic com a tensão do Impostor, temos uma experiência que é divertida, desafiadora, social, memorável e viciante.
+
+Se você ainda não experimentou, reúna seus amigos no Discord e prepare-se para as risadas mais épicas. Porque nada é mais engraçado do que ver um impostor nervoso tentando desenhar algo que ele nem sabe o que é.
+
+**Então, qual é a sua desculpa para não jogar agora?**
+
+### Quer Jogar?
+Acesse [TikJogos](https://tikjogos.com.br) agora mesmo e descubra essa nova forma de se divertir com seus amigos. Crie uma sala, convide a galera pro Discord e prepare-se para a melhor noite de jogo que você já teve!
+
+**Jogo do Impostor Desenho**: Onde criatividade, estratégia e diversão se encontram.`,
+    author: {
+      name: 'Equipe TikJogos',
+      role: 'Game Design',
+      avatar: 'https://picsum.photos/seed/tikjogos/100/100'
+    },
+    date: '07 Fev 2026',
+    category: 'News',
+    image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200',
+    readTime: '10 min',
+    featured: true
+  },
+  {
     id: '9',
     slug: 'jogo-do-impostor-guia-de-estrategias-e-analise-do-metagame',
     title: 'Jogo do Impostor: Guia de Estratégias e Análise do Metagame no TikJogos',
@@ -239,6 +351,10 @@ export function getBlogPostBySlug(slug: string): BlogPost | undefined {
  * PT slugs are the default (stored in the post object).
  */
 export const BLOG_SLUGS: Record<string, { en: string; es: string }> = {
+  '10': {
+    en: 'impostor-drawing-game',
+    es: 'juego-del-impostor-dibujo',
+  },
   '9': {
     en: 'impostor-game-strategy-guide-and-metagame-analysis',
     es: 'juego-del-impostor-guia-de-estrategias-y-analisis-del-metagame',
