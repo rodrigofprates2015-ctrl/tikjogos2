@@ -246,6 +246,178 @@ const DrawingThemeSelectScreen = () => {
   );
 };
 
+// ─── SORTING SCREEN (Roulette + Role Reveal + Drawing Order) ───
+const SortingScreen = () => {
+  const { room, user, startDrawing } = useDrawingGameStore();
+  const [spinning, setSpinning] = useState(true);
+  const [rotation, setRotation] = useState(0);
+  const [showRole, setShowRole] = useState(false);
+  const [showOrder, setShowOrder] = useState(false);
+  const [showStart, setShowStart] = useState(false);
+
+  const isHost = room?.hostId === user?.uid;
+  const gameData = room?.gameData;
+  const isImpostor = gameData?.impostorIds?.includes(user?.uid || '');
+  const drawingOrder = gameData?.drawingOrder || [];
+
+  useEffect(() => {
+    // Spin animation
+    let currentRotation = 0;
+    const interval = setInterval(() => {
+      currentRotation += 15;
+      setRotation(currentRotation);
+    }, 30);
+
+    // Stop spinning after 2.5s
+    const stopSpin = setTimeout(() => {
+      clearInterval(interval);
+      setSpinning(false);
+      setRotation(0);
+    }, 2500);
+
+    // Show role after spin
+    const showRoleTimer = setTimeout(() => setShowRole(true), 3000);
+    // Show order after role
+    const showOrderTimer = setTimeout(() => setShowOrder(true), 4500);
+    // Show start button after order
+    const showStartTimer = setTimeout(() => setShowStart(true), 5500);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(stopSpin);
+      clearTimeout(showRoleTimer);
+      clearTimeout(showOrderTimer);
+      clearTimeout(showStartTimer);
+    };
+  }, []);
+
+  if (!room || !gameData) return null;
+
+  const orderPlayers = drawingOrder.map(uid => {
+    const player = room.players.find(p => p.uid === uid);
+    return { uid, name: player?.name || 'Jogador' };
+  });
+
+  return (
+    <div className="flex flex-col w-full max-w-2xl py-4 px-4 animate-fade-in relative z-10">
+      <div className="bg-[#242642] rounded-[3rem] p-4 md:p-8 shadow-2xl border-4 border-[#2f3252] relative z-10">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/50 border border-gray-700/50 mb-4">
+            <Zap className="w-4 h-4 text-emerald-400" />
+            <span className="text-gray-400 text-xs uppercase tracking-widest font-bold">
+              Sorteio
+            </span>
+          </div>
+        </div>
+
+        {/* Spinning wheel */}
+        {spinning && (
+          <div className="flex flex-col items-center gap-3 py-8">
+            <div className="relative w-24 h-24">
+              <div
+                className="w-full h-full rounded-full border-4 border-emerald-500/50 border-t-emerald-400 border-r-emerald-300"
+                style={{ transform: `rotate(${rotation}deg)`, transition: 'none' }}
+              />
+              <Paintbrush className="absolute inset-0 m-auto w-10 h-10 text-emerald-400" />
+            </div>
+            <p className="text-gray-400 text-sm animate-pulse">Sorteando...</p>
+          </div>
+        )}
+
+        {/* Role reveal */}
+        {showRole && (
+          <div className="animate-fade-in flex flex-col items-center gap-3 mb-6">
+            <div className={cn(
+              "w-20 h-20 rounded-2xl flex items-center justify-center",
+              isImpostor
+                ? "bg-red-500/20 border-2 border-red-500/50"
+                : "bg-emerald-500/20 border-2 border-emerald-500/50"
+            )}>
+              {isImpostor ? (
+                <Skull className="w-10 h-10 text-red-400" />
+              ) : (
+                <Paintbrush className="w-10 h-10 text-emerald-400" />
+              )}
+            </div>
+            <div className="text-center">
+              {isImpostor ? (
+                <>
+                  <h3 className="text-2xl font-black text-red-400 uppercase">Você é o IMPOSTOR!</h3>
+                  <p className="text-slate-400 text-sm mt-1">Tente disfarçar seu desenho sem saber a palavra.</p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-2xl font-black text-emerald-400 uppercase">Você é Tripulante!</h3>
+                  <p className="text-slate-400 text-sm mt-1">
+                    A palavra secreta é: <span className="text-white font-black text-lg">{gameData.word}</span>
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Drawing order */}
+        {showOrder && (
+          <div className="animate-fade-in mb-6">
+            <p className="text-center text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">
+              Ordem de Desenho
+            </p>
+            <div className="space-y-1.5">
+              {orderPlayers.map(({ uid, name }, idx) => {
+                const isMe = uid === user?.uid;
+                const isPlayerImpostor = gameData.impostorIds?.includes(uid);
+                return (
+                  <div
+                    key={uid}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2.5 rounded-xl transition-all",
+                      isMe
+                        ? "bg-emerald-500/15 border border-emerald-500/30"
+                        : "bg-gray-900/40 border border-gray-700/50"
+                    )}
+                    style={{ animation: `stageSlideIn 0.3s ease-out ${idx * 0.08}s backwards` }}
+                  >
+                    <div className={cn(
+                      "w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-black",
+                      isMe ? "bg-emerald-500 text-white" : "bg-gray-700 text-gray-300"
+                    )}>
+                      {idx + 1}
+                    </div>
+                    <span className={cn(
+                      "font-bold text-sm truncate",
+                      isMe ? "text-emerald-300" : "text-gray-300"
+                    )}>
+                      {name} {isMe && "(Você)"}
+                    </span>
+                    {isMe && isPlayerImpostor && (
+                      <Skull className="w-4 h-4 text-red-400 ml-auto flex-shrink-0" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Start drawing button (host only) */}
+        {showStart && isHost && (
+          <button
+            onClick={startDrawing}
+            className="animate-fade-in w-full px-8 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-emerald-500 to-green-500 border-emerald-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
+          >
+            <Play size={24} />
+            COMEÇAR A DESENHAR
+          </button>
+        )}
+        {showStart && !isHost && (
+          <p className="animate-fade-in text-center text-slate-500 text-sm font-bold">Aguardando o host iniciar...</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ─── GAME SCREEN (Drawing Phase) ───
 const DrawingGameScreen = () => {
   const { room, user, completeTurn, strokes, addStroke, sendStroke, undoStroke, sendUndo } = useDrawingGameStore();
@@ -643,6 +815,7 @@ export default function DesenhoImpostor() {
 
       {phase === 'lobby' && <DrawingLobbyScreen />}
       {phase === 'themeSelect' && <DrawingThemeSelectScreen />}
+      {phase === 'sorting' && <SortingScreen />}
       {phase === 'playing' && <DrawingGameScreen />}
       {phase === 'roundEnd' && <RoundEndScreen />}
       {phase === 'discussion' && <DiscussionScreen />}

@@ -24,6 +24,7 @@ export type DrawingGamePhase =
   | 'home'
   | 'lobby'
   | 'themeSelect'   // host picks a theme
+  | 'sorting'       // roulette animation: impostor reveal + drawing order
   | 'playing'       // drawing phase
   | 'roundEnd'      // all players drew — host decides: another round or discussion
   | 'discussion'    // after drawing, before voting
@@ -72,6 +73,7 @@ export type DrawingGameState = {
   updateRoom: (room: DrawingRoom) => void;
   goToThemeSelect: () => void;
   startGame: (config?: { turnTimeLimit?: number; theme?: string }) => Promise<void>;
+  startDrawing: () => Promise<void>;
   completeTurn: () => Promise<void>;
   requestNewRound: () => Promise<void>;
   goToDiscussion: () => Promise<void>;
@@ -281,16 +283,24 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
     const currentUser = get().user;
     if (!currentUser) return;
 
+    const prevPhase = get().phase;
+
     // Determine phase from room status
-    let phase: DrawingGamePhase = get().phase;
+    let phase: DrawingGamePhase = prevPhase;
     if (room.status === 'waiting') phase = 'lobby';
+    else if (room.status === 'sorting') phase = 'sorting';
     else if (room.status === 'drawing') phase = 'playing';
     else if (room.status === 'roundEnd') phase = 'roundEnd';
     else if (room.status === 'discussion') phase = 'discussion';
     else if (room.status === 'voting') phase = 'voting';
     else if (room.status === 'result') phase = 'result';
 
-    set({ room, phase });
+    // Clear canvas when returning to lobby (new game) so all clients start fresh
+    if (room.status === 'waiting' && prevPhase !== 'lobby') {
+      set({ room, phase, strokes: [], currentTurnStrokes: [] });
+    } else {
+      set({ room, phase });
+    }
   },
 
   goToThemeSelect: () => {
@@ -313,6 +323,19 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
       if (!response.ok) throw new Error('Failed to start drawing game');
     } catch (error) {
       console.error('Error starting drawing game:', error);
+    }
+  },
+
+  startDrawing: async () => {
+    const { room } = get();
+    if (!room) return;
+    try {
+      await fetch(`/api/drawing-rooms/${room.code}/start-drawing`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      console.error('Error starting drawing phase:', error);
     }
   },
 

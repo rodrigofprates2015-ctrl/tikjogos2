@@ -3131,7 +3131,7 @@ export async function registerRoutes(
   type DrawingRoom = {
     code: string;
     hostId: string;
-    status: string; // waiting | drawing | roundEnd | discussion | voting | result
+    status: string; // waiting | sorting | drawing | roundEnd | discussion | voting | result
     gameData: DrawingGameData | null;
     players: DrawingPlayer[];
     createdAt: string;
@@ -3233,7 +3233,7 @@ export async function registerRoutes(
     // Drawing order (random)
     const drawingOrder = shuffled.map(p => p.uid);
 
-    room.status = 'drawing';
+    room.status = 'sorting';
     room.gameData = {
       word,
       impostorIds: [impostorId],
@@ -3248,6 +3248,17 @@ export async function registerRoutes(
 
     broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
     console.log(`[Drawing] Game started in room ${code}, word: ${word}, impostor: ${impostorId}`);
+    res.json(room);
+  });
+
+  // REST: Transition from sorting to drawing (after roulette animation)
+  app.post("/api/drawing-rooms/:code/start-drawing", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = drawingRooms.get(code);
+    if (!room || !room.gameData) return res.status(404).json({ error: "Room not found" });
+
+    room.status = 'drawing';
+    broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
     res.json(room);
   });
 
