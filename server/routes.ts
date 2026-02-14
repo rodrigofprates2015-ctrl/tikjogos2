@@ -3222,16 +3222,15 @@ export async function registerRoutes(
     const activePlayers = room.players.filter(p => p.connected !== false);
     if (activePlayers.length < 3) return res.status(400).json({ error: "Minimum 3 players" });
 
-    // Pick impostor
-    const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
-    const impostorId = shuffled[0].uid;
+    // Pick impostor (random player)
+    const impostorId = activePlayers[Math.floor(Math.random() * activePlayers.length)].uid;
 
     // Pick word from selected theme (falls back to classico)
     const themeWords = PALAVRA_SECRETA_SUBMODES_DATA[theme] || PALAVRA_SECRETA_SUBMODES_DATA['classico'] || DRAWING_WORDS;
     const word = themeWords[Math.floor(Math.random() * themeWords.length)];
 
-    // Drawing order (random)
-    const drawingOrder = shuffled.map(p => p.uid);
+    // Drawing order (independent shuffle so impostor isn't always first)
+    const drawingOrder = [...activePlayers].sort(() => Math.random() - 0.5).map(p => p.uid);
 
     room.status = 'sorting';
     room.gameData = {

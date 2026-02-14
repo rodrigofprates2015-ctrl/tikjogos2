@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DrawingCanvas } from "@/components/DrawingCanvas";
+import { OrderWheelIcon } from "@/components/OrderWheelIcon";
 import { PALAVRA_SECRETA_SUBMODES, type PalavraSuperSecretaSubmode } from "@/lib/palavra-secreta-submodes";
 import logoImpostorArt from "@assets/logo_impostor_art.png";
 
@@ -249,8 +250,8 @@ const DrawingThemeSelectScreen = () => {
 // ─── SORTING SCREEN (Roulette + Role Reveal + Drawing Order) ───
 const SortingScreen = () => {
   const { room, user, startDrawing } = useDrawingGameStore();
-  const [spinning, setSpinning] = useState(true);
   const [rotation, setRotation] = useState(0);
+  const [isSpinComplete, setIsSpinComplete] = useState(false);
   const [showRole, setShowRole] = useState(false);
   const [showOrder, setShowOrder] = useState(false);
   const [showStart, setShowStart] = useState(false);
@@ -261,7 +262,9 @@ const SortingScreen = () => {
   const drawingOrder = gameData?.drawingOrder || [];
 
   useEffect(() => {
-    // Spin animation
+    if (isSpinComplete) return;
+
+    // Roulette spin animation (same as classic game)
     let currentRotation = 0;
     const interval = setInterval(() => {
       currentRotation += 15;
@@ -271,25 +274,30 @@ const SortingScreen = () => {
     // Stop spinning after 2.5s
     const stopSpin = setTimeout(() => {
       clearInterval(interval);
-      setSpinning(false);
+      setIsSpinComplete(true);
       setRotation(0);
     }, 2500);
-
-    // Show role after spin
-    const showRoleTimer = setTimeout(() => setShowRole(true), 3000);
-    // Show order after role
-    const showOrderTimer = setTimeout(() => setShowOrder(true), 4500);
-    // Show start button after order
-    const showStartTimer = setTimeout(() => setShowStart(true), 5500);
 
     return () => {
       clearInterval(interval);
       clearTimeout(stopSpin);
-      clearTimeout(showRoleTimer);
-      clearTimeout(showOrderTimer);
-      clearTimeout(showStartTimer);
     };
-  }, []);
+  }, [isSpinComplete]);
+
+  // Sequential reveals after spin completes
+  useEffect(() => {
+    if (!isSpinComplete) return;
+
+    const roleTimer = setTimeout(() => setShowRole(true), 400);
+    const orderTimer = setTimeout(() => setShowOrder(true), 2000);
+    const startTimer = setTimeout(() => setShowStart(true), 3000);
+
+    return () => {
+      clearTimeout(roleTimer);
+      clearTimeout(orderTimer);
+      clearTimeout(startTimer);
+    };
+  }, [isSpinComplete]);
 
   if (!room || !gameData) return null;
 
@@ -301,8 +309,10 @@ const SortingScreen = () => {
   return (
     <div className="flex flex-col w-full max-w-2xl py-4 px-4 animate-fade-in relative z-10">
       <div className="bg-[#242642] rounded-[3rem] p-4 md:p-8 shadow-2xl border-4 border-[#2f3252] relative z-10">
+
+        {/* Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/50 border border-gray-700/50 mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/50 border border-gray-700/50">
             <Zap className="w-4 h-4 text-emerald-400" />
             <span className="text-gray-400 text-xs uppercase tracking-widest font-bold">
               Sorteio
@@ -310,23 +320,24 @@ const SortingScreen = () => {
           </div>
         </div>
 
-        {/* Spinning wheel */}
-        {spinning && (
+        {/* Spinning roulette wheel (OrderWheelIcon from classic game) */}
+        {!isSpinComplete && (
           <div className="flex flex-col items-center gap-3 py-8">
             <div className="relative w-24 h-24">
-              <div
-                className="w-full h-full rounded-full border-4 border-emerald-500/50 border-t-emerald-400 border-r-emerald-300"
-                style={{ transform: `rotate(${rotation}deg)`, transition: 'none' }}
+              <OrderWheelIcon
+                className="w-full h-full drop-shadow-lg"
+                rotation={rotation}
               />
-              <Paintbrush className="absolute inset-0 m-auto w-10 h-10 text-emerald-400" />
             </div>
-            <p className="text-gray-400 text-sm animate-pulse">Sorteando...</p>
+            <p className="text-gray-400 text-sm animate-pulse">
+              Sorteando ordem...
+            </p>
           </div>
         )}
 
         {/* Role reveal */}
-        {showRole && (
-          <div className="animate-fade-in flex flex-col items-center gap-3 mb-6">
+        {isSpinComplete && showRole && (
+          <div className="animate-stage-fade-in flex flex-col items-center gap-3 mb-6">
             <div className={cn(
               "w-20 h-20 rounded-2xl flex items-center justify-center",
               isImpostor
@@ -357,9 +368,9 @@ const SortingScreen = () => {
           </div>
         )}
 
-        {/* Drawing order */}
-        {showOrder && (
-          <div className="animate-fade-in mb-6">
+        {/* Drawing order list */}
+        {isSpinComplete && showOrder && (
+          <div className="animate-stage-fade-in mb-6">
             <p className="text-center text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">
               Ordem de Desenho
             </p>
@@ -401,17 +412,17 @@ const SortingScreen = () => {
         )}
 
         {/* Start drawing button (host only) */}
-        {showStart && isHost && (
+        {isSpinComplete && showStart && isHost && (
           <button
             onClick={startDrawing}
-            className="animate-fade-in w-full px-8 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-emerald-500 to-green-500 border-emerald-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
+            className="animate-stage-fade-in w-full px-8 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-emerald-500 to-green-500 border-emerald-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
           >
             <Play size={24} />
             COMEÇAR A DESENHAR
           </button>
         )}
-        {showStart && !isHost && (
-          <p className="animate-fade-in text-center text-slate-500 text-sm font-bold">Aguardando o host iniciar...</p>
+        {isSpinComplete && showStart && !isHost && (
+          <p className="animate-stage-fade-in text-center text-slate-500 text-sm font-bold">Aguardando o host iniciar...</p>
         )}
       </div>
     </div>
