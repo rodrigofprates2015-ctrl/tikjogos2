@@ -569,6 +569,21 @@ const ResultScreen = () => {
 // ─── MAIN COMPONENT ───
 export default function DesenhoImpostor() {
   const { phase } = useDrawingGameStore();
+  const [, navigate] = useLocation();
+
+  // If user lands here directly without an active room, redirect to home scrolled to the drawing card
+  useEffect(() => {
+    if (phase === 'home') {
+      navigate('/');
+      // Small delay so the navigation completes before scrolling
+      setTimeout(() => {
+        const el = document.getElementById('desenho-impostor');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [phase, navigate]);
+
+  if (phase === 'home') return null;
 
   return (
     <div

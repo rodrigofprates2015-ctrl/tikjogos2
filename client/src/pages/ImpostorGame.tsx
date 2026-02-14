@@ -1337,7 +1337,9 @@ const HomeScreen = () => {
         </div>
 
         {/* Desenho do Impostor - Drawing game card */}
-        <DrawingGameCard />
+        <div id="desenho-impostor">
+          <DrawingGameCard />
+        </div>
 
         {/* Premium Banner - Mobile only (below form) */}
         <div className="md:hidden w-[90%] max-w-md mb-24">
