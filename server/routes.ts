@@ -3161,6 +3161,16 @@ export async function registerRoutes(
     return code;
   }
 
+  /** Fisher-Yates shuffle — unbiased random permutation */
+  function shuffleArray<T>(array: T[]): T[] {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
   function broadcastToDrawingRoom(roomCode: string, data: unknown) {
     const connections = drawingRoomConnections.get(roomCode);
     if (!connections) return;
@@ -3229,8 +3239,8 @@ export async function registerRoutes(
     const themeWords = PALAVRA_SECRETA_SUBMODES_DATA[theme] || PALAVRA_SECRETA_SUBMODES_DATA['classico'] || DRAWING_WORDS;
     const word = themeWords[Math.floor(Math.random() * themeWords.length)];
 
-    // Drawing order (independent shuffle so impostor isn't always first)
-    const drawingOrder = [...activePlayers].sort(() => Math.random() - 0.5).map(p => p.uid);
+    // Drawing order — Fisher-Yates shuffle for uniform randomness
+    const drawingOrder = shuffleArray(activePlayers).map(p => p.uid);
 
     room.status = 'sorting';
     room.gameData = {
