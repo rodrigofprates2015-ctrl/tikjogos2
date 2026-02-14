@@ -28,6 +28,7 @@ import RoomRedirect from "@/pages/RoomRedirect";
 import ThemePage from "@/pages/ThemePage";
 import Temas from "@/pages/Temas";
 import GameModes from "@/pages/GameModes";
+import DesenhoImpostor from "@/pages/DesenhoImpostor";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 
@@ -94,6 +95,9 @@ function AppRouter() {
       {i18nRoutes("/apoie", Doacoes)}
 
       {i18nRoutes("/prototipo", Prototipo)}
+
+      {/* Desenho do Impostor */}
+      {i18nRoutes("/desenho-impostor", DesenhoImpostor)}
 
       {/* Modo local */}
       {i18nRoutes("/modo-local", ModoLocal)}

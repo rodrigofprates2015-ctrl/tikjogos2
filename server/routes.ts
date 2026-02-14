@@ -3110,5 +3110,356 @@ export async function registerRoutes(
     }
   });
 
+  // ═══════════════════════════════════════════════════════════════
+  // DESENHO DO IMPOSTOR — Drawing Game (separate from main game)
+  // ═══════════════════════════════════════════════════════════════
+
+  type DrawingPlayer = { uid: string; name: string; connected?: boolean };
+  type DrawingPlayerVote = { playerId: string; playerName: string; targetId: string; targetName: string };
+  type DrawingGameData = {
+    word?: string;
+    impostorIds?: string[];
+    drawingOrder?: string[];
+    currentDrawerIndex?: number;
+    currentDrawerId?: string;
+    turnTimeLimit?: number;
+    canvasSnapshot?: string;
+    votes?: DrawingPlayerVote[];
+    votingStarted?: boolean;
+    votesRevealed?: boolean;
+  };
+  type DrawingRoom = {
+    code: string;
+    hostId: string;
+    status: string; // waiting | drawing | discussion | voting | result
+    gameData: DrawingGameData | null;
+    players: DrawingPlayer[];
+    createdAt: string;
+  };
+
+  const drawingRooms = new Map<string, DrawingRoom>();
+  const drawingWss = new WebSocketServer({ noServer: true });
+  const drawingRoomConnections = new Map<string, Set<WebSocket>>();
+  const drawingPlayerConnections = new Map<WebSocket, { roomCode: string; playerId?: string }>();
+
+  // Drawing words pool
+  const DRAWING_WORDS = [
+    "Âncora", "Foguete", "Guitarra", "Bicicleta", "Castelo", "Dragão",
+    "Elefante", "Flor", "Girafa", "Helicóptero", "Iglú", "Jacaré",
+    "Leão", "Montanha", "Navio", "Óculos", "Pirâmide", "Queijo",
+    "Robô", "Sorvete", "Tubarão", "Unicórnio", "Vulcão", "Xícara",
+    "Abacaxi", "Baleia", "Cactus", "Diamante", "Estrela", "Fantasma",
+    "Garrafa", "Hambúrguer", "Ilha", "Joaninha", "Koala", "Lâmpada",
+    "Morcego", "Ninja", "Ovelha", "Pinguim", "Raio", "Sereia",
+    "Tartaruga", "Urso", "Violão", "Aranha", "Coroa", "Espada"
+  ];
+
+  function generateDrawingRoomCode(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
+
+  function broadcastToDrawingRoom(roomCode: string, data: unknown) {
+    const connections = drawingRoomConnections.get(roomCode);
+    if (!connections) return;
+    const message = JSON.stringify(data);
+    connections.forEach(ws => {
+      if (ws.readyState === WebSocket.OPEN) ws.send(message);
+    });
+  }
+
+  // REST: Create drawing room
+  app.post("/api/drawing-rooms", (req, res) => {
+    const { hostId, playerName } = req.body;
+    if (!hostId || !playerName) return res.status(400).json({ error: "Missing hostId or playerName" });
+
+    let code = generateDrawingRoomCode();
+    while (drawingRooms.has(code)) code = generateDrawingRoomCode();
+
+    const room: DrawingRoom = {
+      code,
+      hostId,
+      status: 'waiting',
+      gameData: null,
+      players: [{ uid: hostId, name: playerName, connected: true }],
+      createdAt: new Date().toISOString(),
+    };
+    drawingRooms.set(code, room);
+    console.log(`[Drawing] Room ${code} created by ${playerName}`);
+    res.json(room);
+  });
+
+  // REST: Join drawing room
+  app.post("/api/drawing-rooms/:code/join", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const { playerId, playerName } = req.body;
+    const room = drawingRooms.get(code);
+    if (!room) return res.status(404).json({ error: "Room not found" });
+
+    const existing = room.players.find(p => p.uid === playerId);
+    if (existing) {
+      existing.connected = true;
+      existing.name = playerName;
+    } else {
+      room.players.push({ uid: playerId, name: playerName, connected: true });
+    }
+
+    broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
+    broadcastToDrawingRoom(code, { type: 'player-joined', playerName });
+    console.log(`[Drawing] ${playerName} joined room ${code}`);
+    res.json(room);
+  });
+
+  // REST: Start drawing game
+  app.post("/api/drawing-rooms/:code/start", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const { turnTimeLimit = 30, theme = 'classico' } = req.body;
+    const room = drawingRooms.get(code);
+    if (!room) return res.status(404).json({ error: "Room not found" });
+
+    const activePlayers = room.players.filter(p => p.connected !== false);
+    if (activePlayers.length < 3) return res.status(400).json({ error: "Minimum 3 players" });
+
+    // Pick impostor
+    const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
+    const impostorId = shuffled[0].uid;
+
+    // Pick word from selected theme (falls back to classico)
+    const themeWords = PALAVRA_SECRETA_SUBMODES_DATA[theme] || PALAVRA_SECRETA_SUBMODES_DATA['classico'] || DRAWING_WORDS;
+    const word = themeWords[Math.floor(Math.random() * themeWords.length)];
+
+    // Drawing order (random)
+    const drawingOrder = shuffled.map(p => p.uid);
+
+    room.status = 'drawing';
+    room.gameData = {
+      word,
+      impostorIds: [impostorId],
+      drawingOrder,
+      currentDrawerIndex: 0,
+      currentDrawerId: drawingOrder[0],
+      turnTimeLimit,
+      votes: [],
+      votingStarted: false,
+      votesRevealed: false,
+    };
+
+    broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
+    console.log(`[Drawing] Game started in room ${code}, word: ${word}, impostor: ${impostorId}`);
+    res.json(room);
+  });
+
+  // REST: Start voting
+  app.post("/api/drawing-rooms/:code/start-voting", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = drawingRooms.get(code);
+    if (!room || !room.gameData) return res.status(404).json({ error: "Room not found" });
+
+    room.status = 'voting';
+    room.gameData.votingStarted = true;
+    broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
+    res.json(room);
+  });
+
+  // REST: Vote
+  app.post("/api/drawing-rooms/:code/vote", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const { playerId, playerName, targetId, targetName } = req.body;
+    const room = drawingRooms.get(code);
+    if (!room || !room.gameData) return res.status(404).json({ error: "Room not found" });
+
+    // Prevent duplicate votes
+    if (room.gameData.votes?.some(v => v.playerId === playerId)) {
+      return res.status(400).json({ error: "Already voted" });
+    }
+
+    room.gameData.votes = room.gameData.votes || [];
+    room.gameData.votes.push({ playerId, playerName, targetId, targetName });
+
+    // Check if all voted
+    const activePlayers = room.players.filter(p => p.connected !== false);
+    if (room.gameData.votes.length >= activePlayers.length) {
+      room.status = 'result';
+      room.gameData.votesRevealed = true;
+    }
+
+    broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
+    res.json(room);
+  });
+
+  // REST: Reveal votes (host force)
+  app.post("/api/drawing-rooms/:code/reveal-votes", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = drawingRooms.get(code);
+    if (!room || !room.gameData) return res.status(404).json({ error: "Room not found" });
+
+    room.status = 'result';
+    room.gameData.votesRevealed = true;
+    broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
+    res.json(room);
+  });
+
+  // REST: Reset room (back to lobby)
+  app.post("/api/drawing-rooms/:code/reset", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = drawingRooms.get(code);
+    if (!room) return res.status(404).json({ error: "Room not found" });
+
+    room.status = 'waiting';
+    room.gameData = null;
+    broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
+    res.json(room);
+  });
+
+  // WebSocket: Drawing game
+  httpServer.on('upgrade', (request, socket, head) => {
+    if (request.url === '/drawing-ws') {
+      drawingWss.handleUpgrade(request, socket, head, (ws) => {
+        drawingWss.emit('connection', ws, request);
+      });
+    }
+  });
+
+  drawingWss.on('connection', (ws) => {
+    let currentRoomCode: string | null = null;
+    let currentPlayerId: string | null = null;
+
+    ws.on('message', (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+
+        if (data.type === 'pong') return;
+
+        if (data.type === 'join-drawing-room' && data.roomCode && data.playerId) {
+          const roomCode = data.roomCode as string;
+          const playerId = data.playerId as string;
+          currentRoomCode = roomCode;
+          currentPlayerId = playerId;
+
+          if (!drawingRoomConnections.has(roomCode)) {
+            drawingRoomConnections.set(roomCode, new Set());
+          }
+          drawingRoomConnections.get(roomCode)!.add(ws);
+          drawingPlayerConnections.set(ws, { roomCode, playerId });
+
+          const room = drawingRooms.get(roomCode);
+          if (room) {
+            ws.send(JSON.stringify({ type: 'drawing-room-update', room }));
+          }
+        }
+
+        // Real-time stroke broadcast
+        if (data.type === 'draw-stroke' && data.roomCode && data.stroke) {
+          const connections = drawingRoomConnections.get(data.roomCode);
+          if (!connections) return;
+          const msg = JSON.stringify({ type: 'draw-stroke', stroke: data.stroke, playerId: data.playerId });
+          connections.forEach(client => {
+            if (client !== ws && client.readyState === WebSocket.OPEN) {
+              client.send(msg);
+            }
+          });
+        }
+
+        // Undo last stroke — broadcast to others
+        if (data.type === 'draw-undo' && data.roomCode) {
+          const connections = drawingRoomConnections.get(data.roomCode);
+          if (!connections) return;
+          const msg = JSON.stringify({ type: 'draw-undo' });
+          connections.forEach(client => {
+            if (client !== ws && client.readyState === WebSocket.OPEN) {
+              client.send(msg);
+            }
+          });
+        }
+
+        // Turn complete
+        if (data.type === 'drawing-turn-complete' && data.roomCode) {
+          const room = drawingRooms.get(data.roomCode);
+          if (!room || !room.gameData || !room.gameData.drawingOrder) return;
+
+          const nextIndex = (room.gameData.currentDrawerIndex || 0) + 1;
+
+          if (nextIndex >= room.gameData.drawingOrder.length) {
+            // All turns done — move to discussion
+            room.status = 'discussion';
+            room.gameData.currentDrawerId = undefined;
+            broadcastToDrawingRoom(data.roomCode, { type: 'drawing-phase-end' });
+          } else {
+            // Next turn
+            room.gameData.currentDrawerIndex = nextIndex;
+            room.gameData.currentDrawerId = room.gameData.drawingOrder[nextIndex];
+            broadcastToDrawingRoom(data.roomCode, {
+              type: 'drawing-turn-start',
+              drawerId: room.gameData.currentDrawerId,
+              turnIndex: nextIndex,
+            });
+          }
+
+          broadcastToDrawingRoom(data.roomCode, { type: 'drawing-room-update', room });
+        }
+
+        if (data.type === 'leave') {
+          const info = drawingPlayerConnections.get(ws);
+          if (info?.roomCode && info?.playerId) {
+            const room = drawingRooms.get(info.roomCode);
+            if (room) {
+              const player = room.players.find(p => p.uid === info.playerId);
+              if (player) {
+                broadcastToDrawingRoom(info.roomCode, { type: 'player-left', playerName: player.name });
+              }
+              room.players = room.players.filter(p => p.uid !== info.playerId);
+              if (room.players.length === 0) {
+                drawingRooms.delete(info.roomCode);
+              } else {
+                if (room.hostId === info.playerId) {
+                  room.hostId = room.players[0].uid;
+                }
+                broadcastToDrawingRoom(info.roomCode, { type: 'drawing-room-update', room });
+              }
+            }
+          }
+        }
+
+        if (data.type === 'disconnect_notice') {
+          const info = drawingPlayerConnections.get(ws);
+          if (info?.roomCode && info?.playerId) {
+            const room = drawingRooms.get(info.roomCode);
+            if (room) {
+              const player = room.players.find(p => p.uid === info.playerId);
+              if (player) player.connected = false;
+              broadcastToDrawingRoom(info.roomCode, { type: 'drawing-room-update', room });
+            }
+          }
+        }
+
+      } catch (error) {
+        console.error('[Drawing WS Error]:', error);
+      }
+    });
+
+    ws.on('close', () => {
+      const info = drawingPlayerConnections.get(ws);
+      if (info?.roomCode) {
+        const connections = drawingRoomConnections.get(info.roomCode);
+        if (connections) {
+          connections.delete(ws);
+          if (connections.size === 0) drawingRoomConnections.delete(info.roomCode);
+        }
+        // Mark player as disconnected
+        if (info.playerId) {
+          const room = drawingRooms.get(info.roomCode);
+          if (room) {
+            const player = room.players.find(p => p.uid === info.playerId);
+            if (player) player.connected = false;
+            broadcastToDrawingRoom(info.roomCode, { type: 'drawing-room-update', room });
+          }
+        }
+      }
+      drawingPlayerConnections.delete(ws);
+    });
+  });
+
   return httpServer;
 }
