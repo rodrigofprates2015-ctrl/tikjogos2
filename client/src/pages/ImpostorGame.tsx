@@ -82,6 +82,7 @@ import impostorImg from "@assets/impostor_natal_1765071992843.png";
 import tripulantePincelImg from "@assets/TripulantePincel.webp";
 import impostorPincelImg from "@assets/Impostor_pincel.webp";
 import bannerDesenhoImpostor from "@assets/Banner_jogo_desenho_impostor.png";
+import bannerDesenhoImpostorMobile from "@assets/Banner_mobile.png";
 import { SideAds } from "@/components/AdSense";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
@@ -1417,7 +1418,7 @@ const HomeScreen = () => {
         <div className="md:hidden w-[90%] max-w-md mb-24">
           <a href="#desenho-impostor">
             <img
-              src={bannerDesenhoImpostor}
+              src={bannerDesenhoImpostorMobile}
               alt="Banner Jogo Desenho do Impostor - TikJogos"
               className="w-full rounded-2xl shadow-lg"
             />
