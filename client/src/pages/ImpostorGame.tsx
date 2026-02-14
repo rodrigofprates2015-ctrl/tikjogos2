@@ -1260,6 +1260,17 @@ const HomeScreen = () => {
         {/* Mobile action buttons - above the card */}
         <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
 
+        {/* Banner Desenho do Impostor - Mobile only */}
+        <div className="md:hidden w-[90%] max-w-md mb-4">
+          <a href="#desenho-impostor">
+            <img
+              src={bannerDesenhoImpostorMobile}
+              alt="Banner Jogo Desenho do Impostor - TikJogos"
+              className="w-full rounded-2xl shadow-lg"
+            />
+          </a>
+        </div>
+
         {/* Banner Desenho do Impostor - Desktop only */}
         <div className="hidden md:block w-[95%] max-w-4xl mt-8 mb-4">
           <a href="#desenho-impostor">
@@ -1414,16 +1425,6 @@ const HomeScreen = () => {
           </div>
         </div>
 
-        {/* Banner Desenho do Impostor - Mobile only */}
-        <div className="md:hidden w-[90%] max-w-md mb-24">
-          <a href="#desenho-impostor">
-            <img
-              src={bannerDesenhoImpostorMobile}
-              alt="Banner Jogo Desenho do Impostor - TikJogos"
-              className="w-full rounded-2xl shadow-lg"
-            />
-          </a>
-        </div>
       </div>
 
       {/* Footer */}

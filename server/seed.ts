@@ -363,6 +363,129 @@ const seedPosts = [
       <p class="mb-4">A experiência foi pensada para ser inclusiva. Não importa se você é um gamer experiente ou nunca jogou nada digital na vida: a curva de aprendizado é praticamente zero.</p>
       <p class="mb-4">Experimente uma partida e descubra por que tantos grupos estão trocando os jogos de tabuleiro tradicionais por essa alternativa moderna, prática e igualmente divertida.</p>
     `
+  },
+  {
+    title: "Jogo do Impostor Desenho: A Nova Sensação que Combina Gartic e Impostor",
+    slug: "jogo-do-impostor-desenho",
+    category: "Pilar",
+    excerpt: "Descubra o Jogo do Impostor Desenho, a variante que une desenho colaborativo com dedução social. Saiba como jogar, estratégias e por que é tão viciante.",
+    featured: true,
+    author: "Equipe TikJogos",
+    content: `
+      <p class="mb-4">Você já jogou <strong>Jogo do Impostor Desenho</strong>? Se ainda não, prepare-se para descobrir a forma mais criativa, engraçada e desafiadora de jogar o clássico jogo de dedução social. Essa inovadora variante une o melhor do Gartic (desenho colaborativo) com a tensão do Impostor, criando uma experiência única que vai transformar suas noites com amigos.</p>
+
+      <h2 class="text-2xl font-bold text-purple-300 mt-8 mb-4">O que é Jogo do Impostor Desenho?</h2>
+      <p class="mb-4">O <strong>Jogo do Impostor Desenho</strong> é uma evolução do tradicional Jogo do Impostor. Em vez de simplesmente adivinhar palavras através de pistas verbais, aqui todos os jogadores desenham colaborativamente uma palavra secreta. Mas tem um detalhe: o impostor não sabe qual é a palavra!</p>
+      <p class="mb-4">A mecânica é simples, mas gera momentos hilariantes:</p>
+      <ol class="list-decimal list-inside mb-4 space-y-1">
+        <li><strong>Sorteio</strong>: Um jogador é escolhido como impostor</li>
+        <li><strong>Palavra Secreta</strong>: Todos recebem a mesma palavra para desenhar (menos o impostor)</li>
+        <li><strong>Desenho Colaborativo</strong>: Cada jogador desenha por 30-45 segundos e passa o desenho adiante</li>
+        <li><strong>Discussão</strong>: Todos analisam o resultado final</li>
+        <li><strong>Votação</strong>: Decidem quem era o impostor</li>
+      </ol>
+
+      <h2 class="text-2xl font-bold text-purple-300 mt-8 mb-4">Por que o Jogo do Impostor Desenho é tão Viciante?</h2>
+
+      <h3 class="text-xl font-semibold text-indigo-300 mb-2">1. O Impostor em Desvantagem Real</h3>
+      <p class="mb-4">Diferente do Jogo do Impostor tradicional, aqui é muito mais difícil blefar. Quando você não sabe a palavra, desenhar algo que faz sentido é quase impossível. Você fica nervoso, hesita, e essas atitudes são captadas pelos outros jogadores.</p>
+
+      <h3 class="text-xl font-semibold text-indigo-300 mb-2">2. Pistas Visuais Inequívocas</h3>
+      <p class="mb-4">Cada traço conta uma história. Um desenho que deveria ser de "gato" mas saiu parecendo "espaguete" é uma bandeira vermelha GIGANTE. Os honestos naturalmente seguem uma lógica visual, enquanto o impostor frequentemente quebra essa lógica.</p>
+
+      <h3 class="text-xl font-semibold text-indigo-300 mb-2">3. Dinâmica de Discord</h3>
+      <p class="mb-4">A maioria joga o <strong>Jogo do Impostor Desenho</strong> enquanto está em uma call do Discord com os amigos. Isso é o game-changer! A reação em tempo real, o tom de voz, as pausas nervosas — tudo isso revela o impostor:</p>
+      <ul class="list-disc list-inside mb-4 space-y-1">
+        <li><strong>Impostor</strong>: "Hmm... círculo interessante" (nervoso, tentando entender)</li>
+        <li><strong>Honesto</strong>: "Claro! Âncora!" (confiante, reconhece a palavra)</li>
+      </ul>
+
+      <h3 class="text-xl font-semibold text-indigo-300 mb-2">4. Diversão Garantida</h3>
+      <p class="mb-4">O desenho final é SEMPRE estranho. Ninguém consegue desenhar perfeitamente passando de mão em mão, então o resultado é um caos criativo que gera risadas. Mesmo que o impostor ganhe, todos se divertem.</p>
+
+      <h2 class="text-2xl font-bold text-purple-300 mt-8 mb-4">Como Funciona a Mecânica do Jogo do Impostor Desenho</h2>
+
+      <h3 class="text-xl font-semibold text-indigo-300 mb-2">A Fase de Desenho</h3>
+      <p class="mb-4">Imagine a seguinte situação com a palavra "Âncora":</p>
+      <ul class="list-disc list-inside mb-4 space-y-1">
+        <li>Jogador 1 (Honesto): Desenha um círculo (é uma âncora)</li>
+        <li>Jogador 2 (IMPOSTOR): Vê o círculo, desenha linhas aleatórias</li>
+        <li>Jogador 3 (Honesto): Pensa "âncora com corrente" e completa</li>
+        <li>Jogador 4 (Honesto): Vê tudo e adiciona o gancho</li>
+      </ul>
+      <p class="mb-4"><strong>O que torna único</strong>: Cada jogador vê o desenho anterior COMPLETO antes de desenhar, mas o impostor fica tentando adivinhar o que é enquanto contribui.</p>
+
+      <h3 class="text-xl font-semibold text-indigo-300 mb-2">A Fase de Discussão</h3>
+      <p class="mb-4">Aqui é onde a mágica acontece, especialmente no Discord: os jogadores discutem o desenho, analisam quem desenhou o quê, o impostor tenta se defender ("Achei que você estava indo por outro caminho!") e os honestos observam reações nervosas.</p>
+
+      <h3 class="text-xl font-semibold text-indigo-300 mb-2">A Votação</h3>
+      <p class="mb-4">Todos votam em quem acham que é o impostor. Se acertarem, os honestos ganham. Se errarem, o impostor vence.</p>
+
+      <h2 class="text-2xl font-bold text-purple-300 mt-8 mb-4">Estratégias para Ganhar no Jogo do Impostor Desenho</h2>
+
+      <h3 class="text-xl font-semibold text-indigo-300 mb-2">Para os Honestos:</h3>
+      <ol class="list-decimal list-inside mb-4 space-y-1">
+        <li><strong>Observe o fluxo visual</strong>: Procure por traços que não fazem sentido com a palavra</li>
+        <li><strong>Escute o Discord</strong>: Tom nervoso, pausas longas, explicações confusas</li>
+        <li><strong>Identifique mudanças drásticas</strong>: Se alguém desenhou algo completamente diferente, pode ser o impostor</li>
+        <li><strong>Concordância suspeita</strong>: Impostor tende a concordar com tudo para não parecer suspeito</li>
+      </ol>
+
+      <h3 class="text-xl font-semibold text-indigo-300 mb-2">Para o Impostor:</h3>
+      <ol class="list-decimal list-inside mb-4 space-y-1">
+        <li><strong>Desenhe vagamente</strong>: Linhas abstratas são menos reveladoras</li>
+        <li><strong>Finja certeza</strong>: "Ah, verdade! Âncora!" mesmo que não tenha ideia</li>
+        <li><strong>Tome turnos curtos</strong>: Quanto mais rápido terminar, menos chance de errar</li>
+        <li><strong>Concorde estrategicamente</strong>: Aceite as interpretações dos outros</li>
+      </ol>
+
+      <h2 class="text-2xl font-bold text-purple-300 mt-8 mb-4">Variações Divertidas</h2>
+
+      <h3 class="text-xl font-semibold text-indigo-300 mb-2">Impostor Sabe a Categoria</h3>
+      <p class="mb-4">Todos sabem que é um "Animal", mas o impostor não sabe qual animal. Mais justo, menos frustrante, ainda assim muito desafiador!</p>
+
+      <h3 class="text-xl font-semibold text-indigo-300 mb-2">Tema Customizado</h3>
+      <p class="mb-4">Ao invés de palavras aleatórias, escolha temas como "Filmes famosos", "Personagens de anime", "Memes da internet" ou "Marcas famosas". Isso torna o jogo mais cultural e divertido!</p>
+
+      <h2 class="text-2xl font-bold text-purple-300 mt-8 mb-4">Jogo do Impostor Desenho vs. Jogo do Impostor Tradicional</h2>
+      <div class="overflow-x-auto mb-4">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-600">
+              <th class="py-2 px-3 text-purple-300">Aspecto</th>
+              <th class="py-2 px-3 text-purple-300">Impostor Tradicional</th>
+              <th class="py-2 px-3 text-purple-300">Impostor Desenho</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-slate-700"><td class="py-2 px-3">Mecânica</td><td class="py-2 px-3">Pistas verbais</td><td class="py-2 px-3">Desenho colaborativo</td></tr>
+            <tr class="border-b border-slate-700"><td class="py-2 px-3">Dificuldade p/ impostor</td><td class="py-2 px-3">Moderado</td><td class="py-2 px-3">MUITO difícil</td></tr>
+            <tr class="border-b border-slate-700"><td class="py-2 px-3">Reação em tempo real</td><td class="py-2 px-3">Conversas</td><td class="py-2 px-3">Discord + Visual</td></tr>
+            <tr class="border-b border-slate-700"><td class="py-2 px-3">Fator diversão</td><td class="py-2 px-3">Alto</td><td class="py-2 px-3">Altíssimo</td></tr>
+            <tr class="border-b border-slate-700"><td class="py-2 px-3">Duração</td><td class="py-2 px-3">10-15 min</td><td class="py-2 px-3">10-20 min</td></tr>
+            <tr><td class="py-2 px-3">Criatividade</td><td class="py-2 px-3">Média</td><td class="py-2 px-3">Muito Alta</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 class="text-2xl font-bold text-purple-300 mt-8 mb-4">Por que Jogar com Amigos?</h2>
+      <ol class="list-decimal list-inside mb-4 space-y-1">
+        <li><strong>Laços mais fortes</strong>: A dinâmica de Discord cria momentos memoráveis</li>
+        <li><strong>Menos agressivo</strong>: Não há "morte em jogo", apenas desenho estranho</li>
+        <li><strong>Adequado para qualquer grupo</strong>: Desde casuals até competitivos</li>
+        <li><strong>Sem limite de criatividade</strong>: Cada partida é única</li>
+        <li><strong>Fácil de aprender, difícil de dominar</strong></li>
+      </ol>
+
+      <h2 class="text-2xl font-bold text-purple-300 mt-8 mb-4">Conclusão</h2>
+      <p class="mb-4">O <strong>Jogo do Impostor Desenho</strong> é prova de que jogos de festa nunca saem de moda — eles apenas evoluem. Ao combinar a criatividade do Gartic com a tensão do Impostor, temos uma experiência que é divertida, desafiadora, social, memorável e viciante.</p>
+      <p class="mb-4">Se você ainda não experimentou, reúna seus amigos no Discord e prepare-se para as risadas mais épicas. Porque nada é mais engraçado do que ver um impostor nervoso tentando desenhar algo que ele nem sabe o que é.</p>
+      <p class="mb-4"><strong>Então, qual é a sua desculpa para não jogar agora?</strong></p>
+
+      <h2 class="text-2xl font-bold text-purple-300 mt-8 mb-4">Quer Jogar?</h2>
+      <p class="mb-4">Acesse <a href="https://tikjogos.com.br" class="text-indigo-400 underline hover:text-indigo-300">TikJogos</a> agora mesmo e descubra essa nova forma de se divertir com seus amigos. Crie uma sala, convide a galera pro Discord e prepare-se para a melhor noite de jogo que você já teve!</p>
+      <p class="mb-4"><strong>Jogo do Impostor Desenho</strong>: Onde criatividade, estratégia e diversão se encontram.</p>
+    `
   }
 ];
 
