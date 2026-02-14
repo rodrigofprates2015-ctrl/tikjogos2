@@ -101,6 +101,17 @@
     <priority>0.6</priority>
   </url>
 
+  <!-- Desenho do Impostor -->
+  <url>
+    <loc>https://tikjogos.com.br/desenho-impostor</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/desenho-impostor" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/desenho-impostor" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/desenho-impostor" />
+    <lastmod>2026-02-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Privacidade -->
   <url>
     <loc>https://tikjogos.com.br/privacidade</loc>

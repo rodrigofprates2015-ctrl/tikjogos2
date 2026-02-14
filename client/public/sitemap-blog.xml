@@ -13,6 +13,17 @@
     <priority>0.7</priority>
   </url>
 
+  <!-- Post: Jogo do Impostor Desenho -->
+  <url>
+    <loc>https://tikjogos.com.br/blog/jogo-do-impostor-desenho</loc>
+    <xhtml:link rel="alternate" hreflang="pt" href="https://tikjogos.com.br/blog/jogo-do-impostor-desenho" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://tikjogos.com.br/en/blog/impostor-drawing-game" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://tikjogos.com.br/es/blog/juego-del-impostor-dibujo" />
+    <lastmod>2026-02-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
   <!-- Post: Guia de Estratégias e Análise do Metagame -->
   <url>
     <loc>https://tikjogos.com.br/blog/jogo-do-impostor-guia-de-estrategias-e-analise-do-metagame</loc>
