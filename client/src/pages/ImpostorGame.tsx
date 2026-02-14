@@ -1344,23 +1344,25 @@ const HomeScreen = () => {
           <img 
             src={tripulantePincelImg} 
             alt="Personagem Tripulante com Pincel - TikJogos" 
-            width="450"
-            height="630"
+            width="405"
+            height="567"
             loading="lazy"
-            className="hidden md:block absolute bottom-0 left-[18%] lg:left-[22%] xl:left-[26%] h-[63vh] max-h-[630px] object-contain z-10"
+            className="hidden md:block absolute bottom-0 left-[18%] lg:left-[22%] xl:left-[26%] h-[56.7vh] max-h-[567px] object-contain z-0 pointer-events-none"
           />
 
           {/* Impostor Pincel - right side (desktop only) */}
           <img 
             src={impostorPincelImg} 
             alt="Personagem Impostor com Pincel - TikJogos" 
-            width="450"
-            height="630"
+            width="405"
+            height="567"
             loading="lazy"
-            className="hidden md:block absolute bottom-0 right-[18%] lg:right-[22%] xl:right-[26%] h-[63vh] max-h-[630px] object-contain z-10"
+            className="hidden md:block absolute bottom-0 right-[18%] lg:right-[22%] xl:right-[26%] h-[56.7vh] max-h-[567px] object-contain z-0 pointer-events-none"
           />
 
-          <DrawingGameCard />
+          <div className="relative z-10">
+            <DrawingGameCard />
+          </div>
         </div>
 
         {/* Premium Banner - Mobile only (below form) */}
