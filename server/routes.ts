@@ -3257,12 +3257,9 @@ export async function registerRoutes(
     const room = drawingRooms.get(code);
     if (!room || !room.gameData) return res.status(404).json({ error: "Room not found" });
 
-    // Reset drawing order to a new shuffle, restart turns
-    const activePlayers = room.players.filter(p => p.connected !== false);
-    const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
-    room.gameData.drawingOrder = shuffled.map(p => p.uid);
+    // Restart turns with the same drawing order
     room.gameData.currentDrawerIndex = 0;
-    room.gameData.currentDrawerId = room.gameData.drawingOrder[0];
+    room.gameData.currentDrawerId = room.gameData.drawingOrder![0];
     room.status = 'drawing';
 
     broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
