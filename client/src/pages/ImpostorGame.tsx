@@ -81,6 +81,7 @@ import tripulanteImg from "@assets/tripulante_natal_1765071995242.png";
 import impostorImg from "@assets/impostor_natal_1765071992843.png";
 import tripulantePincelImg from "@assets/TripulantePincel.webp";
 import impostorPincelImg from "@assets/Impostor_pincel.webp";
+import bannerDesenhoImpostor from "@assets/Banner_jogo_desenho_impostor.png";
 import { SideAds } from "@/components/AdSense";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
@@ -1258,9 +1259,15 @@ const HomeScreen = () => {
         {/* Mobile action buttons - above the card */}
         <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
 
-        {/* Premium Banner - Desktop only (above form) */}
+        {/* Banner Desenho do Impostor - Desktop only */}
         <div className="hidden md:block w-[95%] max-w-4xl mt-8 mb-4">
-          <PremiumBanner />
+          <a href="#desenho-impostor">
+            <img
+              src={bannerDesenhoImpostor}
+              alt="Banner Jogo Desenho do Impostor - TikJogos"
+              className="w-full rounded-2xl shadow-lg hover:brightness-110 transition-all cursor-pointer"
+            />
+          </a>
         </div>
 
         {/* Main card */}
@@ -1406,9 +1413,15 @@ const HomeScreen = () => {
           </div>
         </div>
 
-        {/* Premium Banner - Mobile only (below form) */}
+        {/* Banner Desenho do Impostor - Mobile only */}
         <div className="md:hidden w-[90%] max-w-md mb-24">
-          <PremiumBanner />
+          <a href="#desenho-impostor">
+            <img
+              src={bannerDesenhoImpostor}
+              alt="Banner Jogo Desenho do Impostor - TikJogos"
+              className="w-full rounded-2xl shadow-lg"
+            />
+          </a>
         </div>
       </div>
 
