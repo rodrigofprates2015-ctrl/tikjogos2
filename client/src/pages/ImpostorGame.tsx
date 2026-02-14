@@ -78,6 +78,8 @@ import logoImpostor from "@assets/logo_site_impostor_1765071990526.png";
 import logoImpostorArt from "@assets/logo_impostor_art.png";
 import tripulanteImg from "@assets/tripulante_natal_1765071995242.png";
 import impostorImg from "@assets/impostor_natal_1765071992843.png";
+import tripulantePincelImg from "@assets/TripulantePincel.png";
+import impostorPincelImg from "@assets/Impostor_pincel.png";
 import { SideAds } from "@/components/AdSense";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
@@ -1337,7 +1339,27 @@ const HomeScreen = () => {
         </div>
 
         {/* Desenho do Impostor - Drawing game card */}
-        <div id="desenho-impostor">
+        <div id="desenho-impostor" className="relative w-full flex justify-center">
+          {/* Tripulante Pincel - left side (desktop only) */}
+          <img 
+            src={tripulantePincelImg} 
+            alt="Personagem Tripulante com Pincel - TikJogos" 
+            width="300"
+            height="420"
+            loading="lazy"
+            className="hidden md:block absolute bottom-0 left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-10"
+          />
+
+          {/* Impostor Pincel - right side (desktop only) */}
+          <img 
+            src={impostorPincelImg} 
+            alt="Personagem Impostor com Pincel - TikJogos" 
+            width="300"
+            height="420"
+            loading="lazy"
+            className="hidden md:block absolute bottom-0 right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-10"
+          />
+
           <DrawingGameCard />
         </div>
 
