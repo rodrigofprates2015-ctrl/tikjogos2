@@ -56,7 +56,8 @@ import {
   Settings,
   Youtube,
   Instagram,
-  MessageCircle
+  MessageCircle,
+  Paintbrush
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -906,7 +907,7 @@ const DrawingGameCard = () => {
   const drawingStore = useDrawingGameStore();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, langPath } = useLanguage();
   const [drawName, setDrawName] = useState(() => localStorage.getItem('tikjogos_saved_nickname') || '');
   const [drawCode, setDrawCode] = useState('');
   const [drawLoading, setDrawLoading] = useState(false);
@@ -956,6 +957,7 @@ const DrawingGameCard = () => {
 
       {/* Form */}
       <div className="space-y-3">
+        {/* Nickname input */}
         <input
           type="text"
           placeholder={t('home.nickname', 'Seu nickname')}
@@ -965,6 +967,7 @@ const DrawingGameCard = () => {
           data-testid="input-name-drawing"
         />
 
+        {/* Create room button */}
         <button
           onClick={handleDrawCreate}
           disabled={drawLoading}
@@ -979,6 +982,26 @@ const DrawingGameCard = () => {
           {drawLoading ? <Loader2 size={28} className="animate-spin" /> : <Zap size={28} className="animate-bounce" />}
           {t('home.createRoom', 'CRIAR SALA').toUpperCase()}
         </button>
+
+        {/* Save nickname checkbox */}
+        <div className="flex items-center justify-between px-1">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={!!localStorage.getItem('tikjogos_saved_nickname')}
+              onChange={(e) => {
+                if (e.target.checked && drawName.trim()) {
+                  localStorage.setItem('tikjogos_saved_nickname', drawName.trim());
+                } else {
+                  localStorage.removeItem('tikjogos_saved_nickname');
+                }
+              }}
+              className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]"
+              data-testid="checkbox-save-nickname-drawing"
+            />
+            <span className="text-sm text-[#8aa0b0]">{t('home.saveNickname', 'Guardar nickname')}</span>
+          </label>
+        </div>
 
         {/* OR divider */}
         <div className="flex items-center gap-4 py-2">
@@ -1012,6 +1035,24 @@ const DrawingGameCard = () => {
             {t('home.enterCode', 'ENTRAR').toUpperCase()}
           </button>
         </div>
+
+        {/* OR divider */}
+        <div className="flex items-center gap-4 py-2">
+          <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+          <span className="text-[#8aa0b0] text-sm font-bold">OU</span>
+          <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+        </div>
+
+        {/* How to play button */}
+        <Link href={langPath("/comojogar")}>
+          <button
+            className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-purple-500 to-pink-500 border-purple-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
+            data-testid="button-how-to-play-drawing"
+          >
+            <Paintbrush size={28} />
+            {t('home.howToPlay', 'COMO JOGAR').toUpperCase()}
+          </button>
+        </Link>
       </div>
     </div>
   );
@@ -1339,7 +1380,7 @@ const HomeScreen = () => {
         </div>
 
         {/* Desenho do Impostor - Drawing game card */}
-        <div id="desenho-impostor" className="relative w-full flex justify-center">
+        <div id="desenho-impostor" className="relative w-full flex flex-col items-center">
           {/* Tripulante Pincel - left side (desktop only) */}
           <img 
             src={tripulantePincelImg} 
