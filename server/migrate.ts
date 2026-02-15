@@ -14,7 +14,10 @@ async function runMigrations() {
 
   console.log('[Migration] Starting database migrations...');
   
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
   const db = drizzle({ client: pool, schema });
 
   try {

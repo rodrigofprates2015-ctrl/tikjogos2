@@ -36,7 +36,10 @@ export function getSession() {
     try {
       const pgStore = connectPg(session);
       const store = new pgStore({
-        conString: process.env.DATABASE_URL,
+        conObject: {
+          connectionString: process.env.DATABASE_URL,
+          ssl: { rejectUnauthorized: false },
+        },
         createTableIfMissing: true,
         ttl: sessionTtl,
         tableName: "sessions",

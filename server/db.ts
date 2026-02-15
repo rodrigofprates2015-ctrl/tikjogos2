@@ -17,16 +17,19 @@ function isNeonEnvironment(): boolean {
   return isReplit || isNeonUrl;
 }
 
+// Accept self-signed certificates from providers like Aiven, Render, etc.
+const sslConfig = { rejectUnauthorized: false };
+
 if (process.env.DATABASE_URL) {
   if (isNeonEnvironment()) {
     console.log('[DB] Using Neon serverless driver (Replit environment)');
-    pool = new NeonPool({ connectionString: process.env.DATABASE_URL });
+    pool = new NeonPool({ connectionString: process.env.DATABASE_URL, ssl: sslConfig });
     db = drizzleNeon({ client: pool as NeonPool, schema });
   } else {
     console.log('[DB] Using standard pg driver (Railway/production environment)');
     pool = new PgPool({ 
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
+      ssl: sslConfig
     });
     db = drizzlePg(pool as PgPool, { schema });
   }
