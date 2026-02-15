@@ -10,23 +10,22 @@ neonConfig.webSocketConstructor = ws;
 let pool: NeonPool | PgPool | null = null;
 let db: ReturnType<typeof drizzleNeon> | ReturnType<typeof drizzlePg> | null = null;
 
-function isNeonEnvironment(): boolean {
+// Only use Neon driver for actual Neon database URLs
+function isNeonUrl(): boolean {
   const databaseUrl = process.env.DATABASE_URL || '';
-  const isReplit = !!process.env.REPLIT_DEV_DOMAIN || !!process.env.REPL_ID;
-  const isNeonUrl = databaseUrl.includes('neon.tech');
-  return isReplit || isNeonUrl;
+  return databaseUrl.includes('neon.tech');
 }
 
 // Accept self-signed certificates from providers like Aiven, Render, etc.
 const sslConfig = { rejectUnauthorized: false };
 
 if (process.env.DATABASE_URL) {
-  if (isNeonEnvironment()) {
-    console.log('[DB] Using Neon serverless driver (Replit environment)');
+  if (isNeonUrl()) {
+    console.log('[DB] Using Neon serverless driver');
     pool = new NeonPool({ connectionString: process.env.DATABASE_URL, ssl: sslConfig });
     db = drizzleNeon({ client: pool as NeonPool, schema });
   } else {
-    console.log('[DB] Using standard pg driver (Railway/production environment)');
+    console.log('[DB] Using standard pg driver');
     pool = new PgPool({ 
       connectionString: process.env.DATABASE_URL,
       ssl: sslConfig

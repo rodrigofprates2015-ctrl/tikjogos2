@@ -1,3 +1,6 @@
+// Allow connections to databases with self-signed certificates (e.g. Aiven)
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
