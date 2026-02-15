@@ -3367,6 +3367,27 @@ export async function registerRoutes(
     res.json(room);
   });
 
+  // Admin: List drawing rooms
+  app.get("/api/admin/drawing-rooms", verifyAdmin, (_req, res) => {
+    try {
+      const rooms = Array.from(drawingRooms.values())
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 50);
+      res.json(rooms);
+    } catch (error) {
+      console.error('[Admin] Error fetching drawing rooms:', error);
+      res.status(500).json({ error: "Erro ao buscar salas de desenho" });
+    }
+  });
+
+  // Admin: Inspect specific drawing room
+  app.get("/api/admin/drawing-rooms/:code", verifyAdmin, (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = drawingRooms.get(code);
+    if (!room) return res.status(404).json({ error: "Sala não encontrada" });
+    res.json(room);
+  });
+
   // WebSocket: Drawing game
   httpServer.on('upgrade', (request, socket, head) => {
     if (request.url === '/drawing-ws') {

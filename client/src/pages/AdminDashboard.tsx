@@ -33,7 +33,8 @@ import {
   XCircle,
   FileText,
   Search,
-  BarChart3
+  BarChart3,
+  Paintbrush
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import AnalyticsDashboard from "./AnalyticsDashboard";
@@ -77,6 +78,33 @@ type Theme = {
   createdAt: string;
 };
 
+type DrawingPlayer = {
+  uid: string;
+  name: string;
+  connected?: boolean;
+};
+
+type DrawingGameData = {
+  word?: string;
+  impostorIds?: string[];
+  drawingOrder?: string[];
+  currentDrawerIndex?: number;
+  currentDrawerId?: string;
+  turnTimeLimit?: number;
+  votes?: Array<{ playerId: string; playerName: string; targetId: string; targetName: string }>;
+  votingStarted?: boolean;
+  votesRevealed?: boolean;
+};
+
+type DrawingRoom = {
+  code: string;
+  hostId: string;
+  status: string;
+  gameData: DrawingGameData | null;
+  players: DrawingPlayer[];
+  createdAt: string;
+};
+
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [email, setEmail] = useState("");
@@ -96,6 +124,11 @@ export default function AdminDashboard() {
   const [themeSearchQuery, setThemeSearchQuery] = useState("");
   const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null);
   const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
+
+  // Drawing game (Impostor Desenho) states
+  const [drawingRooms, setDrawingRooms] = useState<DrawingRoom[]>([]);
+  const [selectedDrawingRoom, setSelectedDrawingRoom] = useState<DrawingRoom | null>(null);
+  const [isDrawingSpectatorOpen, setIsDrawingSpectatorOpen] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,6 +237,41 @@ export default function AdminDashboard() {
       console.error("Error fetching themes:", error);
     } finally {
       setIsLoadingThemes(false);
+    }
+  };
+
+  const fetchDrawingRooms = async () => {
+    if (!isAuthenticated || !token) return;
+    try {
+      const response = await fetch("/api/admin/drawing-rooms", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setDrawingRooms(data);
+      } else if (response.status === 401) {
+        handleLogout();
+      }
+    } catch (error) {
+      console.error("Error fetching drawing rooms:", error);
+    }
+  };
+
+  const inspectDrawingRoom = async (code: string) => {
+    if (!token) return;
+    try {
+      const response = await fetch(`/api/admin/drawing-rooms/${code}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedDrawingRoom(data);
+        setIsDrawingSpectatorOpen(true);
+      } else if (response.status === 401) {
+        handleLogout();
+      }
+    } catch (error) {
+      console.error("Error fetching drawing room details:", error);
     }
   };
 
@@ -330,7 +398,8 @@ export default function AdminDashboard() {
     if (isAuthenticated && token) {
       fetchRooms();
       fetchThemes();
-      const interval = setInterval(fetchRooms, 5000);
+      fetchDrawingRooms();
+      const interval = setInterval(() => { fetchRooms(); fetchDrawingRooms(); }, 5000);
       return () => clearInterval(interval);
     }
   }, [isAuthenticated, token]);
@@ -338,6 +407,11 @@ export default function AdminDashboard() {
   const totalPlayers = rooms.reduce((sum, room) => sum + room.players.length, 0);
   const activeRooms = rooms.filter(r => r.status === "playing").length;
   const waitingRooms = rooms.filter(r => r.status === "waiting").length;
+
+  // Drawing game stats
+  const drawingTotalPlayers = drawingRooms.reduce((sum, room) => sum + room.players.length, 0);
+  const drawingActiveRooms = drawingRooms.filter(r => r.status !== "waiting").length;
+  const drawingWaitingRooms = drawingRooms.filter(r => r.status === "waiting").length;
 
   if (!isAuthenticated) {
     return (
@@ -429,7 +503,7 @@ export default function AdminDashboard() {
       </header>
 
       <main className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="bg-slate-800 border-slate-700">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
@@ -437,8 +511,22 @@ export default function AdminDashboard() {
                   <Home className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-slate-400 text-sm">Salas Ativas</p>
+                  <p className="text-slate-400 text-sm">Salas Clássico</p>
                   <p className="text-2xl font-bold text-white" data-testid="text-total-rooms">{rooms.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-purple-500/20 rounded-lg">
+                  <Paintbrush className="w-6 h-6 text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-slate-400 text-sm">Salas Desenho</p>
+                  <p className="text-2xl font-bold text-white">{drawingRooms.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -452,7 +540,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <p className="text-slate-400 text-sm">Jogadores Online</p>
-                  <p className="text-2xl font-bold text-white" data-testid="text-total-players">{totalPlayers}</p>
+                  <p className="text-2xl font-bold text-white" data-testid="text-total-players">{totalPlayers + drawingTotalPlayers}</p>
                 </div>
               </div>
             </CardContent>
@@ -466,7 +554,7 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <p className="text-slate-400 text-sm">Jogando / Aguardando</p>
-                  <p className="text-2xl font-bold text-white" data-testid="text-rooms-status">{activeRooms} / {waitingRooms}</p>
+                  <p className="text-2xl font-bold text-white" data-testid="text-rooms-status">{activeRooms + drawingActiveRooms} / {waitingRooms + drawingWaitingRooms}</p>
                 </div>
               </div>
             </CardContent>
@@ -475,7 +563,10 @@ export default function AdminDashboard() {
 
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle className="text-white">Lista de Salas</CardTitle>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Skull className="w-5 h-5" />
+              Impostor Clássico — Salas
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {rooms.length === 0 ? (
@@ -526,6 +617,129 @@ export default function AdminDashboard() {
                         </TableCell>
                       </TableRow>
                     ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Impostor Desenho Section */}
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white flex items-center gap-2">
+                <Paintbrush className="w-5 h-5" />
+                Impostor Desenho — Salas
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={fetchDrawingRooms}
+                className="text-slate-300"
+              >
+                <RefreshCw className="w-5 h-5" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Drawing game stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              <div className="bg-slate-700/50 p-3 rounded-lg flex items-center gap-3">
+                <div className="p-2 bg-purple-500/20 rounded-lg">
+                  <Home className="w-5 h-5 text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-slate-400 text-xs">Salas</p>
+                  <p className="text-lg font-bold text-white">{drawingRooms.length}</p>
+                </div>
+              </div>
+              <div className="bg-slate-700/50 p-3 rounded-lg flex items-center gap-3">
+                <div className="p-2 bg-emerald-500/20 rounded-lg">
+                  <Users className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <p className="text-slate-400 text-xs">Jogadores</p>
+                  <p className="text-lg font-bold text-white">{drawingTotalPlayers}</p>
+                </div>
+              </div>
+              <div className="bg-slate-700/50 p-3 rounded-lg flex items-center gap-3">
+                <div className="p-2 bg-amber-500/20 rounded-lg">
+                  <Eye className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-slate-400 text-xs">Jogando / Aguardando</p>
+                  <p className="text-lg font-bold text-white">{drawingActiveRooms} / {drawingWaitingRooms}</p>
+                </div>
+              </div>
+            </div>
+
+            {drawingRooms.length === 0 ? (
+              <div className="text-center py-8 text-slate-400">
+                Nenhuma sala de desenho ativa no momento
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-slate-700">
+                      <TableHead className="text-slate-300">Código</TableHead>
+                      <TableHead className="text-slate-300">Status</TableHead>
+                      <TableHead className="text-slate-300">Jogadores</TableHead>
+                      <TableHead className="text-slate-300">Palavra</TableHead>
+                      <TableHead className="text-slate-300">Criada em</TableHead>
+                      <TableHead className="text-slate-300">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {drawingRooms.map((dRoom) => {
+                      const statusLabels: Record<string, string> = {
+                        waiting: "Aguardando",
+                        sorting: "Sorteando",
+                        drawing: "Desenhando",
+                        roundEnd: "Fim da Rodada",
+                        discussion: "Discussão",
+                        voting: "Votação",
+                        result: "Resultado",
+                      };
+                      const statusColors: Record<string, string> = {
+                        waiting: "bg-slate-600",
+                        sorting: "bg-yellow-600",
+                        drawing: "bg-green-600",
+                        roundEnd: "bg-orange-600",
+                        discussion: "bg-blue-600",
+                        voting: "bg-purple-600",
+                        result: "bg-red-600",
+                      };
+                      return (
+                        <TableRow key={dRoom.code} className="border-slate-700">
+                          <TableCell className="font-mono font-bold text-white">{dRoom.code}</TableCell>
+                          <TableCell>
+                            <Badge className={statusColors[dRoom.status] || "bg-slate-600"}>
+                              {statusLabels[dRoom.status] || dRoom.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-slate-300">{dRoom.players.length}</TableCell>
+                          <TableCell className="text-slate-300">
+                            {dRoom.gameData?.word || "-"}
+                          </TableCell>
+                          <TableCell className="text-slate-400 text-sm">
+                            {new Date(dRoom.createdAt).toLocaleTimeString("pt-BR")}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => inspectDrawingRoom(dRoom.code)}
+                              className="border-slate-600 text-slate-300"
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Inspecionar
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
@@ -775,6 +989,142 @@ export default function AdminDashboard() {
                             {isHost && <Badge variant="secondary" className="text-xs bg-yellow-600">Host</Badge>}
                             {isImpostor && <Badge className="text-xs bg-red-600">Impostor</Badge>}
                             {isEliminated && <Badge variant="secondary" className="text-xs bg-slate-600">Eliminado</Badge>}
+                            {!player.connected && <Badge variant="secondary" className="text-xs bg-orange-600">Desconectado</Badge>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Drawing Room Spectator Dialog */}
+      <Dialog open={isDrawingSpectatorOpen} onOpenChange={setIsDrawingSpectatorOpen}>
+        <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Paintbrush className="w-5 h-5" />
+              Impostor Desenho - Sala {selectedDrawingRoom?.code}
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedDrawingRoom && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-700/50 p-4 rounded-lg">
+                  <p className="text-slate-400 text-sm mb-1">Status</p>
+                  <Badge className={
+                    selectedDrawingRoom.status === "drawing" ? "bg-green-600" :
+                    selectedDrawingRoom.status === "voting" ? "bg-purple-600" :
+                    selectedDrawingRoom.status === "discussion" ? "bg-blue-600" :
+                    "bg-slate-600"
+                  }>
+                    {selectedDrawingRoom.status}
+                  </Badge>
+                </div>
+                <div className="bg-slate-700/50 p-4 rounded-lg">
+                  <p className="text-slate-400 text-sm mb-1">Tempo por Turno</p>
+                  <p className="text-white font-medium">{selectedDrawingRoom.gameData?.turnTimeLimit || 30}s</p>
+                </div>
+              </div>
+
+              {selectedDrawingRoom.gameData && (
+                <div className="space-y-4">
+                  {selectedDrawingRoom.gameData.word && (
+                    <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
+                      <p className="text-blue-400 text-sm mb-1">Palavra Secreta</p>
+                      <p className="text-white font-bold text-lg">{selectedDrawingRoom.gameData.word}</p>
+                    </div>
+                  )}
+
+                  <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-lg">
+                    <p className="text-red-400 text-sm mb-1 flex items-center gap-2">
+                      <Skull className="w-4 h-4" />
+                      Impostor
+                    </p>
+                    <p className="text-white font-bold">
+                      {selectedDrawingRoom.gameData.impostorIds?.map(id =>
+                        selectedDrawingRoom.players.find(p => p.uid === id)?.name || "N/A"
+                      ).join(", ") || "N/A"}
+                    </p>
+                  </div>
+
+                  {selectedDrawingRoom.gameData.drawingOrder && (
+                    <div className="bg-slate-700/50 p-4 rounded-lg">
+                      <p className="text-slate-400 text-sm mb-2">Ordem de Desenho</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedDrawingRoom.gameData.drawingOrder.map((uid, idx) => {
+                          const player = selectedDrawingRoom.players.find(p => p.uid === uid);
+                          const isCurrentDrawer = uid === selectedDrawingRoom.gameData?.currentDrawerId;
+                          const isImpostor = selectedDrawingRoom.gameData?.impostorIds?.includes(uid);
+                          return (
+                            <Badge
+                              key={uid}
+                              className={
+                                isCurrentDrawer ? "bg-emerald-600" :
+                                isImpostor ? "bg-red-600" :
+                                "bg-slate-600"
+                              }
+                            >
+                              {idx + 1}. {player?.name || "?"}
+                              {isCurrentDrawer && " (desenhando)"}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedDrawingRoom.gameData.votes && selectedDrawingRoom.gameData.votes.length > 0 && (
+                    <div className="bg-purple-500/10 border border-purple-500/30 p-4 rounded-lg">
+                      <p className="text-purple-400 text-sm mb-2">Votos</p>
+                      <div className="space-y-1">
+                        {selectedDrawingRoom.gameData.votes.map((vote, idx) => (
+                          <p key={idx} className="text-slate-300 text-sm">
+                            <span className="text-white font-medium">{vote.playerName}</span>
+                            {" votou em "}
+                            <span className={
+                              selectedDrawingRoom.gameData?.impostorIds?.includes(vote.targetId)
+                                ? "text-emerald-400 font-medium"
+                                : "text-white font-medium"
+                            }>
+                              {vote.targetName}
+                            </span>
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div>
+                <p className="text-slate-400 text-sm mb-3">Jogadores ({selectedDrawingRoom.players.length})</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {selectedDrawingRoom.players.map((player) => {
+                    const isImpostor = selectedDrawingRoom.gameData?.impostorIds?.includes(player.uid);
+                    const isHost = player.uid === selectedDrawingRoom.hostId;
+                    return (
+                      <div
+                        key={player.uid}
+                        className={`p-3 rounded-lg flex items-center gap-3 ${
+                          isImpostor
+                            ? "bg-red-500/20 border border-red-500/30"
+                            : "bg-slate-700/50"
+                        }`}
+                      >
+                        <User className={`w-5 h-5 ${isImpostor ? "text-red-400" : "text-slate-400"}`} />
+                        <div className="flex-1">
+                          <p className={`font-medium ${isImpostor ? "text-red-400" : "text-white"}`}>
+                            {player.name}
+                          </p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {isHost && <Badge variant="secondary" className="text-xs bg-yellow-600">Host</Badge>}
+                            {isImpostor && <Badge className="text-xs bg-red-600">Impostor</Badge>}
                             {!player.connected && <Badge variant="secondary" className="text-xs bg-orange-600">Desconectado</Badge>}
                           </div>
                         </div>
