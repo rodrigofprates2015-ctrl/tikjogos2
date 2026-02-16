@@ -74,7 +74,7 @@ export async function setupAuth(app: Express) {
     });
 
     app.get("/api/auth/user", (_req, res) => {
-      res.status(401).json({ message: "Unauthorized" });
+      res.json(null);
     });
 
     return;
@@ -158,7 +158,7 @@ export async function setupAuth(app: Express) {
     if (req.isAuthenticated() && req.user) {
       res.json(req.user);
     } else {
-      res.status(401).json({ message: "Unauthorized" });
+      res.json(null);
     }
   });
 }
