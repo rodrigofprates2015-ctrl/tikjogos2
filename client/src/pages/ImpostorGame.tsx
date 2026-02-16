@@ -1287,6 +1287,7 @@ const HomeScreen = () => {
         <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24">
           {/* Impostor logo with characters */}
           <div className="flex justify-center mb-3">
+            <h1 className="sr-only">Jogo do Impostor Online Grátis - TikJogos</h1>
             <img 
               src={logoImpostor} 
               alt="Logo Jogo do Impostor Online - TikJogos" 
@@ -1458,7 +1459,7 @@ const HomeScreen = () => {
             </div>
             
             <div>
-              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.home', 'NAVEGAÇÃO')}</h4>
+              <h3 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.home', 'NAVEGAÇÃO')}</h3>
               <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
                 <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.home', 'Início')}</Link></li>
                 <li><Link href={langPath("/blog")} className="hover:text-purple-400 transition-colors">{t('nav.blog', 'Blog')}</Link></li>
@@ -1472,7 +1473,7 @@ const HomeScreen = () => {
             </div>
 
             <div>
-              <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">SUPORTE</h4>
+              <h3 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">SUPORTE</h3>
               <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
                 <li><Link href="/" className="hover:text-purple-400 transition-colors">FAQ</Link></li>
                 <li><Link href="/" className="hover:text-purple-400 transition-colors">Reportar Bug</Link></li>
@@ -2950,7 +2951,7 @@ const ModeSelectScreen = () => {
                   <div>
                     <h4 className="text-lg font-bold text-white group-hover:text-[#6b4ba3] transition-colors">
                       {selectedThemeCode ? 'Trocar Tema' : 'Explorar Galeria de Temas'}
-                    </h4>
+                    </h3>
                     <p className="text-sm text-gray-400 mt-1">
                       Descubra temas incríveis criados pela comunidade!
                     </p>
@@ -3005,7 +3006,7 @@ const ModeSelectScreen = () => {
                 <div>
                   <h4 className="text-lg font-bold text-white group-hover:text-[#6b4ba3] transition-colors">
                     {selectedCategory ? 'Trocar Categoria' : 'Escolher Categoria'}
-                  </h4>
+                  </h3>
                   <p className="text-sm text-gray-400 mt-1">
                     Selecione uma categoria de palavras para jogar!
                   </p>
