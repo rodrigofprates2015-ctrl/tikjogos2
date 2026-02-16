@@ -6,6 +6,11 @@ import { trackSessionEnd } from './analyticsMiddleware';
 
 const router = Router();
 
+// Safe query wrapper: returns fallback on failure (handles missing columns gracefully)
+async function safeQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+  try { return await fn(); } catch (e) { console.warn('[Analytics] Query fallback:', (e as any)?.message?.slice(0, 80)); return fallback; }
+}
+
 export function createAnalyticsRouter(verifyAdmin: any) {
 
   // ─── POST /api/analytics/session-end (public, called by client) ───
@@ -36,38 +41,42 @@ export function createAnalyticsRouter(verifyAdmin: any) {
       const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       const fourteenDaysAgo = new Date(); fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
-      // ── Overview KPIs ──
+      // ── Overview KPIs (no session_duration) ──
       const [
         totalPageviewsRes,
         totalUniqueVisitorsRes,
         totalPlayersRes,
-        avgSessionRes,
-        // This week
         weekPageviewsRes,
         weekVisitorsRes,
         weekPlayersRes,
-        weekSessionRes,
-        // Previous week
         prevWeekPageviewsRes,
         prevWeekVisitorsRes,
         prevWeekPlayersRes,
-        prevWeekSessionRes,
       ] = await Promise.all([
         db.select({ count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview'`),
         db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'unique_visitor'`),
         db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join'`),
-        db.select({ avg: avg(sql`CAST(${analyticsEvents.sessionDuration} AS INTEGER)`) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'session_end' AND ${analyticsEvents.sessionDuration} IS NOT NULL`),
-        // This week
         db.select({ count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${sevenDaysAgo}`),
         db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.createdAt} >= ${sevenDaysAgo}`),
         db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.createdAt} >= ${sevenDaysAgo}`),
-        db.select({ avg: avg(sql`CAST(${analyticsEvents.sessionDuration} AS INTEGER)`) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'session_end' AND ${analyticsEvents.sessionDuration} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${sevenDaysAgo}`),
-        // Previous week
         db.select({ count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${fourteenDaysAgo} AND ${analyticsEvents.createdAt} < ${sevenDaysAgo}`),
         db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.createdAt} >= ${fourteenDaysAgo} AND ${analyticsEvents.createdAt} < ${sevenDaysAgo}`),
         db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.createdAt} >= ${fourteenDaysAgo} AND ${analyticsEvents.createdAt} < ${sevenDaysAgo}`),
-        db.select({ avg: avg(sql`CAST(${analyticsEvents.sessionDuration} AS INTEGER)`) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'session_end' AND ${analyticsEvents.sessionDuration} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${fourteenDaysAgo} AND ${analyticsEvents.createdAt} < ${sevenDaysAgo}`),
       ]);
+
+      // Session duration queries (may fail if column doesn't exist yet)
+      const avgSessionRes = await safeQuery(
+        () => db!.select({ avg: avg(sql`CAST(${analyticsEvents.sessionDuration} AS INTEGER)`) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'session_end' AND ${analyticsEvents.sessionDuration} IS NOT NULL`),
+        [{ avg: null }] as any
+      );
+      const weekSessionRes = await safeQuery(
+        () => db!.select({ avg: avg(sql`CAST(${analyticsEvents.sessionDuration} AS INTEGER)`) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'session_end' AND ${analyticsEvents.sessionDuration} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${sevenDaysAgo}`),
+        [{ avg: null }] as any
+      );
+      const prevWeekSessionRes = await safeQuery(
+        () => db!.select({ avg: avg(sql`CAST(${analyticsEvents.sessionDuration} AS INTEGER)`) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'session_end' AND ${analyticsEvents.sessionDuration} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${fourteenDaysAgo} AND ${analyticsEvents.createdAt} < ${sevenDaysAgo}`),
+        [{ avg: null }] as any
+      );
 
       // ── Time series (30 days) ──
       const [pageviewsTS, visitorsTS, roomsTS] = await Promise.all([
@@ -88,61 +97,68 @@ export function createAnalyticsRouter(verifyAdmin: any) {
           .orderBy(sql`DATE(${rooms.createdAt})`),
       ]);
 
-      // ── Devices & Browsers ──
-      const [deviceStats, browserStats] = await Promise.all([
-        db.select({ deviceType: analyticsEvents.deviceType, count: count() })
+      // ── Devices & Browsers (may fail if columns missing) ──
+      const deviceStats = await safeQuery(
+        () => db!.select({ deviceType: analyticsEvents.deviceType, count: count() })
           .from(analyticsEvents)
           .where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.deviceType} IS NOT NULL`)
           .groupBy(analyticsEvents.deviceType),
-        db.select({ browser: analyticsEvents.browser, count: count() })
+        []
+      );
+      const browserStats = await safeQuery(
+        () => db!.select({ browser: analyticsEvents.browser, count: count() })
           .from(analyticsEvents)
           .where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.browser} IS NOT NULL`)
           .groupBy(analyticsEvents.browser)
           .orderBy(sql`count(*) DESC`)
           .limit(10),
-      ]);
+        []
+      );
 
-      // ── Geo ──
-      const countryStats = await db
-        .select({ country: analyticsEvents.country, count: countDistinct(analyticsEvents.visitorId) })
-        .from(analyticsEvents)
-        .where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.country} IS NOT NULL`)
-        .groupBy(analyticsEvents.country)
-        .orderBy(sql`count(DISTINCT ${analyticsEvents.visitorId}) DESC`)
-        .limit(10);
-
-      const cityStats = await db
-        .select({ city: analyticsEvents.city, count: countDistinct(analyticsEvents.visitorId) })
-        .from(analyticsEvents)
-        .where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.city} IS NOT NULL`)
-        .groupBy(analyticsEvents.city)
-        .orderBy(sql`count(DISTINCT ${analyticsEvents.visitorId}) DESC`)
-        .limit(10);
+      // ── Geo (may fail if columns missing) ──
+      const countryStats = await safeQuery(
+        () => db!.select({ country: analyticsEvents.country, count: countDistinct(analyticsEvents.visitorId) })
+          .from(analyticsEvents)
+          .where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.country} IS NOT NULL`)
+          .groupBy(analyticsEvents.country)
+          .orderBy(sql`count(DISTINCT ${analyticsEvents.visitorId}) DESC`)
+          .limit(10),
+        []
+      );
+      const cityStats = await safeQuery(
+        () => db!.select({ city: analyticsEvents.city, count: countDistinct(analyticsEvents.visitorId) })
+          .from(analyticsEvents)
+          .where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.city} IS NOT NULL`)
+          .groupBy(analyticsEvents.city)
+          .orderBy(sql`count(DISTINCT ${analyticsEvents.visitorId}) DESC`)
+          .limit(10),
+        []
+      );
 
       // ── Rooms / Games ──
-      const [
-        roomsTotalRes,
-        roomsTodayRes,
-        roomsMonthRes,
-        gameModeStats,
-        roomJoinCounts,
-      ] = await Promise.all([
+      const [roomsTotalRes, roomsTodayRes, roomsMonthRes] = await Promise.all([
         db.select({ count: count() }).from(rooms),
         db.select({ count: count() }).from(rooms).where(gte(rooms.createdAt, startOfToday)),
         db.select({ count: count() }).from(rooms).where(gte(rooms.createdAt, startOfMonth)),
-        // Most played game modes
-        db.select({ gameMode: analyticsEvents.gameMode, count: count() })
+      ]);
+
+      const gameModeStats = await safeQuery(
+        () => db!.select({ gameMode: analyticsEvents.gameMode, count: count() })
           .from(analyticsEvents)
           .where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.gameMode} IS NOT NULL`)
           .groupBy(analyticsEvents.gameMode)
           .orderBy(sql`count(*) DESC`)
           .limit(10),
-        // Rooms with player counts (for abandonment rate)
-        db.select({ roomCode: analyticsEvents.roomCode, count: countDistinct(analyticsEvents.visitorId) })
+        []
+      );
+
+      const roomJoinCounts = await safeQuery(
+        () => db!.select({ roomCode: analyticsEvents.roomCode, count: countDistinct(analyticsEvents.visitorId) })
           .from(analyticsEvents)
           .where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.roomCode} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`)
           .groupBy(analyticsEvents.roomCode),
-      ]);
+        []
+      );
 
       // Calculate abandonment rate (rooms with 0 joins / total rooms in period)
       const roomsCreatedLast30 = roomsTS.reduce((sum, d) => sum + d.count, 0);
@@ -170,14 +186,13 @@ export function createAnalyticsRouter(verifyAdmin: any) {
         .orderBy(sql`count(*) DESC`)
         .limit(10);
 
-      // Average room duration (time between room creation and last activity)
-      // Approximate via session_end events linked to rooms
-      const avgRoomDurationRes = await db
-        .select({
-          avg: avg(sql`CAST(${analyticsEvents.sessionDuration} AS INTEGER)`),
-        })
-        .from(analyticsEvents)
-        .where(sql`${analyticsEvents.eventType} = 'session_end' AND ${analyticsEvents.roomCode} IS NOT NULL AND ${analyticsEvents.sessionDuration} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`);
+      // Average room duration (may fail if session_duration column missing)
+      const avgRoomDurationRes = await safeQuery(
+        () => db!.select({ avg: avg(sql`CAST(${analyticsEvents.sessionDuration} AS INTEGER)`) })
+          .from(analyticsEvents)
+          .where(sql`${analyticsEvents.eventType} = 'session_end' AND ${analyticsEvents.roomCode} IS NOT NULL AND ${analyticsEvents.sessionDuration} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`),
+        [{ avg: null }] as any
+      );
 
       // Rooms created per day (for monthly chart saving)
       const roomsPerDayMonth = await db
@@ -188,22 +203,26 @@ export function createAnalyticsRouter(verifyAdmin: any) {
         .orderBy(sql`DATE(${rooms.createdAt})`);
 
       // Top pages visited
-      const topPages = await db
-        .select({ page: analyticsEvents.pagePath, count: count() })
-        .from(analyticsEvents)
-        .where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.pagePath} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`)
-        .groupBy(analyticsEvents.pagePath)
-        .orderBy(sql`count(*) DESC`)
-        .limit(10);
+      const topPages = await safeQuery(
+        () => db!.select({ page: analyticsEvents.pagePath, count: count() })
+          .from(analyticsEvents)
+          .where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.pagePath} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`)
+          .groupBy(analyticsEvents.pagePath)
+          .orderBy(sql`count(*) DESC`)
+          .limit(10),
+        []
+      );
 
       // Referrer stats
-      const referrerStats = await db
-        .select({ referrer: analyticsEvents.referrer, count: count() })
-        .from(analyticsEvents)
-        .where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.referrer} IS NOT NULL AND ${analyticsEvents.referrer} != '' AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`)
-        .groupBy(analyticsEvents.referrer)
-        .orderBy(sql`count(*) DESC`)
-        .limit(10);
+      const referrerStats = await safeQuery(
+        () => db!.select({ referrer: analyticsEvents.referrer, count: count() })
+          .from(analyticsEvents)
+          .where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.referrer} IS NOT NULL AND ${analyticsEvents.referrer} != '' AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`)
+          .groupBy(analyticsEvents.referrer)
+          .orderBy(sql`count(*) DESC`)
+          .limit(10),
+        []
+      );
 
       const calcChange = (current: number, previous: number): number => {
         if (previous === 0) return current > 0 ? 100 : 0;
