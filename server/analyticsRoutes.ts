@@ -170,6 +170,41 @@ export function createAnalyticsRouter(verifyAdmin: any) {
         .orderBy(sql`count(*) DESC`)
         .limit(10);
 
+      // Average room duration (time between room creation and last activity)
+      // Approximate via session_end events linked to rooms
+      const avgRoomDurationRes = await db
+        .select({
+          avg: avg(sql`CAST(${analyticsEvents.sessionDuration} AS INTEGER)`),
+        })
+        .from(analyticsEvents)
+        .where(sql`${analyticsEvents.eventType} = 'session_end' AND ${analyticsEvents.roomCode} IS NOT NULL AND ${analyticsEvents.sessionDuration} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`);
+
+      // Rooms created per day (for monthly chart saving)
+      const roomsPerDayMonth = await db
+        .select({ date: sql<string>`DATE(${rooms.createdAt})`, count: count() })
+        .from(rooms)
+        .where(gte(rooms.createdAt, startOfMonth))
+        .groupBy(sql`DATE(${rooms.createdAt})`)
+        .orderBy(sql`DATE(${rooms.createdAt})`);
+
+      // Top pages visited
+      const topPages = await db
+        .select({ page: analyticsEvents.pagePath, count: count() })
+        .from(analyticsEvents)
+        .where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.pagePath} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`)
+        .groupBy(analyticsEvents.pagePath)
+        .orderBy(sql`count(*) DESC`)
+        .limit(10);
+
+      // Referrer stats
+      const referrerStats = await db
+        .select({ referrer: analyticsEvents.referrer, count: count() })
+        .from(analyticsEvents)
+        .where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.referrer} IS NOT NULL AND ${analyticsEvents.referrer} != '' AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`)
+        .groupBy(analyticsEvents.referrer)
+        .orderBy(sql`count(*) DESC`)
+        .limit(10);
+
       const calcChange = (current: number, previous: number): number => {
         if (previous === 0) return current > 0 ? 100 : 0;
         return Math.round(((current - previous) / previous) * 100);
@@ -214,10 +249,14 @@ export function createAnalyticsRouter(verifyAdmin: any) {
           roomsMonth: roomsMonthRes[0]?.count || 0,
           activeRooms: activeRoomsRes[0]?.count || 0,
           abandonmentRate,
+          avgRoomDuration: Math.round(Number(avgRoomDurationRes[0]?.avg) || 0),
           gameModes: (gameModeStats || []).map(g => ({ name: g.gameMode || 'unknown', value: g.count })),
           themeUsage: (themeStats || []).map(t => ({ name: t.gameMode || 'unknown', value: t.count })),
           roomsLast30Days: fillMissingDates(roomsTS, 30),
+          roomsPerDayMonth: roomsPerDayMonth.map(d => ({ date: d.date, count: d.count })),
         },
+        topPages: (topPages || []).map(p => ({ name: p.page || '/', value: p.count })),
+        referrers: (referrerStats || []).map(r => ({ name: r.referrer || 'direct', value: r.count })),
       });
     } catch (error: any) {
       console.error('[Analytics API] Error fetching dashboard:', error);
