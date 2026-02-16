@@ -308,7 +308,7 @@ export default function BlogPost() {
 
               {/* Author Card */}
               <div className="bg-gradient-to-r from-purple-900/20 to-indigo-900/20 rounded-[3rem] p-8 border-4 border-purple-500/20 flex flex-col md:flex-row items-center gap-8 shadow-xl">
-                <img src={post.author.avatar} alt={postAuthorName} className="w-32 h-32 rounded-[2rem] border-4 border-purple-500 shadow-xl object-cover" />
+                <img src={post.author.avatar} alt={postAuthorName} loading="lazy" className="w-32 h-32 rounded-[2rem] border-4 border-purple-500 shadow-xl object-cover" />
                 <div className="text-center md:text-left flex-1">
                   <p className="text-purple-400 font-black text-sm uppercase tracking-widest mb-1">{t('blogPostPage.aboutAuthor', 'SOBRE O AUTOR')}</p>
                   <h4 className="text-3xl font-black text-white mb-2">{postAuthorName}</h4>

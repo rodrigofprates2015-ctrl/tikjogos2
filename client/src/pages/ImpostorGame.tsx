@@ -708,6 +708,8 @@ const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
               <img 
                 src="/pix-qrcode.png" 
                 alt="QR Code PIX" 
+                width={160} height={160}
+                loading="lazy"
                 className="w-40 h-40 object-contain"
               />
             </div>
@@ -954,6 +956,7 @@ const DrawingGameCard = () => {
           src={logoImpostorArt}
           alt="Logo Desenho do Impostor - TikJogos"
           width={550} height={192}
+          loading="lazy"
           className="h-28 md:h-36 object-contain"
         />
       </div>
@@ -1267,6 +1270,7 @@ const HomeScreen = () => {
             <img
               src={bannerDesenhoImpostorMobile}
               alt="Banner Jogo Desenho do Impostor - TikJogos"
+              loading="lazy"
               className="w-full rounded-2xl shadow-lg"
             />
           </a>
@@ -1278,6 +1282,7 @@ const HomeScreen = () => {
             <img
               src={bannerDesenhoImpostor}
               alt="Banner Jogo Desenho do Impostor - TikJogos"
+              loading="lazy"
               className="w-full rounded-2xl shadow-lg hover:brightness-110 transition-all cursor-pointer"
             />
           </a>

@@ -76,7 +76,7 @@ export default function Blog() {
             >
               <div className="flex flex-col lg:flex-row min-h-[500px]">
                 <div className="lg:w-3/5 relative overflow-hidden">
-                  <img src={featured.image} alt={featured.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <img src={featured.image} alt={featured.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-r from-[#242642] via-transparent to-transparent hidden lg:block"></div>
                   <div className="absolute inset-0 bg-gradient-to-t from-[#242642] via-transparent to-transparent lg:hidden"></div>
                 </div>
@@ -95,7 +95,7 @@ export default function Blog() {
                   </p>
                   
                   <div className="flex items-center gap-4 pt-4 border-t border-white/5">
-                    <img src={featured.author.avatar} alt={featuredAuthorName} className="w-12 h-12 rounded-2xl border-2 border-purple-500/50" />
+                    <img src={featured.author.avatar} alt={featuredAuthorName} loading="lazy" className="w-12 h-12 rounded-2xl border-2 border-purple-500/50" />
                     <div>
                       <p className="text-white font-black">{featuredAuthorName}</p>
                       <p className="text-slate-400 text-sm font-bold">{featuredDate} • {featured.readTime} {t('blog.readTime', 'leitura')}</p>
