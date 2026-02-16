@@ -74,8 +74,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
-import logoImpostor from "@assets/logo_site_impostor_1765071990526.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
+import logoImpostor from "@assets/logo site impostor.png";
 import logoImpostorArt from "@assets/logo_impostor_art.png";
 import tripulanteImg from "@assets/tripulante_natal_1765071995242.png";
 import impostorImg from "@assets/impostor_natal_1765071992843.png";
@@ -953,6 +953,7 @@ const DrawingGameCard = () => {
         <img
           src={logoImpostorArt}
           alt="Logo Desenho do Impostor - TikJogos"
+          width={550} height={192}
           className="h-28 md:h-36 object-contain"
         />
       </div>
@@ -1289,6 +1290,7 @@ const HomeScreen = () => {
             <img 
               src={logoImpostor} 
               alt="Logo Jogo do Impostor Online - TikJogos" 
+              width={575} height={133}
               className="h-28 md:h-36 object-contain" 
             />
           </div>

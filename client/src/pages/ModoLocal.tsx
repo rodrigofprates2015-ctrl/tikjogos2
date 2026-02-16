@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { SideAds, BottomAd } from "@/components/AdSense";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
 type GameMode = "palavraSecreta" | "palavras" | "duasFaccoes";
 
@@ -163,7 +163,7 @@ export default function ModoLocal() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 cursor-pointer group">
             <ArrowLeft className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
-            <img src={logoTikjogos} alt="TikJogos" className="h-8" />
+            <img src={logoTikjogos} alt="TikJogos" width={245} height={70} className="h-8" />
           </a>
         </div>
       </div>

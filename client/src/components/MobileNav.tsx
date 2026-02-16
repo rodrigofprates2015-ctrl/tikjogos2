@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/hooks/useLanguage";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
 interface NavItem {
   href: string;
@@ -38,7 +38,7 @@ export function MobileNav() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href={langPath("/")} className="flex items-center cursor-pointer">
-          <img src={logoTikjogos} alt="TikJogos" className="h-8" />
+          <img src={logoTikjogos} alt="TikJogos" width={245} height={70} className="h-8" />
         </Link>
 
         {/* Desktop Navigation */}
@@ -78,7 +78,7 @@ export function MobileNav() {
           >
             <SheetHeader className="p-6 border-b border-[#2f3252]">
               <SheetTitle className="flex items-center gap-3">
-                <img src={logoTikjogos} alt="TikJogos" className="h-8" />
+                <img src={logoTikjogos} alt="TikJogos" width={245} height={70} className="h-8" />
               </SheetTitle>
             </SheetHeader>
             

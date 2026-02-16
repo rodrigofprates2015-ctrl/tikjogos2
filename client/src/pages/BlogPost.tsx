@@ -5,7 +5,7 @@ import { getBlogPostByAnySlug, getPostSlug, BLOG_POSTS } from "@/data/blogPosts"
 import { MobileNav } from "@/components/MobileNav";
 import { SideAds, BottomAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
 function ArticleNotFound() {
   const { t, langPath } = useLanguage();
@@ -333,7 +333,7 @@ export default function BlogPost() {
                 <img 
                   src={logoTikjogos} 
                   alt="TikJogos Impostor" 
-                  className="h-16 w-auto object-contain"
+                  width={245} height={70} className="h-16 w-auto object-contain"
                 />
               </Link>
               <p className="text-slate-400 max-w-md text-lg font-medium">

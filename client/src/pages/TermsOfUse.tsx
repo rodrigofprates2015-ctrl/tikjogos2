@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { FileText, ChevronLeft, Youtube, Instagram, MessageCircle } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 import { SideAds, BottomAd } from "@/components/AdSense";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
 const termsData = [
   { id: 1, title: 'Aceitação dos Termos', content: 'Ao usar este site, você concorda em cumprir estes Termos de Uso e todas as leis e regulamentos aplicáveis. Se você não concorda com algum destes termos, não use este site.' },
@@ -95,7 +95,7 @@ export default function TermsOfUse() {
                 <img 
                   src={logoTikjogos} 
                   alt="TikJogos Impostor" 
-                  className="h-16 w-auto object-contain"
+                  width={245} height={70} className="h-16 w-auto object-contain"
                 />
               </Link>
               <p className="text-slate-400 max-w-md text-lg font-medium">

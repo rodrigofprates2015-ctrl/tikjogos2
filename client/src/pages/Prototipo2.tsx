@@ -61,8 +61,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
-import logoImpostor from "@assets/logo_site_impostor_1765071990526.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
+import logoImpostor from "@assets/logo site impostor.png";
 import tripulanteImg from "@assets/tripulante_natal_1765071995242.png";
 import impostorImg from "@assets/impostor_natal_1765071992843.png";
 
@@ -1092,7 +1092,7 @@ const HomeScreen = () => {
         <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in">
           {/* Impostor logo with characters */}
           <div className="flex justify-center mb-3">
-            <img src={logoImpostor} alt="Impostor" className="h-28 md:h-36 object-contain" />
+            <img src={logoImpostor} alt="Impostor" width={575} height={133} className="h-28 md:h-36 object-contain" />
           </div>
 
           {/* Form */}
@@ -1206,7 +1206,7 @@ const HomeScreen = () => {
 
       {/* Footer - now below the content, takes full width */}
       <div className="w-full text-center py-6 px-4 bg-gradient-to-t from-black/40 to-transparent z-20 relative border-t border-[#3d4a5c]/30">
-        <img src={logoTikjogos} alt="TikJogos" className="h-4 md:h-5 mx-auto mb-2" />
+        <img src={logoTikjogos} alt="TikJogos" width={245} height={70} className="h-4 md:h-5 mx-auto mb-2" />
         <p className="text-[#6a8aaa] text-xs">
           Desenvolvido com <Heart className="inline w-3 h-3 text-gray-500 fill-current" /> por <span className="text-[#8aa0b0]">Rodrigo Freitas</span>
         </p>

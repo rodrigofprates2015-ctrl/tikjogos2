@@ -17,7 +17,7 @@ import {
 import { MobileNav } from "@/components/MobileNav";
 import { DisplayAd, SideAds, BottomAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
 export default function ComoJogar() {
   const { t, langPath } = useLanguage();
@@ -258,7 +258,7 @@ export default function ComoJogar() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-1 md:col-span-2 space-y-6">
               <Link href="/" className="flex items-center cursor-pointer">
-                <img src={logoTikjogos} alt="TikJogos Impostor" className="h-16 w-auto object-contain" />
+                <img src={logoTikjogos} alt="TikJogos Impostor" width={245} height={70} className="h-16 w-auto object-contain" />
               </Link>
               <p className="text-slate-400 max-w-md text-lg font-medium">
                 {t('blogPage.footerDesc', 'A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.')}

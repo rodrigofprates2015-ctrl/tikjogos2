@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Delete, CornerDownLeft, Share2, Trophy, Clock, HelpCircle } from "lucide-react";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 import logoTermo from "@/assets/Termo_Logo_58x58_1765323385999.png";
 import { useToast } from "@/hooks/use-toast";
 import { SideAds, BottomAd } from "@/components/AdSense";
@@ -443,7 +443,7 @@ export default function Termo() {
 
       {/* Logo */}
       <div className="pb-4 text-center">
-        <img src={logoTikjogos} alt="TikJogos" className="h-4 md:h-5 mx-auto" />
+        <img src={logoTikjogos} alt="TikJogos" width={245} height={70} className="h-4 md:h-5 mx-auto" />
       </div>
 
       <style>{`

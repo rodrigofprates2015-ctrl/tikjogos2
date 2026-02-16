@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { ArrowLeft, Gamepad2 } from "lucide-react";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 import logoTermo from "@/assets/Termo_Logo_58x58_1765323385999.png";
 import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
 import { OutrosJogosAd, SideAds, BottomAd } from "@/components/AdSense";
@@ -78,7 +78,7 @@ export default function OutrosJogos() {
       <AdBlockBottom />
 
       <div className="mt-12 mb-8 text-center max-w-md px-4">
-        <img src={logoTikjogos} alt="TikJogos" className="h-4 md:h-5 mx-auto mb-2 opacity-50" />
+        <img src={logoTikjogos} alt="TikJogos" width={245} height={70} className="h-4 md:h-5 mx-auto mb-2 opacity-50" />
         <p className="text-gray-600 text-[10px] leading-relaxed">
           {t('blogPage.disclaimer', 'O TikJogos é um projeto independente de fãs. Todas as marcas registradas (como nomes de personagens e franquias) pertencem aos seus respectivos proprietários e são usadas aqui apenas para fins de referência em contexto de jogo de palavras/trivia.')}
         </p>

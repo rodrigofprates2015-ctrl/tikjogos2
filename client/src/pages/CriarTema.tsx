@@ -12,7 +12,7 @@ import {
   Wallet,
   Rocket
 } from "lucide-react";
-import logoImpostor from "@assets/logo_site_impostor_1765071990526.png";
+import logoImpostor from "@assets/logo site impostor.png";
 
 type PaymentState = {
   status: 'idle' | 'loading' | 'awaiting_payment' | 'success' | 'error';
@@ -530,6 +530,7 @@ export default function CriarTema() {
             <img 
               src={logoImpostor} 
               alt="Logo Jogo do Impostor" 
+              width={575} height={133}
               className="h-20 md:h-24 object-contain" 
             />
           </div>
