@@ -5,7 +5,7 @@ import { THEMES } from '@/data/themes';
 import { MobileNav } from '@/components/MobileNav';
 import { SideAds, BottomAd } from '@/components/AdSense';
 import { useLanguage } from '@/hooks/useLanguage';
-import logoTikjogos from '@assets/logo tikjogos_1764616571363.png';
+import logoTikjogos from '@assets/logo_nova_tikjogos (1).png';
 
 const PAGE_SEO = {
   pt: {
@@ -211,7 +211,7 @@ export default function Temas() {
               {seo.subtitle}
             </p>
 
-            <p className="text-slate-500 text-sm font-bold">
+            <p className="text-slate-400 text-sm font-bold">
               {totalWords}+ {seo.words}
             </p>
           </div>
@@ -237,7 +237,7 @@ export default function Temas() {
                         <h2 className="text-xl font-black text-white group-hover:text-purple-400 transition-colors truncate">
                           {theme.name}
                         </h2>
-                        <p className="text-slate-500 text-sm font-bold">
+                        <p className="text-slate-400 text-sm font-bold">
                           {theme.wordCount} {seo.words}
                         </p>
                       </div>
@@ -383,7 +383,7 @@ export default function Temas() {
                   className="h-16 w-auto object-contain"
                 />
               </Link>
-              <p className="text-slate-400 max-w-md text-lg font-medium">
+              <p className="text-slate-300 max-w-md text-lg font-medium">
                 {t('blogPage.footerDesc', 'A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.')}
               </p>
               <div className="flex gap-4">
@@ -401,7 +401,7 @@ export default function Temas() {
 
             <div>
               <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.navigation', 'NAVEGAÇÃO')}</h4>
-              <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
+              <ul className="flex flex-col gap-3 text-slate-300 font-bold text-left">
                 <li><Link href={langPath('/')} className="hover:text-purple-400 transition-colors">{t('nav.home', 'Início')}</Link></li>
                 <li><Link href="/jogo-do-impostor/temas" className="hover:text-purple-400 transition-colors">Temas</Link></li>
                 <li><Link href={langPath('/blog')} className="hover:text-purple-400 transition-colors">{t('nav.blog', 'Blog')}</Link></li>
@@ -412,7 +412,7 @@ export default function Temas() {
 
             <div>
               <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.support', 'SUPORTE')}</h4>
-              <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
+              <ul className="flex flex-col gap-3 text-slate-300 font-bold text-left">
                 <li><Link href={langPath('/termos')} className="hover:text-purple-400 transition-colors">{t('nav.terms', 'Termos de Uso')}</Link></li>
                 <li><Link href={langPath('/privacidade')} className="hover:text-purple-400 transition-colors">{t('nav.privacy', 'Privacidade')}</Link></li>
                 <li>

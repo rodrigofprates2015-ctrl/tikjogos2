@@ -277,7 +277,7 @@ const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
           </h2>
           <button 
             onClick={handleClose}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-gray-300 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -291,7 +291,7 @@ const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
               "flex-1 py-3 text-sm font-semibold transition-colors",
               activeTab === 'galeria' 
                 ? "text-[#6b4ba3] border-b-2 border-[#6b4ba3]" 
-                : "text-gray-400 hover:text-white"
+                : "text-gray-300 hover:text-white"
             )}
             data-testid="tab-galeria"
           >
@@ -303,7 +303,7 @@ const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
               "flex-1 py-3 text-sm font-semibold transition-colors",
               activeTab === 'criar' 
                 ? "text-[#6b4ba3] border-b-2 border-[#6b4ba3]" 
-                : "text-gray-400 hover:text-white"
+                : "text-gray-300 hover:text-white"
             )}
             data-testid="tab-criar"
           >
@@ -337,7 +337,7 @@ const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                       "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all",
                       filterTab === 'trending'
                         ? "bg-[#6b4ba3] text-white shadow-lg"
-                        : "text-gray-400 hover:text-white"
+                        : "text-gray-300 hover:text-white"
                     )}
                   >
                     <TrendingUp className="w-3.5 h-3.5" />
@@ -349,7 +349,7 @@ const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                       "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all",
                       filterTab === 'new'
                         ? "bg-[#6b4ba3] text-white shadow-lg"
-                        : "text-gray-400 hover:text-white"
+                        : "text-gray-300 hover:text-white"
                     )}
                   >
                     <Clock className="w-3.5 h-3.5" />
@@ -361,7 +361,7 @@ const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                       "flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all",
                       filterTab === 'popular'
                         ? "bg-[#6b4ba3] text-white shadow-lg"
-                        : "text-gray-400 hover:text-white"
+                        : "text-gray-300 hover:text-white"
                     )}
                   >
                     <Star className="w-3.5 h-3.5" />
@@ -379,7 +379,7 @@ const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                 <div className="text-center py-12">
                   <div className="text-5xl mb-4">🎮</div>
                   <h3 className="text-lg font-bold text-white mb-2">Nenhum tema disponível ainda</h3>
-                  <p className="text-sm text-gray-400 mb-4">Seja o primeiro a criar um tema incrível!</p>
+                  <p className="text-sm text-gray-300 mb-4">Seja o primeiro a criar um tema incrível!</p>
                   <button
                     onClick={() => setActiveTab('criar')}
                     className="btn-orange px-6 py-2 text-sm inline-flex items-center gap-2"
@@ -401,7 +401,7 @@ const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                       </div>
                       <div>
                         <h3 className="font-bold text-white group-hover:text-[#6b4ba3] transition-colors">Criar Novo Tema</h3>
-                        <p className="text-xs text-gray-400">Sua ideia pode ser o próximo sucesso!</p>
+                        <p className="text-xs text-gray-300">Sua ideia pode ser o próximo sucesso!</p>
                       </div>
                     </div>
                   </button>
@@ -429,7 +429,7 @@ const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                             <h3 className="font-bold text-white group-hover:text-[#6b4ba3] transition-colors truncate">
                               {theme.titulo}
                             </h3>
-                            <p className="text-xs text-gray-400 mb-2">
+                            <p className="text-xs text-gray-300 mb-2">
                               por <span className="text-gray-300">@{theme.autor}</span>
                             </p>
                             
@@ -531,7 +531,7 @@ const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                           </span>
                         )}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-300">
                         Digite entre {MIN_PALAVRAS} e {MAX_PALAVRAS} palavras
                       </p>
                       <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-2">
@@ -607,7 +607,7 @@ const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                   
                   <button
                     onClick={resetForm}
-                    className="text-sm text-gray-400 hover:text-white transition-colors underline"
+                    className="text-sm text-gray-300 hover:text-white transition-colors underline"
                     data-testid="button-cancel-payment"
                   >
                     Cancelar e voltar
@@ -646,7 +646,7 @@ const ThemeWorkshopModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                     </button>
                   </div>
                   
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-300">
                     Use este codigo ao iniciar uma partida no modo Palavra Secreta para jogar com seu tema personalizado.
                   </p>
                   
@@ -694,13 +694,13 @@ const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             <h2 className="text-xl font-bold">Apoie o Projeto</h2>
           </div>
           
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-300 text-sm">
             Se você está se divertindo, considere fazer uma doação! Isso ajuda a manter o projeto no ar.
           </p>
 
           <div className="space-y-3">
             <p className="text-gray-300 text-sm font-medium flex items-center justify-center gap-2">
-              <span className="text-xs text-gray-500">BR</span>
+              <span className="text-xs text-gray-400">BR</span>
               <span className="font-bold">PIX</span>
             </p>
 
@@ -713,7 +713,7 @@ const DonationModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             </div>
 
             <div className="bg-[#16213e] rounded-xl p-4 border border-[#3d4a5c]">
-              <p className="text-gray-500 text-xs mb-2">Chave PIX:</p>
+              <p className="text-gray-400 text-xs mb-2">Chave PIX:</p>
               <div className="flex items-center gap-2">
                 <p className="text-[#4a90a4] text-xs font-mono flex-1 break-all">{PIX_KEY}</p>
                 <Button
@@ -1442,7 +1442,7 @@ const HomeScreen = () => {
                   className="h-16 w-auto object-contain"
                 />
               </Link>
-              <p className="text-slate-400 max-w-md text-lg font-medium">
+              <p className="text-slate-300 max-w-md text-lg font-medium">
                 {t('home.description', 'A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.')}
               </p>
               <div className="flex gap-4">
@@ -1460,7 +1460,7 @@ const HomeScreen = () => {
             
             <div>
               <h3 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.home', 'NAVEGAÇÃO')}</h3>
-              <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
+              <ul className="flex flex-col gap-3 text-slate-300 font-bold text-left">
                 <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.home', 'Início')}</Link></li>
                 <li><Link href={langPath("/blog")} className="hover:text-purple-400 transition-colors">{t('nav.blog', 'Blog')}</Link></li>
                 <li><Link href={langPath("/comojogar")} className="hover:text-purple-400 transition-colors">{t('nav.howToPlay', 'Como Jogar')}</Link></li>
@@ -1474,7 +1474,7 @@ const HomeScreen = () => {
 
             <div>
               <h3 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">SUPORTE</h3>
-              <ul className="flex flex-col gap-3 text-slate-400 font-bold text-left">
+              <ul className="flex flex-col gap-3 text-slate-300 font-bold text-left">
                 <li><Link href="/" className="hover:text-purple-400 transition-colors">FAQ</Link></li>
                 <li><Link href="/" className="hover:text-purple-400 transition-colors">Reportar Bug</Link></li>
                 <li><Link href="/" className="hover:text-purple-400 transition-colors">Contato</Link></li>
@@ -1570,7 +1570,7 @@ const CommunityThemesModal = ({ isOpen, onClose, onSelectTheme }: { isOpen: bool
           </h2>
           <button 
             onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-gray-300 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -1611,7 +1611,7 @@ const CommunityThemesModal = ({ isOpen, onClose, onSelectTheme }: { isOpen: bool
                       <h3 className="font-bold text-white group-hover:text-[#6b4ba3] transition-colors truncate">
                         {theme.titulo}
                       </h3>
-                      <p className="text-xs text-gray-400 mb-2">
+                      <p className="text-xs text-gray-300 mb-2">
                         por <span className="text-gray-300">@{theme.autor}</span>
                       </p>
                       
@@ -2930,11 +2930,11 @@ const ModeSelectScreen = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-[#6b4ba3]">Tema Selecionado</p>
-                    <p className="text-xs text-gray-400">Pronto para iniciar a partida!</p>
+                    <p className="text-xs text-gray-300">Pronto para iniciar a partida!</p>
                   </div>
                   <button
                     onClick={() => setSelectedThemeCode(null)}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-gray-300 hover:text-white transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -2956,7 +2956,7 @@ const ModeSelectScreen = () => {
                       Descubra temas incríveis criados pela comunidade!
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
                     <Play className="w-3 h-3" />
                     <span>Clique para ver todos os temas disponíveis</span>
                   </div>
@@ -2981,13 +2981,13 @@ const ModeSelectScreen = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-[#6b4ba3]">Categoria Selecionada</p>
-                    <p className="text-xs text-gray-400 capitalize">
+                    <p className="text-xs text-gray-300 capitalize">
                       {WORD_CATEGORIES.find(c => c.id === selectedCategory)?.name || selectedCategory}
                     </p>
                   </div>
                   <button
                     onClick={() => setSelectedCategory(null)}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-gray-300 hover:text-white transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -3011,7 +3011,7 @@ const ModeSelectScreen = () => {
                     Selecione uma categoria de palavras para jogar!
                   </p>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="flex items-center gap-2 text-xs text-gray-400">
                   <Play className="w-3 h-3" />
                   <span>10 categorias disponíveis</span>
                 </div>
@@ -3075,7 +3075,7 @@ const QuestionRevealedOverlay = ({
                  style={{ boxShadow: '0 4px 0 rgba(128, 128, 128, 0.2)' }}>
               <Eye className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-gray-400 text-sm uppercase tracking-widest font-bold">Pergunta dos Tripulantes</p>
+            <p className="text-gray-300 text-sm uppercase tracking-widest font-bold">Pergunta dos Tripulantes</p>
             <p className="text-2xl text-white font-bold leading-relaxed">"{crewQuestion}"</p>
           </div>
           
@@ -3084,7 +3084,7 @@ const QuestionRevealedOverlay = ({
               <p className="text-gray-400 text-lg font-bold animate-pulse">
                 Sua pergunta era diferente!
               </p>
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-300 text-sm">
                 Tente se justificar e convencer que voce nao e o impostor!
               </p>
             </div>
@@ -3092,7 +3092,7 @@ const QuestionRevealedOverlay = ({
           
           {!isImpostor && (
             <div className="text-center pt-4 border-t border-gray-600/20">
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-300 text-sm">
                 Descubra quem recebeu uma pergunta diferente!
               </p>
             </div>
@@ -3303,7 +3303,7 @@ const PerguntasDiferentesScreen = () => {
                 <Eye className="w-20 h-20 text-gray-400" />
               </div>
               <h3 className="text-2xl font-bold text-gray-200">TOQUE PARA REVELAR</h3>
-              <p className="text-gray-400 text-sm">Veja sua pergunta</p>
+              <p className="text-gray-300 text-sm">Veja sua pergunta</p>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-6 animate-fade-in w-full">
@@ -3324,7 +3324,7 @@ const PerguntasDiferentesScreen = () => {
                   <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Sua Pergunta</p>
                   <h2 className="text-xl text-white font-bold leading-relaxed px-2">"{myQuestion}"</h2>
                 </div>
-                <p className="text-gray-400 text-sm">Memorize sua pergunta!</p>
+                <p className="text-gray-300 text-sm">Memorize sua pergunta!</p>
               </div>
             </div>
           )}
@@ -3430,7 +3430,7 @@ const PerguntasDiferentesScreen = () => {
           </div>
           
           {!allAnswered && (
-            <p className="text-gray-400 text-sm text-center animate-pulse">
+            <p className="text-gray-300 text-sm text-center animate-pulse">
               Aguardando outros jogadores...
             </p>
           )}
@@ -3511,7 +3511,7 @@ const PerguntasDiferentesScreen = () => {
         )}
         
         {!isHost && (
-          <p className="text-gray-400 text-sm text-center font-medium animate-pulse">
+          <p className="text-gray-300 text-sm text-center font-medium animate-pulse">
             Aguardando o host revelar a pergunta dos tripulantes...
           </p>
         )}
@@ -3533,7 +3533,7 @@ const PerguntasDiferentesScreen = () => {
           </div>
           {isImpostor && (
             <div className="text-center pt-4 border-t border-gray-600/20">
-              <p className="text-gray-400 text-sm font-medium">
+              <p className="text-gray-300 text-sm font-medium">
                 Sua pergunta era diferente! Tente se justificar!
               </p>
             </div>
@@ -3693,7 +3693,7 @@ const PerguntasDiferentesScreen = () => {
           </div>
           
           {!allVoted && (
-            <p className="text-gray-400 text-sm text-center animate-pulse">
+            <p className="text-gray-300 text-sm text-center animate-pulse">
               Aguardando outros jogadores votarem...
             </p>
           )}

@@ -260,7 +260,7 @@ export default function ComoJogar() {
               <Link href="/" className="flex items-center cursor-pointer">
                 <img src={logoTikjogos} alt="TikJogos Impostor" width={245} height={70} className="h-16 w-auto object-contain" />
               </Link>
-              <p className="text-slate-400 max-w-md text-lg font-medium">
+              <p className="text-slate-300 max-w-md text-lg font-medium">
                 {t('blogPage.footerDesc', 'A experiência definitiva de dedução social no espaço. Junte-se a milhares de tripulantes e descubra quem é o traidor.')}
               </p>
               <div className="flex gap-4">
@@ -278,7 +278,7 @@ export default function ComoJogar() {
             
             <div>
               <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.navigation', 'NAVEGAÇÃO')}</h4>
-              <ul className="flex flex-col gap-3 text-slate-400 font-bold">
+              <ul className="flex flex-col gap-3 text-slate-300 font-bold">
                 <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.home', 'Início')}</Link></li>
                 <li><Link href={langPath("/blog")} className="hover:text-purple-400 transition-colors">{t('nav.blog', 'Blog')}</Link></li>
                 <li><Link href={langPath("/comojogar")} className="hover:text-purple-400 transition-colors">{t('nav.howToPlay', 'Como Jogar')}</Link></li>
@@ -291,7 +291,7 @@ export default function ComoJogar() {
 
             <div>
               <h4 className="text-white font-black mb-6 text-xl uppercase tracking-tighter">{t('nav.support', 'SUPORTE')}</h4>
-              <ul className="flex flex-col gap-3 text-slate-400 font-bold">
+              <ul className="flex flex-col gap-3 text-slate-300 font-bold">
                 <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.faq', 'FAQ')}</Link></li>
                 <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.reportBug', 'Reportar Bug')}</Link></li>
                 <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">{t('nav.contact', 'Contato')}</Link></li>
