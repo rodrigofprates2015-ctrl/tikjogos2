@@ -137,13 +137,18 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Changa+One:wght@400&display=swap" rel="stylesheet">
+    <!-- Google Fonts: deferred to avoid render-blocking -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Changa+One:wght@400&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Changa+One:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Changa+One:wght@400&display=swap" rel="stylesheet"></noscript>
     
-    <!-- Partner Content System CSS -->
-    <link rel="stylesheet" href="/partner-content.css">
+    <!-- Partner Content System CSS: deferred (not needed for initial render) -->
+    <link rel="stylesheet" href="/partner-content.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="/partner-content.css"></noscript>
     
-    <!-- Price Comparison Ads CSS -->
-    <link rel="stylesheet" href="/price-comparison.css">
+    <!-- Price Comparison Ads CSS: deferred (not needed for initial render) -->
+    <link rel="stylesheet" href="/price-comparison.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="/price-comparison.css"></noscript>
     
     <style>
       /* Hide Google AdSense auto-annotations */
