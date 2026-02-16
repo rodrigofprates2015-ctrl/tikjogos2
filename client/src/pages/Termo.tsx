@@ -443,7 +443,7 @@ export default function Termo() {
 
       {/* Logo */}
       <div className="pb-4 text-center">
-        <img src={logoTikjogos} alt="TikJogos" width={245} height={70} className="h-4 md:h-5 mx-auto" />
+        <img src={logoTikjogos} alt="TikJogos" width={245} height={70} className="h-4 md:h-5 w-auto mx-auto" />
       </div>
 
       <style>{`

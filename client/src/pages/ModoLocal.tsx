@@ -163,7 +163,7 @@ export default function ModoLocal() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <a href="/" className="flex items-center gap-3 cursor-pointer group">
             <ArrowLeft className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
-            <img src={logoTikjogos} alt="TikJogos" width={245} height={70} className="h-8" />
+            <img src={logoTikjogos} alt="TikJogos" width={245} height={70} className="h-8 w-auto" />
           </a>
         </div>
       </div>

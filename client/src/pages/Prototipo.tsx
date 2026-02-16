@@ -191,7 +191,7 @@ export default function Prototipo() {
 
       {/* Footer - now below the content, takes full width */}
       <div className="w-full text-center py-6 px-4 bg-gradient-to-t from-black/40 to-transparent z-20 relative border-t border-[#3d4a5c]/30">
-        <img src={logoTikjogos} alt="TikJogos" width={245} height={70} className="h-4 md:h-5 mx-auto mb-2" />
+        <img src={logoTikjogos} alt="TikJogos" width={245} height={70} className="h-4 md:h-5 w-auto mx-auto mb-2" />
         <p className="text-[#6a8aaa] text-xs">
           Desenvolvido com <Heart className="inline w-3 h-3 text-gray-500 fill-current" /> por <span className="text-[#8aa0b0]">Rodrigo Freitas</span>
         </p>
