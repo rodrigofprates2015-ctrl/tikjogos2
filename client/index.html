@@ -152,6 +152,12 @@
     <noscript><link rel="stylesheet" href="/price-comparison.css"></noscript>
     
     <style>
+      /* Critical CSS for initial paint - prevents blank screen while main CSS loads */
+      body{margin:0;background:#1a1b2e;color:#fff;font-family:'Poppins',system-ui,sans-serif}
+      #root{min-height:100vh;display:flex;flex-direction:column}
+      /* Font-display swap fallback while Google Fonts CSS loads async */
+      @font-face{font-family:'Poppins';font-display:swap;src:local('Poppins')}
+      @font-face{font-family:'Changa One';font-display:swap;src:local('Changa One')}
       /* Hide Google AdSense auto-annotations */
       .google-anno-skip,
       .google-anno-sc,
