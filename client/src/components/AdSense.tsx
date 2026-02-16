@@ -90,6 +90,8 @@ export const DisplayAd = ({ className, format = "auto" }: { className?: string; 
 
 // Anúncios laterais verticais fixos (300x600 - Half Page)
 export const SideAds = () => {
+  const leftRef = useRef<HTMLDivElement>(null);
+  const rightRef = useRef<HTMLDivElement>(null);
   const leftPushed = useRef(false);
   const rightPushed = useRef(false);
 
@@ -97,11 +99,11 @@ export const SideAds = () => {
     const timer = setTimeout(() => {
       try {
         window.adsbygoogle = window.adsbygoogle || [];
-        if (!leftPushed.current) {
+        if (!leftPushed.current && leftRef.current && leftRef.current.offsetWidth > 0) {
           window.adsbygoogle.push({});
           leftPushed.current = true;
         }
-        if (!rightPushed.current) {
+        if (!rightPushed.current && rightRef.current && rightRef.current.offsetWidth > 0) {
           window.adsbygoogle.push({});
           rightPushed.current = true;
         }
@@ -115,7 +117,7 @@ export const SideAds = () => {
   return (
     <>
       {/* Left Side Ad */}
-      <div className="fixed left-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block">
+      <div ref={leftRef} className="fixed left-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block">
         <ins
           className="adsbygoogle"
           style={{ display: "block", width: "300px", height: "600px" }}
@@ -125,7 +127,7 @@ export const SideAds = () => {
         />
       </div>
       {/* Right Side Ad */}
-      <div className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block">
+      <div ref={rightRef} className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block">
         <ins
           className="adsbygoogle"
           style={{ display: "block", width: "300px", height: "600px" }}
