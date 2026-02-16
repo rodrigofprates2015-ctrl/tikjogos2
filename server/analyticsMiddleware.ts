@@ -7,38 +7,73 @@ import { eq, and } from 'drizzle-orm';
 const COOKIE_NAME = 'visitor_id';
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60 * 1000; // 365 days
 
-// Debounce: prevent tracking the same page multiple times in quick succession
-const recentPageviews = new Map<string, number>(); // visitorId+path -> timestamp
-const DEBOUNCE_MS = 2000; // 2 seconds
+const recentPageviews = new Map<string, number>();
+const DEBOUNCE_MS = 2000;
 
-// Paths to ignore (static assets, API health checks)
 const IGNORE_PATHS = [
   /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webp|map|json|txt|xml|webmanifest)$/i,
-  /^\/api\//,  // Ignore ALL API routes
+  /^\/api\//,
   /^\/assets\//,
   /^\/node_modules\//,
-  /^\/@/,  // Vite dev server paths
+  /^\/@/,
   /^\/favicon/,
   /^\/manifest/,
-  /^\/site\.webmanifest$/,  // Explicitly ignore site.webmanifest
+  /^\/site\.webmanifest$/,
   /^\/robots/,
   /^\/sitemap/,
 ];
 
+function parseDeviceType(ua: string): string {
+  if (!ua) return 'unknown';
+  if (/mobile|android|iphone|ipod|blackberry|opera mini|iemobile/i.test(ua)) return 'mobile';
+  if (/tablet|ipad/i.test(ua)) return 'tablet';
+  return 'desktop';
+}
+
+function parseBrowser(ua: string): string {
+  if (!ua) return 'unknown';
+  if (/edg\//i.test(ua)) return 'Edge';
+  if (/opr\//i.test(ua) || /opera/i.test(ua)) return 'Opera';
+  if (/brave/i.test(ua)) return 'Brave';
+  if (/vivaldi/i.test(ua)) return 'Vivaldi';
+  if (/samsungbrowser/i.test(ua)) return 'Samsung Browser';
+  if (/ucbrowser/i.test(ua)) return 'UC Browser';
+  if (/firefox|fxios/i.test(ua)) return 'Firefox';
+  if (/crios/i.test(ua) || (/chrome/i.test(ua) && !/chromium/i.test(ua))) return 'Chrome';
+  if (/safari/i.test(ua) && !/chrome/i.test(ua)) return 'Safari';
+  return 'Other';
+}
+
+function extractGeo(req: Request): { country: string | null; city: string | null } {
+  const country = (req.headers['cf-ipcountry'] as string) ||
+    (req.headers['x-vercel-ip-country'] as string) ||
+    (req.headers['x-country'] as string) ||
+    null;
+  const city = (req.headers['cf-ipcity'] as string) ||
+    (req.headers['x-vercel-ip-city'] as string) ||
+    (req.headers['x-city'] as string) ||
+    null;
+  return { country, city };
+}
+
+export function extractRealIP(req: Request): string | null {
+  return (
+    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+    (req.headers['x-real-ip'] as string) ||
+    req.socket.remoteAddress ||
+    null
+  );
+}
+
 export async function analyticsMiddleware(req: Request, res: Response, next: NextFunction) {
-  // Skip tracking for ignored paths
   if (IGNORE_PATHS.some(pattern => pattern.test(req.path))) {
     return next();
   }
 
-  // Only track GET requests for HTML pages
   if (req.method !== 'GET') {
     return next();
   }
 
-  console.log(`[Analytics] Tracking: ${req.method} ${req.path}`);
-
-  // Extract or create visitor ID
   let visitorId = req.cookies?.[COOKIE_NAME];
   let isNewVisitor = false;
 
@@ -48,13 +83,12 @@ export async function analyticsMiddleware(req: Request, res: Response, next: Nex
     
     res.cookie(COOKIE_NAME, visitorId, {
       maxAge: COOKIE_MAX_AGE,
-      httpOnly: false, // Allow client-side reading
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
     });
   }
 
-  // Check if this visitor already has a unique_visitor record in the database
   let shouldTrackAsUnique = false;
   
   if (db && visitorId) {
@@ -71,35 +105,31 @@ export async function analyticsMiddleware(req: Request, res: Response, next: Nex
         .limit(1);
       
       shouldTrackAsUnique = isNewVisitor || existingVisitor.length === 0;
-      
-      console.log(`[Analytics] Visitor: ${visitorId.substring(0, 8)}... | New: ${isNewVisitor} | ExistsInDB: ${existingVisitor.length > 0} | WillTrackUnique: ${shouldTrackAsUnique}`);
     } catch (error) {
-      console.error('[Analytics] Error checking visitor:', error);
       shouldTrackAsUnique = isNewVisitor;
     }
   } else {
     shouldTrackAsUnique = isNewVisitor;
   }
 
-  // Extract metadata
   const ipAddress = extractRealIP(req);
-  const userAgent = req.headers['user-agent'] || null;
+  const userAgent = req.headers['user-agent'] || '';
   const pagePath = req.path;
   const referrer = req.headers['referer'] || null;
+  const deviceType = parseDeviceType(userAgent);
+  const browser = parseBrowser(userAgent);
+  const { country, city } = extractGeo(req);
 
-  // Debounce: check if we recently tracked this exact page for this visitor
   const debounceKey = `${visitorId}:${pagePath}`;
   const lastTracked = recentPageviews.get(debounceKey);
   const now = Date.now();
   
   if (lastTracked && (now - lastTracked) < DEBOUNCE_MS) {
-    console.log(`[Analytics] ⏭️  SKIPPED (debounce): ${pagePath} for ${visitorId.substring(0, 8)}... (${now - lastTracked}ms ago)`);
     return next();
   }
   
   recentPageviews.set(debounceKey, now);
   
-  // Cleanup old entries (older than 10 seconds)
   const entriesToDelete: string[] = [];
   recentPageviews.forEach((timestamp, key) => {
     if (now - timestamp > 10000) {
@@ -108,51 +138,70 @@ export async function analyticsMiddleware(req: Request, res: Response, next: Nex
   });
   entriesToDelete.forEach(key => recentPageviews.delete(key));
 
-  // Track unique visitor event (only once per visitor, checked in DB)
-  if (shouldTrackAsUnique) {
-    console.log(`[Analytics] → Registering UNIQUE_VISITOR for ${visitorId.substring(0, 8)}...`);
-    trackEvent({
-      visitorId,
-      eventType: 'unique_visitor',
-      ipAddress,
-      userAgent,
-      pagePath,
-      referrer,
-    }).catch(err => {
-      console.error('[Analytics] Failed to track unique visitor:', err);
-    });
-  }
-
-  // Always track pageview
-  console.log(`[Analytics] → Registering PAGEVIEW for ${visitorId.substring(0, 8)}...`);
-  trackEvent({
+  const baseData = {
     visitorId,
-    eventType: 'pageview',
     ipAddress,
     userAgent,
     pagePath,
     referrer,
-  }).catch(err => {
-    console.error('[Analytics] Failed to track pageview:', err);
-  });
+    deviceType,
+    browser,
+    country,
+    city,
+  };
+
+  if (shouldTrackAsUnique) {
+    trackEvent({ ...baseData, eventType: 'unique_visitor' }).catch(() => {});
+  }
+
+  trackEvent({ ...baseData, eventType: 'pageview' }).catch(() => {});
 
   next();
 }
 
-function extractRealIP(req: Request): string | null {
-  return (
-    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-    (req.headers['x-real-ip'] as string) ||
-    req.socket.remoteAddress ||
-    null
-  );
+// Track when a user joins a room
+export async function trackRoomJoin(visitorId: string, roomCode: string, gameMode: string | null, req: Request) {
+  const userAgent = req.headers['user-agent'] || '';
+  const { country, city } = extractGeo(req);
+  
+  await trackEvent({
+    visitorId,
+    eventType: 'room_join',
+    ipAddress: extractRealIP(req),
+    userAgent,
+    pagePath: `/room/${roomCode}`,
+    referrer: null,
+    deviceType: parseDeviceType(userAgent),
+    browser: parseBrowser(userAgent),
+    country,
+    city,
+    roomCode,
+    gameMode,
+  }).catch(() => {});
+}
+
+// Track session end with duration
+export async function trackSessionEnd(visitorId: string, durationSeconds: number, req: Request) {
+  const userAgent = req.headers['user-agent'] || '';
+  const { country, city } = extractGeo(req);
+  
+  await trackEvent({
+    visitorId,
+    eventType: 'session_end',
+    ipAddress: extractRealIP(req),
+    userAgent,
+    pagePath: null,
+    referrer: null,
+    deviceType: parseDeviceType(userAgent),
+    browser: parseBrowser(userAgent),
+    country,
+    city,
+    sessionDuration: String(durationSeconds),
+  }).catch(() => {});
 }
 
 async function trackEvent(data: Omit<InsertAnalyticsEvent, 'id' | 'createdAt'>) {
-  if (!db) {
-    console.warn('[Analytics] Database not available, skipping tracking');
-    return;
-  }
+  if (!db) return;
 
   try {
     await db.insert(analyticsEvents).values(data);

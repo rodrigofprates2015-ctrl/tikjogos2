@@ -81,6 +81,34 @@ async function runMigrations() {
     `);
     console.log('[Migration] payment_id column ensured');
 
+    // Add new analytics columns for device/geo/session tracking
+    await db.execute(sql`
+      ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS device_type VARCHAR(20)
+    `);
+    await db.execute(sql`
+      ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS browser VARCHAR(50)
+    `);
+    await db.execute(sql`
+      ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS country VARCHAR(100)
+    `);
+    await db.execute(sql`
+      ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS city VARCHAR(100)
+    `);
+    await db.execute(sql`
+      ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS session_duration VARCHAR(20)
+    `);
+    await db.execute(sql`
+      ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS room_code VARCHAR(20)
+    `);
+    await db.execute(sql`
+      ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS game_mode VARCHAR(50)
+    `);
+    // Widen event_type column to support new event types
+    await db.execute(sql`
+      ALTER TABLE analytics_events ALTER COLUMN event_type TYPE VARCHAR(30)
+    `);
+    console.log('[Migration] analytics_events new columns ensured');
+
     console.log('[Migration] All migrations completed successfully!');
   } catch (error) {
     console.error('[Migration] Error running migrations:', error);

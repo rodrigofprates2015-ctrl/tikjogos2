@@ -56,6 +56,42 @@ function VersionManager() {
   return null;
 }
 
+function SessionTracker() {
+  useEffect(() => {
+    const startTime = Date.now();
+
+    function sendSessionEnd() {
+      const duration = Math.round((Date.now() - startTime) / 1000);
+      if (duration < 2) return;
+
+      function getCookie(name: string) {
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? match[2] : null;
+      }
+      const visitorId = getCookie('visitor_id');
+      if (!visitorId) return;
+
+      const payload = JSON.stringify({ visitorId, duration });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/analytics/session-end', new Blob([payload], { type: 'application/json' }));
+      } else {
+        fetch('/api/analytics/session-end', { method: 'POST', body: payload, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(() => {});
+      }
+    }
+
+    window.addEventListener('beforeunload', sendSessionEnd);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') sendSessionEnd();
+    });
+
+    return () => {
+      window.removeEventListener('beforeunload', sendSessionEnd);
+    };
+  }, []);
+
+  return null;
+}
+
 /**
  * Generates route entries for a given path and component, producing
  * the PT (no prefix), EN (/en/...), and ES (/es/...) variants.
@@ -286,6 +322,7 @@ function App() {
         <VoiceChatProvider>
           <LanguageProvider>
             <VersionManager />
+            <SessionTracker />
             <AppRouter />
             <Toaster />
             <YouTubeMiniPlayer />
