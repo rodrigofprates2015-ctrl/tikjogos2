@@ -6,7 +6,7 @@ import { BLOG_POSTS, getPostSlug } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
 import { BlogFluidAd, SideAds, BottomAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
 export default function Blog() {
   const [, setLocation] = useLocation();

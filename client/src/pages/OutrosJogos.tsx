@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { ArrowLeft, Gamepad2 } from "lucide-react";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 import logoTermo from "@/assets/Termo_Logo_58x58_1765323385999.png";
 import { AdBlockTop, AdBlockBottom } from "@/components/AdBlocks";
 import { OutrosJogosAd, SideAds, BottomAd } from "@/components/AdSense";
