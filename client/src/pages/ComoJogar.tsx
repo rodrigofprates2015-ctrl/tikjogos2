@@ -17,7 +17,7 @@ import {
 import { MobileNav } from "@/components/MobileNav";
 import { DisplayAd, SideAds, BottomAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
 export default function ComoJogar() {
   const { t, langPath } = useLanguage();

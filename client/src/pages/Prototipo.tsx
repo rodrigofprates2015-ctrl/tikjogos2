@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { Zap, Heart } from "lucide-react";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 import logoImpostor from "@assets/logo_site_impostor_1765071990526.png";
 import tripulanteImg from "@assets/tripulante_natal_1765071995242.png";
 import impostorImg from "@assets/impostor_natal_1765071992843.png";

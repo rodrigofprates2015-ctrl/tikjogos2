@@ -3,13 +3,192 @@
  * Replaces default title/description in index.html before sending to crawlers.
  */
 
-interface SeoMeta {
+export interface SeoMeta {
   title: string;
   description: string;
   canonical: string;
+  /** Extra HTML to inject before </head> (hreflang, schema, etc.) */
+  extraHead?: string;
+  /** HTML content to inject inside <div id="root"> for SSR of blog posts */
+  ssrContent?: string;
 }
 
 const BASE_URL = 'https://tikjogos.com.br';
+
+// ── Blog post metadata (server-side mirror of client/src/data/blogPosts.ts) ──
+
+interface BlogPostMeta {
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  author: string;
+  content: string;
+  /** Translated slugs for hreflang */
+  slugs: { en: string; es: string };
+}
+
+/**
+ * Minimal blog post data needed for server-side SEO injection.
+ * Keep in sync with client/src/data/blogPosts.ts.
+ */
+const BLOG_POSTS_META: BlogPostMeta[] = [
+  {
+    slug: 'jogo-do-impostor-desenho',
+    title: 'Jogo do Impostor Desenho: A Nova Sensação que Combina Gartic e Impostor',
+    excerpt: 'Descubra o Jogo do Impostor Desenho, a variante que une desenho colaborativo com dedução social. Saiba como jogar, estratégias e por que é tão viciante.',
+    date: '2026-02-07',
+    author: 'Equipe TikJogos',
+    content: 'Você já jogou Jogo do Impostor Desenho? Se ainda não, prepare-se para descobrir a forma mais criativa, engraçada e desafiadora de jogar o clássico jogo de dedução social. Essa inovadora variante une o melhor do Gartic (desenho colaborativo) com a tensão do Impostor, criando uma experiência única.',
+    slugs: { en: 'impostor-drawing-game', es: 'juego-del-impostor-dibujo' },
+  },
+  {
+    slug: 'jogo-do-impostor-guia-de-estrategias-e-analise-do-metagame',
+    title: 'Jogo do Impostor: Guia de Estratégias e Análise do Metagame no TikJogos',
+    excerpt: 'Domine o jogo do impostor com táticas de especialista, análise comportamental e lógica sistêmica. Guia técnico completo.',
+    date: '2026-02-06',
+    author: 'Equipe TikJogos',
+    content: 'O jogo do impostor tornou-se o epicentro da dedução social moderna. No TikJogos, a experiência é otimizada para oferecer o máximo de competitividade e profundidade estratégica.',
+    slugs: { en: 'impostor-game-strategy-guide-and-metagame-analysis', es: 'juego-del-impostor-guia-de-estrategias-y-analisis-del-metagame' },
+  },
+  {
+    slug: 'a-alma-dos-games-sociais-por-que-a-desconfianca-nos-fascina',
+    title: 'A alma dos games sociais: Por que a desconfiança nos fascina?',
+    excerpt: 'O Jogo do Impostor consolidou-se como um verdadeiro fenômeno cultural ao transformar a desconfiança em uma experiência profunda.',
+    date: '2026-02-04',
+    author: 'Equipe TikJogos',
+    content: 'O Jogo do Impostor consolidou-se como um verdadeiro fenômeno cultural entre gamers e diversos grupos de amigos por conseguir transformar uma premissa extremamente simples em uma experiência psicológica profunda e muito intensa.',
+    slugs: { en: 'the-soul-of-social-games-why-distrust-fascinates-us', es: 'el-alma-de-los-juegos-sociales-por-que-la-desconfianza-nos-fascina' },
+  },
+  {
+    slug: 'tikjogos-partidas-mais-organizadas-e-estrategicas',
+    title: 'TikJogos: Partidas mais organizadas e estratégicas',
+    excerpt: 'Descubra como o TikJogos elimina a burocracia dos papéis e foca na pura diversão e dedução social.',
+    date: '2026-02-03',
+    author: 'Equipe TikJogos',
+    content: 'Qualquer pessoa que já tenha tentado organizar uma partida do Jogo do Impostor de maneira estritamente tradicional sabe o quão frustrante a desorganização logística pode ser.',
+    slugs: { en: 'tikjogos-more-organized-and-strategic-matches', es: 'tikjogos-partidas-mas-organizadas-y-estrategicas' },
+  },
+  {
+    slug: 'estrategias-essenciais-para-quem-joga-como-impostor',
+    title: 'Estratégias essenciais para quem joga como impostor',
+    excerpt: 'Assumir o papel de vilão exige coerência narrativa e controle emocional. Aprenda a dominar a arte da camuflagem.',
+    date: '2026-02-02',
+    author: 'Equipe TikJogos',
+    content: 'Assumir o papel de impostor exige muito mais do que apenas a capacidade de inventar mentiras. O verdadeiro desafio reside na manutenção de uma coerência narrativa impecável durante todo o desenrolar da partida.',
+    slugs: { en: 'essential-strategies-for-playing-as-impostor', es: 'estrategias-esenciales-para-jugar-como-impostor' },
+  },
+  {
+    slug: 'como-identificar-o-impostor-usando-logica-e-paciencia',
+    title: 'Como identificar o impostor usando lógica e paciência',
+    excerpt: 'Encontrar o impostor não é sorte, mas um processo rigoroso de análise comportamental e lógica.',
+    date: '2026-02-01',
+    author: 'Equipe TikJogos',
+    content: 'Encontrar o impostor em meio a um grupo de amigos não é uma questão de sorte ou intuição mística, mas sim um processo rigoroso de análise lógica e paciência estratégica.',
+    slugs: { en: 'how-to-identify-the-impostor-using-logic-and-patience', es: 'como-identificar-al-impostor-usando-logica-y-paciencia' },
+  },
+  {
+    slug: 'por-que-a-comunicacao-define-o-vencedor-da-partida',
+    title: 'Por que a comunicação define o vencedor da partida',
+    excerpt: 'Saber falar com clareza e ouvir com atenção são as competências decisivas que separam vencedores de perdedores.',
+    date: '2026-01-31',
+    author: 'Equipe TikJogos',
+    content: 'Saber falar com clareza e ouvir com atenção são as competências decisivas que separam vencedores de perdedores no Jogo do Impostor.',
+    slugs: { en: 'why-communication-defines-the-winner', es: 'por-que-la-comunicacion-define-al-ganador' },
+  },
+  {
+    slug: 'o-segredo-psicologico-por-tras-do-sucesso-do-genero',
+    title: 'O segredo psicológico por trás do sucesso do gênero',
+    excerpt: 'Entenda o conceito do "círculo mágico" e como ele nos permite explorar facetas da nossa personalidade de forma segura.',
+    date: '2026-01-30',
+    author: 'Equipe TikJogos',
+    content: 'Entenda o conceito do "círculo mágico" e como ele nos permite explorar facetas da nossa personalidade de forma segura nos jogos de dedução social.',
+    slugs: { en: 'the-psychological-secret-behind-the-genres-success', es: 'el-secreto-psicologico-detras-del-exito-del-genero' },
+  },
+  {
+    slug: 'desenvolvimento-cognitivo-exercitando-a-mente-no-espaco',
+    title: 'Desenvolvimento Cognitivo: Exercitando a mente no espaço',
+    excerpt: 'Participar ativamente de rodadas do Jogo do Impostor é um exercício excelente para a tomada de decisões rápidas e análise crítica.',
+    date: '2026-01-29',
+    author: 'Equipe TikJogos',
+    content: 'Participar ativamente de rodadas do Jogo do Impostor é um exercício excelente para a tomada de decisões rápidas e análise crítica.',
+    slugs: { en: 'cognitive-development-exercising-the-mind-in-space', es: 'desarrollo-cognitivo-ejercitando-la-mente-en-el-espacio' },
+  },
+  {
+    slug: 'erros-comuns-de-iniciantes-e-como-evita-los',
+    title: 'Erros comuns de iniciantes e como evitá-los',
+    excerpt: 'Não caia em armadilhas comportamentais! Saiba por que falar demais pode ser o seu fim no jogo.',
+    date: '2026-01-28',
+    author: 'Equipe TikJogos',
+    content: 'Não caia em armadilhas comportamentais! Saiba por que falar demais pode ser o seu fim no Jogo do Impostor.',
+    slugs: { en: 'common-beginner-mistakes-and-how-to-avoid-them', es: 'errores-comunes-de-principiantes-y-como-evitarlos' },
+  },
+];
+
+/** Look up a blog post by any slug (pt, en, or es) */
+function findBlogPostBySlug(slug: string): BlogPostMeta | undefined {
+  // PT slug (primary)
+  const byPt = BLOG_POSTS_META.find(p => p.slug === slug);
+  if (byPt) return byPt;
+  // EN/ES slugs
+  return BLOG_POSTS_META.find(p => p.slugs.en === slug || p.slugs.es === slug);
+}
+
+/** Build hreflang link tags for a blog post */
+function buildHreflangTags(post: BlogPostMeta): string {
+  const ptUrl = `${BASE_URL}/blog/${post.slug}`;
+  const enUrl = `${BASE_URL}/en/blog/${post.slugs.en}`;
+  const esUrl = `${BASE_URL}/es/blog/${post.slugs.es}`;
+  return [
+    `<link rel="alternate" hreflang="pt" href="${ptUrl}" />`,
+    `<link rel="alternate" hreflang="en" href="${enUrl}" />`,
+    `<link rel="alternate" hreflang="es" href="${esUrl}" />`,
+    `<link rel="alternate" hreflang="x-default" href="${ptUrl}" />`,
+  ].join('\n    ');
+}
+
+/** Build Article + BreadcrumbList JSON-LD for a blog post */
+function buildBlogSchema(post: BlogPostMeta, canonical: string): string {
+  const article = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.date,
+    dateModified: post.date,
+    author: { '@type': 'Organization', name: post.author, url: BASE_URL },
+    publisher: { '@type': 'Organization', name: 'TikJogos', url: BASE_URL },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+    inLanguage: 'pt-BR',
+  };
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'TikJogos', item: BASE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: `${BASE_URL}/blog` },
+      { '@type': 'ListItem', position: 3, name: post.title, item: canonical },
+    ],
+  };
+  return [
+    `<script type="application/ld+json">${JSON.stringify(article)}</script>`,
+    `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`,
+  ].join('\n    ');
+}
+
+/** Build minimal SSR HTML for a blog post so crawlers see real content */
+function buildBlogSsrContent(post: BlogPostMeta): string {
+  // Escape HTML entities in content
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return [
+    `<article>`,
+    `<h1>${esc(post.title)}</h1>`,
+    `<p><strong>${esc(post.author)}</strong> &middot; ${esc(post.date)}</p>`,
+    `<p>${esc(post.excerpt)}</p>`,
+    `<div>${esc(post.content)}</div>`,
+    `</article>`,
+  ].join('');
+}
 
 // Theme SEO data — must match client/src/data/themes.ts
 const THEME_SEO: Record<string, { title: string; description: string }> = {
@@ -220,6 +399,23 @@ const PAGE_SEO: Record<string, { title: string; description: string }> = {
  * Returns null if no specific SEO data exists (use default).
  */
 export function getSeoForPath(urlPath: string): SeoMeta | null {
+  // Blog post pages: /blog/{slug}, /en/blog/{slug}, /es/blog/{slug}
+  const blogMatch = urlPath.match(/^(?:\/(en|es))?\/blog\/([a-z0-9-]+)$/);
+  if (blogMatch) {
+    const slug = blogMatch[2];
+    const post = findBlogPostBySlug(slug);
+    if (post) {
+      const canonical = `${BASE_URL}/blog/${post.slug}`;
+      return {
+        title: `${post.title} | TikJogos Blog`,
+        description: post.excerpt,
+        canonical,
+        extraHead: [buildHreflangTags(post), buildBlogSchema(post, canonical)].join('\n    '),
+        ssrContent: buildBlogSsrContent(post),
+      };
+    }
+  }
+
   // Theme pages: /jogo-do-impostor/temas/{slug}
   const themeMatch = urlPath.match(/^\/jogo-do-impostor\/temas\/([a-z0-9-]+)$/);
   if (themeMatch) {
@@ -304,6 +500,16 @@ export function injectSeoIntoHtml(html: string, seo: SeoMeta): string {
     /<meta\s+name="twitter:url"\s+content="[^"]*"\s*\/?>/,
     `<meta name="twitter:url" content="${seo.canonical}" />`
   );
+
+  // Inject extra head content (hreflang, schema) before </head>
+  if (seo.extraHead) {
+    html = html.replace('</head>', `    ${seo.extraHead}\n  </head>`);
+  }
+
+  // Inject SSR content inside <div id="root"> for crawlers
+  if (seo.ssrContent) {
+    html = html.replace('<div id="root"></div>', `<div id="root">${seo.ssrContent}</div>`);
+  }
 
   return html;
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Delete, CornerDownLeft, Share2, Trophy, Clock, HelpCircle } from "lucide-react";
-import logoTikjogos from "@assets/logo tikjogos_1764616571363.png";
+import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 import logoTermo from "@/assets/Termo_Logo_58x58_1765323385999.png";
 import { useToast } from "@/hooks/use-toast";
 import { SideAds, BottomAd } from "@/components/AdSense";
