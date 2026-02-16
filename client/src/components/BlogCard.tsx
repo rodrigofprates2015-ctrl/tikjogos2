@@ -21,7 +21,8 @@ export interface BlogPost {
 
 interface BlogCardProps {
   post: BlogPost;
-  onClick: () => void;
+  href: string;
+  onClick?: () => void;
 }
 
 const getCategoryColor = (cat: string) => {
@@ -34,7 +35,7 @@ const getCategoryColor = (cat: string) => {
   }
 };
 
-export default function BlogCard({ post, onClick }: BlogCardProps) {
+export default function BlogCard({ post, href, onClick }: BlogCardProps) {
   const { t } = useLanguage();
   
   const postTitle = t(`blogPosts.post${post.id}.title`, post.title);
@@ -44,9 +45,15 @@ export default function BlogCard({ post, onClick }: BlogCardProps) {
   const postCategory = t(`blogPosts.post${post.id}.category`, post.category);
 
   return (
-    <div 
-      onClick={onClick}
-      className="group relative bg-[#242642] rounded-[2.5rem] border-4 border-[#2f3252] overflow-hidden shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-2 cursor-pointer"
+    <a 
+      href={href}
+      onClick={(e) => {
+        if (onClick) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      className="group relative bg-[#242642] rounded-[2.5rem] border-4 border-[#2f3252] overflow-hidden shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-2 cursor-pointer block"
     >
       {/* Image Container */}
       <div className="relative h-56 overflow-hidden">
@@ -85,6 +92,6 @@ export default function BlogCard({ post, onClick }: BlogCardProps) {
           </div>
         </div>
       </div>
-    </div>
+    </a>
   );
 }

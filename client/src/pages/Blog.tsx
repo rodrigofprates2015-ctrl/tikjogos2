@@ -70,9 +70,10 @@ export default function Blog() {
             </header>
 
             {/* Featured Post */}
-            <div 
-              onClick={() => handleSelectPost(featured.id)}
-              className="group relative rounded-[3rem] border-4 border-purple-500/30 bg-[#242642] overflow-hidden shadow-2xl hover:border-purple-500 transition-all cursor-pointer"
+            <a 
+              href={langPath(`/blog/${getPostSlug(featured.id, lang)}`)}
+              onClick={(e) => { e.preventDefault(); handleSelectPost(featured.id); }}
+              className="group relative rounded-[3rem] border-4 border-purple-500/30 bg-[#242642] overflow-hidden shadow-2xl hover:border-purple-500 transition-all cursor-pointer block"
             >
               <div className="flex flex-col lg:flex-row min-h-[500px]">
                 <div className="lg:w-3/5 relative overflow-hidden">
@@ -103,7 +104,7 @@ export default function Blog() {
                   </div>
                 </div>
               </div>
-            </div>
+            </a>
           </div>
         </section>
 
@@ -121,7 +122,7 @@ export default function Blog() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {others.map((post) => (
-              <BlogCard key={post.id} post={post} onClick={() => handleSelectPost(post.id)} />
+              <BlogCard key={post.id} post={post} href={langPath(`/blog/${getPostSlug(post.id, lang)}`)} onClick={() => handleSelectPost(post.id)} />
             ))}
           </div>
 
