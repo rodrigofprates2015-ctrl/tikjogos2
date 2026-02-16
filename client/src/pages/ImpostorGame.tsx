@@ -2951,7 +2951,7 @@ const ModeSelectScreen = () => {
                   <div>
                     <h4 className="text-lg font-bold text-white group-hover:text-[#6b4ba3] transition-colors">
                       {selectedThemeCode ? 'Trocar Tema' : 'Explorar Galeria de Temas'}
-                    </h3>
+                    </h4>
                     <p className="text-sm text-gray-400 mt-1">
                       Descubra temas incríveis criados pela comunidade!
                     </p>
@@ -3006,7 +3006,7 @@ const ModeSelectScreen = () => {
                 <div>
                   <h4 className="text-lg font-bold text-white group-hover:text-[#6b4ba3] transition-colors">
                     {selectedCategory ? 'Trocar Categoria' : 'Escolher Categoria'}
-                  </h3>
+                  </h4>
                   <p className="text-sm text-gray-400 mt-1">
                     Selecione uma categoria de palavras para jogar!
                   </p>
