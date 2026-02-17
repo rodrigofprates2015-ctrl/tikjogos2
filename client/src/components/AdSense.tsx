@@ -4,7 +4,34 @@ import { X, ChevronUp } from "lucide-react";
 declare global {
   interface Window {
     adsbygoogle: any[];
+    __adsLoaded?: boolean;
   }
+}
+
+/**
+ * Waits for the AdSense script to be loaded (triggered by user interaction
+ * or timeout in index.html), then calls the callback.
+ */
+function waitForAdsense(cb: () => void) {
+  // If script already loaded and adsbygoogle is ready
+  if (window.__adsLoaded && typeof window.adsbygoogle !== 'undefined') {
+    const raf = requestAnimationFrame(() => {
+      cb();
+    });
+    return () => cancelAnimationFrame(raf);
+  }
+
+  // Poll until the script is loaded (max ~15s)
+  let attempts = 0;
+  const interval = setInterval(() => {
+    attempts++;
+    if (window.__adsLoaded || attempts > 30) {
+      clearInterval(interval);
+      setTimeout(cb, 200);
+    }
+  }, 500);
+
+  return () => clearInterval(interval);
 }
 
 interface AdSenseProps {
@@ -30,12 +57,8 @@ const AdSenseBlock = ({
   useEffect(() => {
     if (pushed.current) return;
     
-    // Use requestIdleCallback to avoid blocking main thread (FID)
-    const schedule = typeof window.requestIdleCallback === 'function'
-      ? window.requestIdleCallback
-      : (cb: () => void) => setTimeout(cb, 150);
-    
-    const id = schedule(() => {
+    const cleanup = waitForAdsense(() => {
+      if (pushed.current) return;
       try {
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
@@ -45,11 +68,7 @@ const AdSenseBlock = ({
       }
     });
 
-    return () => {
-      if (typeof window.cancelIdleCallback === 'function') {
-        window.cancelIdleCallback(id as number);
-      }
-    };
+    return cleanup;
   }, []);
 
   return (
@@ -103,11 +122,7 @@ export const SideAds = () => {
   const rightPushed = useRef(false);
 
   useEffect(() => {
-    const schedule = typeof window.requestIdleCallback === 'function'
-      ? window.requestIdleCallback
-      : (cb: () => void) => setTimeout(cb, 200);
-    
-    const id = schedule(() => {
+    const cleanup = waitForAdsense(() => {
       try {
         window.adsbygoogle = window.adsbygoogle || [];
         if (!leftPushed.current && leftRef.current && leftRef.current.offsetWidth > 0) {
@@ -122,17 +137,13 @@ export const SideAds = () => {
         console.error("SideAds push error:", e);
       }
     });
-    return () => {
-      if (typeof window.cancelIdleCallback === 'function') {
-        window.cancelIdleCallback(id as number);
-      }
-    };
+    return cleanup;
   }, []);
 
   return (
     <>
       {/* Left Side Ad */}
-      <div ref={leftRef} className="fixed left-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block">
+      <div ref={leftRef} className="fixed left-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block" style={{ width: "300px", height: "600px" }}>
         <ins
           className="adsbygoogle"
           style={{ display: "block", width: "300px", height: "600px" }}
@@ -142,7 +153,7 @@ export const SideAds = () => {
         />
       </div>
       {/* Right Side Ad */}
-      <div ref={rightRef} className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block">
+      <div ref={rightRef} className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block" style={{ width: "300px", height: "600px" }}>
         <ins
           className="adsbygoogle"
           style={{ display: "block", width: "300px", height: "600px" }}
@@ -163,11 +174,9 @@ export const BottomAd = () => {
 
   useEffect(() => {
     if (pushed.current || isMinimized) return;
-    const schedule = typeof window.requestIdleCallback === 'function'
-      ? window.requestIdleCallback
-      : (cb: () => void) => setTimeout(cb, 200);
     
-    const id = schedule(() => {
+    const cleanup = waitForAdsense(() => {
+      if (pushed.current) return;
       try {
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
@@ -176,11 +185,7 @@ export const BottomAd = () => {
         console.error("BottomAd push error:", e);
       }
     });
-    return () => {
-      if (typeof window.cancelIdleCallback === 'function') {
-        window.cancelIdleCallback(id as number);
-      }
-    };
+    return cleanup;
   }, [isMinimized]);
 
   if (!isVisible) return null;
@@ -230,11 +235,9 @@ export const BlogFluidAd = ({ className }: { className?: string }) => {
 
   useEffect(() => {
     if (pushed.current) return;
-    const schedule = typeof window.requestIdleCallback === 'function'
-      ? window.requestIdleCallback
-      : (cb: () => void) => setTimeout(cb, 200);
     
-    const id = schedule(() => {
+    const cleanup = waitForAdsense(() => {
+      if (pushed.current) return;
       try {
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
@@ -243,11 +246,7 @@ export const BlogFluidAd = ({ className }: { className?: string }) => {
         console.error("BlogFluidAd push error:", e);
       }
     });
-    return () => {
-      if (typeof window.cancelIdleCallback === 'function') {
-        window.cancelIdleCallback(id as number);
-      }
-    };
+    return cleanup;
   }, []);
 
   return (

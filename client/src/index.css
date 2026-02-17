@@ -152,6 +152,12 @@
       min-width: 44px;
     }
   }
+
+  /* Isolate ad containers from causing layout shifts on the rest of the page */
+  .adsense-container {
+    contain: layout style;
+    content-visibility: auto;
+  }
   
   /* Stage transition animations */
   .animate-stage-fade-in {
