@@ -1,4 +1,27 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+
+declare global {
+  interface Window {
+    adsbygoogle: any[];
+    __adsLoaded?: boolean;
+  }
+}
+
+function waitForAdsense(cb: () => void) {
+  if (window.__adsLoaded) {
+    const raf = requestAnimationFrame(() => cb());
+    return () => cancelAnimationFrame(raf);
+  }
+  let attempts = 0;
+  const interval = setInterval(() => {
+    attempts++;
+    if (window.__adsLoaded || attempts > 30) {
+      clearInterval(interval);
+      setTimeout(cb, 200);
+    }
+  }, 500);
+  return () => clearInterval(interval);
+}
 
 interface AdBlockProps {
   slot: string;
@@ -8,32 +31,39 @@ interface AdBlockProps {
 }
 
 export function AdBlock({ slot, format = "auto", responsive = true, style }: AdBlockProps) {
+  const pushed = useRef(false);
+
   useEffect(() => {
-    try {
-      const win = window as any;
-      if (win.adsbygoogle && win.adsbygoogle.loaded !== true) {
-        (win.adsbygoogle = win.adsbygoogle || []).push({});
+    if (pushed.current) return;
+    const cleanup = waitForAdsense(() => {
+      if (pushed.current) return;
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        pushed.current = true;
+      } catch (error) {
+        console.error('AdSense error:', error);
       }
-    } catch (error) {
-      console.error('AdSense error:', error);
-    }
+    });
+    return cleanup;
   }, []);
 
   return (
-    <ins
-      className="adsbygoogle"
-      style={{ display: 'block', ...style }}
-      data-ad-client="ca-pub-9927561573478881"
-      data-ad-slot={slot}
-      data-ad-format={format}
-      data-full-width-responsive={responsive ? "true" : "false"}
-    />
+    <div className="adsense-container overflow-hidden" style={{ minHeight: "90px", contain: "layout style" }}>
+      <ins
+        className="adsbygoogle"
+        style={{ display: 'block', ...style }}
+        data-ad-client="ca-pub-9927561573478881"
+        data-ad-slot={slot}
+        data-ad-format={format}
+        data-full-width-responsive={responsive ? "true" : "false"}
+      />
+    </div>
   );
 }
 
 export function AdBlockTop() {
   return (
-    <div className="w-full py-6 px-4">
+    <div className="w-full py-6 px-4" style={{ minHeight: "100px" }}>
       <AdBlock slot="1234567890" format="horizontal" />
     </div>
   );
@@ -41,7 +71,7 @@ export function AdBlockTop() {
 
 export function AdBlockBottom() {
   return (
-    <div className="w-full py-6 px-4">
+    <div className="w-full py-6 px-4" style={{ minHeight: "100px" }}>
       <AdBlock slot="1234567891" format="horizontal" />
     </div>
   );
@@ -49,7 +79,7 @@ export function AdBlockBottom() {
 
 export function AdBlockSidebarMiddle() {
   return (
-    <div className="w-full py-2">
+    <div className="w-full py-2" style={{ minHeight: "250px" }}>
       <AdBlock slot="1234567892" format="rectangle" />
     </div>
   );
@@ -57,7 +87,7 @@ export function AdBlockSidebarMiddle() {
 
 export function AdBlockSidebarBottom() {
   return (
-    <div className="w-full py-2">
+    <div className="w-full py-2" style={{ minHeight: "250px" }}>
       <AdBlock slot="1234567893" format="rectangle" />
     </div>
   );
@@ -65,7 +95,7 @@ export function AdBlockSidebarBottom() {
 
 export function AdBlockSidebarFloating() {
   return (
-    <div className="hidden lg:block fixed right-4 top-20 w-64 z-40">
+    <div className="hidden lg:block fixed right-4 top-20 w-64 z-40" style={{ width: "250px", height: "600px" }}>
       <AdBlock slot="1234567894" format="vertical" responsive={false} style={{ width: '250px', height: '600px' }} />
     </div>
   );
@@ -73,7 +103,7 @@ export function AdBlockSidebarFloating() {
 
 export function AdBlockInContent() {
   return (
-    <div className="w-full py-6 px-4">
+    <div className="w-full py-6 px-4" style={{ minHeight: "100px" }}>
       <AdBlock slot="1234567895" format="fluid" />
     </div>
   );

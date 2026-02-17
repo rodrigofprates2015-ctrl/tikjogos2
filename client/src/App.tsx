@@ -58,6 +58,40 @@ function VersionManager() {
   return null;
 }
 
+/**
+ * Removes auto-placed ads injected by AdSense that cause CLS.
+ * Uses MutationObserver to catch them as they're inserted.
+ */
+function AutoAdBlocker() {
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        Array.from(mutation.addedNodes).forEach((node) => {
+          if (node instanceof HTMLElement) {
+            const cls = node.className || '';
+            const id = node.id || '';
+            if (
+              cls.includes('google-auto-placed') ||
+              cls.includes('google-ads-side-rail') ||
+              id.startsWith('google_ads_iframe_auto_ads')
+            ) {
+              node.style.display = 'none';
+              node.style.height = '0';
+              node.style.maxHeight = '0';
+              node.style.overflow = 'hidden';
+            }
+          }
+        });
+      });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
+  return null;
+}
+
 function SessionTracker() {
   useEffect(() => {
     const startTime = Date.now();
@@ -334,6 +368,7 @@ function App() {
         <VoiceChatProvider>
           <LanguageProvider>
             <VersionManager />
+            <AutoAdBlocker />
             <SessionTracker />
             <AppRouter />
             <Toaster />

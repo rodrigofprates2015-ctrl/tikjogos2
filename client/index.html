@@ -50,6 +50,11 @@
       function __loadAds() {
         if (window.__adsLoaded) return;
         window.__adsLoaded = true;
+        // Disable auto ads before loading the script
+        (adsbygoogle=window.adsbygoogle||[]).push({
+          google_ad_client: "ca-pub-9927561573478881",
+          enable_page_level_ads: false
+        });
         var s = document.createElement('script');
         s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9927561573478881';
         s.crossOrigin = 'anonymous';
@@ -167,16 +172,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com">
     <link rel="dns-prefetch" href="https://www.googletagmanager.com">
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Changa+One:wght@400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Changa+One:wght@400&display=swap" rel="stylesheet"></noscript>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Changa+One:wght@400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Changa+One:wght@400&display=swap" rel="stylesheet"></noscript>
     
-    <!-- Partner Content System CSS (non-blocking) -->
-    <link rel="preload" as="style" href="/partner-content.css" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="/partner-content.css"></noscript>
-    
-    <!-- Price Comparison Ads CSS (non-blocking) -->
-    <link rel="preload" as="style" href="/price-comparison.css" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="/price-comparison.css"></noscript>
+    <!-- Partner Content / Price Comparison CSS removed - not used by any component -->
     
     <style>
       /* Critical CSS for initial paint - prevents blank screen while main CSS loads */
@@ -185,16 +184,32 @@
       /* Font-display swap fallback while Google Fonts CSS loads async */
       @font-face{font-family:'Poppins';font-display:swap;src:local('Poppins')}
       @font-face{font-family:'Changa One';font-display:swap;src:local('Changa One')}
-      /* Hide Google AdSense auto-annotations and contain ad layout shifts */
+      /* === BLOCK ALL ADSENSE AUTO-ADS (main cause of CLS > 0.25) === */
+      /* Auto-placed ads injected by AdSense anywhere on the page */
+      div[class*="google-auto-placed"],
+      ins.adsbygoogle[data-ad-status="unfilled"],
+      ins.adsbygoogle[data-adsbygoogle-status="done"]:empty,
+      .google-auto-placed,
+      .google-ads-side-rail,
+      .google-ads-side-rail-container,
+      .google-ads-side-rail-left,
+      .google-ads-side-rail-right,
+      div[id^="google_ads_iframe_auto_ads"],
+      /* AdSense vignette/overlay ads */
+      .google-ads-vignette,
+      .google-revocation-link-placeholder,
+      /* AdSense auto-annotations */
       .google-anno-skip,
       .google-anno-sc,
       div[class*="google-anno"] {
         display: none !important;
         visibility: hidden !important;
-        opacity: 0 !important;
+        height: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
         pointer-events: none !important;
       }
-      /* Prevent AdSense iframes from causing layout shifts */
+      /* Contain manual ad slots to prevent layout shifts */
       .adsbygoogle{min-height:1px}
       .adsense-container{contain:layout style;overflow:hidden}
     </style>
