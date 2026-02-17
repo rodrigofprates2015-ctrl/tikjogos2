@@ -28,25 +28,32 @@ const AdSenseBlock = ({
   const pushed = useRef(false);
 
   useEffect(() => {
-    // Só faz push uma vez por instância do componente
     if (pushed.current) return;
     
-    const timer = setTimeout(() => {
+    // Use requestIdleCallback to avoid blocking main thread (FID)
+    const schedule = typeof window.requestIdleCallback === 'function'
+      ? window.requestIdleCallback
+      : (cb: () => void) => setTimeout(cb, 150);
+    
+    const id = schedule(() => {
       try {
-        // Inicializa o array se não existir
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
         pushed.current = true;
       } catch (e) {
         console.error("AdSense push error:", e);
       }
-    }, 100); // Pequeno delay para garantir que o <ins> está no DOM
+    });
 
-    return () => clearTimeout(timer);
+    return () => {
+      if (typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(id as number);
+      }
+    };
   }, []);
 
   return (
-    <div className={`adsense-container my-8 overflow-hidden flex justify-center ${className}`}>
+    <div className={`adsense-container my-8 overflow-hidden flex justify-center ${className}`} style={{ minHeight: "100px" }}>
       <ins
         ref={adRef}
         className="adsbygoogle"
@@ -96,7 +103,11 @@ export const SideAds = () => {
   const rightPushed = useRef(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const schedule = typeof window.requestIdleCallback === 'function'
+      ? window.requestIdleCallback
+      : (cb: () => void) => setTimeout(cb, 200);
+    
+    const id = schedule(() => {
       try {
         window.adsbygoogle = window.adsbygoogle || [];
         if (!leftPushed.current && leftRef.current && leftRef.current.offsetWidth > 0) {
@@ -110,8 +121,12 @@ export const SideAds = () => {
       } catch (e) {
         console.error("SideAds push error:", e);
       }
-    }, 100);
-    return () => clearTimeout(timer);
+    });
+    return () => {
+      if (typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(id as number);
+      }
+    };
   }, []);
 
   return (
@@ -148,7 +163,11 @@ export const BottomAd = () => {
 
   useEffect(() => {
     if (pushed.current || isMinimized) return;
-    const timer = setTimeout(() => {
+    const schedule = typeof window.requestIdleCallback === 'function'
+      ? window.requestIdleCallback
+      : (cb: () => void) => setTimeout(cb, 200);
+    
+    const id = schedule(() => {
       try {
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
@@ -156,8 +175,12 @@ export const BottomAd = () => {
       } catch (e) {
         console.error("BottomAd push error:", e);
       }
-    }, 100);
-    return () => clearTimeout(timer);
+    });
+    return () => {
+      if (typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(id as number);
+      }
+    };
   }, [isMinimized]);
 
   if (!isVisible) return null;
@@ -186,7 +209,7 @@ export const BottomAd = () => {
           Esconder
         </button>
         
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto" style={{ minHeight: "90px" }}>
           <ins
             className="adsbygoogle"
             style={{ display: "block", height: "90px" }}
@@ -207,7 +230,11 @@ export const BlogFluidAd = ({ className }: { className?: string }) => {
 
   useEffect(() => {
     if (pushed.current) return;
-    const timer = setTimeout(() => {
+    const schedule = typeof window.requestIdleCallback === 'function'
+      ? window.requestIdleCallback
+      : (cb: () => void) => setTimeout(cb, 200);
+    
+    const id = schedule(() => {
       try {
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
@@ -215,12 +242,16 @@ export const BlogFluidAd = ({ className }: { className?: string }) => {
       } catch (e) {
         console.error("BlogFluidAd push error:", e);
       }
-    }, 100);
-    return () => clearTimeout(timer);
+    });
+    return () => {
+      if (typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(id as number);
+      }
+    };
   }, []);
 
   return (
-    <div className={`adsense-container my-8 overflow-hidden ${className || ""}`}>
+    <div className={`adsense-container my-8 overflow-hidden ${className || ""}`} style={{ minHeight: "100px" }}>
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}

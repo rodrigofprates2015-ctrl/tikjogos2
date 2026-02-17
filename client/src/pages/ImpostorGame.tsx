@@ -1246,6 +1246,7 @@ const HomeScreen = () => {
         width="300"
         height="420"
         loading="lazy"
+        decoding="async"
         className="hidden md:block absolute bottom-[220px] left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-10"
       />
 
@@ -1256,6 +1257,7 @@ const HomeScreen = () => {
         width="300"
         height="420"
         loading="lazy"
+        decoding="async"
         className="hidden md:block absolute bottom-[220px] right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-10"
       />
 
@@ -1270,8 +1272,9 @@ const HomeScreen = () => {
             <img
               src={bannerDesenhoImpostorMobile}
               alt="Banner Jogo Desenho do Impostor - TikJogos"
-              loading="lazy"
-              className="w-full rounded-2xl shadow-lg"
+              width={684} height={148}
+              fetchPriority="high"
+              className="w-full h-auto rounded-2xl shadow-lg"
             />
           </a>
         </div>
@@ -1282,8 +1285,9 @@ const HomeScreen = () => {
             <img
               src={bannerDesenhoImpostor}
               alt="Banner Jogo Desenho do Impostor - TikJogos"
+              width={919} height={148}
               loading="lazy"
-              className="w-full rounded-2xl shadow-lg hover:brightness-110 transition-all cursor-pointer"
+              className="w-full h-auto rounded-2xl shadow-lg hover:brightness-110 transition-all cursor-pointer"
             />
           </a>
         </div>
@@ -1297,6 +1301,7 @@ const HomeScreen = () => {
               src={logoImpostor} 
               alt="Logo Jogo do Impostor Online - TikJogos" 
               width={575} height={133}
+              fetchPriority="high"
               className="h-28 md:h-36 object-contain" 
             />
           </div>
@@ -1415,6 +1420,7 @@ const HomeScreen = () => {
             width="300"
             height="420"
             loading="lazy"
+            decoding="async"
             className="hidden md:block absolute bottom-0 left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-0 pointer-events-none"
           />
 
@@ -1425,6 +1431,7 @@ const HomeScreen = () => {
             width="300"
             height="420"
             loading="lazy"
+            decoding="async"
             className="hidden md:block absolute bottom-0 right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-0 pointer-events-none"
           />
 
@@ -1444,6 +1451,8 @@ const HomeScreen = () => {
                 <img 
                   src={logoTikjogos} 
                   alt="TikJogos Impostor" 
+                  width={245} height={70}
+                  loading="lazy"
                   className="h-16 w-auto object-contain"
                 />
               </Link>

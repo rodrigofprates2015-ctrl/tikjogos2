@@ -5,32 +5,34 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { VoiceChatProvider } from "@/hooks/VoiceChatContext";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import NotFound from "@/pages/not-found";
 import ImpostorGame from "@/pages/ImpostorGame";
-import PrivacyPolicy from "@/pages/PrivacyPolicy";
-import TermsOfUse from "@/pages/TermsOfUse";
-import ComoJogar from "@/pages/ComoJogar";
-import CriarTema from "@/pages/CriarTema";
-import Doacoes from "@/pages/Doacoes";
-import OutrosJogos from "@/pages/OutrosJogos";
-import Termo from "@/pages/Termo";
-import AdminDashboard from "@/pages/AdminDashboard";
-import Blog from "@/pages/Blog";
-import BlogPost from "@/pages/BlogPost";
-import PlayGame from "@/pages/PlayGame";
-import CommunityThemes from "@/pages/CommunityThemes";
-import Prototipo from "@/pages/Prototipo";
-import ModoLocal from "@/pages/ModoLocal";
-import ModoLocalJogo from "@/pages/ModoLocalJogo";
-import AdTest from "@/pages/AdTest";
 import RoomRedirect from "@/pages/RoomRedirect";
-import ThemePage from "@/pages/ThemePage";
-import Temas from "@/pages/Temas";
-import GameModes from "@/pages/GameModes";
-import DesenhoImpostor from "@/pages/DesenhoImpostor";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
+
+// Lazy-loaded pages - reduces initial JS bundle for faster LCP on mobile
+const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+const TermsOfUse = lazy(() => import("@/pages/TermsOfUse"));
+const ComoJogar = lazy(() => import("@/pages/ComoJogar"));
+const CriarTema = lazy(() => import("@/pages/CriarTema"));
+const Doacoes = lazy(() => import("@/pages/Doacoes"));
+const OutrosJogos = lazy(() => import("@/pages/OutrosJogos"));
+const Termo = lazy(() => import("@/pages/Termo"));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const Blog = lazy(() => import("@/pages/Blog"));
+const BlogPost = lazy(() => import("@/pages/BlogPost"));
+const PlayGame = lazy(() => import("@/pages/PlayGame"));
+const CommunityThemes = lazy(() => import("@/pages/CommunityThemes"));
+const Prototipo = lazy(() => import("@/pages/Prototipo"));
+const ModoLocal = lazy(() => import("@/pages/ModoLocal"));
+const ModoLocalJogo = lazy(() => import("@/pages/ModoLocalJogo"));
+const AdTest = lazy(() => import("@/pages/AdTest"));
+const ThemePage = lazy(() => import("@/pages/ThemePage"));
+const Temas = lazy(() => import("@/pages/Temas"));
+const GameModes = lazy(() => import("@/pages/GameModes"));
+const DesenhoImpostor = lazy(() => import("@/pages/DesenhoImpostor"));
 
 function VersionManager() {
   useEffect(() => {
@@ -106,10 +108,19 @@ function i18nRoutes(path: string, Component: React.ComponentType<any>) {
   );
 }
 
+function LazyFallback() {
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#1a1b2e]">
+      <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
+
 function AppRouter() {
   const { user, isLoading, isAuthenticated } = useAuth();
 
   return (
+    <Suspense fallback={<LazyFallback />}>
     <Switch>
       {/* Home — PT default (no prefix), EN, ES */}
       <Route path="/" component={ImpostorGame} />
@@ -312,6 +323,7 @@ function AppRouter() {
 
       <Route component={NotFound} />
     </Switch>
+    </Suspense>
   );
 }
 
