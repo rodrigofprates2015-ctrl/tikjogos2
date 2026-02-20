@@ -4,34 +4,7 @@ import { X, ChevronUp } from "lucide-react";
 declare global {
   interface Window {
     adsbygoogle: any[];
-    __adsLoaded?: boolean;
   }
-}
-
-/**
- * Waits for the AdSense script to be loaded (triggered by user interaction
- * or timeout in index.html), then calls the callback.
- */
-function waitForAdsense(cb: () => void) {
-  // If script already loaded and adsbygoogle is ready
-  if (window.__adsLoaded && typeof window.adsbygoogle !== 'undefined') {
-    const raf = requestAnimationFrame(() => {
-      cb();
-    });
-    return () => cancelAnimationFrame(raf);
-  }
-
-  // Poll until the script is loaded (max ~15s)
-  let attempts = 0;
-  const interval = setInterval(() => {
-    attempts++;
-    if (window.__adsLoaded || attempts > 30) {
-      clearInterval(interval);
-      setTimeout(cb, 200);
-    }
-  }, 500);
-
-  return () => clearInterval(interval);
 }
 
 interface AdSenseProps {
@@ -57,8 +30,7 @@ const AdSenseBlock = ({
   useEffect(() => {
     if (pushed.current) return;
     
-    const cleanup = waitForAdsense(() => {
-      if (pushed.current) return;
+    const timer = setTimeout(() => {
       try {
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
@@ -66,13 +38,13 @@ const AdSenseBlock = ({
       } catch (e) {
         console.error("AdSense push error:", e);
       }
-    });
+    }, 100);
 
-    return cleanup;
+    return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className={`adsense-container my-8 overflow-hidden flex justify-center ${className}`} style={{ minHeight: "100px" }}>
+    <div className={`adsense-container my-8 overflow-hidden flex justify-center ${className}`}>
       <ins
         ref={adRef}
         className="adsbygoogle"
@@ -122,7 +94,7 @@ export const SideAds = () => {
   const rightPushed = useRef(false);
 
   useEffect(() => {
-    const cleanup = waitForAdsense(() => {
+    const timer = setTimeout(() => {
       try {
         window.adsbygoogle = window.adsbygoogle || [];
         if (!leftPushed.current && leftRef.current && leftRef.current.offsetWidth > 0) {
@@ -136,14 +108,14 @@ export const SideAds = () => {
       } catch (e) {
         console.error("SideAds push error:", e);
       }
-    });
-    return cleanup;
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
     <>
       {/* Left Side Ad */}
-      <div ref={leftRef} className="fixed left-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block" style={{ width: "300px", height: "600px" }}>
+      <div ref={leftRef} className="fixed left-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block">
         <ins
           className="adsbygoogle"
           style={{ display: "block", width: "300px", height: "600px" }}
@@ -153,7 +125,7 @@ export const SideAds = () => {
         />
       </div>
       {/* Right Side Ad */}
-      <div ref={rightRef} className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block" style={{ width: "300px", height: "600px" }}>
+      <div ref={rightRef} className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block">
         <ins
           className="adsbygoogle"
           style={{ display: "block", width: "300px", height: "600px" }}
@@ -174,9 +146,7 @@ export const BottomAd = () => {
 
   useEffect(() => {
     if (pushed.current || isMinimized) return;
-    
-    const cleanup = waitForAdsense(() => {
-      if (pushed.current) return;
+    const timer = setTimeout(() => {
       try {
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
@@ -184,8 +154,8 @@ export const BottomAd = () => {
       } catch (e) {
         console.error("BottomAd push error:", e);
       }
-    });
-    return cleanup;
+    }, 100);
+    return () => clearTimeout(timer);
   }, [isMinimized]);
 
   if (!isVisible) return null;
@@ -214,7 +184,7 @@ export const BottomAd = () => {
           Esconder
         </button>
         
-        <div className="max-w-4xl mx-auto" style={{ minHeight: "90px" }}>
+        <div className="max-w-4xl mx-auto">
           <ins
             className="adsbygoogle"
             style={{ display: "block", height: "90px" }}
@@ -235,9 +205,7 @@ export const BlogFluidAd = ({ className }: { className?: string }) => {
 
   useEffect(() => {
     if (pushed.current) return;
-    
-    const cleanup = waitForAdsense(() => {
-      if (pushed.current) return;
+    const timer = setTimeout(() => {
       try {
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
@@ -245,12 +213,12 @@ export const BlogFluidAd = ({ className }: { className?: string }) => {
       } catch (e) {
         console.error("BlogFluidAd push error:", e);
       }
-    });
-    return cleanup;
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className={`adsense-container my-8 overflow-hidden ${className || ""}`} style={{ minHeight: "100px" }}>
+    <div className={`adsense-container my-8 overflow-hidden ${className || ""}`}>
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}

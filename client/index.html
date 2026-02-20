@@ -43,31 +43,9 @@
     <!-- Language -->
     <meta http-equiv="content-language" content="pt-BR" />
     
-    <!-- Google AdSense: loaded after user interaction or 5s delay to avoid CWV penalty -->
-    <script>
-      window.adsbygoogle = window.adsbygoogle || [];
-      window.__adsLoaded = false;
-      function __loadAds() {
-        if (window.__adsLoaded) return;
-        window.__adsLoaded = true;
-        // Disable auto ads before loading the script
-        (adsbygoogle=window.adsbygoogle||[]).push({
-          google_ad_client: "ca-pub-9927561573478881",
-          enable_page_level_ads: false
-        });
-        var s = document.createElement('script');
-        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9927561573478881';
-        s.crossOrigin = 'anonymous';
-        s.async = true;
-        document.head.appendChild(s);
-      }
-      // Load on first user interaction (scroll, touch, click, keydown)
-      ['scroll','touchstart','click','keydown'].forEach(function(evt) {
-        window.addEventListener(evt, __loadAds, {once: true, passive: true});
-      });
-      // Fallback: load after 5 seconds if no interaction
-      setTimeout(__loadAds, 5000);
-    </script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9927561573478881"
+     crossorigin="anonymous"></script>
     
     <!-- Google tag (gtag.js) - loaded after user interaction or 3s delay -->
     <script>
@@ -184,31 +162,6 @@
       /* Font-display swap fallback while Google Fonts CSS loads async */
       @font-face{font-family:'Poppins';font-display:swap;src:local('Poppins')}
       @font-face{font-family:'Changa One';font-display:swap;src:local('Changa One')}
-      /* === BLOCK ALL ADSENSE AUTO-ADS (main cause of CLS > 0.25) === */
-      /* Auto-placed ads injected by AdSense anywhere on the page */
-      div[class*="google-auto-placed"],
-      ins.adsbygoogle[data-ad-status="unfilled"],
-      ins.adsbygoogle[data-adsbygoogle-status="done"]:empty,
-      .google-auto-placed,
-      .google-ads-side-rail,
-      .google-ads-side-rail-container,
-      .google-ads-side-rail-left,
-      .google-ads-side-rail-right,
-      div[id^="google_ads_iframe_auto_ads"],
-      /* AdSense vignette/overlay ads */
-      .google-ads-vignette,
-      .google-revocation-link-placeholder,
-      /* AdSense auto-annotations */
-      .google-anno-skip,
-      .google-anno-sc,
-      div[class*="google-anno"] {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        max-height: 0 !important;
-        overflow: hidden !important;
-        pointer-events: none !important;
-      }
       /* Contain manual ad slots to prevent layout shifts */
       .adsbygoogle{min-height:1px}
       .adsense-container{contain:layout style;overflow:hidden}

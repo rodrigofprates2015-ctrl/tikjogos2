@@ -159,16 +159,7 @@
     content-visibility: auto;
   }
 
-  /* Block AdSense auto-placed ads that cause CLS on mobile */
-  div[class*="google-auto-placed"],
-  .google-auto-placed,
-  .google-ads-side-rail,
-  .google-ads-side-rail-container {
-    display: none !important;
-    height: 0 !important;
-    max-height: 0 !important;
-    overflow: hidden !important;
-  }
+
   
   /* Stage transition animations */
   .animate-stage-fade-in {
