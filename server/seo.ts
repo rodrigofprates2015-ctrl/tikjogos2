@@ -193,6 +193,42 @@ const PAGE_SEO: Record<string, { title: string; description: string }> = {
     title: 'Como Jogar o Jogo do Impostor Online | TikJogos',
     description: 'Aprenda como jogar o Jogo do Impostor online. Regras, dicas e estratégias para jogar com amigos. Grátis e sem download.',
   },
+  '/como-jogar/jogo-do-impostor': {
+    title: 'Como Jogar o Jogo do Impostor Online | TikJogos',
+    description: 'Aprenda como jogar o Jogo do Impostor online. Regras, dicas e estratégias para jogar com amigos. Grátis e sem download.',
+  },
+  '/como-jogar/jogo-do-impostor-desenho': {
+    title: 'Como Jogar Desenho do Impostor | TikJogos',
+    description: 'Aprenda como jogar o Desenho do Impostor. Todos desenham a mesma palavra, menos o impostor! Regras, dicas e estratégias.',
+  },
+  '/como-jogar/sincronia': {
+    title: 'Como Jogar Sincronia - Respostas em Comum | TikJogos',
+    description: 'Aprenda como jogar Sincronia, o jogo onde você ganha pontos ao dar a mesma resposta que outros jogadores. Regras e estratégias.',
+  },
+  '/how-to-play/impostor-game': {
+    title: 'How to Play Impostor Game Online | TikJogos',
+    description: 'Learn how to play the Impostor Game online. Rules, tips and strategies to play with friends. Free, no download.',
+  },
+  '/how-to-play/impostor-drawing-game': {
+    title: 'How to Play Impostor Drawing Game | TikJogos',
+    description: 'Learn how to play Impostor Drawing. Everyone draws the same word except the impostor! Rules, tips and strategies.',
+  },
+  '/how-to-play/sincronia': {
+    title: 'How to Play Sincronia - Common Answers | TikJogos',
+    description: 'Learn how to play Sincronia, the game where you score by giving the same answer as other players. Rules and strategies.',
+  },
+  '/como-jugar/juego-del-impostor': {
+    title: 'Cómo Jugar al Juego del Impostor Online | TikJogos',
+    description: 'Aprende a jugar al Juego del Impostor online. Reglas, consejos y estrategias para jugar con amigos. Gratis y sin descarga.',
+  },
+  '/como-jugar/juego-del-impostor-dibujo': {
+    title: 'Cómo Jugar Dibujo del Impostor | TikJogos',
+    description: 'Aprende a jugar Dibujo del Impostor. ¡Todos dibujan la misma palabra menos el impostor! Reglas, consejos y estrategias.',
+  },
+  '/como-jugar/sincronia': {
+    title: 'Cómo Jugar Sincronia - Respuestas en Común | TikJogos',
+    description: 'Aprende a jugar Sincronia, el juego donde ganas puntos al dar la misma respuesta que otros jugadores. Reglas y estrategias.',
+  },
   '/modo-local': {
     title: 'Jogo do Impostor Modo Local – Jogar Offline | TikJogos',
     description: 'Jogue o Jogo do Impostor no modo local, passando o celular entre amigos. Sem internet necessária.',
@@ -423,7 +459,9 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
       <p>Jogue o Jogo do Impostor online grátis com amigos! Dedução social, estratégia e diversão sem downloads. Crie uma sala, convide amigos e descubra quem é o impostor.</p>
       <h2>Modos de Jogo</h2>
       <ul>
-        <li><a href="${BASE_URL}/como-jogar">Como Jogar</a></li>
+        <li><a href="${BASE_URL}/como-jogar/jogo-do-impostor">Como Jogar Impostor</a></li>
+        <li><a href="${BASE_URL}/como-jogar/jogo-do-impostor-desenho">Como Jogar Desenho</a></li>
+        <li><a href="${BASE_URL}/como-jogar/sincronia">Como Jogar Sincronia</a></li>
         <li><a href="${BASE_URL}/modo-local">Modo Local</a></li>
         <li><a href="${BASE_URL}/temas">Temas</a></li>
         <li><a href="${BASE_URL}/blog">Blog</a></li>

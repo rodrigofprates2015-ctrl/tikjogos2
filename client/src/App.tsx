@@ -16,6 +16,8 @@ import { LanguageProvider } from "@/hooks/useLanguage";
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("@/pages/TermsOfUse"));
 const ComoJogar = lazy(() => import("@/pages/ComoJogar"));
+const ComoJogarDesenho = lazy(() => import("@/pages/ComoJogarDesenho"));
+const ComoJogarSincronia = lazy(() => import("@/pages/ComoJogarSincronia"));
 const CriarTema = lazy(() => import("@/pages/CriarTema"));
 const Doacoes = lazy(() => import("@/pages/Doacoes"));
 const OutrosJogos = lazy(() => import("@/pages/OutrosJogos"));
@@ -162,6 +164,20 @@ function AppRouter() {
       {i18nRoutes("/ad-test", AdTest)}
 
       {/* Como jogar */}
+      {/* Como Jogar - game-specific pages */}
+      {i18nRoutes("/como-jogar/jogo-do-impostor", ComoJogar)}
+      {i18nRoutes("/how-to-play/impostor-game", ComoJogar)}
+      {i18nRoutes("/como-jugar/juego-del-impostor", ComoJogar)}
+
+      {i18nRoutes("/como-jogar/jogo-do-impostor-desenho", ComoJogarDesenho)}
+      {i18nRoutes("/how-to-play/impostor-drawing-game", ComoJogarDesenho)}
+      {i18nRoutes("/como-jugar/juego-del-impostor-dibujo", ComoJogarDesenho)}
+
+      {i18nRoutes("/como-jogar/sincronia", ComoJogarSincronia)}
+      {i18nRoutes("/how-to-play/sincronia", ComoJogarSincronia)}
+      {i18nRoutes("/como-jugar/sincronia", ComoJogarSincronia)}
+
+      {/* Legacy redirects — keep old URLs working */}
       {i18nRoutes("/comojogar", ComoJogar)}
       {i18nRoutes("/como-jogar", ComoJogar)}
       {i18nRoutes("/how-to-play", ComoJogar)}
