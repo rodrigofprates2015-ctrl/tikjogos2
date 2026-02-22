@@ -329,7 +329,7 @@ export default function ComoJogarSincronia() {
 
           {/* CTA */}
           <div className="text-center">
-            <Link href={langPath("/respostas-em-comum")}>
+            <Link href={langPath("/")}>
               <button className="px-12 py-5 rounded-2xl font-black text-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-b-[6px] border-emerald-800 hover:brightness-110 active:border-b-0 active:translate-y-2 transition-all shadow-2xl">
                 {c.playNow}
               </button>

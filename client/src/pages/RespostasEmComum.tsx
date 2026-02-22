@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRCGameStore } from '@/lib/rcGameStore';
 import { RC_CATEGORIES, type RCCategory } from '@/data/rcQuestions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Copy, Users, Crown, LogOut, Play, Send, Clock, Trophy, ArrowLeft, X, Settings } from 'lucide-react';
+import { useLocation } from 'wouter';
+import { Loader2, Copy, Users, Crown, LogOut, Play, Send, Clock, Trophy, X, Settings } from 'lucide-react';
 import sincroniaLogo from '@/assets/Sincronia.png';
 
 // ── HomeScreen (standalone page — redirects from /respostas-em-comum) ──
@@ -144,8 +145,8 @@ const RCLobbyScreen = () => {
       <div className="bg-[#242642] rounded-[2rem] p-6 md:p-8 shadow-2xl border-2 border-[#2f3252] w-[90%] max-w-lg z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <button onClick={leaveGame} className="p-2 rounded-xl hover:bg-[#1a2a3a] text-gray-400 hover:text-white transition-colors">
-            <ArrowLeft size={20} />
+          <button onClick={leaveGame} className="p-3 bg-slate-800 rounded-2xl hover:bg-rose-500 transition-all border-b-4 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group">
+            <LogOut size={20} strokeWidth={3} className="group-hover:animate-pulse" />
           </button>
           <div className="text-center">
             <div className="text-xs text-gray-500 uppercase tracking-wider">Sala</div>
@@ -501,15 +502,24 @@ const RCNotifications = () => {
 
 export default function RespostasEmComum() {
   const { phase } = useRCGameStore();
+  const [, navigate] = useLocation();
 
   useEffect(() => {
     document.title = 'Respostas em Comum - TikJogos';
   }, []);
 
+  // Redirect to home if no active game
+  useEffect(() => {
+    if (phase === 'home') {
+      navigate('/');
+    }
+  }, [phase, navigate]);
+
+  if (phase === 'home') return null;
+
   return (
     <>
       <RCNotifications />
-      {phase === 'home' && <RCHomeScreen />}
       {phase === 'lobby' && <RCLobbyScreen />}
       {phase === 'answering' && <RCQuestionScreen />}
       {phase === 'roundResult' && <RCRoundResultScreen />}

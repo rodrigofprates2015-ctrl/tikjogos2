@@ -1697,7 +1697,7 @@ const HomeScreen = () => {
                 <li><Link href={langPath("/comojogar")} className="hover:text-purple-400 transition-colors">{t('nav.howToPlay', 'Como Jogar')}</Link></li>
                 <li><Link href="/jogo-do-impostor/temas" className="hover:text-purple-400 transition-colors">{t('nav.themes', 'Temas')}</Link></li>
                 <li><Link href={langPath("/desenho-impostor")} className="hover:text-purple-400 transition-colors">Desenho do Impostor</Link></li>
-                <li><Link href={langPath("/respostas-em-comum")} className="hover:text-purple-400 transition-colors">Sincronia</Link></li>
+                <li><Link href={langPath("/")} className="hover:text-purple-400 transition-colors">Sincronia</Link></li>
                 <li><Link href={langPath("/modos")} className="hover:text-purple-400 transition-colors">{t('gameModes.title', 'Modos de Jogo')}</Link></li>
                 <li><Link href={langPath("/termos")} className="hover:text-purple-400 transition-colors">{t('nav.terms', 'Termos de Uso')}</Link></li>
                 <li><Link href={langPath("/privacidade")} className="hover:text-purple-400 transition-colors">{t('nav.privacy', 'Privacidade')}</Link></li>
