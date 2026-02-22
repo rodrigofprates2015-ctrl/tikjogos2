@@ -364,7 +364,7 @@ const RCLobbyScreen = () => {
 // ── QuestionScreen ─────────────────────────────────────────────────────
 
 const RCQuestionScreen = () => {
-  const { currentRound, totalRounds, currentQuestion, timeLeft, myAnswer, setMyAnswer, submitAnswer, hasSubmitted, answeredCount, room, leaveGame } = useRCGameStore();
+  const { currentRound, totalRounds, currentQuestion, timeLeft, myAnswer, setMyAnswer, submitAnswer, hasSubmitted, answeredCount, room, returnToLobby } = useRCGameStore();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -388,7 +388,7 @@ const RCQuestionScreen = () => {
         {/* Round + Timer header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <button onClick={leaveGame} className="p-2 bg-slate-800 rounded-xl hover:bg-blue-500 transition-all text-slate-400 hover:text-white" title="Voltar ao início">
+            <button onClick={returnToLobby} className="p-2 bg-slate-800 rounded-xl hover:bg-blue-500 transition-all text-slate-400 hover:text-white" title="Voltar ao lobby">
               <Home size={16} />
             </button>
             <div className="px-4 py-2 rounded-xl bg-[#242642] border border-[#3d4a5c]">
@@ -455,7 +455,7 @@ const RCQuestionScreen = () => {
 // ── RoundResultScreen ──────────────────────────────────────────────────
 
 const RCRoundResultScreen = () => {
-  const { roundResult, scores, room, user, currentRound, totalRounds, nextRound, leaveGame } = useRCGameStore();
+  const { roundResult, scores, room, user, currentRound, totalRounds, nextRound, returnToLobby } = useRCGameStore();
   if (!roundResult || !room || !user) return null;
 
   const isHost = room.hostId === user.uid;
@@ -467,9 +467,9 @@ const RCRoundResultScreen = () => {
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#1a1b2e] px-4 py-8">
       <div className="w-[90%] max-w-lg z-10">
-        {/* Header with home button */}
+        {/* Header with lobby button */}
         <div className="flex items-center justify-between mb-4">
-          <button onClick={leaveGame} className="p-2 bg-slate-800 rounded-xl hover:bg-blue-500 transition-all text-slate-400 hover:text-white" title="Voltar ao início">
+          <button onClick={returnToLobby} className="p-2 bg-slate-800 rounded-xl hover:bg-blue-500 transition-all text-slate-400 hover:text-white" title="Voltar ao lobby">
             <Home size={16} />
           </button>
           <div className="text-center flex-1">
@@ -564,9 +564,9 @@ const RCFinalScoreScreen = () => {
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#1a1b2e] px-4 py-8">
       <div className="w-[90%] max-w-lg z-10">
-        {/* Home button */}
+        {/* Lobby button */}
         <div className="mb-4">
-          <button onClick={leaveGame} className="p-2 bg-slate-800 rounded-xl hover:bg-blue-500 transition-all text-slate-400 hover:text-white" title="Voltar ao início">
+          <button onClick={returnToLobby} className="p-2 bg-slate-800 rounded-xl hover:bg-blue-500 transition-all text-slate-400 hover:text-white" title="Voltar ao lobby">
             <Home size={16} />
           </button>
         </div>
