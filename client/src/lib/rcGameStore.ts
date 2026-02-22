@@ -26,6 +26,7 @@ export type RCRoundResult = {
 
 export type RCGamePhase =
   | 'home'
+  | 'themeSelect'  // Host picks a theme after creating room
   | 'lobby'
   | 'answering'    // Players are typing answers
   | 'roundResult'  // Showing round results
@@ -80,6 +81,7 @@ export type RCGameState = {
   joinRoom: (code: string) => Promise<boolean>;
   leaveGame: () => void;
   connectWebSocket: (code: string) => void;
+  selectTheme: (category?: string) => void;
   startGame: (config?: Partial<RCGameConfig>) => void;
   submitAnswer: (answer: string) => void;
   nextRound: () => void;
@@ -156,7 +158,7 @@ export const useRCGameStore = create<RCGameState>((set, get) => ({
       const data = await response.json();
       set({
         room: { code: data.code, hostId: data.hostId, players: data.players },
-        phase: 'lobby',
+        phase: 'themeSelect',
         isLoading: false,
         scores: {},
       });
@@ -193,6 +195,13 @@ export const useRCGameStore = create<RCGameState>((set, get) => ({
       set({ isLoading: false });
       return false;
     }
+  },
+
+  selectTheme: (category?: string) => {
+    set({
+      config: { ...get().config, category },
+      phase: 'lobby',
+    });
   },
 
   leaveGame: () => {
