@@ -3,11 +3,14 @@ import { useRCGameStore } from '@/lib/rcGameStore';
 import { RC_CATEGORIES, type RCCategory } from '@/data/rcQuestions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Copy, Users, Crown, LogOut, Play, Send, Clock, Trophy, ArrowLeft, X, Settings } from 'lucide-react';
+import sincroniaLogo from '@/assets/Sincronia.png';
 
-// ── HomeScreen ─────────────────────────────────────────────────────────
+// ── HomeScreen (standalone page — redirects from /respostas-em-comum) ──
 
 const RCHomeScreen = () => {
-  const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname, savedNickname } = useRCGameStore();
+  // If user lands directly on /respostas-em-comum, show a minimal home
+  // The main entry point is the card on the Impostor home feed
+  const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname } = useRCGameStore();
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [saveNick, setSaveNick] = useState(false);
@@ -42,10 +45,14 @@ const RCHomeScreen = () => {
       </div>
 
       <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in z-10">
-        <div className="text-center mb-6">
-          <div className="text-5xl mb-2">🎯</div>
-          <h1 className="text-2xl md:text-3xl font-black text-white">Respostas em Comum</h1>
-          <p className="text-sm text-gray-400 mt-1">Pense como a maioria e ganhe pontos!</p>
+        {/* Logo */}
+        <div className="flex justify-center mb-3">
+          <img
+            src={sincroniaLogo}
+            alt="Logo Sincronia - Respostas em Comum - TikJogos"
+            width={575} height={133}
+            className="h-28 md:h-36 object-contain"
+          />
         </div>
 
         <div className="space-y-3">
@@ -55,57 +62,46 @@ const RCHomeScreen = () => {
             value={name}
             onChange={e => setName(e.target.value)}
             maxLength={20}
-            className="w-full px-5 py-4 rounded-2xl bg-[#1a2a3a] border-2 border-[#3d4a5c] text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors text-lg font-bold"
+            className="input-dark"
           />
 
           <button
             onClick={handleCreate}
             disabled={isLoading}
-            className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-emerald-500 to-teal-500 border-emerald-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-orange-500 to-amber-500 border-orange-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? <Loader2 size={28} className="animate-spin" /> : <Play size={28} />}
+            {isLoading ? <Loader2 size={28} className="animate-spin" /> : <Play size={28} className="animate-bounce" />}
             CRIAR SALA
           </button>
 
-          <div className="flex items-center gap-2 my-2">
-            <div className="flex-1 h-px bg-[#3d4a5c]" />
-            <span className="text-xs text-gray-500 font-bold">OU</span>
-            <div className="flex-1 h-px bg-[#3d4a5c]" />
+          <div className="flex items-center gap-4 py-2">
+            <div className="flex-1 h-px bg-[#4a6a8a]" />
+            <span className="text-[#8aa0b0] text-sm font-bold">OU</span>
+            <div className="flex-1 h-px bg-[#4a6a8a]" />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <input
               type="text"
-              placeholder="Código da sala"
+              placeholder="CÓDIGO"
               value={code}
               onChange={e => setCode(e.target.value.toUpperCase())}
               maxLength={5}
-              className="flex-1 px-4 py-4 rounded-2xl bg-[#1a2a3a] border-2 border-[#3d4a5c] text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors text-lg font-bold text-center tracking-[0.3em]"
+              className="input-code flex-1"
             />
             <button
               onClick={handleJoin}
               disabled={isLoading}
-              className="px-6 py-4 rounded-2xl font-bold bg-[#3d4a5c] text-white hover:bg-emerald-600 transition-colors disabled:opacity-50"
+              className="px-6 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-2 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-green-500 to-emerald-500 border-green-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2 disabled:opacity-50 whitespace-nowrap"
             >
               ENTRAR
             </button>
           </div>
 
-          <label className="flex items-center gap-2 cursor-pointer px-1 mt-2">
-            <input type="checkbox" checked={saveNick} onChange={e => setSaveNick(e.target.checked)} className="w-4 h-4 rounded accent-emerald-500" />
-            <span className="text-sm text-gray-400">Guardar nickname</span>
+          <label className="flex items-center gap-2 cursor-pointer px-1">
+            <input type="checkbox" checked={saveNick} onChange={e => setSaveNick(e.target.checked)} className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]" />
+            <span className="text-sm text-[#8aa0b0]">Guardar nickname</span>
           </label>
-        </div>
-
-        <div className="mt-6 p-4 rounded-2xl bg-[#1a2a3a]/50 border border-[#3d4a5c]">
-          <h3 className="text-sm font-bold text-emerald-400 mb-2">Como funciona?</h3>
-          <ul className="text-xs text-gray-400 space-y-1">
-            <li>• Uma pergunta aparece para todos</li>
-            <li>• Todos respondem ao mesmo tempo</li>
-            <li>• Respostas iguais = +1 ponto cada</li>
-            <li>• Resposta única = 0 pontos</li>
-            <li>• Pense como a maioria!</li>
-          </ul>
         </div>
       </div>
     </div>

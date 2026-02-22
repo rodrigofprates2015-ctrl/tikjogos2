@@ -83,6 +83,8 @@ import tripulantePincelImg from "@assets/TripulantePincel.webp";
 import impostorPincelImg from "@assets/Impostor_pincel.webp";
 import bannerDesenhoImpostor from "@assets/Banner_jogo_desenho_impostor.webp";
 import bannerDesenhoImpostorMobile from "@assets/Banner_mobile.webp";
+import sincroniaLogo from "@assets/Sincronia.png";
+import { useRCGameStore } from "@/lib/rcGameStore";
 import { SideAds } from "@/components/AdSense";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
@@ -1064,6 +1066,145 @@ const DrawingGameCard = () => {
   );
 };
 
+const SincroniaGameCard = () => {
+  const rcStore = useRCGameStore();
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const { t, langPath } = useLanguage();
+  const [rcName, setRcName] = useState(() => localStorage.getItem('tikjogos_saved_nickname') || '');
+  const [rcCode, setRcCode] = useState('');
+  const [rcLoading, setRcLoading] = useState(false);
+
+  const handleRcCreate = async () => {
+    if (!rcName.trim()) {
+      toast({ title: "Nome necessário", description: "Por favor, digite seu nome.", variant: "destructive" });
+      return;
+    }
+    setRcLoading(true);
+    rcStore.setUser(rcName);
+    await rcStore.createRoom();
+    setRcLoading(false);
+    navigate('/respostas-em-comum');
+  };
+
+  const handleRcJoin = async () => {
+    if (!rcName.trim()) {
+      toast({ title: "Nome necessário", description: "Por favor, digite seu nome.", variant: "destructive" });
+      return;
+    }
+    if (!rcCode.trim()) {
+      toast({ title: "Código inválido", description: "Digite o código da sala.", variant: "destructive" });
+      return;
+    }
+    setRcLoading(true);
+    rcStore.setUser(rcName);
+    const success = await rcStore.joinRoom(rcCode.toUpperCase());
+    setRcLoading(false);
+    if (success) {
+      navigate('/respostas-em-comum');
+    } else {
+      toast({ title: "Erro ao entrar", description: "Sala não encontrada ou código inválido.", variant: "destructive" });
+    }
+  };
+
+  return (
+    <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24">
+      {/* Logo */}
+      <div className="flex justify-center mb-3">
+        <img
+          src={sincroniaLogo}
+          alt="Logo Sincronia - Respostas em Comum - TikJogos"
+          width={575} height={133}
+          loading="lazy"
+          className="h-28 md:h-36 object-contain"
+        />
+      </div>
+
+      {/* Form */}
+      <div className="space-y-3">
+        {/* Nickname input */}
+        <input
+          type="text"
+          placeholder={t('home.nickname', 'Seu nickname')}
+          value={rcName}
+          onChange={(e) => setRcName(e.target.value)}
+          className="input-dark"
+          data-testid="input-name-sincronia"
+        />
+
+        {/* Create room button */}
+        <button
+          onClick={handleRcCreate}
+          disabled={rcLoading}
+          className={cn(
+            "w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
+            !rcLoading
+              ? 'bg-gradient-to-r from-orange-500 to-amber-500 border-orange-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2'
+              : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+          )}
+          data-testid="button-create-room-sincronia"
+        >
+          {rcLoading ? <Loader2 size={28} className="animate-spin" /> : <Zap size={28} className="animate-bounce" />}
+          {t('home.createRoom', 'CRIAR SALA').toUpperCase()}
+        </button>
+
+        {/* Save nickname checkbox */}
+        <div className="flex items-center justify-between px-1">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={!!localStorage.getItem('tikjogos_saved_nickname')}
+              onChange={(e) => {
+                if (e.target.checked && rcName.trim()) {
+                  localStorage.setItem('tikjogos_saved_nickname', rcName.trim());
+                } else {
+                  localStorage.removeItem('tikjogos_saved_nickname');
+                }
+              }}
+              className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]"
+              data-testid="checkbox-save-nickname-sincronia"
+            />
+            <span className="text-sm text-[#8aa0b0]">{t('home.saveNickname', 'Guardar nickname')}</span>
+          </label>
+        </div>
+
+        {/* OR divider */}
+        <div className="flex items-center gap-4 py-2">
+          <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+          <span className="text-[#8aa0b0] text-sm font-bold">OU</span>
+          <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+        </div>
+
+        {/* Code input and Enter button */}
+        <div className="flex gap-3">
+          <input
+            type="text"
+            placeholder={t('home.roomCode', 'CÓDIGO').toUpperCase()}
+            value={rcCode}
+            onChange={(e) => setRcCode(e.target.value.toUpperCase())}
+            maxLength={5}
+            className="input-code flex-1"
+            data-testid="input-room-code-sincronia"
+          />
+          <button
+            onClick={handleRcJoin}
+            disabled={rcLoading}
+            className={cn(
+              "px-6 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-2 transition-all duration-300 border-b-[6px] shadow-2xl whitespace-nowrap",
+              !rcLoading
+                ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2'
+                : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+            )}
+            data-testid="button-join-room-sincronia"
+          >
+            {t('home.enterCode', 'ENTRAR').toUpperCase()}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const HomeScreen = () => {
   const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname, clearSavedNickname, savedNickname } = useGameStore();
   const [name, setNameInput] = useState("");
@@ -1440,6 +1581,13 @@ const HomeScreen = () => {
           </div>
         </div>
 
+        {/* Sincronia - Respostas em Comum game card */}
+        <div id="sincronia" className="relative w-full flex flex-col items-center">
+          <div className="relative z-10 w-full flex justify-center">
+            <SincroniaGameCard />
+          </div>
+        </div>
+
       </div>
 
       {/* Footer */}
@@ -1480,6 +1628,7 @@ const HomeScreen = () => {
                 <li><Link href={langPath("/comojogar")} className="hover:text-purple-400 transition-colors">{t('nav.howToPlay', 'Como Jogar')}</Link></li>
                 <li><Link href="/jogo-do-impostor/temas" className="hover:text-purple-400 transition-colors">{t('nav.themes', 'Temas')}</Link></li>
                 <li><Link href={langPath("/desenho-impostor")} className="hover:text-purple-400 transition-colors">Desenho do Impostor</Link></li>
+                <li><Link href={langPath("/respostas-em-comum")} className="hover:text-purple-400 transition-colors">Sincronia</Link></li>
                 <li><Link href={langPath("/modos")} className="hover:text-purple-400 transition-colors">{t('gameModes.title', 'Modos de Jogo')}</Link></li>
                 <li><Link href={langPath("/termos")} className="hover:text-purple-400 transition-colors">{t('nav.terms', 'Termos de Uso')}</Link></li>
                 <li><Link href={langPath("/privacidade")} className="hover:text-purple-400 transition-colors">{t('nav.privacy', 'Privacidade')}</Link></li>
