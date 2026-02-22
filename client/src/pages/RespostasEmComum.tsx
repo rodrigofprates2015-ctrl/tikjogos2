@@ -5,6 +5,15 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
 import { Loader2, Copy, Users, Crown, LogOut, Play, Send, Clock, Trophy, X, Settings } from 'lucide-react';
 import sincroniaLogo from '@/assets/Sincronia.png';
+import jogosCover from '@/assets/jogos_cover.png';
+import impostorBanner from '@/assets/Banner.webp';
+
+// Theme cover images: animes and marvel reuse the impostor banner, jogos has its own
+const THEME_COVERS: Partial<Record<RCCategory, string>> = {
+  animes: impostorBanner,
+  jogos: jogosCover,
+  marvel: impostorBanner,
+};
 
 // ── HomeScreen (standalone page — redirects from /respostas-em-comum) ──
 
@@ -178,13 +187,33 @@ const RCLobbyScreen = () => {
               </div>
             </div>
             <div>
-              <label className="text-xs text-gray-400 block mb-1">Categoria (opcional)</label>
+              <label className="text-xs text-gray-400 block mb-2">Tema</label>
+              {/* Themed categories with cover images */}
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                {(Object.entries(RC_CATEGORIES) as [RCCategory, { label: string; emoji: string }][])
+                  .filter(([key]) => THEME_COVERS[key])
+                  .map(([key, val]) => (
+                  <button
+                    key={key}
+                    onClick={() => setCategory(category === key ? undefined : key)}
+                    className={`relative rounded-xl overflow-hidden transition-all ${category === key ? 'ring-2 ring-emerald-400 scale-105' : 'opacity-70 hover:opacity-100'}`}
+                  >
+                    <img src={THEME_COVERS[key]} alt={val.label} className="w-full h-16 object-cover" />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <span className="text-white font-black text-xs drop-shadow-lg">{val.emoji} {val.label}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {/* Other categories as pills */}
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => setCategory(undefined)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${!category ? 'bg-emerald-600 text-white' : 'bg-[#242642] text-gray-400'}`}>
                   Todas
                 </button>
-                {(Object.entries(RC_CATEGORIES) as [RCCategory, { label: string; emoji: string }][]).map(([key, val]) => (
-                  <button key={key} onClick={() => setCategory(key)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${category === key ? 'bg-emerald-600 text-white' : 'bg-[#242642] text-gray-400'}`}>
+                {(Object.entries(RC_CATEGORIES) as [RCCategory, { label: string; emoji: string }][])
+                  .filter(([key]) => !THEME_COVERS[key])
+                  .map(([key, val]) => (
+                  <button key={key} onClick={() => setCategory(category === key ? undefined : key)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${category === key ? 'bg-emerald-600 text-white' : 'bg-[#242642] text-gray-400'}`}>
                     {val.emoji} {val.label}
                   </button>
                 ))}
