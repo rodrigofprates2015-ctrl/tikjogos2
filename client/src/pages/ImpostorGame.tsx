@@ -58,7 +58,8 @@ import {
   Instagram,
   MessageCircle,
   Paintbrush,
-  BookOpen
+  BookOpen,
+  ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -954,29 +955,26 @@ const DrawingGameCard = () => {
   };
 
   return (
-    <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24">
-      {/* Logo */}
-      <div className="flex justify-center mb-3">
+    <div className="space-y-3">
+      {/* Large logo */}
+      <div className="flex justify-center mb-1">
         <img
           src={logoImpostorArt}
           alt="Logo Desenho do Impostor - TikJogos"
           width={550} height={192}
-          loading="lazy"
-          className="h-28 md:h-36 object-contain"
+          className="h-24 md:h-32 object-contain"
         />
       </div>
 
-      {/* Form */}
-      <div className="space-y-3">
-        {/* Nickname input */}
-        <input
-          type="text"
-          placeholder={t('home.nickname', 'Seu nickname')}
-          value={drawName}
-          onChange={(e) => setDrawName(e.target.value)}
-          className="input-dark"
-          data-testid="input-name-drawing"
-        />
+      {/* Nickname input */}
+      <input
+        type="text"
+        placeholder={t('home.nickname', 'Seu nickname')}
+        value={drawName}
+        onChange={(e) => setDrawName(e.target.value)}
+        className="input-dark"
+        data-testid="input-name-drawing"
+      />
 
         {/* Create room button */}
         <button
@@ -985,7 +983,7 @@ const DrawingGameCard = () => {
           className={cn(
             "w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
             !drawLoading
-              ? 'bg-gradient-to-r from-orange-500 to-amber-500 border-orange-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2'
+              ? 'bg-gradient-to-r from-[#46cfa5] to-[#2ea87e] border-[#1e7a5a] text-white hover:brightness-110 active:border-b-0 active:translate-y-2'
               : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
           )}
           data-testid="button-create-room-drawing"
@@ -1064,7 +1062,6 @@ const DrawingGameCard = () => {
             {t('home.howToPlay', 'COMO JOGAR').toUpperCase()}
           </button>
         </Link>
-      </div>
     </div>
   );
 };
@@ -1111,29 +1108,26 @@ const SincroniaGameCard = () => {
   };
 
   return (
-    <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24">
-      {/* Logo */}
-      <div className="flex justify-center mb-3">
+    <div className="space-y-3">
+      {/* Large logo */}
+      <div className="flex justify-center mb-1">
         <img
           src={sincroniaLogo}
           alt="Logo Sincronia - Respostas em Comum - TikJogos"
           width={575} height={133}
-          loading="lazy"
-          className="h-28 md:h-36 object-contain"
+          className="h-24 md:h-32 object-contain"
         />
       </div>
 
-      {/* Form */}
-      <div className="space-y-3">
-        {/* Nickname input */}
-        <input
-          type="text"
-          placeholder={t('home.nickname', 'Seu nickname')}
-          value={rcName}
-          onChange={(e) => setRcName(e.target.value)}
-          className="input-dark"
-          data-testid="input-name-sincronia"
-        />
+      {/* Nickname input */}
+      <input
+        type="text"
+        placeholder={t('home.nickname', 'Seu nickname')}
+        value={rcName}
+        onChange={(e) => setRcName(e.target.value)}
+        className="input-dark"
+        data-testid="input-name-sincronia"
+      />
 
         {/* Create room button */}
         <button
@@ -1142,7 +1136,7 @@ const SincroniaGameCard = () => {
           className={cn(
             "w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
             !rcLoading
-              ? 'bg-gradient-to-r from-orange-500 to-amber-500 border-orange-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2'
+              ? 'bg-gradient-to-r from-[#43065c] to-[#6b21a8] border-[#2d0440] text-white hover:brightness-110 active:border-b-0 active:translate-y-2'
               : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
           )}
           data-testid="button-create-room-sincronia"
@@ -1214,7 +1208,6 @@ const SincroniaGameCard = () => {
             {t('home.howToPlay', 'COMO JOGAR').toUpperCase()}
           </button>
         </Link>
-      </div>
     </div>
   );
 };
@@ -1226,6 +1219,7 @@ const HomeScreen = () => {
   const [saveNicknameChecked, setSaveNicknameChecked] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isThemeWorkshopOpen, setIsThemeWorkshopOpen] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia'>('impostor');
   const { toast } = useToast();
   const { t, langPath, lang } = useLanguage();
 
@@ -1394,181 +1388,31 @@ const HomeScreen = () => {
         </div>
       </Link> */}
 
-      {/* Tripulante character - left side (desktop only) */}
-      <img 
-        src={tripulanteImg} 
-        alt="Personagem Tripulante do Jogo do Impostor - TikJogos" 
-        width="300"
-        height="420"
-        loading="lazy"
-        decoding="async"
-        className="hidden md:block absolute bottom-[220px] left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-10"
-      />
-
-      {/* Impostor character - right side (desktop only) */}
-      <img 
-        src={impostorImg} 
-        alt="Personagem Impostor do Jogo - TikJogos" 
-        width="300"
-        height="420"
-        loading="lazy"
-        decoding="async"
-        className="hidden md:block absolute bottom-[220px] right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-10"
-      />
-
-      {/* Main content area - flex-grow to push footer down */}
-      <div className="flex-1 flex flex-col items-center pt-6 md:pt-0 px-4 relative z-20">
-        {/* Mobile action buttons - above the card */}
-        <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
-
-        {/* Banner Desenho do Impostor - Mobile only */}
-        <div className="md:hidden w-[90%] max-w-md mb-4">
-          <a href="#desenho-impostor">
-            <img
-              src={bannerDesenhoImpostorMobile}
-              alt="Banner Jogo Desenho do Impostor - TikJogos"
-              width={684} height={148}
-              fetchPriority="high"
-              className="w-full h-auto rounded-2xl shadow-lg"
-            />
-          </a>
-        </div>
-
-        {/* Banner Desenho do Impostor - Desktop only */}
-        <div className="hidden md:block w-[95%] max-w-4xl mt-8 mb-4">
-          <a href="#desenho-impostor">
-            <img
-              src={bannerDesenhoImpostor}
-              alt="Banner Jogo Desenho do Impostor - TikJogos"
-              width={919} height={148}
-              loading="lazy"
-              className="w-full h-auto rounded-2xl shadow-lg hover:brightness-110 transition-all cursor-pointer"
-            />
-          </a>
-        </div>
-
-        {/* Main card */}
-        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24">
-          {/* Impostor logo with characters */}
-          <div className="flex justify-center mb-3">
-            <h1 className="sr-only">Jogo do Impostor Online Grátis - TikJogos</h1>
-            <img 
-              src={logoImpostor} 
-              alt="Logo Jogo do Impostor Online - TikJogos" 
-              width={575} height={133}
-              fetchPriority="high"
-              className="h-28 md:h-36 object-contain" 
-            />
-          </div>
-
-          {/* Form */}
-          <div className="space-y-3">
-            {/* Nickname input */}
-            <input
-              type="text"
-              placeholder={t('home.nickname', 'Seu nickname')}
-              value={name}
-              onChange={(e) => setNameInput(e.target.value)}
-              className="input-dark"
-              data-testid="input-name"
-            />
-
-            {/* Create room button */}
-            <button 
-              onClick={handleCreate} 
-              disabled={isLoading}
-              className={cn(
-                "w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
-                !isLoading
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 border-orange-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
-                  : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
-              )}
-              data-testid="button-create-room"
-            >
-              {isLoading ? <Loader2 size={28} className="animate-spin" /> : <Zap size={28} className="animate-bounce" />}
-              {t('home.createRoom', 'CRIAR SALA').toUpperCase()}
-            </button>
-
-            {/* Save nickname checkbox */}
-            <div className="flex items-center justify-between px-1">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={saveNicknameChecked}
-                  onChange={(e) => setSaveNicknameChecked(e.target.checked)}
-                  className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]"
-                  data-testid="checkbox-save-nickname"
-                />
-                <span className="text-sm text-[#8aa0b0]">{t('home.saveNickname', 'Guardar nickname')}</span>
-              </label>
-              {savedNickname && (
-                <button
-                  onClick={handleClearNickname}
-                  className="text-xs text-[#6a8aaa] hover:text-white transition-colors underline"
-                  data-testid="button-clear-nickname"
-                >
-                  {t('buttons.delete', 'Limpar')}
-                </button>
-              )}
-            </div>
-
-            {/* OR divider */}
-            <div className="flex items-center gap-4 py-2">
-              <div className="flex-1 h-px bg-[#4a6a8a]"></div>
-              <span className="text-[#8aa0b0] text-sm font-bold">OU</span>
-              <div className="flex-1 h-px bg-[#4a6a8a]"></div>
-            </div>
-
-            {/* Code input and Enter button */}
-            <div className="flex gap-3">
-              <input
-                type="text"
-                placeholder={t('home.roomCode', 'CÓDIGO').toUpperCase()}
-                value={code}
-                onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
-                maxLength={4}
-                className="input-code flex-1"
-                data-testid="input-room-code"
-              />
-              <button 
-                onClick={handleJoin}
-                disabled={isLoading}
-                className={cn(
-                  "px-6 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-2 transition-all duration-300 border-b-[6px] shadow-2xl whitespace-nowrap",
-                  !isLoading
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
-                    : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
-                )}
-                data-testid="button-join-room"
-              >
-                {t('home.enterCode', 'ENTRAR').toUpperCase()}
-              </button>
-            </div>
-
-            {/* OR divider */}
-            <div className="flex items-center gap-4 py-2">
-              <div className="flex-1 h-px bg-[#4a6a8a]"></div>
-              <span className="text-[#8aa0b0] text-sm font-bold">OU</span>
-              <div className="flex-1 h-px bg-[#4a6a8a]"></div>
-            </div>
-
-            {/* Local mode button */}
-            <Link href={langPath("/modo-local")}>
-              <button 
-                className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-purple-500 to-pink-500 border-purple-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
-                data-testid="button-local-mode"
-              >
-                <Smartphone size={28} />
-                {t('home.playLocal', 'MODO LOCAL').toUpperCase()}
-              </button>
-            </Link>
-
-          </div>
-        </div>
-
-        {/* Desenho do Impostor - Drawing game card */}
-        <div id="desenho-impostor" className="relative w-full flex flex-col items-center">
-          {/* Tripulante Pincel - left side (desktop only) */}
+      {/* Character images - change based on selected game (desktop only) */}
+      {selectedGame === 'impostor' && (
+        <>
+          <img 
+            src={tripulanteImg} 
+            alt="Personagem Tripulante do Jogo do Impostor - TikJogos" 
+            width="300"
+            height="420"
+            loading="lazy"
+            decoding="async"
+            className="hidden md:block absolute bottom-[220px] left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-10 transition-opacity duration-500"
+          />
+          <img 
+            src={impostorImg} 
+            alt="Personagem Impostor do Jogo - TikJogos" 
+            width="300"
+            height="420"
+            loading="lazy"
+            decoding="async"
+            className="hidden md:block absolute bottom-[220px] right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-10 transition-opacity duration-500"
+          />
+        </>
+      )}
+      {selectedGame === 'desenho' && (
+        <>
           <img 
             src={tripulantePincelImg} 
             alt="Personagem Tripulante com Pincel - TikJogos" 
@@ -1576,10 +1420,8 @@ const HomeScreen = () => {
             height="420"
             loading="lazy"
             decoding="async"
-            className="hidden md:block absolute bottom-0 left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-0 pointer-events-none"
+            className="hidden md:block absolute bottom-[220px] left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-10 transition-opacity duration-500"
           />
-
-          {/* Impostor Pincel - right side (desktop only) */}
           <img 
             src={impostorPincelImg} 
             alt="Personagem Impostor com Pincel - TikJogos" 
@@ -1587,17 +1429,12 @@ const HomeScreen = () => {
             height="420"
             loading="lazy"
             decoding="async"
-            className="hidden md:block absolute bottom-0 right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-0 pointer-events-none"
+            className="hidden md:block absolute bottom-[220px] right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-10 transition-opacity duration-500"
           />
-
-          <div className="relative z-10 w-full flex justify-center">
-            <DrawingGameCard />
-          </div>
-        </div>
-
-        {/* Sincronia - Respostas em Comum game card */}
-        <div id="sincronia" className="relative w-full flex flex-col items-center">
-          {/* Personagem esquerdo - left side (desktop only) */}
+        </>
+      )}
+      {selectedGame === 'sincronia' && (
+        <>
           <img 
             src={personagemEsquerdo} 
             alt="Personagem Sincronia lado esquerdo - TikJogos" 
@@ -1605,10 +1442,8 @@ const HomeScreen = () => {
             height="324"
             loading="lazy"
             decoding="async"
-            className="hidden md:block absolute bottom-0 left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-0 pointer-events-none"
+            className="hidden md:block absolute bottom-[220px] left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-10 transition-opacity duration-500"
           />
-
-          {/* Personagem direito - right side (desktop only) */}
           <img 
             src={personagemDireito} 
             alt="Personagem Sincronia lado direito - TikJogos" 
@@ -1616,12 +1451,210 @@ const HomeScreen = () => {
             height="326"
             loading="lazy"
             decoding="async"
-            className="hidden md:block absolute bottom-0 right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-0 pointer-events-none"
+            className="hidden md:block absolute bottom-[220px] right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-10 transition-opacity duration-500"
           />
+        </>
+      )}
 
-          <div className="relative z-10 w-full flex justify-center">
-            <SincroniaGameCard />
+      {/* Main content area - flex-grow to push footer down */}
+      <div className="flex-1 flex flex-col items-center pt-6 md:pt-0 px-4 relative z-20">
+        {/* Mobile action buttons - above the card */}
+        <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
+
+        {/* Game selector card */}
+        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24 mt-4 md:mt-12">
+          <h1 className="sr-only">Jogo do Impostor Online Grátis - TikJogos</h1>
+
+          {/* Game logo tabs */}
+          <div className="flex items-center justify-center gap-3 mb-4">
+            {/* Impostor logo tab */}
+            <button
+              onClick={() => setSelectedGame('impostor')}
+              className={cn(
+                "flex-1 rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer",
+                selectedGame === 'impostor'
+                  ? "border-orange-500 bg-[#2f3252] shadow-lg shadow-orange-500/20 scale-105"
+                  : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
+              )}
+              data-testid="tab-impostor"
+            >
+              <img 
+                src={logoImpostor} 
+                alt="Jogo do Impostor" 
+                className="h-12 md:h-16 object-contain mx-auto"
+              />
+            </button>
+
+            {/* Desenho logo tab */}
+            <button
+              onClick={() => setSelectedGame('desenho')}
+              className={cn(
+                "flex-1 rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer",
+                selectedGame === 'desenho'
+                  ? "border-[#46cfa5] bg-[#2f3252] shadow-lg shadow-[#46cfa5]/20 scale-105"
+                  : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
+              )}
+              data-testid="tab-desenho"
+            >
+              <img 
+                src={logoImpostorArt} 
+                alt="Desenho do Impostor" 
+                className="h-12 md:h-16 object-contain mx-auto"
+              />
+            </button>
+
+            {/* Sincronia logo tab */}
+            <button
+              onClick={() => setSelectedGame('sincronia')}
+              className={cn(
+                "flex-1 rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer",
+                selectedGame === 'sincronia'
+                  ? "border-[#43065c] bg-[#2f3252] shadow-lg shadow-[#43065c]/20 scale-105"
+                  : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
+              )}
+              data-testid="tab-sincronia"
+            >
+              <img 
+                src={sincroniaLogo} 
+                alt="Sincronia" 
+                className="h-12 md:h-16 object-contain mx-auto"
+              />
+            </button>
           </div>
+
+          {/* Animated indicator line */}
+          <div className="relative h-1 bg-[#1a1c2e] rounded-full mb-5 mx-2">
+            <div 
+              className={cn(
+                "absolute top-0 h-full w-1/3 rounded-full transition-all duration-300",
+                selectedGame === 'impostor' && "left-0 bg-gradient-to-r from-orange-500 to-amber-500",
+                selectedGame === 'desenho' && "left-1/3 bg-gradient-to-r from-[#46cfa5] to-[#2ea87e]",
+                selectedGame === 'sincronia' && "left-2/3 bg-gradient-to-r from-[#43065c] to-[#6b21a8]"
+              )}
+            />
+          </div>
+
+          {/* Impostor form */}
+          {selectedGame === 'impostor' && (
+            <div className="space-y-3 animate-fade-in">
+              {/* Large logo */}
+              <div className="flex justify-center mb-1">
+                <img 
+                  src={logoImpostor} 
+                  alt="Logo Jogo do Impostor Online - TikJogos" 
+                  width={575} height={133}
+                  className="h-24 md:h-32 object-contain" 
+                />
+              </div>
+
+              <input
+                type="text"
+                placeholder={t('home.nickname', 'Seu nickname')}
+                value={name}
+                onChange={(e) => setNameInput(e.target.value)}
+                className="input-dark"
+                data-testid="input-name"
+              />
+
+              <button 
+                onClick={handleCreate} 
+                disabled={isLoading}
+                className={cn(
+                  "w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
+                  !isLoading
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 border-orange-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
+                    : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+                )}
+                data-testid="button-create-room"
+              >
+                {isLoading ? <Loader2 size={28} className="animate-spin" /> : <Zap size={28} className="animate-bounce" />}
+                {t('home.createRoom', 'CRIAR SALA').toUpperCase()}
+              </button>
+
+              <div className="flex items-center justify-between px-1">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={saveNicknameChecked}
+                    onChange={(e) => setSaveNicknameChecked(e.target.checked)}
+                    className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]"
+                    data-testid="checkbox-save-nickname"
+                  />
+                  <span className="text-sm text-[#8aa0b0]">{t('home.saveNickname', 'Guardar nickname')}</span>
+                </label>
+                {savedNickname && (
+                  <button
+                    onClick={handleClearNickname}
+                    className="text-xs text-[#6a8aaa] hover:text-white transition-colors underline"
+                    data-testid="button-clear-nickname"
+                  >
+                    {t('buttons.delete', 'Limpar')}
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-4 py-2">
+                <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+                <span className="text-[#8aa0b0] text-sm font-bold">OU</span>
+                <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+              </div>
+
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  placeholder={t('home.roomCode', 'CÓDIGO').toUpperCase()}
+                  value={code}
+                  onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+                  maxLength={4}
+                  className="input-code flex-1"
+                  data-testid="input-room-code"
+                />
+                <button 
+                  onClick={handleJoin}
+                  disabled={isLoading}
+                  className={cn(
+                    "px-6 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-2 transition-all duration-300 border-b-[6px] shadow-2xl whitespace-nowrap",
+                    !isLoading
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
+                      : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+                  )}
+                  data-testid="button-join-room"
+                >
+                  {t('home.enterCode', 'ENTRAR').toUpperCase()}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-4 py-2">
+                <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+                <span className="text-[#8aa0b0] text-sm font-bold">OU</span>
+                <div className="flex-1 h-px bg-[#4a6a8a]"></div>
+              </div>
+
+              <Link href={langPath("/modo-local")}>
+                <button 
+                  className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-purple-500 to-pink-500 border-purple-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
+                  data-testid="button-local-mode"
+                >
+                  <Smartphone size={28} />
+                  {t('home.playLocal', 'MODO LOCAL').toUpperCase()}
+                </button>
+              </Link>
+            </div>
+          )}
+
+          {/* Drawing game form */}
+          {selectedGame === 'desenho' && (
+            <div className="animate-fade-in">
+              <DrawingGameCard />
+            </div>
+          )}
+
+          {/* Sincronia game form */}
+          {selectedGame === 'sincronia' && (
+            <div className="animate-fade-in">
+              <SincroniaGameCard />
+            </div>
+          )}
         </div>
 
       </div>
