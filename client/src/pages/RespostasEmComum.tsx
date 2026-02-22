@@ -3,11 +3,12 @@ import { useRCGameStore } from '@/lib/rcGameStore';
 
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
-import { Loader2, Copy, Users, Crown, LogOut, Play, Send, Clock, Trophy, X, Settings, Sparkles, Star, ArrowLeft } from 'lucide-react';
+import { Loader2, Copy, Users, Crown, LogOut, Play, Send, Clock, Trophy, X, Settings, Sparkles, Star, ArrowLeft, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import sincroniaLogo from '@/assets/Sincronia.png';
 import jogosCover from '@/assets/jogos_cover.png';
-import impostorBanner from '@/assets/Banner.webp';
+import animesCover from '@/assets/submode-animes.png';
+import marvelCover from '@/assets/submode-marvel.png';
 
 
 
@@ -128,8 +129,8 @@ interface RCThemeCard {
 
 const RC_THEME_CARDS: RCThemeCard[] = [
   { id: 'todas', name: 'Todas as Categorias', emoji: '🎲', description: 'Perguntas aleatórias de todos os temas', questionCount: 140, isRecommended: true },
-  { id: 'animes', name: 'Animes', emoji: '⚔️', description: 'Perguntas sobre personagens e universos de anime', questionCount: 30, cover: impostorBanner },
-  { id: 'marvel', name: 'Marvel', emoji: '🦸', description: 'Perguntas sobre heróis e vilões da Marvel', questionCount: 30, cover: impostorBanner },
+  { id: 'animes', name: 'Animes', emoji: '⚔️', description: 'Perguntas sobre personagens e universos de anime', questionCount: 30, cover: animesCover },
+  { id: 'marvel', name: 'Marvel', emoji: '🦸', description: 'Perguntas sobre heróis e vilões da Marvel', questionCount: 30, cover: marvelCover },
   { id: 'jogos', name: 'Jogos', emoji: '🎮', description: 'Perguntas sobre games e personagens', questionCount: 30, cover: jogosCover },
   { id: 'brasil', name: 'Brasil', emoji: '🇧🇷', description: 'Perguntas sobre cultura brasileira', questionCount: 10 },
   { id: 'escola', name: 'Vida Escolar', emoji: '🏫', description: 'Perguntas sobre o dia a dia na escola', questionCount: 10 },
@@ -154,6 +155,13 @@ const RCThemeSelectScreen = () => {
       <div className="relative bg-[#242642] rounded-[3rem] p-6 md:p-8 shadow-2xl border-4 border-[#2f3252] w-full max-w-3xl max-h-[90vh] overflow-hidden animate-fade-in flex flex-col z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={leaveGame}
+            className="p-2 bg-slate-800 rounded-xl hover:bg-blue-500 transition-all border-b-3 border-slate-950 hover:border-blue-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white"
+            title="Voltar ao início"
+          >
+            <Home className="w-5 h-5" />
+          </button>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-500/10 rounded-xl border-2 border-emerald-500/20">
               <Sparkles className="w-6 h-6 text-emerald-400" />
@@ -165,12 +173,7 @@ const RCThemeSelectScreen = () => {
               <p className="text-xs text-gray-400">Sala: {room.code}</p>
             </div>
           </div>
-          <button
-            onClick={leaveGame}
-            className="p-2 bg-slate-800 rounded-xl hover:bg-rose-500 transition-all border-b-3 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white"
-          >
-            <X className="w-6 h-6" strokeWidth={3} />
-          </button>
+          <div className="w-9" />
         </div>
 
         {/* Theme cards grid */}
@@ -239,7 +242,7 @@ const RCThemeSelectScreen = () => {
 // ── LobbyScreen ────────────────────────────────────────────────────────
 
 const RCLobbyScreen = () => {
-  const { room, user, leaveGame, startGame, kickPlayer, config } = useRCGameStore();
+  const { room, user, leaveGame, startGame, kickPlayer, config, goBackToThemeSelect } = useRCGameStore();
   const { toast } = useToast();
   const [mode, setMode] = useState<'classico' | 'rapido'>('classico');
 
@@ -271,16 +274,23 @@ const RCLobbyScreen = () => {
       <div className="bg-[#242642] rounded-[2rem] p-6 md:p-8 shadow-2xl border-2 border-[#2f3252] w-[90%] max-w-lg z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <button onClick={leaveGame} className="p-3 bg-slate-800 rounded-2xl hover:bg-rose-500 transition-all border-b-4 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group">
-            <LogOut size={20} strokeWidth={3} className="group-hover:animate-pulse" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={leaveGame} className="p-2 bg-slate-800 rounded-xl hover:bg-blue-500 transition-all border-b-3 border-slate-950 hover:border-blue-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white" title="Voltar ao início">
+              <Home size={18} />
+            </button>
+            {isHost && (
+              <button onClick={goBackToThemeSelect} className="p-2 bg-slate-800 rounded-xl hover:bg-amber-500 transition-all border-b-3 border-slate-950 hover:border-amber-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white" title="Trocar tema">
+                <ArrowLeft size={18} />
+              </button>
+            )}
+          </div>
           <div className="text-center">
             <div className="text-xs text-gray-500 uppercase tracking-wider">Sala</div>
             <button onClick={copyCode} className="flex items-center gap-2 text-2xl font-black text-white hover:text-emerald-400 transition-colors">
               {room.code} <Copy size={16} />
             </button>
           </div>
-          <div className="w-12" />
+          <div className="w-20" />
         </div>
 
         {/* Selected theme display */}
@@ -354,7 +364,7 @@ const RCLobbyScreen = () => {
 // ── QuestionScreen ─────────────────────────────────────────────────────
 
 const RCQuestionScreen = () => {
-  const { currentRound, totalRounds, currentQuestion, timeLeft, myAnswer, setMyAnswer, submitAnswer, hasSubmitted, answeredCount, room } = useRCGameStore();
+  const { currentRound, totalRounds, currentQuestion, timeLeft, myAnswer, setMyAnswer, submitAnswer, hasSubmitted, answeredCount, room, leaveGame } = useRCGameStore();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -377,10 +387,15 @@ const RCQuestionScreen = () => {
       <div className="w-[90%] max-w-lg z-10">
         {/* Round + Timer header */}
         <div className="flex items-center justify-between mb-4">
-          <div className="px-4 py-2 rounded-xl bg-[#242642] border border-[#3d4a5c]">
-            <span className="text-sm font-bold text-gray-400">Rodada </span>
-            <span className="text-lg font-black text-white">{currentRound}</span>
-            <span className="text-sm text-gray-500">/{totalRounds}</span>
+          <div className="flex items-center gap-2">
+            <button onClick={leaveGame} className="p-2 bg-slate-800 rounded-xl hover:bg-blue-500 transition-all text-slate-400 hover:text-white" title="Voltar ao início">
+              <Home size={16} />
+            </button>
+            <div className="px-4 py-2 rounded-xl bg-[#242642] border border-[#3d4a5c]">
+              <span className="text-sm font-bold text-gray-400">Rodada </span>
+              <span className="text-lg font-black text-white">{currentRound}</span>
+              <span className="text-sm text-gray-500">/{totalRounds}</span>
+            </div>
           </div>
           <div className={`px-4 py-2 rounded-xl flex items-center gap-2 ${urgentTime ? 'bg-red-500/20 border-red-500/50 animate-pulse' : 'bg-[#242642] border-[#3d4a5c]'} border`}>
             <Clock size={16} className={urgentTime ? 'text-red-400' : 'text-emerald-400'} />
@@ -440,7 +455,7 @@ const RCQuestionScreen = () => {
 // ── RoundResultScreen ──────────────────────────────────────────────────
 
 const RCRoundResultScreen = () => {
-  const { roundResult, scores, room, user, currentRound, totalRounds, nextRound } = useRCGameStore();
+  const { roundResult, scores, room, user, currentRound, totalRounds, nextRound, leaveGame } = useRCGameStore();
   if (!roundResult || !room || !user) return null;
 
   const isHost = room.hostId === user.uid;
@@ -452,10 +467,16 @@ const RCRoundResultScreen = () => {
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#1a1b2e] px-4 py-8">
       <div className="w-[90%] max-w-lg z-10">
-        {/* Question recap */}
-        <div className="text-center mb-4">
-          <span className="text-xs text-gray-500 uppercase tracking-wider">Rodada {currentRound}/{totalRounds}</span>
-          <h2 className="text-lg font-bold text-gray-300 mt-1">{roundResult.questionText}</h2>
+        {/* Header with home button */}
+        <div className="flex items-center justify-between mb-4">
+          <button onClick={leaveGame} className="p-2 bg-slate-800 rounded-xl hover:bg-blue-500 transition-all text-slate-400 hover:text-white" title="Voltar ao início">
+            <Home size={16} />
+          </button>
+          <div className="text-center flex-1">
+            <span className="text-xs text-gray-500 uppercase tracking-wider">Rodada {currentRound}/{totalRounds}</span>
+            <h2 className="text-lg font-bold text-gray-300 mt-1">{roundResult.questionText}</h2>
+          </div>
+          <div className="w-9" />
         </div>
 
         {/* Answer groups */}
@@ -543,6 +564,13 @@ const RCFinalScoreScreen = () => {
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#1a1b2e] px-4 py-8">
       <div className="w-[90%] max-w-lg z-10">
+        {/* Home button */}
+        <div className="mb-4">
+          <button onClick={leaveGame} className="p-2 bg-slate-800 rounded-xl hover:bg-blue-500 transition-all text-slate-400 hover:text-white" title="Voltar ao início">
+            <Home size={16} />
+          </button>
+        </div>
+
         {/* Winner announcement */}
         <div className="text-center mb-6">
           <div className="text-6xl mb-3">{isWinner ? '🎉' : '🏆'}</div>

@@ -82,6 +82,7 @@ export type RCGameState = {
   leaveGame: () => void;
   connectWebSocket: (code: string) => void;
   selectTheme: (category?: string) => void;
+  goBackToThemeSelect: () => void;
   startGame: (config?: Partial<RCGameConfig>) => void;
   submitAnswer: (answer: string) => void;
   nextRound: () => void;
@@ -202,6 +203,10 @@ export const useRCGameStore = create<RCGameState>((set, get) => ({
       config: { ...get().config, category },
       phase: 'lobby',
     });
+  },
+
+  goBackToThemeSelect: () => {
+    set({ phase: 'themeSelect' });
   },
 
   leaveGame: () => {
