@@ -1141,10 +1141,15 @@ function setupGameMode(mode: GameModeType, players: Player[], impostorId: string
   }
 }
 
+import { setupRCGame } from './rcGame.js';
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+
+  // Setup Respostas em Comum game (separate WebSocket + API)
+  setupRCGame(httpServer, app);
 
   // Serve version info
   app.get("/api/version", (_req, res) => {

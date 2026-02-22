@@ -33,6 +33,7 @@ const ThemePage = lazy(() => import("@/pages/ThemePage"));
 const Temas = lazy(() => import("@/pages/Temas"));
 const GameModes = lazy(() => import("@/pages/GameModes"));
 const DesenhoImpostor = lazy(() => import("@/pages/DesenhoImpostor"));
+const RespostasEmComum = lazy(() => import("@/pages/RespostasEmComum"));
 
 function VersionManager() {
   useEffect(() => {
@@ -147,6 +148,10 @@ function AppRouter() {
 
       {/* Desenho do Impostor */}
       {i18nRoutes("/desenho-impostor", DesenhoImpostor)}
+
+      {i18nRoutes("/respostas-em-comum", RespostasEmComum)}
+      {i18nRoutes("/common-answers", RespostasEmComum)}
+      {i18nRoutes("/respuestas-en-comun", RespostasEmComum)}
 
       {/* Modo local */}
       {i18nRoutes("/modo-local", ModoLocal)}
