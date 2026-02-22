@@ -57,7 +57,8 @@ import {
   Youtube,
   Instagram,
   MessageCircle,
-  Paintbrush
+  Paintbrush,
+  BookOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1052,7 +1053,7 @@ const DrawingGameCard = () => {
         </div>
 
         {/* How to play button */}
-        <Link href={langPath("/comojogar")}>
+        <Link href={langPath("/como-jogar/jogo-do-impostor-desenho")}>
           <button
             className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-purple-500 to-pink-500 border-purple-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
             data-testid="button-how-to-play-drawing"
@@ -1200,6 +1201,17 @@ const SincroniaGameCard = () => {
             {t('home.enterCode', 'ENTRAR').toUpperCase()}
           </button>
         </div>
+
+        {/* How to play button */}
+        <Link href={langPath("/como-jogar/sincronia")}>
+          <button
+            className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-teal-500 to-cyan-500 border-teal-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
+            data-testid="button-how-to-play-sincronia"
+          >
+            <BookOpen size={28} />
+            {t('home.howToPlay', 'COMO JOGAR').toUpperCase()}
+          </button>
+        </Link>
       </div>
     </div>
   );
