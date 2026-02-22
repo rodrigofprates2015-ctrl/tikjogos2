@@ -1,7 +1,10 @@
 /**
  * Server-side SEO meta injection for SPA routes.
  * Replaces default title/description in index.html before sending to crawlers.
+ * Also injects visible HTML content so search engines see real text, not an empty div.
  */
+
+import { BLOG_POSTS_FULL, getBlogPostBySlug, markdownToHtml, type BlogPostFull } from './blogContent.js';
 
 interface SeoMeta {
   title: string;
@@ -12,6 +15,10 @@ interface SeoMeta {
   publishedTime?: string;
   author?: string;
   articleSchema?: string;
+  /** HTML content to inject inside the body for crawlers */
+  bodyHtml?: string;
+  /** hreflang alternate links */
+  hreflangTags?: string;
 }
 
 const BASE_URL = 'https://tikjogos.com.br';
@@ -220,130 +227,6 @@ const PAGE_SEO: Record<string, { title: string; description: string }> = {
   },
 };
 
-// Blog post SEO data — inlined here because client/src/data/blogPosts.ts uses
-// Vite path aliases (@/) and React component imports that don't resolve server-side.
-interface BlogPostSeo {
-  slug: string;
-  slugEn: string;
-  slugEs: string;
-  title: string;
-  excerpt: string;
-  image: string;
-  date: string;
-  authorName: string;
-}
-
-const BLOG_POSTS_SEO: BlogPostSeo[] = [
-  {
-    slug: 'jogo-do-impostor-desenho',
-    slugEn: 'impostor-drawing-game',
-    slugEs: 'juego-del-impostor-dibujo',
-    title: 'Jogo do Impostor Desenho: A Nova Sensação que Combina Gartic e Impostor',
-    excerpt: 'Descubra o Jogo do Impostor Desenho, a variante que une desenho colaborativo com dedução social. Saiba como jogar, estratégias e por que é tão viciante.',
-    image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=1200',
-    date: '07 Fev 2026',
-    authorName: 'Equipe TikJogos',
-  },
-  {
-    slug: 'jogo-do-impostor-guia-de-estrategias-e-analise-do-metagame',
-    slugEn: 'impostor-game-strategy-guide-and-metagame-analysis',
-    slugEs: 'juego-del-impostor-guia-de-estrategias-y-analisis-del-metagame',
-    title: 'Jogo do Impostor: Guia de Estratégias e Análise do Metagame no TikJogos',
-    excerpt: 'Domine o jogo do impostor com táticas de especialista, análise comportamental e lógica sistêmica. Guia técnico completo.',
-    image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=1200',
-    date: '06 Fev 2026',
-    authorName: 'Estrategista Chefe',
-  },
-  {
-    slug: 'a-alma-dos-games-sociais-por-que-a-desconfianca-nos-fascina',
-    slugEn: 'the-soul-of-social-games-why-distrust-fascinates-us',
-    slugEs: 'el-alma-de-los-juegos-sociales-por-que-la-desconfianza-nos-fascina',
-    title: 'A alma dos games sociais: Por que a desconfiança nos fascina?',
-    excerpt: 'O Jogo do Impostor consolidou-se como um verdadeiro fenômeno cultural ao transformar a desconfiança em uma experiênca profunda.',
-    image: 'https://images.unsplash.com/photo-1614728263952-84ea256f9679?auto=format&fit=crop&q=80&w=1200',
-    date: '04 Fev 2026',
-    authorName: 'Dr. Nexus',
-  },
-  {
-    slug: 'tikjogos-partidas-mais-organizadas-e-estrategicas',
-    slugEn: 'tikjogos-more-organized-and-strategic-matches',
-    slugEs: 'tikjogos-partidas-mas-organizadas-y-estrategicas',
-    title: 'TikJogos: Partidas mais organizadas e estratégicas',
-    excerpt: 'Descubra como o TikJogos elimina a burocracia dos papéis e foca na pura diversão e dedução social.',
-    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=1200',
-    date: '03 Fev 2026',
-    authorName: 'Comandante Nova',
-  },
-  {
-    slug: 'estrategias-essenciais-para-quem-joga-como-impostor',
-    slugEn: 'essential-strategies-for-playing-as-impostor',
-    slugEs: 'estrategias-esenciales-para-jugar-como-impostor',
-    title: 'Estratégias essenciais para quem joga como impostor',
-    excerpt: 'Assumir o papel de vilão exige coerência narrativa e controle emocional. Aprenda a dominar a arte da camuflagem.',
-    image: 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&q=80&w=1200',
-    date: '02 Fev 2026',
-    authorName: 'O Infiltrado',
-  },
-  {
-    slug: 'como-identificar-o-impostor-usando-logica-e-paciencia',
-    slugEn: 'how-to-identify-the-impostor-using-logic-and-patience',
-    slugEs: 'como-identificar-al-impostor-usando-logica-y-paciencia',
-    title: 'Como identificar o impostor usando lógica e paciência',
-    excerpt: 'Encontrar o impostor não é sorte, mas um processo rigoroso de análise comportamental e lógica.',
-    image: 'https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?auto=format&fit=crop&q=80&w=1200',
-    date: '01 Fev 2026',
-    authorName: 'Detetive Orion',
-  },
-  {
-    slug: 'por-que-a-comunicacao-define-o-vencedor-da-partida',
-    slugEn: 'why-communication-defines-the-winner',
-    slugEs: 'por-que-la-comunicacion-define-al-ganador',
-    title: 'Por que a comunicação define o vencedor da partida',
-    excerpt: 'Saber falar com clareza e ouvir com atenção são as competências decisivas que separam vencedores de perdedores.',
-    image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=1200',
-    date: '31 Jan 2026',
-    authorName: 'Capitão Miller',
-  },
-  {
-    slug: 'o-segredo-psicologico-por-tras-do-sucesso-do-genero',
-    slugEn: 'the-psychological-secret-behind-the-genres-success',
-    slugEs: 'el-secreto-psicologico-detras-del-exito-del-genero',
-    title: 'O segredo psicológico por trás do sucesso do gênero',
-    excerpt: 'Entenda o conceito do "círculo mágico" e como ele nos permite explorar facetas da nossa personalidade de forma segura.',
-    image: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?auto=format&fit=crop&q=80&w=1200',
-    date: '30 Jan 2026',
-    authorName: 'Luna Star',
-  },
-  {
-    slug: 'desenvolvimento-cognitivo-exercitando-a-mente-no-espaco',
-    slugEn: 'cognitive-development-exercising-the-mind-in-space',
-    slugEs: 'desarrollo-cognitivo-ejercitando-la-mente-en-el-espacio',
-    title: 'Desenvolvimento Cognitivo: Exercitando a mente no espaço',
-    excerpt: 'Participar ativamente de rodadas do Jogo do Impostor é um exercício excelente para a tomada de decisões rápidas e análise crítica.',
-    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200',
-    date: '29 Jan 2026',
-    authorName: 'Profe Galática',
-  },
-  {
-    slug: 'erros-comuns-de-iniciantes-e-como-evita-los',
-    slugEn: 'common-beginner-mistakes-and-how-to-avoid-them',
-    slugEs: 'errores-comunes-de-principiantes-y-como-evitarlos',
-    title: 'Erros comuns de iniciantes e como evitá-los',
-    excerpt: 'Não caia em armadilhas comportamentais! Saiba por que falar demais pode ser o seu fim no jogo.',
-    image: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&q=80&w=1200',
-    date: '28 Jan 2026',
-    authorName: 'Equipe Tech',
-  },
-];
-
-// Build lookup maps: slug -> BlogPostSeo (for PT, EN, ES slugs)
-const BLOG_SLUG_MAP = new Map<string, BlogPostSeo>();
-for (const post of BLOG_POSTS_SEO) {
-  BLOG_SLUG_MAP.set(post.slug, post);
-  BLOG_SLUG_MAP.set(post.slugEn, post);
-  BLOG_SLUG_MAP.set(post.slugEs, post);
-}
-
 /** Parse a "DD Mon YYYY" date string into an ISO date */
 function parseBlogDate(dateStr: string): string {
   const months: Record<string, string> = {
@@ -361,62 +244,125 @@ function parseBlogDate(dateStr: string): string {
   return new Date().toISOString();
 }
 
+/** Get localized title/excerpt for a blog post */
+function getLocalizedPost(post: BlogPostFull, lang: string) {
+  if (lang === 'en') return { title: post.titleEn, excerpt: post.excerptEn, slug: post.slugEn };
+  if (lang === 'es') return { title: post.titleEs, excerpt: post.excerptEs, slug: post.slugEs };
+  return { title: post.title, excerpt: post.excerpt, slug: post.slug };
+}
+
+/** Build hreflang link tags for a blog post */
+function buildBlogHreflang(post: BlogPostFull): string {
+  return [
+    `<link rel="alternate" hreflang="pt" href="${BASE_URL}/blog/${post.slug}" />`,
+    `<link rel="alternate" hreflang="en" href="${BASE_URL}/en/blog/${post.slugEn}" />`,
+    `<link rel="alternate" hreflang="es" href="${BASE_URL}/es/blog/${post.slugEs}" />`,
+    `<link rel="alternate" hreflang="x-default" href="${BASE_URL}/blog/${post.slug}" />`,
+  ].join('\n    ');
+}
+
+/** Build visible article HTML for crawlers */
+function buildArticleHtml(post: BlogPostFull, lang: string): string {
+  const loc = getLocalizedPost(post, lang);
+  const contentHtml = markdownToHtml(post.content);
+  return `<article itemscope itemtype="https://schema.org/BlogPosting" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
+      <h1 itemprop="headline">${escapeHtml(loc.title)}</h1>
+      <p itemprop="description">${escapeHtml(loc.excerpt)}</p>
+      <meta itemprop="image" content="${post.image}" />
+      <meta itemprop="datePublished" content="${parseBlogDate(post.date)}" />
+      <span itemprop="author" itemscope itemtype="https://schema.org/Person">
+        <meta itemprop="name" content="${escapeHtml(post.authorName)}" />
+      </span>
+      <div itemprop="articleBody">${contentHtml}</div>
+    </article>`;
+}
+
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 /**
  * Get SEO metadata for a given URL path.
  * Returns null if no specific SEO data exists (use default).
  */
 export function getSeoForPath(urlPath: string): SeoMeta | null {
-  // Strip trailing slash (except root)
-  const path = urlPath.length > 1 && urlPath.endsWith('/') ? urlPath.slice(0, -1) : urlPath;
+  // Strip trailing slash (except root) and query string
+  let path = urlPath.split('?')[0];
+  path = path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
 
   // Blog post pages: /blog/{slug}, /en/blog/{slug}, /es/blog/{slug}
   const blogMatch = path.match(/^(?:\/(en|es))?\/blog\/([a-z0-9-]+)$/);
   if (blogMatch) {
     const lang = blogMatch[1] || 'pt';
     const slug = blogMatch[2];
-    const post = BLOG_SLUG_MAP.get(slug);
+    const post = getBlogPostBySlug(slug);
     if (post) {
-      const canonicalSlug = lang === 'en' ? post.slugEn : lang === 'es' ? post.slugEs : post.slug;
+      const loc = getLocalizedPost(post, lang);
       const langPrefix = lang === 'pt' ? '' : `/${lang}`;
-      const canonical = `${BASE_URL}${langPrefix}/blog/${canonicalSlug}`;
+      const canonical = `${BASE_URL}${langPrefix}/blog/${loc.slug}`;
       const isoDate = parseBlogDate(post.date);
 
       const articleSchema = JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
-        'headline': post.title,
-        'description': post.excerpt,
+        'headline': loc.title,
+        'description': loc.excerpt,
         'image': post.image,
         'datePublished': isoDate,
         'dateModified': isoDate,
-        'author': {
-          '@type': 'Person',
-          'name': post.authorName,
-        },
+        'author': { '@type': 'Person', 'name': post.authorName },
         'publisher': {
           '@type': 'Organization',
           'name': 'TikJogos',
           'url': BASE_URL,
-          'logo': {
-            '@type': 'ImageObject',
-            'url': `${BASE_URL}/logo.png`,
-          },
+          'logo': { '@type': 'ImageObject', 'url': `${BASE_URL}/logo.png` },
         },
-        'mainEntityOfPage': {
-          '@type': 'WebPage',
-          '@id': canonical,
-        },
+        'mainEntityOfPage': { '@type': 'WebPage', '@id': canonical },
       });
 
       return {
-        title: `${post.title} - TikJogos Blog`,
-        description: post.excerpt,
+        title: `${loc.title} - TikJogos Blog`,
+        description: loc.excerpt,
         canonical,
         image: post.image,
         type: 'article',
         publishedTime: isoDate,
         author: post.authorName,
         articleSchema,
+        bodyHtml: buildArticleHtml(post, lang),
+        hreflangTags: buildBlogHreflang(post),
+      };
+    }
+  }
+
+  // Blog index: /blog, /en/blog, /es/blog
+  const blogIndexMatch = path.match(/^(?:\/(en|es))?\/blog$/);
+  if (blogIndexMatch) {
+    const pageSeo = PAGE_SEO['/blog'];
+    if (pageSeo) {
+      const hreflang = [
+        `<link rel="alternate" hreflang="pt" href="${BASE_URL}/blog" />`,
+        `<link rel="alternate" hreflang="en" href="${BASE_URL}/en/blog" />`,
+        `<link rel="alternate" hreflang="es" href="${BASE_URL}/es/blog" />`,
+        `<link rel="alternate" hreflang="x-default" href="${BASE_URL}/blog" />`,
+      ].join('\n    ');
+
+      // Build a list of blog posts as visible HTML for crawlers
+      const listHtml = BLOG_POSTS_FULL.map(p => {
+        return `<li><a href="${BASE_URL}/blog/${p.slug}">${escapeHtml(p.title)}</a> - ${escapeHtml(p.excerpt)}</li>`;
+      }).join('\n        ');
+
+      return {
+        title: pageSeo.title,
+        description: pageSeo.description,
+        canonical: `${BASE_URL}${path}`,
+        hreflangTags: hreflang,
+        bodyHtml: `<nav style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-label="Blog posts">
+      <h1>${escapeHtml(pageSeo.title)}</h1>
+      <ul>
+        ${listHtml}
+      </ul>
+    </nav>`,
       };
     }
   }
@@ -455,6 +401,39 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
       title: pageSeo.title,
       description: pageSeo.description,
       canonical: `${BASE_URL}${path}`,
+    };
+  }
+
+  // Homepage
+  if (path === '/' || path === '/en' || path === '/es') {
+    const hreflang = [
+      `<link rel="alternate" hreflang="pt" href="${BASE_URL}/" />`,
+      `<link rel="alternate" hreflang="en" href="${BASE_URL}/en" />`,
+      `<link rel="alternate" hreflang="es" href="${BASE_URL}/es" />`,
+      `<link rel="alternate" hreflang="x-default" href="${BASE_URL}/" />`,
+    ].join('\n    ');
+
+    return {
+      title: 'TikJogos - Jogo do Impostor Online Grátis Com Amigos | Impostor Game',
+      description: 'Jogue Impostor online grátis! Encontre amigos, estratégias e desafie outros jogadores no TikJogos. Sem downloads.',
+      canonical: `${BASE_URL}${path === '/' ? '/' : path}`,
+      hreflangTags: hreflang,
+      bodyHtml: `<main style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
+      <h1>TikJogos - Jogo do Impostor Online Grátis</h1>
+      <p>Jogue o Jogo do Impostor online grátis com amigos! Dedução social, estratégia e diversão sem downloads. Crie uma sala, convide amigos e descubra quem é o impostor.</p>
+      <h2>Modos de Jogo</h2>
+      <ul>
+        <li><a href="${BASE_URL}/como-jogar">Como Jogar</a></li>
+        <li><a href="${BASE_URL}/modo-local">Modo Local</a></li>
+        <li><a href="${BASE_URL}/temas">Temas</a></li>
+        <li><a href="${BASE_URL}/blog">Blog</a></li>
+        <li><a href="${BASE_URL}/outros-jogos">Outros Jogos</a></li>
+      </ul>
+      <h2>Posts Recentes</h2>
+      <ul>
+        ${BLOG_POSTS_FULL.slice(0, 5).map(p => `<li><a href="${BASE_URL}/blog/${p.slug}">${escapeHtml(p.title)}</a></li>`).join('\n        ')}
+      </ul>
+    </main>`,
     };
   }
 
@@ -539,19 +518,35 @@ export function injectSeoIntoHtml(html: string, seo: SeoMeta): string {
     `<meta name="twitter:url" content="${seo.canonical}" />`
   );
 
-  // Inject article-specific meta tags and JSON-LD schema before </head>
-  if (seo.publishedTime || seo.author || seo.articleSchema) {
-    let extraTags = '';
+  // Inject extra tags before </head>
+  {
+    let extraHead = '';
+
     if (seo.publishedTime) {
-      extraTags += `\n    <meta property="article:published_time" content="${seo.publishedTime}" />`;
+      extraHead += `\n    <meta property="article:published_time" content="${seo.publishedTime}" />`;
     }
     if (seo.author) {
-      extraTags += `\n    <meta property="article:author" content="${seo.author}" />`;
+      extraHead += `\n    <meta property="article:author" content="${seo.author}" />`;
     }
     if (seo.articleSchema) {
-      extraTags += `\n    <script type="application/ld+json">${seo.articleSchema}</script>`;
+      extraHead += `\n    <script type="application/ld+json">${seo.articleSchema}</script>`;
     }
-    html = html.replace('</head>', `${extraTags}\n  </head>`);
+    if (seo.hreflangTags) {
+      extraHead += `\n    ${seo.hreflangTags}`;
+    }
+
+    if (extraHead) {
+      html = html.replace('</head>', `${extraHead}\n  </head>`);
+    }
+  }
+
+  // Inject visible content into body for crawlers (positioned off-screen so
+  // it doesn't flash before React hydrates, but fully readable by bots)
+  if (seo.bodyHtml) {
+    html = html.replace(
+      '<div id="root"></div>',
+      `<div id="root"></div>\n    ${seo.bodyHtml}`
+    );
   }
 
   return html;
