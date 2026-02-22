@@ -85,6 +85,8 @@ import impostorPincelImg from "@assets/Impostor_pincel.webp";
 import bannerDesenhoImpostor from "@assets/Banner_jogo_desenho_impostor.webp";
 import bannerDesenhoImpostorMobile from "@assets/Banner_mobile.webp";
 import sincroniaLogo from "@assets/Sincronia.png";
+import personagemEsquerdo from "@assets/personagem esquerdo.png";
+import personagemDireito from "@assets/personagem direito.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
 import { SideAds } from "@/components/AdSense";
 
@@ -1595,6 +1597,28 @@ const HomeScreen = () => {
 
         {/* Sincronia - Respostas em Comum game card */}
         <div id="sincronia" className="relative w-full flex flex-col items-center">
+          {/* Personagem esquerdo - left side (desktop only) */}
+          <img 
+            src={personagemEsquerdo} 
+            alt="Personagem Sincronia lado esquerdo - TikJogos" 
+            width="258"
+            height="324"
+            loading="lazy"
+            decoding="async"
+            className="hidden md:block absolute bottom-0 left-[18%] lg:left-[22%] xl:left-[26%] h-[42vh] max-h-[420px] object-contain z-0 pointer-events-none"
+          />
+
+          {/* Personagem direito - right side (desktop only) */}
+          <img 
+            src={personagemDireito} 
+            alt="Personagem Sincronia lado direito - TikJogos" 
+            width="246"
+            height="326"
+            loading="lazy"
+            decoding="async"
+            className="hidden md:block absolute bottom-0 right-[18%] lg:right-[22%] xl:right-[26%] h-[42vh] max-h-[420px] object-contain z-0 pointer-events-none"
+          />
+
           <div className="relative z-10 w-full flex justify-center">
             <SincroniaGameCard />
           </div>
