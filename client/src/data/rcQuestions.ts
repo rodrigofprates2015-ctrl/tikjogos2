@@ -1,4 +1,4 @@
-export type RCCategory = 'brasil' | 'escola' | 'comida' | 'geral' | 'engracadas' | 'animes' | 'jogos' | 'marvel';
+export type RCCategory = 'brasil' | 'escola' | 'comida' | 'geral' | 'engracadas' | 'animes' | 'jogos' | 'marvel' | 'desenho_animado';
 
 export interface RCQuestion {
   id: number;
@@ -15,6 +15,7 @@ export const RC_CATEGORIES: Record<RCCategory, { label: string; emoji: string }>
   animes: { label: 'Animes', emoji: '⚔️' },
   jogos: { label: 'Jogos', emoji: '🎮' },
   marvel: { label: 'Marvel', emoji: '🦸' },
+  desenho_animado: { label: 'Desenho Animado', emoji: '🎬' },
 };
 
 export const RC_QUESTIONS: RCQuestion[] = [
@@ -173,6 +174,38 @@ export const RC_QUESTIONS: RCQuestion[] = [
   { id: 138, text: 'Qual herói teria mais dificuldade em ter uma vida normal?', category: 'marvel' },
   { id: 139, text: 'Qual personagem seria o pior em guardar segredo?', category: 'marvel' },
   { id: 140, text: 'Qual herói você escolheria para trocar de vida por um dia?', category: 'marvel' },
+
+  // Desenho Animado
+  { id: 141, text: 'Personagem mais medroso dos desenhos', category: 'desenho_animado' },
+  { id: 142, text: 'Personagem mais bonito dos desenhos', category: 'desenho_animado' },
+  { id: 143, text: 'Personagem mais irritante dos desenhos', category: 'desenho_animado' },
+  { id: 144, text: 'Personagem mais inteligente dos desenhos', category: 'desenho_animado' },
+  { id: 145, text: 'Personagem mais preguiçoso dos desenhos', category: 'desenho_animado' },
+  { id: 146, text: 'Personagem mais engraçado dos desenhos', category: 'desenho_animado' },
+  { id: 147, text: 'Personagem mais forte dos desenhos', category: 'desenho_animado' },
+  { id: 148, text: 'Personagem mais fofo dos desenhos', category: 'desenho_animado' },
+  { id: 149, text: 'Personagem mais chato dos desenhos', category: 'desenho_animado' },
+  { id: 150, text: 'Personagem mais dramático dos desenhos', category: 'desenho_animado' },
+  { id: 151, text: 'Personagem mais corajoso dos desenhos', category: 'desenho_animado' },
+  { id: 152, text: 'Personagem mais mentiroso dos desenhos', category: 'desenho_animado' },
+  { id: 153, text: 'Personagem mais atrapalhado dos desenhos', category: 'desenho_animado' },
+  { id: 154, text: 'Personagem mais vingativo dos desenhos', category: 'desenho_animado' },
+  { id: 155, text: 'Personagem mais competitivo dos desenhos', category: 'desenho_animado' },
+  { id: 156, text: 'Personagem mais estiloso dos desenhos', category: 'desenho_animado' },
+  { id: 157, text: 'Personagem mais mimado dos desenhos', category: 'desenho_animado' },
+  { id: 158, text: 'Personagem mais azarado dos desenhos', category: 'desenho_animado' },
+  { id: 159, text: 'Personagem mais esperto dos desenhos', category: 'desenho_animado' },
+  { id: 160, text: 'Personagem mais teimoso dos desenhos', category: 'desenho_animado' },
+  { id: 161, text: 'Personagem mais manipulador dos desenhos', category: 'desenho_animado' },
+  { id: 162, text: 'Personagem mais impulsivo dos desenhos', category: 'desenho_animado' },
+  { id: 163, text: 'Personagem mais leal dos desenhos', category: 'desenho_animado' },
+  { id: 164, text: 'Personagem mais bagunceiro dos desenhos', category: 'desenho_animado' },
+  { id: 165, text: 'Personagem mais medonho dos desenhos', category: 'desenho_animado' },
+  { id: 166, text: 'Personagem mais icônico dos desenhos', category: 'desenho_animado' },
+  { id: 167, text: 'Personagem que mais passa vergonha nos desenhos', category: 'desenho_animado' },
+  { id: 168, text: 'Personagem mais heróico dos desenhos', category: 'desenho_animado' },
+  { id: 169, text: 'Personagem mais invejoso dos desenhos', category: 'desenho_animado' },
+  { id: 170, text: 'Personagem mais dramático em relacionamento nos desenhos', category: 'desenho_animado' },
 ];
 
 /** Pick N random questions, optionally filtered by category */

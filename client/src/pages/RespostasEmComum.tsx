@@ -9,6 +9,7 @@ import sincroniaLogo from '@/assets/Sincronia.png';
 import jogosCover from '@/assets/jogos_cover.png';
 import animesCover from '@/assets/submode-animes.png';
 import marvelCover from '@/assets/submode-marvel.png';
+import desenhoAnimadoCover from '@/assets/cover-desenho-animado.jpg';
 
 
 
@@ -128,10 +129,11 @@ interface RCThemeCard {
 }
 
 const RC_THEME_CARDS: RCThemeCard[] = [
-  { id: 'todas', name: 'Todas as Categorias', emoji: '🎲', description: 'Perguntas aleatórias de todos os temas', questionCount: 140, isRecommended: true },
+  { id: 'todas', name: 'Todas as Categorias', emoji: '🎲', description: 'Perguntas aleatórias de todos os temas', questionCount: 170, isRecommended: true },
   { id: 'animes', name: 'Animes', emoji: '⚔️', description: 'Perguntas sobre personagens e universos de anime', questionCount: 30, cover: animesCover },
   { id: 'marvel', name: 'Marvel', emoji: '🦸', description: 'Perguntas sobre heróis e vilões da Marvel', questionCount: 30, cover: marvelCover },
   { id: 'jogos', name: 'Jogos', emoji: '🎮', description: 'Perguntas sobre games e personagens', questionCount: 30, cover: jogosCover },
+  { id: 'desenho_animado', name: 'Desenho Animado', emoji: '🎬', description: 'Personagens icônicos dos desenhos animados', questionCount: 30, cover: desenhoAnimadoCover },
   { id: 'brasil', name: 'Brasil', emoji: '🇧🇷', description: 'Perguntas sobre cultura brasileira', questionCount: 10 },
   { id: 'escola', name: 'Vida Escolar', emoji: '🏫', description: 'Perguntas sobre o dia a dia na escola', questionCount: 10 },
   { id: 'comida', name: 'Comida', emoji: '🍔', description: 'Perguntas sobre comidas e bebidas', questionCount: 10 },
