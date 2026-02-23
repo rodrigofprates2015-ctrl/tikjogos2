@@ -159,7 +159,7 @@ export const useRCGameStore = create<RCGameState>((set, get) => ({
       const data = await response.json();
       set({
         room: { code: data.code, hostId: data.hostId, players: data.players },
-        phase: 'themeSelect',
+        phase: 'lobby',
         isLoading: false,
         scores: {},
       });
@@ -318,6 +318,10 @@ export const useRCGameStore = create<RCGameState>((set, get) => ({
 
         if (data.type === 'rc-player-joined') {
           get().addNotification({ type: 'player-joined', message: `${data.playerName} entrou na sala` });
+        }
+
+        if (data.type === 'rc-host-changed') {
+          get().addNotification({ type: 'host-changed', message: `${data.newHostName} é o novo host` });
         }
 
         if (data.type === 'rc-kicked') {

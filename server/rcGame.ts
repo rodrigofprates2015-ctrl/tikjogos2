@@ -364,6 +364,11 @@ export function setupRCGame(httpServer: Server, app: Express) {
           return res.status(400).json({ error: 'Game in progress' });
         }
         room.players.push({ uid: playerId, name: playerName, score: 0, connected: true });
+        // Notify existing players
+        broadcastToRCRoom(roomCode, {
+          type: 'rc-player-joined',
+          playerName,
+        });
       }
 
       sendRoomUpdate(room);
@@ -573,6 +578,11 @@ export function setupRCGame(httpServer: Server, app: Express) {
         // Transfer host if needed
         if (room.hostId === info.playerId && room.players.length > 0) {
           room.hostId = room.players[0].uid;
+          const newHost = room.players[0];
+          broadcastToRCRoom(room.code, {
+            type: 'rc-host-changed',
+            newHostName: newHost.name,
+          });
         }
 
         // Delete empty rooms
