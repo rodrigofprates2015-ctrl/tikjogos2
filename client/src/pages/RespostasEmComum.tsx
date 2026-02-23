@@ -274,14 +274,14 @@ const RCLobbyScreen = () => {
   };
 
   return (
-    <div className="flex flex-col w-full max-w-2xl h-full py-6 px-4 animate-fade-in relative z-10">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#1a1b2e] px-4 py-6">
       {/* Background decorations */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-emerald-600/20 rounded-full blur-[100px] animate-pulse" />
         <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-teal-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }} />
       </div>
 
-      <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] relative z-10">
+      <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] relative z-10 w-[90%] max-w-2xl animate-fade-in">
         {/* Header with room code */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
           <div onClick={copyLink} className="cursor-pointer group flex-1 text-center md:text-left">
