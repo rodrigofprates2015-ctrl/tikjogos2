@@ -251,7 +251,11 @@ const GAME_MODES = {
 };
 
 function generateRoomCode(): string {
-  return randomBytes(2).toString('hex').toUpperCase().substring(0, 4);
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = randomBytes(3);
+  let code = '';
+  for (let i = 0; i < 3; i++) code += chars[bytes[i] % chars.length];
+  return code;
 }
 
 
@@ -3210,7 +3214,7 @@ export async function registerRoutes(
   function generateDrawingRoomCode(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let code = '';
-    for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    for (let i = 0; i < 3; i++) code += chars[Math.floor(Math.random() * chars.length)];
     return code;
   }
 

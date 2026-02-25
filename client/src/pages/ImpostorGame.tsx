@@ -1026,7 +1026,7 @@ const DrawingGameCard = () => {
             placeholder={t('home.roomCode', 'CÓDIGO').toUpperCase()}
             value={drawCode}
             onChange={(e) => setDrawCode(e.target.value.toUpperCase())}
-            maxLength={4}
+            maxLength={3}
             className="input-code flex-1"
             data-testid="input-room-code-drawing"
           />
@@ -1179,7 +1179,7 @@ const SincroniaGameCard = () => {
             placeholder={t('home.roomCode', 'CÓDIGO').toUpperCase()}
             value={rcCode}
             onChange={(e) => setRcCode(e.target.value.toUpperCase())}
-            maxLength={5}
+            maxLength={3}
             className="input-code flex-1"
             data-testid="input-room-code-sincronia"
           />
@@ -1605,7 +1605,7 @@ const HomeScreen = () => {
                   placeholder={t('home.roomCode', 'CÓDIGO').toUpperCase()}
                   value={code}
                   onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
-                  maxLength={4}
+                  maxLength={3}
                   className="input-code flex-1"
                   data-testid="input-room-code"
                 />

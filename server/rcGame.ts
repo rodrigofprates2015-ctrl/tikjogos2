@@ -256,8 +256,8 @@ const RC_QUESTIONS = [
 function generateRoomCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
-  const bytes = randomBytes(5);
-  for (let i = 0; i < 5; i++) {
+  const bytes = randomBytes(3);
+  for (let i = 0; i < 3; i++) {
     code += chars[bytes[i] % chars.length];
   }
   return code;
@@ -441,13 +441,240 @@ export function setupRCGame(httpServer: Server, app: Express) {
     }
   });
 
+  // ── Heartbeat & disconnect configuration (mirrors Impostor game) ──
+
+  const HEARTBEAT_INTERVAL = 5000;       // 5s — ping clients
+  const PONG_TIMEOUT = 15000;            // 15s — mark as disconnected
+  const HARD_EXIT_GRACE = 15000;         // 15s — remove player after disconnect
+  const EMPTY_ROOM_CLEANUP_DELAY = 10000; // 10s — delete empty rooms
+
+  const hardExitTimers = new Map<string, NodeJS.Timeout>();
+  const emptyRoomTimers = new Map<string, NodeJS.Timeout>();
+
+  // Extend player connection info with lastPong
+  const rcPlayerInfo = new Map<WebSocket, { roomCode: string; playerId: string; lastPong: number }>();
+
+  // ── Helper: mark player disconnected (keep in room) ──
+  function markPlayerDisconnected(ws: WebSocket, roomCode: string, playerId: string) {
+    console.log(`[RC] Marking ${playerId} as disconnected in ${roomCode}`);
+    const connections = rcRoomConnections.get(roomCode);
+    if (connections) connections.delete(ws);
+    rcPlayerConnections.delete(ws);
+    rcPlayerInfo.delete(ws);
+
+    const room = rcRooms.get(roomCode);
+    if (!room) return;
+
+    const player = room.players.find(p => p.uid === playerId);
+    if (player) player.connected = false;
+
+    broadcastToRCRoom(roomCode, { type: 'rc-player-disconnected', playerId, playerName: player?.name });
+    sendRoomUpdate(room);
+  }
+
+  // ── Helper: mark player connected (on reconnect) ──
+  function markPlayerConnected(roomCode: string, playerId: string) {
+    cancelHardExitRemoval(roomCode, playerId);
+    cancelEmptyRoomDeletion(roomCode);
+
+    const room = rcRooms.get(roomCode);
+    if (!room) return null;
+
+    const player = room.players.find(p => p.uid === playerId);
+    if (player) player.connected = true;
+
+    broadcastToRCRoom(roomCode, { type: 'rc-player-reconnected', playerId, playerName: player?.name });
+    sendRoomUpdate(room);
+    return room;
+  }
+
+  // ── Helper: remove player (hard exit) with host transfer ──
+  function handlePlayerHardExit(roomCode: string, playerId: string, reason: string = 'hard_exit') {
+    const timerKey = `${roomCode}:${playerId}`;
+    const existing = hardExitTimers.get(timerKey);
+    if (existing) { clearTimeout(existing); hardExitTimers.delete(timerKey); }
+
+    console.log(`[RC Hard Exit] Removing ${playerId} from ${roomCode} (${reason})`);
+    const room = rcRooms.get(roomCode);
+    if (!room) return;
+
+    const playerToRemove = room.players.find(p => p.uid === playerId);
+    if (!playerToRemove) return;
+
+    const wasHost = room.hostId === playerId;
+    room.players = room.players.filter(p => p.uid !== playerId);
+
+    // Host transfer
+    if (wasHost && room.players.length > 0) {
+      const connected = room.players.filter(p => p.connected);
+      const newHost = connected.length > 0 ? connected[0] : room.players[0];
+      room.hostId = newHost.uid;
+      broadcastToRCRoom(roomCode, { type: 'rc-host-changed', newHostName: newHost.name });
+      console.log(`[RC] Host transferred to ${newHost.name}`);
+    }
+
+    broadcastToRCRoom(roomCode, { type: 'rc-player-left', playerName: playerToRemove.name });
+
+    if (room.players.length === 0) {
+      if (room.roundTimer) clearTimeout(room.roundTimer);
+      rcRooms.delete(roomCode);
+      rcRoomConnections.delete(roomCode);
+      console.log(`[RC] Empty room ${roomCode} deleted`);
+    } else {
+      sendRoomUpdate(room);
+    }
+  }
+
+  function scheduleHardExitRemoval(roomCode: string, playerId: string) {
+    const timerKey = `${roomCode}:${playerId}`;
+    const existing = hardExitTimers.get(timerKey);
+    if (existing) clearTimeout(existing);
+
+    const timer = setTimeout(() => {
+      hardExitTimers.delete(timerKey);
+      handlePlayerHardExit(roomCode, playerId, 'grace_expired');
+    }, HARD_EXIT_GRACE);
+    hardExitTimers.set(timerKey, timer);
+  }
+
+  function cancelHardExitRemoval(roomCode: string, playerId: string) {
+    const timerKey = `${roomCode}:${playerId}`;
+    const existing = hardExitTimers.get(timerKey);
+    if (existing) { clearTimeout(existing); hardExitTimers.delete(timerKey); }
+  }
+
+  function scheduleEmptyRoomDeletion(roomCode: string) {
+    const existing = emptyRoomTimers.get(roomCode);
+    if (existing) clearTimeout(existing);
+
+    const timer = setTimeout(() => {
+      emptyRoomTimers.delete(roomCode);
+      const room = rcRooms.get(roomCode);
+      if (room && room.players.length === 0) {
+        if (room.roundTimer) clearTimeout(room.roundTimer);
+        rcRooms.delete(roomCode);
+        rcRoomConnections.delete(roomCode);
+        console.log(`[RC] Cleaned up empty room ${roomCode}`);
+      }
+    }, EMPTY_ROOM_CLEANUP_DELAY);
+    emptyRoomTimers.set(roomCode, timer);
+  }
+
+  function cancelEmptyRoomDeletion(roomCode: string) {
+    const existing = emptyRoomTimers.get(roomCode);
+    if (existing) { clearTimeout(existing); emptyRoomTimers.delete(roomCode); }
+  }
+
+  // ── Disconnect beacon endpoint (reliable on browser close) ──
+  app.post('/api/rc/rooms/:code/disconnect-notice', (req, res) => {
+    try {
+      const { playerId } = z.object({ playerId: z.string() }).parse(req.body);
+      const roomCode = req.params.code.toUpperCase();
+      const room = rcRooms.get(roomCode);
+      if (!room) return res.status(404).json({ error: 'Room not found' });
+
+      // Find and close any existing WS for this player
+      rcPlayerInfo.forEach((info, ws) => {
+        if (info.playerId === playerId && info.roomCode === roomCode) {
+          markPlayerDisconnected(ws, roomCode, playerId);
+        }
+      });
+
+      // Also check rcPlayerConnections (fallback)
+      rcPlayerConnections.forEach((info, ws) => {
+        if (info.playerId === playerId && info.roomCode === roomCode) {
+          markPlayerDisconnected(ws, roomCode, playerId);
+        }
+      });
+
+      // Ensure player is marked disconnected even if no WS found
+      const player = room.players.find(p => p.uid === playerId);
+      if (player && player.connected) {
+        player.connected = false;
+        broadcastToRCRoom(roomCode, { type: 'rc-player-disconnected', playerId, playerName: player.name });
+        sendRoomUpdate(room);
+      }
+
+      scheduleHardExitRemoval(roomCode, playerId);
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to process disconnect notice' });
+    }
+  });
+
   // ── WebSocket ──────────────────────────────────────────────────────
 
   wss.on('connection', (ws) => {
     ws.on('message', (message) => {
       try {
         const data = JSON.parse(message.toString());
-        if (data.type === 'pong') return;
+
+        // Pong response — update lastPong
+        if (data.type === 'pong') {
+          const info = rcPlayerInfo.get(ws);
+          if (info) info.lastPong = Date.now();
+          return;
+        }
+
+        // Intentional leave — remove player immediately
+        if (data.type === 'rc-leave') {
+          const info = rcPlayerInfo.get(ws) || rcPlayerConnections.get(ws);
+          if (info) {
+            handlePlayerHardExit(info.roomCode, info.playerId, 'leave_intentional');
+            const connections = rcRoomConnections.get(info.roomCode);
+            if (connections) connections.delete(ws);
+            rcPlayerConnections.delete(ws);
+            rcPlayerInfo.delete(ws);
+          }
+          return;
+        }
+
+        // Disconnect notice (browser closing)
+        if (data.type === 'disconnect_notice') {
+          const info = rcPlayerInfo.get(ws) || rcPlayerConnections.get(ws);
+          if (info) {
+            markPlayerDisconnected(ws, info.roomCode, info.playerId);
+            scheduleHardExitRemoval(info.roomCode, info.playerId);
+          }
+          return;
+        }
+
+        // Sync request — send current game state
+        if (data.type === 'sync_request') {
+          const info = rcPlayerInfo.get(ws) || rcPlayerConnections.get(ws);
+          if (!info) return;
+          if (rcPlayerInfo.has(ws)) rcPlayerInfo.get(ws)!.lastPong = Date.now();
+
+          const room = rcRooms.get(info.roomCode);
+          if (!room) return;
+
+          // Send room update
+          ws.send(JSON.stringify({
+            type: 'rc-room-update',
+            code: room.code,
+            hostId: room.hostId,
+            players: room.players,
+          }));
+
+          // If game is in progress, send current game state
+          if (room.phase === 'playing' && room.currentRound > 0) {
+            const question = room.questions[room.currentRound - 1];
+            if (question) {
+              ws.send(JSON.stringify({
+                type: 'rc-sync-state',
+                phase: room.phase,
+                round: room.currentRound,
+                totalRounds: room.config.rounds,
+                question: question.text,
+                timePerRound: room.config.timePerRound,
+                scores: room.scores,
+                answeredCount: room.answers.size,
+                hasSubmitted: room.answers.has(info.playerId),
+              }));
+            }
+          }
+          return;
+        }
 
         // Join room
         if (data.type === 'rc-join' && data.roomCode && data.playerId) {
@@ -459,12 +686,45 @@ export function setupRCGame(httpServer: Server, app: Express) {
           }
           rcRoomConnections.get(roomCode)!.add(ws);
           rcPlayerConnections.set(ws, { roomCode, playerId });
+          rcPlayerInfo.set(ws, { roomCode, playerId, lastPong: Date.now() });
 
           const room = rcRooms.get(roomCode);
           if (room) {
-            const player = room.players.find(p => p.uid === playerId);
-            if (player) player.connected = true;
-            sendRoomUpdate(room);
+            const existing = room.players.find(p => p.uid === playerId);
+            if (existing) {
+              // Reconnecting — restore connection
+              console.log(`[RC Reconnect] ${playerId} reconnecting to ${roomCode}`);
+              markPlayerConnected(roomCode, playerId);
+            } else {
+              // New player (shouldn't happen via WS alone, but handle gracefully)
+              console.log(`[RC Join] ${playerId} joined ${roomCode} via WS`);
+            }
+
+            // Send current room state
+            ws.send(JSON.stringify({
+              type: 'rc-room-update',
+              code: room.code,
+              hostId: room.hostId,
+              players: room.players,
+            }));
+
+            // If game in progress, send game state
+            if (room.phase === 'playing' && room.currentRound > 0) {
+              const question = room.questions[room.currentRound - 1];
+              if (question) {
+                ws.send(JSON.stringify({
+                  type: 'rc-sync-state',
+                  phase: room.phase,
+                  round: room.currentRound,
+                  totalRounds: room.config.rounds,
+                  question: question.text,
+                  timePerRound: room.config.timePerRound,
+                  scores: room.scores,
+                  answeredCount: room.answers.size,
+                  hasSubmitted: room.answers.has(playerId),
+                }));
+              }
+            }
           }
         }
 
@@ -473,7 +733,7 @@ export function setupRCGame(httpServer: Server, app: Express) {
           const room = rcRooms.get(data.roomCode);
           if (!room) return;
 
-          const info = rcPlayerConnections.get(ws);
+          const info = rcPlayerInfo.get(ws) || rcPlayerConnections.get(ws);
           if (!info || info.playerId !== room.hostId) return;
 
           const config = data.config || room.config;
@@ -494,10 +754,9 @@ export function setupRCGame(httpServer: Server, app: Express) {
             timePerRound: config.timePerRound,
           });
 
-          // Auto-process after time expires
           room.roundTimer = setTimeout(() => {
             finishRound(room);
-          }, (config.timePerRound + 2) * 1000); // +2s grace
+          }, (config.timePerRound + 2) * 1000);
         }
 
         // Submit answer
@@ -505,22 +764,19 @@ export function setupRCGame(httpServer: Server, app: Express) {
           const room = rcRooms.get(data.roomCode);
           if (!room || room.phase !== 'playing') return;
 
-          const info = rcPlayerConnections.get(ws);
+          const info = rcPlayerInfo.get(ws) || rcPlayerConnections.get(ws);
           if (!info) return;
 
           room.answers.set(info.playerId, data.answer || '');
 
-          // Broadcast answer count
           broadcastToRCRoom(room.code, {
             type: 'rc-answer-count',
             count: room.answers.size,
           });
 
-          // If all connected players answered, finish round early
           const connectedCount = room.players.filter(p => p.connected).length;
           if (room.answers.size >= connectedCount) {
             if (room.roundTimer) clearTimeout(room.roundTimer);
-            // Small delay so last player sees their answer registered
             setTimeout(() => finishRound(room), 500);
           }
         }
@@ -529,18 +785,14 @@ export function setupRCGame(httpServer: Server, app: Express) {
         if (data.type === 'rc-next-round' && data.roomCode) {
           const room = rcRooms.get(data.roomCode);
           if (!room) return;
-          const info = rcPlayerConnections.get(ws);
+          const info = rcPlayerInfo.get(ws) || rcPlayerConnections.get(ws);
           if (!info || info.playerId !== room.hostId) return;
 
           room.currentRound++;
           room.answers = new Map();
 
           if (room.currentRound > room.questions.length) {
-            // Game over
-            broadcastToRCRoom(room.code, {
-              type: 'rc-game-over',
-              scores: room.scores,
-            });
+            broadcastToRCRoom(room.code, { type: 'rc-game-over', scores: room.scores });
             room.phase = 'waiting';
             return;
           }
@@ -562,7 +814,7 @@ export function setupRCGame(httpServer: Server, app: Express) {
         if (data.type === 'rc-back-to-lobby' && data.roomCode) {
           const room = rcRooms.get(data.roomCode);
           if (!room) return;
-          const info = rcPlayerConnections.get(ws);
+          const info = rcPlayerInfo.get(ws) || rcPlayerConnections.get(ws);
           if (!info || info.playerId !== room.hostId) return;
 
           if (room.roundTimer) clearTimeout(room.roundTimer);
@@ -580,7 +832,7 @@ export function setupRCGame(httpServer: Server, app: Express) {
         if (data.type === 'rc-kick-player' && data.roomCode && data.targetPlayerId) {
           const room = rcRooms.get(data.roomCode);
           if (!room) return;
-          const info = rcPlayerConnections.get(ws);
+          const info = rcPlayerInfo.get(ws) || rcPlayerConnections.get(ws);
           if (!info || info.playerId !== room.hostId) return;
 
           const targetId = data.targetPlayerId;
@@ -589,25 +841,20 @@ export function setupRCGame(httpServer: Server, app: Express) {
 
           room.players = room.players.filter(p => p.uid !== targetId);
 
-          // Notify the kicked player
           const connections = rcRoomConnections.get(room.code);
           if (connections) {
             Array.from(connections).forEach(c => {
-              const cInfo = rcPlayerConnections.get(c);
+              const cInfo = rcPlayerInfo.get(c) || rcPlayerConnections.get(c);
               if (cInfo?.playerId === targetId) {
                 c.send(JSON.stringify({ type: 'rc-kicked' }));
                 connections.delete(c);
                 rcPlayerConnections.delete(c);
+                rcPlayerInfo.delete(c);
               }
             });
           }
 
           sendRoomUpdate(room);
-        }
-
-        // Leave
-        if (data.type === 'rc-leave') {
-          handleDisconnect(ws, true);
         }
       } catch (e) {
         console.error('[RC WS] Error:', e);
@@ -615,60 +862,14 @@ export function setupRCGame(httpServer: Server, app: Express) {
     });
 
     ws.on('close', () => {
-      handleDisconnect(ws, false);
+      const info = rcPlayerInfo.get(ws) || rcPlayerConnections.get(ws);
+      if (!info) return;
+
+      console.log(`[RC Close] WS closed for ${info.playerId} in ${info.roomCode}`);
+      markPlayerDisconnected(ws, info.roomCode, info.playerId);
+      scheduleHardExitRemoval(info.roomCode, info.playerId);
     });
   });
-
-  function handleDisconnect(ws: WebSocket, intentional: boolean) {
-    const info = rcPlayerConnections.get(ws);
-    if (!info) return;
-
-    const room = rcRooms.get(info.roomCode);
-    if (room) {
-      if (intentional) {
-        // Remove player
-        const player = room.players.find(p => p.uid === info.playerId);
-        room.players = room.players.filter(p => p.uid !== info.playerId);
-
-        if (player) {
-          broadcastToRCRoom(room.code, {
-            type: 'rc-player-left',
-            playerName: player.name,
-          });
-        }
-
-        // Transfer host if needed
-        if (room.hostId === info.playerId && room.players.length > 0) {
-          room.hostId = room.players[0].uid;
-          const newHost = room.players[0];
-          broadcastToRCRoom(room.code, {
-            type: 'rc-host-changed',
-            newHostName: newHost.name,
-          });
-        }
-
-        // Delete empty rooms
-        if (room.players.length === 0) {
-          if (room.roundTimer) clearTimeout(room.roundTimer);
-          rcRooms.delete(room.code);
-          rcRoomConnections.delete(room.code);
-        } else {
-          sendRoomUpdate(room);
-        }
-      } else {
-        // Mark disconnected
-        const player = room.players.find(p => p.uid === info.playerId);
-        if (player) player.connected = false;
-        sendRoomUpdate(room);
-      }
-    }
-
-    const connections = rcRoomConnections.get(info.roomCode);
-    if (connections) {
-      connections.delete(ws);
-    }
-    rcPlayerConnections.delete(ws);
-  }
 
   function finishRound(room: RCRoom) {
     if (room.roundTimer) { clearTimeout(room.roundTimer); room.roundTimer = null; }
@@ -676,7 +877,6 @@ export function setupRCGame(httpServer: Server, app: Express) {
     const result = processRoundAnswers(room);
     if (!result) return;
 
-    // Update player scores in room
     room.players.forEach(p => { p.score = room.scores[p.uid] || 0; });
 
     broadcastToRCRoom(room.code, {
@@ -684,21 +884,28 @@ export function setupRCGame(httpServer: Server, app: Express) {
       result,
       scores: room.scores,
     });
-
-    // If this was the last round, also send game-over after a delay
-    if (room.currentRound >= room.questions.length) {
-      // Host will trigger game-over via next-round, or we auto-send after result display
-    }
   }
 
-  // Ping interval
+  // ── Heartbeat: ping clients, detect unresponsive players ──
   setInterval(() => {
-    Array.from(rcRoomConnections.entries()).forEach(([_roomCode, connections]) => {
-      Array.from(connections).forEach(ws => {
-        if (ws.readyState === WebSocket.OPEN) {
+    const now = Date.now();
+
+    rcPlayerInfo.forEach(async (info, ws) => {
+      if (!info.playerId || !info.roomCode) return;
+
+      const timeSinceLastPong = now - info.lastPong;
+
+      if (timeSinceLastPong > PONG_TIMEOUT) {
+        console.log(`[RC Heartbeat] ${info.playerId} unresponsive (${timeSinceLastPong}ms) — marking disconnected`);
+        markPlayerDisconnected(ws, info.roomCode, info.playerId);
+        scheduleHardExitRemoval(info.roomCode, info.playerId);
+      } else if (ws.readyState === WebSocket.OPEN) {
+        try {
           ws.send(JSON.stringify({ type: 'ping' }));
+        } catch (e) {
+          // ignore
         }
-      });
+      }
     });
-  }, 30000);
+  }, HEARTBEAT_INTERVAL);
 }

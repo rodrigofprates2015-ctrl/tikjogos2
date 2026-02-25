@@ -94,7 +94,7 @@ const RCHomeScreen = () => {
               placeholder="CÓDIGO"
               value={code}
               onChange={e => setCode(e.target.value.toUpperCase())}
-              maxLength={5}
+              maxLength={3}
               className="input-code flex-1"
             />
             <button

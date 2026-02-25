@@ -227,22 +227,136 @@ export const useRCGameStore = create<RCGameState>((set, get) => ({
 
     const user = get().user;
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/rc-ws`);
+    const newWs = new WebSocket(`${protocol}//${window.location.host}/rc-ws`);
 
-    ws.onopen = () => {
-      set({ isDisconnected: false });
-      ws.send(JSON.stringify({ type: 'rc-join', roomCode: code, playerId: user?.uid }));
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 10;
+    let visibilityHandler: (() => void) | null = null;
+
+    const getReconnectDelay = (attempt: number): number => {
+      const delays = [1500, 3000, 5000, 8000, 13000, 21000, 30000, 30000, 30000, 30000];
+      return delays[Math.min(attempt, delays.length - 1)];
     };
 
-    ws.onmessage = (event) => {
+    const sendSyncRequest = () => {
+      if (newWs.readyState === WebSocket.OPEN) {
+        newWs.send(JSON.stringify({ type: 'sync_request' }));
+      }
+    };
+
+    const attemptReconnect = () => {
+      if (reconnectAttempts >= maxReconnectAttempts) {
+        set({ isDisconnected: true });
+        get().addNotification({ type: 'disconnected', message: 'Conexão perdida. Recarregue a página.' });
+        return;
+      }
+      const currentRoom = get().room;
+      if (!currentRoom) return;
+
+      reconnectAttempts++;
+      const delay = getReconnectDelay(reconnectAttempts - 1);
+      console.log(`[RC] Reconnecting (${reconnectAttempts}/${maxReconnectAttempts}) in ${delay}ms...`);
+      setTimeout(() => { get().connectWebSocket(currentRoom.code); }, delay);
+    };
+
+    // Visibility change — sync state when tab becomes visible
+    visibilityHandler = () => {
+      if (document.visibilityState === 'visible' && newWs.readyState === WebSocket.OPEN) {
+        sendSyncRequest();
+      }
+    };
+    document.addEventListener('visibilitychange', visibilityHandler);
+
+    const focusHandler = () => {
+      if (newWs.readyState === WebSocket.OPEN) sendSyncRequest();
+    };
+    window.addEventListener('focus', focusHandler);
+
+    // Hard exit detection (browser/tab close)
+    const sendDisconnectNotice = () => {
+      if (newWs.readyState === WebSocket.OPEN) {
+        try { newWs.send(JSON.stringify({ type: 'disconnect_notice' })); } catch (e) { /* ignore */ }
+      }
+    };
+
+    const sendDisconnectBeacon = () => {
+      const currentUser = get().user;
+      const currentRoom = get().room;
+      if (currentUser && currentRoom && navigator.sendBeacon) {
+        try {
+          const blob = new Blob(
+            [JSON.stringify({ playerId: currentUser.uid })],
+            { type: 'application/json' }
+          );
+          navigator.sendBeacon(`/api/rc/rooms/${currentRoom.code}/disconnect-notice`, blob);
+        } catch (e) { /* ignore */ }
+      }
+    };
+
+    let disconnectSent = false;
+    const handleDisconnect = (eventName: string) => {
+      if (disconnectSent) return;
+      disconnectSent = true;
+      console.log(`[RC Disconnect] ${eventName}`);
+      sendDisconnectNotice();
+      sendDisconnectBeacon();
+    };
+
+    const beforeUnloadHandler = () => { handleDisconnect('beforeunload'); };
+    window.addEventListener('beforeunload', beforeUnloadHandler);
+
+    const pageHideHandler = (event: PageTransitionEvent) => {
+      if (!event.persisted) handleDisconnect('pagehide');
+    };
+    window.addEventListener('pagehide', pageHideHandler);
+
+    const unloadHandler = () => { handleDisconnect('unload'); };
+    window.addEventListener('unload', unloadHandler);
+
+    newWs.onopen = () => {
+      reconnectAttempts = 0;
+      set({ isDisconnected: false });
+      newWs.send(JSON.stringify({ type: 'rc-join', roomCode: code, playerId: user?.uid }));
+      sendSyncRequest();
+    };
+
+    newWs.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === 'ping') { ws.send(JSON.stringify({ type: 'pong' })); return; }
+
+        // Respond to server ping
+        if (data.type === 'ping') {
+          newWs.send(JSON.stringify({ type: 'pong' }));
+          return;
+        }
 
         if (data.type === 'rc-room-update') {
-          set({
-            room: { code: data.code, hostId: data.hostId, players: data.players },
-          });
+          set({ room: { code: data.code, hostId: data.hostId, players: data.players } });
+        }
+
+        // Sync state — restore game state after reconnect
+        if (data.type === 'rc-sync-state') {
+          if (data.phase === 'playing') {
+            const currentPhase = get().phase;
+            // If we're in lobby or home, restore to answering
+            if (currentPhase === 'lobby' || currentPhase === 'home' || currentPhase === 'themeSelect') {
+              set({
+                phase: 'answering',
+                currentRound: data.round,
+                totalRounds: data.totalRounds,
+                currentQuestion: data.question,
+                timeLeft: data.timePerRound,
+                scores: data.scores || {},
+                answeredCount: data.answeredCount || 0,
+                hasSubmitted: data.hasSubmitted || false,
+                myAnswer: '',
+                roundResult: null,
+              });
+              if (!data.hasSubmitted) {
+                startCountdown(set, get, data.timePerRound);
+              }
+            }
+          }
         }
 
         if (data.type === 'rc-game-start') {
@@ -257,7 +371,6 @@ export const useRCGameStore = create<RCGameState>((set, get) => ({
             roundResult: null,
             answeredCount: 0,
           });
-          // Start local countdown
           startCountdown(set, get, data.timePerRound);
         }
 
@@ -295,10 +408,7 @@ export const useRCGameStore = create<RCGameState>((set, get) => ({
         }
 
         if (data.type === 'rc-game-over') {
-          set({
-            phase: 'finalScore',
-            scores: data.scores,
-          });
+          set({ phase: 'finalScore', scores: data.scores });
         }
 
         if (data.type === 'rc-back-to-lobby') {
@@ -320,6 +430,14 @@ export const useRCGameStore = create<RCGameState>((set, get) => ({
           get().addNotification({ type: 'player-joined', message: `${data.playerName} entrou na sala` });
         }
 
+        if (data.type === 'rc-player-disconnected') {
+          get().addNotification({ type: 'disconnected', message: `${data.playerName} desconectou temporariamente` });
+        }
+
+        if (data.type === 'rc-player-reconnected') {
+          get().addNotification({ type: 'reconnected', message: `${data.playerName} reconectou` });
+        }
+
         if (data.type === 'rc-host-changed') {
           get().addNotification({ type: 'host-changed', message: `${data.newHostName} é o novo host` });
         }
@@ -333,15 +451,25 @@ export const useRCGameStore = create<RCGameState>((set, get) => ({
       }
     };
 
-    ws.onclose = () => {
-      console.log('[RC WS] Connection closed');
+    newWs.onerror = () => {
+      newWs.close();
     };
 
-    ws.onerror = (err) => {
-      console.error('[RC WS] Error:', err);
+    newWs.onclose = (event) => {
+      // Cleanup event listeners
+      if (visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler);
+      window.removeEventListener('focus', focusHandler);
+      window.removeEventListener('beforeunload', beforeUnloadHandler);
+      window.removeEventListener('pagehide', pageHideHandler);
+      window.removeEventListener('unload', unloadHandler);
+
+      const currentRoom = get().room;
+      if (currentRoom && event.code !== 1000) {
+        attemptReconnect();
+      }
     };
 
-    set({ ws });
+    set({ ws: newWs });
   },
 
   startGame: (config?: Partial<RCGameConfig>) => {
