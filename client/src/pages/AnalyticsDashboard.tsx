@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   BarChart3, Users, Eye, Gamepad2, TrendingUp, TrendingDown,
   Smartphone, Monitor, Globe, Clock, DoorOpen, Trophy, AlertTriangle,
-  Activity, MapPin, Timer, Flame, Target, CalendarDays, Hash
+  Activity, MapPin, Timer, Flame, Target, CalendarDays, Hash, Sparkles
 } from 'lucide-react';
 import {
   BarChart, Bar, PieChart, Pie, Cell,
@@ -37,6 +37,18 @@ type DashboardData = {
     activeRooms: number; abandonmentRate: number; avgRoomDuration: number;
     gameModes: NameValue[]; themeUsage: NameValue[];
     roomsLast30Days: TimeSeries; roomsPerDayMonth: TimeSeries;
+  };
+  sincronia?: {
+    totalRoomsCreated: number;
+    activeRooms: number;
+    playingRooms: number;
+    waitingRooms: number;
+    totalConnectedPlayers: number;
+    rooms: Array<{
+      code: string; hostId: string; phase: string;
+      playerCount: number; connectedPlayers: number;
+      category: string; currentRound: number; totalRounds: number;
+    }>;
   };
   topPages: NameValue[];
   referrers: NameValue[];
@@ -276,7 +288,7 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
 
   if (!data) return null;
 
-  const { overview, timeSeries, devices, browsers, geo, games } = data;
+  const { overview, timeSeries, devices, browsers, geo, games, sincronia } = data;
 
   return (
     <div className="space-y-6">
@@ -305,7 +317,10 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
             <Users className="h-4 w-4" />Usuários
           </TabsTrigger>
           <TabsTrigger value="games" className="gap-2 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 text-sm">
-            <Gamepad2 className="h-4 w-4" />Jogos / Salas
+            <Gamepad2 className="h-4 w-4" />Impostor
+          </TabsTrigger>
+          <TabsTrigger value="sincronia" className="gap-2 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 text-sm">
+            <Sparkles className="h-4 w-4" />Sincronia
           </TabsTrigger>
         </TabsList>
 
@@ -561,6 +576,52 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
                   </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ═══ SINCRONIA TAB ═══ */}
+        <TabsContent value="sincronia" className="space-y-6">
+          {/* KPI Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <KpiCard title="Salas Criadas (sessão)" value={String(sincronia?.totalRoomsCreated ?? 0)} icon={Gamepad2} accent="#10b981" subtitle="Desde o início do servidor" />
+            <KpiCard title="Salas Ativas" value={String(sincronia?.activeRooms ?? 0)} icon={Activity} accent="#06b6d4" subtitle="Com jogadores conectados" />
+            <KpiCard title="Em Jogo" value={String(sincronia?.playingRooms ?? 0)} icon={Gamepad2} accent="#f59e0b" subtitle="Partidas em andamento" />
+            <KpiCard title="Jogadores Online" value={String(sincronia?.totalConnectedPlayers ?? 0)} icon={Users} accent="#8b5cf6" subtitle="Conectados agora" />
+          </div>
+
+          {/* Active rooms list */}
+          <Card className="bg-[#1e293b]/60 border-white/[0.06]">
+            <CardHeader>
+              <CardTitle className="text-white text-lg">Salas Ativas do Sincronia</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {sincronia?.rooms && sincronia.rooms.length > 0 ? (
+                <div className="space-y-3">
+                  {sincronia.rooms.map(room => (
+                    <div key={room.code} className="flex items-center justify-between p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                      <div className="flex items-center gap-4">
+                        <div className="px-3 py-1.5 bg-emerald-500/20 rounded-lg">
+                          <span className="text-emerald-400 font-mono font-bold text-lg">{room.code}</span>
+                        </div>
+                        <div>
+                          <p className="text-white text-sm font-medium">
+                            {room.phase === 'waiting' ? '⏳ Aguardando' : '🎮 Jogando'}
+                            {room.phase === 'playing' && ` (Rodada ${room.currentRound}/${room.totalRounds})`}
+                          </p>
+                          <p className="text-white/40 text-xs">Tema: {room.category}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-white/40" />
+                        <span className="text-white/60 text-sm font-medium">{room.connectedPlayers}/{room.playerCount}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-white/30 text-center py-8">Nenhuma sala ativa no momento</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -37,6 +37,36 @@ const rcRooms = new Map<string, RCRoom>();
 const rcRoomConnections = new Map<string, Set<WebSocket>>();
 const rcPlayerConnections = new Map<WebSocket, { roomCode: string; playerId: string }>();
 
+// Track total rooms created (persists in memory for the lifetime of the server)
+let rcTotalRoomsCreated = 0;
+
+/** Get Sincronia room stats for the admin dashboard */
+export function getRCRoomStats() {
+  const allRooms = Array.from(rcRooms.values());
+  const activeRooms = allRooms.filter(r => r.players.some(p => p.connected));
+  const playingRooms = allRooms.filter(r => r.phase === 'playing');
+  const waitingRooms = allRooms.filter(r => r.phase === 'waiting');
+  const totalPlayers = allRooms.reduce((sum, r) => sum + r.players.filter(p => p.connected).length, 0);
+
+  return {
+    totalRoomsCreated: rcTotalRoomsCreated,
+    activeRooms: activeRooms.length,
+    playingRooms: playingRooms.length,
+    waitingRooms: waitingRooms.length,
+    totalConnectedPlayers: totalPlayers,
+    rooms: allRooms.map(r => ({
+      code: r.code,
+      hostId: r.hostId,
+      phase: r.phase,
+      playerCount: r.players.length,
+      connectedPlayers: r.players.filter(p => p.connected).length,
+      category: r.config.category || 'todas',
+      currentRound: r.currentRound,
+      totalRounds: r.config.rounds,
+    })),
+  };
+}
+
 // ── Questions (duplicated server-side to avoid client import issues) ──
 
 const RC_QUESTIONS = [
@@ -365,6 +395,7 @@ export function setupRCGame(httpServer: Server, app: Express) {
         roundTimer: null,
       };
       rcRooms.set(code, room);
+      rcTotalRoomsCreated++;
       console.log(`[RC] Room created: ${code} by ${hostName}`);
       res.json({ code, hostId, players: room.players });
     } catch (error) {
