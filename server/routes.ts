@@ -15,6 +15,76 @@ const { RtcTokenBuilder, RtcRole } = agoraToken;
 // Note: All pending themes are now stored directly in PostgreSQL database
 // This ensures persistence across server restarts and works in all deployment environments
 
+// ── Room creation counters (in-memory, reset on server restart) ──
+let impostorTotalRoomsCreated = 0;
+let drawingTotalRoomsCreated = 0;
+
+// ── Drawing game types & state at module scope (so stats can be exported) ──
+type DrawingPlayer = { uid: string; name: string; connected?: boolean };
+type DrawingPlayerVote = { playerId: string; playerName: string; targetId: string; targetName: string };
+type DrawingGameData = {
+  word?: string;
+  impostorIds?: string[];
+  drawingOrder?: string[];
+  currentDrawerIndex?: number;
+  currentDrawerId?: string;
+  turnTimeLimit?: number;
+  canvasSnapshot?: string;
+  votes?: DrawingPlayerVote[];
+  votingStarted?: boolean;
+  votesRevealed?: boolean;
+};
+type DrawingRoom = {
+  code: string;
+  hostId: string;
+  status: string;
+  gameData: DrawingGameData | null;
+  players: DrawingPlayer[];
+  createdAt: string;
+};
+const drawingRooms = new Map<string, DrawingRoom>();
+
+/** Real-time stats for Impostor game rooms (in-memory) */
+export async function getImpostorRoomStats() {
+  const allRooms = await storage.getAllRooms();
+  const activeRooms = allRooms.filter(r => r.players.some(p => p.connected));
+  const playingRooms = allRooms.filter(r => r.status === 'playing');
+  const totalConnectedPlayers = allRooms.reduce((sum, r) => sum + r.players.filter(p => p.connected).length, 0);
+  return {
+    totalRoomsCreated: impostorTotalRoomsCreated,
+    activeRooms: activeRooms.length,
+    playingRooms: playingRooms.length,
+    totalConnectedPlayers,
+    rooms: activeRooms.map(r => ({
+      code: r.code,
+      phase: r.status,
+      gameMode: r.gameMode || 'N/A',
+      playerCount: r.players.length,
+      connectedPlayers: r.players.filter(p => p.connected).length,
+    })),
+  };
+}
+
+/** Real-time stats for Drawing game rooms (in-memory) */
+export function getDrawingRoomStats() {
+  const allRooms = Array.from(drawingRooms.values());
+  const activeRooms = allRooms.filter(r => r.players.some(p => p.connected));
+  const playingRooms = allRooms.filter(r => r.status !== 'waiting');
+  const totalConnectedPlayers = allRooms.reduce((sum, r) => sum + r.players.filter(p => p.connected !== false).length, 0);
+  return {
+    totalRoomsCreated: drawingTotalRoomsCreated,
+    activeRooms: activeRooms.length,
+    playingRooms: playingRooms.length,
+    totalConnectedPlayers,
+    rooms: activeRooms.map(r => ({
+      code: r.code,
+      phase: r.status,
+      playerCount: r.players.length,
+      connectedPlayers: r.players.filter(p => p.connected !== false).length,
+    })),
+  };
+}
+
 // Server-side admin token store with expiration (24h)
 const ADMIN_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 const adminTokens = new Map<string, number>(); // token -> expiry timestamp
@@ -1957,6 +2027,7 @@ export async function registerRoutes(
         gameData: null,
       });
 
+      impostorTotalRoomsCreated++;
       console.log(`[Room Created] Code: ${code}, Host: ${hostName} (${hostId})`);
       
       // Auto-add bots for admin testing
@@ -3119,30 +3190,7 @@ export async function registerRoutes(
   // DESENHO DO IMPOSTOR — Drawing Game (separate from main game)
   // ═══════════════════════════════════════════════════════════════
 
-  type DrawingPlayer = { uid: string; name: string; connected?: boolean };
-  type DrawingPlayerVote = { playerId: string; playerName: string; targetId: string; targetName: string };
-  type DrawingGameData = {
-    word?: string;
-    impostorIds?: string[];
-    drawingOrder?: string[];
-    currentDrawerIndex?: number;
-    currentDrawerId?: string;
-    turnTimeLimit?: number;
-    canvasSnapshot?: string;
-    votes?: DrawingPlayerVote[];
-    votingStarted?: boolean;
-    votesRevealed?: boolean;
-  };
-  type DrawingRoom = {
-    code: string;
-    hostId: string;
-    status: string; // waiting | sorting | drawing | roundEnd | discussion | voting | result
-    gameData: DrawingGameData | null;
-    players: DrawingPlayer[];
-    createdAt: string;
-  };
-
-  const drawingRooms = new Map<string, DrawingRoom>();
+  // Types and drawingRooms Map are at module scope (for stats export)
   const drawingWss = new WebSocketServer({ noServer: true });
   const drawingRoomConnections = new Map<string, Set<WebSocket>>();
   const drawingPlayerConnections = new Map<WebSocket, { roomCode: string; playerId?: string }>();
@@ -3202,6 +3250,7 @@ export async function registerRoutes(
       createdAt: new Date().toISOString(),
     };
     drawingRooms.set(code, room);
+    drawingTotalRoomsCreated++;
     console.log(`[Drawing] Room ${code} created by ${playerName}`);
     res.json(room);
   });

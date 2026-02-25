@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { db } from './db';
 import { analyticsEvents, rooms } from '@shared/schema';
-import { sql, count, countDistinct, gte, avg } from 'drizzle-orm';
+import { sql, count, countDistinct, gte, avg, lt } from 'drizzle-orm';
 import { trackSessionEnd } from './analyticsMiddleware';
 import { getRCRoomStats } from './rcGame';
+import { getImpostorRoomStats, getDrawingRoomStats } from './routes';
 
 const router = Router();
 
@@ -28,11 +29,27 @@ export function createAnalyticsRouter(verifyAdmin: any) {
     }
   });
 
+  // ─── POST /api/analytics/reset (admin only — zeroes all analytics data) ───
+  router.post('/reset', verifyAdmin, async (req, res) => {
+    try {
+      if (!db) return res.status(503).json({ error: 'Database not available' });
+      // Delete all analytics events
+      await db.delete(analyticsEvents);
+      // Delete all room records from DB
+      await db.delete(rooms);
+      console.log('[Analytics] All analytics data and room records reset by admin');
+      res.json({ ok: true, message: 'All analytics data reset' });
+    } catch (error: any) {
+      console.error('[Analytics] Reset error:', error);
+      res.status(500).json({ error: error?.message });
+    }
+  });
+
   // ─── GET /api/analytics/dashboard (main endpoint) ───
   router.get('/dashboard', verifyAdmin, async (req, res) => {
     try {
       if (!db) {
-        // Return empty data with Sincronia stats when DB is unavailable
+        // Return in-memory game stats when DB is unavailable
         const emptyDays = Array.from({ length: 30 }, (_, i) => {
           const d = new Date(); d.setDate(d.getDate() - (29 - i));
           return { date: d.toISOString().split('T')[0], count: 0 };
@@ -40,18 +57,21 @@ export function createAnalyticsRouter(verifyAdmin: any) {
         return res.json({
           overview: {
             totalPageviews: 0, totalUniqueVisitors: 0, totalPlayers: 0,
-            weekPageviews: 0, weekVisitors: 0, weekPlayers: 0,
-            prevWeekPageviews: 0, prevWeekVisitors: 0, prevWeekPlayers: 0,
             avgSessionDuration: 0,
+            changes: { pageviews: 0, visitors: 0, players: 0, session: 0 },
           },
           timeSeries: { pageviews: emptyDays, visitors: emptyDays, rooms: emptyDays },
+          devices: [], browsers: [],
+          geo: { countries: [], cities: [] },
           games: {
             roomsTotal: 0, roomsToday: 0, roomsMonth: 0, activeRooms: 0,
             abandonmentRate: 0, avgRoomDuration: 0,
             gameModes: [], themeUsage: [], roomsLast30Days: emptyDays, roomsPerDayMonth: [],
           },
+          impostor: await getImpostorRoomStats(),
+          drawing: getDrawingRoomStats(),
           sincronia: getRCRoomStats(),
-          traffic: { topPages: [], referrers: [], browsers: [], geo: { countries: [], cities: [] } },
+          topPages: [], referrers: [],
         });
       }
 
@@ -295,6 +315,8 @@ export function createAnalyticsRouter(verifyAdmin: any) {
           roomsLast30Days: fillMissingDates(roomsTS, 30),
           roomsPerDayMonth: roomsPerDayMonth.map(d => ({ date: d.date, count: d.count })),
         },
+        impostor: await getImpostorRoomStats(),
+        drawing: getDrawingRoomStats(),
         sincronia: getRCRoomStats(),
         topPages: (topPages || []).map(p => ({ name: p.page || '/', value: p.count })),
         referrers: (referrerStats || []).map(r => ({ name: r.referrer || 'direct', value: r.count })),

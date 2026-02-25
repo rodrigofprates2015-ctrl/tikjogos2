@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,6 +38,26 @@ type DashboardData = {
     activeRooms: number; abandonmentRate: number; avgRoomDuration: number;
     gameModes: NameValue[]; themeUsage: NameValue[];
     roomsLast30Days: TimeSeries; roomsPerDayMonth: TimeSeries;
+  };
+  impostor?: {
+    totalRoomsCreated: number;
+    activeRooms: number;
+    playingRooms: number;
+    totalConnectedPlayers: number;
+    rooms: Array<{
+      code: string; phase: string; gameMode: string;
+      playerCount: number; connectedPlayers: number;
+    }>;
+  };
+  drawing?: {
+    totalRoomsCreated: number;
+    activeRooms: number;
+    playingRooms: number;
+    totalConnectedPlayers: number;
+    rooms: Array<{
+      code: string; phase: string;
+      playerCount: number; connectedPlayers: number;
+    }>;
   };
   sincronia?: {
     totalRoomsCreated: number;
@@ -241,6 +262,32 @@ function SectionTitle({ icon: Icon, title, subtitle }: { icon: any; title: strin
 }
 
 export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
+  const queryClient = useQueryClient();
+  const [resetting, setResetting] = useState(false);
+
+  async function handleReset() {
+    if (!token) return;
+    if (!confirm('Tem certeza? Isso vai apagar TODOS os dados de analytics e salas do banco de dados. Essa ação é irreversível.')) return;
+    setResetting(true);
+    try {
+      const res = await fetch('/api/analytics/reset', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/analytics/dashboard'] });
+        alert('Dados resetados com sucesso!');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert('Erro ao resetar: ' + (err.error || res.statusText));
+      }
+    } catch (e: any) {
+      alert('Erro: ' + e.message);
+    } finally {
+      setResetting(false);
+    }
+  }
+
   const { data, isLoading, error } = useQuery<DashboardData>({
     queryKey: ['/api/analytics/dashboard', token],
     queryFn: async () => {
@@ -252,8 +299,9 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
       }
       return res.json();
     },
-    staleTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    staleTime: 15 * 1000,
+    refetchInterval: 30 * 1000,
+    refetchOnWindowFocus: true,
     enabled: !!token,
   });
 
@@ -288,7 +336,7 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
 
   if (!data) return null;
 
-  const { overview, timeSeries, devices, browsers, geo, games, sincronia } = data;
+  const { overview, timeSeries, devices, browsers, geo, games, impostor, drawing, sincronia } = data;
 
   return (
     <div className="space-y-6">
@@ -303,9 +351,18 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
             <p className="text-sm text-white/40">Visão completa do TikJogos</p>
           </div>
         </div>
-        <Badge variant="outline" className="border-white/10 text-white/40 text-[11px]">
-          Atualizado agora
-        </Badge>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleReset}
+            disabled={resetting}
+            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 transition-colors disabled:opacity-50"
+          >
+            {resetting ? 'Resetando...' : 'Zerar Dados'}
+          </button>
+          <Badge variant="outline" className="border-white/10 text-white/40 text-[11px]">
+            Atualizado agora
+          </Badge>
+        </div>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
@@ -318,6 +375,9 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
           </TabsTrigger>
           <TabsTrigger value="games" className="gap-2 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 text-sm">
             <Gamepad2 className="h-4 w-4" />Impostor
+          </TabsTrigger>
+          <TabsTrigger value="drawing" className="gap-2 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 text-sm">
+            <Gamepad2 className="h-4 w-4" />Desenho
           </TabsTrigger>
           <TabsTrigger value="sincronia" className="gap-2 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 text-sm">
             <Sparkles className="h-4 w-4" />Sincronia
@@ -377,12 +437,12 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
             </CardContent>
           </Card>
 
-          {/* Quick stats row */}
+          {/* Quick stats row — real-time across all games */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatMini label="Salas Hoje" value={formatNum(games.roomsToday)} icon={DoorOpen} accent="#f59e0b" />
-            <StatMini label="Salas Este Mês" value={formatNum(games.roomsMonth)} icon={CalendarDays} accent="#10b981" />
-            <StatMini label="Salas Ativas" value={formatNum(games.activeRooms)} icon={Flame} accent="#ef4444" />
-            <StatMini label="Total de Salas" value={formatNum(games.roomsTotal)} icon={Hash} accent="#6366f1" />
+            <StatMini label="Impostor Ativas" value={String(impostor?.activeRooms ?? 0)} icon={Gamepad2} accent="#6366f1" />
+            <StatMini label="Desenho Ativas" value={String(drawing?.activeRooms ?? 0)} icon={Gamepad2} accent="#ec4899" />
+            <StatMini label="Sincronia Ativas" value={String(sincronia?.activeRooms ?? 0)} icon={Sparkles} accent="#10b981" />
+            <StatMini label="Jogadores Online" value={String((impostor?.totalConnectedPlayers ?? 0) + (drawing?.totalConnectedPlayers ?? 0) + (sincronia?.totalConnectedPlayers ?? 0))} icon={Users} accent="#f59e0b" />
           </div>
         </TabsContent>
 
@@ -464,36 +524,56 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
           </div>
         </TabsContent>
 
-        {/* ═══ GAMES / SALAS TAB ═══ */}
+        {/* ═══ IMPOSTOR TAB ═══ */}
         <TabsContent value="games" className="space-y-6">
-          {/* Game KPIs */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KpiCard title="Total de Salas" value={formatNum(games.roomsTotal)} icon={DoorOpen} accent="#6366f1" subtitle="Desde o início" />
-            <KpiCard title="Salas Ativas Agora" value={formatNum(games.activeRooms)} icon={Flame} accent="#ef4444" subtitle="Em andamento" />
-            <KpiCard title="Duração Média da Sala" value={formatDuration(games.avgRoomDuration || 0)} icon={Timer} accent="#10b981" subtitle="Tempo médio de jogo" />
-            <KpiCard
-              title="Taxa de Abandono"
-              value={`${games.abandonmentRate}%`}
-              icon={AlertTriangle}
-              accent={games.abandonmentRate > 50 ? '#ef4444' : '#f59e0b'}
-              subtitle="Salas sem jogadores (30d)"
-            />
+          {/* Real-time KPIs */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <KpiCard title="Salas Criadas (sessão)" value={String(impostor?.totalRoomsCreated ?? 0)} icon={Gamepad2} accent="#6366f1" subtitle="Desde o início do servidor" />
+            <KpiCard title="Salas Ativas" value={String(impostor?.activeRooms ?? 0)} icon={Activity} accent="#ef4444" subtitle="Com jogadores conectados" />
+            <KpiCard title="Em Jogo" value={String(impostor?.playingRooms ?? 0)} icon={Flame} accent="#f59e0b" subtitle="Partidas em andamento" />
+            <KpiCard title="Jogadores Online" value={String(impostor?.totalConnectedPlayers ?? 0)} icon={Users} accent="#8b5cf6" subtitle="Conectados agora" />
           </div>
 
-          {/* Quick stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatMini label="Salas Hoje" value={formatNum(games.roomsToday)} icon={DoorOpen} accent="#f59e0b" />
-            <StatMini label="Salas Este Mês" value={formatNum(games.roomsMonth)} icon={CalendarDays} accent="#10b981" />
-            <StatMini label="Jogadores Únicos" value={formatNum(overview.totalPlayers)} icon={Gamepad2} accent="#ec4899" />
-            <StatMini label="Total Geral" value={formatNum(games.roomsTotal)} icon={Target} accent="#6366f1" />
-          </div>
+          {/* Active rooms list */}
+          <Card className="bg-[#1e293b]/60 border-white/[0.06]">
+            <CardHeader>
+              <CardTitle className="text-white text-lg">Salas Ativas do Impostor</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {impostor?.rooms && impostor.rooms.length > 0 ? (
+                <div className="space-y-3">
+                  {impostor.rooms.map(room => (
+                    <div key={room.code} className="flex items-center justify-between p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                      <div className="flex items-center gap-4">
+                        <div className="px-3 py-1.5 bg-indigo-500/20 rounded-lg">
+                          <span className="text-indigo-400 font-mono font-bold text-lg">{room.code}</span>
+                        </div>
+                        <div>
+                          <p className="text-white text-sm font-medium">
+                            {room.phase === 'waiting' ? 'Aguardando' : 'Jogando'}
+                          </p>
+                          <p className="text-white/40 text-xs">Modo: {GAME_MODE_LABELS[room.gameMode] || room.gameMode}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-white/40" />
+                        <span className="text-white/60 text-sm font-medium">{room.connectedPlayers}/{room.playerCount}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-white/30 text-center py-8">Nenhuma sala ativa no momento</p>
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Rooms chart */}
+          {/* DB-based charts (historical) */}
           <Card className="bg-[#1e293b]/80 border-white/[0.06] rounded-2xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-white/60 flex items-center gap-2">
                 <BarChart3 className="h-4 w-4 text-amber-400" />
-                Salas Criadas por Dia — 30 dias
+                Salas Criadas por Dia (DB) — 30 dias
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -508,74 +588,46 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
               </ResponsiveContainer>
             </CardContent>
           </Card>
+        </TabsContent>
 
-          {/* Monthly rooms chart */}
-          {games.roomsPerDayMonth && games.roomsPerDayMonth.length > 0 && (
-            <Card className="bg-[#1e293b]/80 border-white/[0.06] rounded-2xl">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-white/60 flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4 text-emerald-400" />
-                  Salas Criadas — Mês Atual
-                </CardTitle>
-              </CardHeader>
-              <CardContent><MiniChart data={games.roomsPerDayMonth} color="#10b981" /></CardContent>
-            </Card>
-          )}
-
-          {/* Game Rankings */}
-          <SectionTitle icon={Trophy} title="Ranking de Jogos" subtitle="Qual tipo de jogo dá mais engajamento?" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="bg-[#1e293b]/80 border-white/[0.06] rounded-2xl">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-white/60 flex items-center gap-2">
-                  <Trophy className="h-4 w-4 text-amber-400" />
-                  Jogos Mais Jogados
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <HorizontalBarList
-                  data={(games.gameModes || []).map(g => ({ ...g, name: GAME_MODE_LABELS[g.name] || g.name }))}
-                  color="#f59e0b"
-                  showIndex
-                />
-              </CardContent>
-            </Card>
-            <Card className="bg-[#1e293b]/80 border-white/[0.06] rounded-2xl">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-white/60 flex items-center gap-2">
-                  <Gamepad2 className="h-4 w-4 text-indigo-400" />
-                  Temas / Modos Mais Usados
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <HorizontalBarList
-                  data={(games.themeUsage || []).map(t => ({ ...t, name: GAME_MODE_LABELS[t.name] || t.name }))}
-                  color="#6366f1"
-                  showIndex
-                />
-              </CardContent>
-            </Card>
+        {/* ═══ DRAWING TAB ═══ */}
+        <TabsContent value="drawing" className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <KpiCard title="Salas Criadas (sessão)" value={String(drawing?.totalRoomsCreated ?? 0)} icon={Gamepad2} accent="#ec4899" subtitle="Desde o início do servidor" />
+            <KpiCard title="Salas Ativas" value={String(drawing?.activeRooms ?? 0)} icon={Activity} accent="#06b6d4" subtitle="Com jogadores conectados" />
+            <KpiCard title="Em Jogo" value={String(drawing?.playingRooms ?? 0)} icon={Flame} accent="#f59e0b" subtitle="Partidas em andamento" />
+            <KpiCard title="Jogadores Online" value={String(drawing?.totalConnectedPlayers ?? 0)} icon={Users} accent="#8b5cf6" subtitle="Conectados agora" />
           </div>
 
-          {/* Engagement insight */}
-          <Card className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-indigo-500/20 rounded-2xl">
-            <CardContent className="p-5">
-              <div className="flex items-start gap-3">
-                <div className="h-10 w-10 rounded-xl bg-indigo-500/20 flex items-center justify-center shrink-0">
-                  <Target className="h-5 w-5 text-indigo-400" />
+          <Card className="bg-[#1e293b]/60 border-white/[0.06]">
+            <CardHeader>
+              <CardTitle className="text-white text-lg">Salas Ativas do Impostor Desenho</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {drawing?.rooms && drawing.rooms.length > 0 ? (
+                <div className="space-y-3">
+                  {drawing.rooms.map(room => (
+                    <div key={room.code} className="flex items-center justify-between p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                      <div className="flex items-center gap-4">
+                        <div className="px-3 py-1.5 bg-pink-500/20 rounded-lg">
+                          <span className="text-pink-400 font-mono font-bold text-lg">{room.code}</span>
+                        </div>
+                        <div>
+                          <p className="text-white text-sm font-medium">
+                            {room.phase === 'waiting' ? 'Aguardando' : room.phase === 'drawing' ? 'Desenhando' : room.phase}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-white/40" />
+                        <span className="text-white/60 text-sm font-medium">{room.connectedPlayers}/{room.playerCount}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-white mb-1">Insight de Engajamento</h4>
-                  <p className="text-[13px] text-white/50 leading-relaxed">
-                    {games.abandonmentRate > 50
-                      ? `A taxa de abandono está em ${games.abandonmentRate}%. Considere melhorar o onboarding ou reduzir o tempo de espera nas salas.`
-                      : games.gameModes && games.gameModes.length > 0
-                        ? `O modo "${GAME_MODE_LABELS[games.gameModes[0]?.name] || games.gameModes[0]?.name}" é o mais popular com ${games.gameModes[0]?.value} partidas. Taxa de abandono saudável em ${games.abandonmentRate}%.`
-                        : 'Colete mais dados para gerar insights sobre engajamento.'
-                    }
-                  </p>
-                </div>
-              </div>
+              ) : (
+                <p className="text-white/30 text-center py-8">Nenhuma sala ativa no momento</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
