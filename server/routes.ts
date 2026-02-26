@@ -3455,30 +3455,189 @@ export async function registerRoutes(
     }
   });
 
-  drawingWss.on('connection', (ws) => {
-    let currentRoomCode: string | null = null;
-    let currentPlayerId: string | null = null;
+  // ── Drawing: Heartbeat & disconnect configuration (mirrors Impostor) ──
+  const DRAW_HEARTBEAT_INTERVAL = 5000;
+  const DRAW_PONG_TIMEOUT = 15000;
+  const DRAW_HARD_EXIT_GRACE = 15000;
+  const DRAW_EMPTY_ROOM_CLEANUP = 10000;
 
+  const drawHardExitTimers = new Map<string, NodeJS.Timeout>();
+  const drawEmptyRoomTimers = new Map<string, NodeJS.Timeout>();
+  const drawPlayerInfo = new Map<WebSocket, { roomCode: string; playerId: string; lastPong: number }>();
+
+  function drawMarkDisconnected(ws: WebSocket, roomCode: string, playerId: string) {
+    console.log(`[Drawing] Marking ${playerId} as disconnected in ${roomCode}`);
+    const connections = drawingRoomConnections.get(roomCode);
+    if (connections) connections.delete(ws);
+    drawingPlayerConnections.delete(ws);
+    drawPlayerInfo.delete(ws);
+
+    const room = drawingRooms.get(roomCode);
+    if (!room) return;
+    const player = room.players.find(p => p.uid === playerId);
+    if (player) player.connected = false;
+    broadcastToDrawingRoom(roomCode, { type: 'drawing-player-disconnected', playerId, playerName: player?.name });
+    broadcastToDrawingRoom(roomCode, { type: 'drawing-room-update', room });
+  }
+
+  function drawMarkConnected(roomCode: string, playerId: string) {
+    const timerKey = `${roomCode}:${playerId}`;
+    const t1 = drawHardExitTimers.get(timerKey);
+    if (t1) { clearTimeout(t1); drawHardExitTimers.delete(timerKey); }
+    const t2 = drawEmptyRoomTimers.get(roomCode);
+    if (t2) { clearTimeout(t2); drawEmptyRoomTimers.delete(roomCode); }
+
+    const room = drawingRooms.get(roomCode);
+    if (!room) return;
+    const player = room.players.find(p => p.uid === playerId);
+    if (player) player.connected = true;
+    broadcastToDrawingRoom(roomCode, { type: 'drawing-player-reconnected', playerId, playerName: player?.name });
+    broadcastToDrawingRoom(roomCode, { type: 'drawing-room-update', room });
+  }
+
+  function drawHandleHardExit(roomCode: string, playerId: string, reason: string = 'hard_exit') {
+    const timerKey = `${roomCode}:${playerId}`;
+    const existing = drawHardExitTimers.get(timerKey);
+    if (existing) { clearTimeout(existing); drawHardExitTimers.delete(timerKey); }
+
+    console.log(`[Drawing Hard Exit] Removing ${playerId} from ${roomCode} (${reason})`);
+    const room = drawingRooms.get(roomCode);
+    if (!room) return;
+
+    const playerToRemove = room.players.find(p => p.uid === playerId);
+    if (!playerToRemove) return;
+
+    const wasHost = room.hostId === playerId;
+    room.players = room.players.filter(p => p.uid !== playerId);
+
+    if (wasHost && room.players.length > 0) {
+      const connected = room.players.filter(p => p.connected !== false);
+      const newHost = connected.length > 0 ? connected[0] : room.players[0];
+      room.hostId = newHost.uid;
+      broadcastToDrawingRoom(roomCode, { type: 'drawing-host-changed', newHostName: newHost.name, newHostId: newHost.uid });
+    }
+
+    broadcastToDrawingRoom(roomCode, { type: 'player-left', playerName: playerToRemove.name });
+
+    if (room.players.length === 0) {
+      drawingRooms.delete(roomCode);
+      drawingRoomConnections.delete(roomCode);
+      console.log(`[Drawing] Empty room ${roomCode} deleted`);
+    } else {
+      broadcastToDrawingRoom(roomCode, { type: 'drawing-room-update', room });
+    }
+  }
+
+  function drawScheduleHardExit(roomCode: string, playerId: string) {
+    const timerKey = `${roomCode}:${playerId}`;
+    const existing = drawHardExitTimers.get(timerKey);
+    if (existing) clearTimeout(existing);
+    const timer = setTimeout(() => {
+      drawHardExitTimers.delete(timerKey);
+      drawHandleHardExit(roomCode, playerId, 'grace_expired');
+    }, DRAW_HARD_EXIT_GRACE);
+    drawHardExitTimers.set(timerKey, timer);
+  }
+
+  // ── Drawing: disconnect-notice beacon endpoint ──
+  app.post('/api/drawing-rooms/:code/disconnect-notice', (req, res) => {
+    try {
+      const { playerId } = z.object({ playerId: z.string() }).parse(req.body);
+      const roomCode = req.params.code.toUpperCase();
+      const room = drawingRooms.get(roomCode);
+      if (!room) return res.status(404).json({ error: 'Room not found' });
+
+      drawPlayerInfo.forEach((info, ws) => {
+        if (info.playerId === playerId && info.roomCode === roomCode) {
+          drawMarkDisconnected(ws, roomCode, playerId);
+        }
+      });
+      drawingPlayerConnections.forEach((info, ws) => {
+        if (info.playerId === playerId && info.roomCode === roomCode) {
+          drawMarkDisconnected(ws, roomCode, playerId);
+        }
+      });
+
+      const player = room.players.find(p => p.uid === playerId);
+      if (player && player.connected !== false) {
+        player.connected = false;
+        broadcastToDrawingRoom(roomCode, { type: 'drawing-player-disconnected', playerId, playerName: player.name });
+        broadcastToDrawingRoom(roomCode, { type: 'drawing-room-update', room });
+      }
+
+      drawScheduleHardExit(roomCode, playerId);
+      res.status(204).send();
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to process disconnect notice' });
+    }
+  });
+
+  // ── Drawing: WebSocket ──
+  drawingWss.on('connection', (ws) => {
     ws.on('message', (message) => {
       try {
         const data = JSON.parse(message.toString());
 
-        if (data.type === 'pong') return;
+        if (data.type === 'pong') {
+          const info = drawPlayerInfo.get(ws);
+          if (info) info.lastPong = Date.now();
+          return;
+        }
 
+        // Intentional leave
+        if (data.type === 'leave') {
+          const info = drawPlayerInfo.get(ws) || drawingPlayerConnections.get(ws);
+          if (info?.roomCode && info?.playerId) {
+            drawHandleHardExit(info.roomCode, info.playerId, 'leave_intentional');
+            const connections = drawingRoomConnections.get(info.roomCode);
+            if (connections) connections.delete(ws);
+            drawingPlayerConnections.delete(ws);
+            drawPlayerInfo.delete(ws);
+          }
+          return;
+        }
+
+        // Disconnect notice (browser closing)
+        if (data.type === 'disconnect_notice') {
+          const info = drawPlayerInfo.get(ws) || drawingPlayerConnections.get(ws);
+          if (info?.roomCode && info?.playerId) {
+            drawMarkDisconnected(ws, info.roomCode, info.playerId);
+            drawScheduleHardExit(info.roomCode, info.playerId);
+          }
+          return;
+        }
+
+        // Sync request — send current room state
+        if (data.type === 'sync_request') {
+          const info = drawPlayerInfo.get(ws) || drawingPlayerConnections.get(ws);
+          if (!info?.roomCode) return;
+          if (drawPlayerInfo.has(ws)) drawPlayerInfo.get(ws)!.lastPong = Date.now();
+          const room = drawingRooms.get(info.roomCode);
+          if (room) {
+            ws.send(JSON.stringify({ type: 'drawing-room-update', room }));
+          }
+          return;
+        }
+
+        // Join room
         if (data.type === 'join-drawing-room' && data.roomCode && data.playerId) {
           const roomCode = data.roomCode as string;
           const playerId = data.playerId as string;
-          currentRoomCode = roomCode;
-          currentPlayerId = playerId;
 
           if (!drawingRoomConnections.has(roomCode)) {
             drawingRoomConnections.set(roomCode, new Set());
           }
           drawingRoomConnections.get(roomCode)!.add(ws);
           drawingPlayerConnections.set(ws, { roomCode, playerId });
+          drawPlayerInfo.set(ws, { roomCode, playerId, lastPong: Date.now() });
 
           const room = drawingRooms.get(roomCode);
           if (room) {
+            const existing = room.players.find(p => p.uid === playerId);
+            if (existing) {
+              console.log(`[Drawing Reconnect] ${playerId} reconnecting to ${roomCode}`);
+              drawMarkConnected(roomCode, playerId);
+            }
             ws.send(JSON.stringify({ type: 'drawing-room-update', room }));
           }
         }
@@ -3495,7 +3654,7 @@ export async function registerRoutes(
           });
         }
 
-        // Undo last stroke — broadcast to others
+        // Undo last stroke
         if (data.type === 'draw-undo' && data.roomCode) {
           const connections = drawingRoomConnections.get(data.roomCode);
           if (!connections) return;
@@ -3515,12 +3674,10 @@ export async function registerRoutes(
           const nextIndex = (room.gameData.currentDrawerIndex || 0) + 1;
 
           if (nextIndex >= room.gameData.drawingOrder.length) {
-            // All turns done — ask host if they want another round
             room.status = 'roundEnd';
             room.gameData.currentDrawerId = undefined;
             broadcastToDrawingRoom(data.roomCode, { type: 'drawing-round-end' });
           } else {
-            // Next turn
             room.gameData.currentDrawerIndex = nextIndex;
             room.gameData.currentDrawerId = room.gameData.drawingOrder[nextIndex];
             broadcastToDrawingRoom(data.roomCode, {
@@ -3533,66 +3690,39 @@ export async function registerRoutes(
           broadcastToDrawingRoom(data.roomCode, { type: 'drawing-room-update', room });
         }
 
-        if (data.type === 'leave') {
-          const info = drawingPlayerConnections.get(ws);
-          if (info?.roomCode && info?.playerId) {
-            const room = drawingRooms.get(info.roomCode);
-            if (room) {
-              const player = room.players.find(p => p.uid === info.playerId);
-              if (player) {
-                broadcastToDrawingRoom(info.roomCode, { type: 'player-left', playerName: player.name });
-              }
-              room.players = room.players.filter(p => p.uid !== info.playerId);
-              if (room.players.length === 0) {
-                drawingRooms.delete(info.roomCode);
-              } else {
-                if (room.hostId === info.playerId) {
-                  room.hostId = room.players[0].uid;
-                }
-                broadcastToDrawingRoom(info.roomCode, { type: 'drawing-room-update', room });
-              }
-            }
-          }
-        }
-
-        if (data.type === 'disconnect_notice') {
-          const info = drawingPlayerConnections.get(ws);
-          if (info?.roomCode && info?.playerId) {
-            const room = drawingRooms.get(info.roomCode);
-            if (room) {
-              const player = room.players.find(p => p.uid === info.playerId);
-              if (player) player.connected = false;
-              broadcastToDrawingRoom(info.roomCode, { type: 'drawing-room-update', room });
-            }
-          }
-        }
-
       } catch (error) {
         console.error('[Drawing WS Error]:', error);
       }
     });
 
     ws.on('close', () => {
-      const info = drawingPlayerConnections.get(ws);
-      if (info?.roomCode) {
-        const connections = drawingRoomConnections.get(info.roomCode);
-        if (connections) {
-          connections.delete(ws);
-          if (connections.size === 0) drawingRoomConnections.delete(info.roomCode);
-        }
-        // Mark player as disconnected
-        if (info.playerId) {
-          const room = drawingRooms.get(info.roomCode);
-          if (room) {
-            const player = room.players.find(p => p.uid === info.playerId);
-            if (player) player.connected = false;
-            broadcastToDrawingRoom(info.roomCode, { type: 'drawing-room-update', room });
-          }
-        }
+      const info = drawPlayerInfo.get(ws) || drawingPlayerConnections.get(ws);
+      if (!info?.roomCode || !info?.playerId) {
+        drawingPlayerConnections.delete(ws);
+        drawPlayerInfo.delete(ws);
+        return;
       }
-      drawingPlayerConnections.delete(ws);
+      console.log(`[Drawing Close] WS closed for ${info.playerId} in ${info.roomCode}`);
+      drawMarkDisconnected(ws, info.roomCode, info.playerId);
+      drawScheduleHardExit(info.roomCode, info.playerId);
     });
   });
+
+  // ── Drawing: Heartbeat — ping clients, detect unresponsive ──
+  setInterval(() => {
+    const now = Date.now();
+    drawPlayerInfo.forEach((info, ws) => {
+      if (!info.playerId || !info.roomCode) return;
+      const timeSinceLastPong = now - info.lastPong;
+      if (timeSinceLastPong > DRAW_PONG_TIMEOUT) {
+        console.log(`[Drawing Heartbeat] ${info.playerId} unresponsive (${timeSinceLastPong}ms)`);
+        drawMarkDisconnected(ws, info.roomCode, info.playerId);
+        drawScheduleHardExit(info.roomCode, info.playerId);
+      } else if (ws.readyState === WebSocket.OPEN) {
+        try { ws.send(JSON.stringify({ type: 'ping' })); } catch (e) { /* ignore */ }
+      }
+    });
+  }, DRAW_HEARTBEAT_INTERVAL);
 
   return httpServer;
 }

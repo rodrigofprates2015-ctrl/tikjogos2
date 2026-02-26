@@ -173,8 +173,14 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
     const maxReconnectAttempts = 10;
 
     const getReconnectDelay = (attempt: number): number => {
-      const delays = [1500, 3000, 5000, 8000, 13000, 21000, 30000];
+      const delays = [1500, 3000, 5000, 8000, 13000, 21000, 30000, 30000, 30000, 30000];
       return delays[Math.min(attempt, delays.length - 1)];
+    };
+
+    const sendSyncRequest = () => {
+      if (newWs.readyState === WebSocket.OPEN) {
+        newWs.send(JSON.stringify({ type: 'sync_request' }));
+      }
     };
 
     const attemptReconnect = () => {
@@ -187,13 +193,69 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
       if (!currentRoom) return;
       reconnectAttempts++;
       const delay = getReconnectDelay(reconnectAttempts - 1);
+      console.log(`[Drawing] Reconnecting (${reconnectAttempts}/${maxReconnectAttempts}) in ${delay}ms...`);
       setTimeout(() => get().connectWebSocket(currentRoom.code), delay);
     };
+
+    // Visibility change — sync state when tab becomes visible
+    const visibilityHandler = () => {
+      if (document.visibilityState === 'visible' && newWs.readyState === WebSocket.OPEN) {
+        sendSyncRequest();
+      }
+    };
+    document.addEventListener('visibilitychange', visibilityHandler);
+
+    const focusHandler = () => {
+      if (newWs.readyState === WebSocket.OPEN) sendSyncRequest();
+    };
+    window.addEventListener('focus', focusHandler);
+
+    // Hard exit detection
+    const sendDisconnectNotice = () => {
+      if (newWs.readyState === WebSocket.OPEN) {
+        try { newWs.send(JSON.stringify({ type: 'disconnect_notice' })); } catch (e) { /* ignore */ }
+      }
+    };
+
+    const sendDisconnectBeacon = () => {
+      const currentUser = get().user;
+      const currentRoom = get().room;
+      if (currentUser && currentRoom && navigator.sendBeacon) {
+        try {
+          const blob = new Blob(
+            [JSON.stringify({ playerId: currentUser.uid })],
+            { type: 'application/json' }
+          );
+          navigator.sendBeacon(`/api/drawing-rooms/${currentRoom.code}/disconnect-notice`, blob);
+        } catch (e) { /* ignore */ }
+      }
+    };
+
+    let disconnectSent = false;
+    const handleDisconnect = (eventName: string) => {
+      if (disconnectSent) return;
+      disconnectSent = true;
+      console.log(`[Drawing Disconnect] ${eventName}`);
+      sendDisconnectNotice();
+      sendDisconnectBeacon();
+    };
+
+    const beforeUnloadHandler = () => { handleDisconnect('beforeunload'); };
+    window.addEventListener('beforeunload', beforeUnloadHandler);
+
+    const pageHideHandler = (event: PageTransitionEvent) => {
+      if (!event.persisted) handleDisconnect('pagehide');
+    };
+    window.addEventListener('pagehide', pageHideHandler);
+
+    const unloadHandler = () => { handleDisconnect('unload'); };
+    window.addEventListener('unload', unloadHandler);
 
     newWs.onopen = () => {
       reconnectAttempts = 0;
       get().setDisconnected(false);
       newWs.send(JSON.stringify({ type: 'join-drawing-room', roomCode: code, playerId: user?.uid }));
+      sendSyncRequest();
     };
 
     newWs.onmessage = (event) => {
@@ -210,7 +272,6 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
         }
 
         if (data.type === 'draw-stroke' && data.stroke) {
-          // Received a stroke from another player — add to display
           set((state) => ({
             strokes: [...state.strokes, data.stroke],
             currentTurnStrokes: [...state.currentTurnStrokes, data.stroke],
@@ -218,7 +279,6 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
         }
 
         if (data.type === 'draw-undo') {
-          // Another player undid their last stroke
           set((state) => ({
             strokes: state.strokes.slice(0, -1),
             currentTurnStrokes: state.currentTurnStrokes.slice(0, -1),
@@ -226,11 +286,7 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
         }
 
         if (data.type === 'drawing-turn-start') {
-          // New turn started — clear current turn strokes, load snapshot if any
           set({ currentTurnStrokes: [] });
-          if (data.canvasSnapshot) {
-            // Snapshot will be handled by the canvas component
-          }
         }
 
         if (data.type === 'drawing-round-end') {
@@ -249,6 +305,18 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
           get().addNotification({ type: 'player-left', message: `${data.playerName} saiu da sala` });
         }
 
+        if (data.type === 'drawing-player-disconnected') {
+          get().addNotification({ type: 'disconnected', message: `${data.playerName} desconectou temporariamente` });
+        }
+
+        if (data.type === 'drawing-player-reconnected') {
+          get().addNotification({ type: 'reconnected', message: `${data.playerName} reconectou` });
+        }
+
+        if (data.type === 'drawing-host-changed') {
+          get().addNotification({ type: 'host-changed', message: `${data.newHostName} é o novo host` });
+        }
+
         if (data.type === 'kicked') {
           get().addNotification({ type: 'kicked', message: 'Você foi expulso da sala' });
           set({ room: null, ws: null, phase: 'home' });
@@ -262,19 +330,18 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
     newWs.onerror = () => newWs.close();
 
     newWs.onclose = (event) => {
+      // Cleanup event listeners
+      document.removeEventListener('visibilitychange', visibilityHandler);
+      window.removeEventListener('focus', focusHandler);
+      window.removeEventListener('beforeunload', beforeUnloadHandler);
+      window.removeEventListener('pagehide', pageHideHandler);
+      window.removeEventListener('unload', unloadHandler);
+
       const currentRoom = get().room;
       if (currentRoom && event.code !== 1000) {
         attemptReconnect();
       }
     };
-
-    // Disconnect notice on page unload
-    const beforeUnloadHandler = () => {
-      if (newWs.readyState === WebSocket.OPEN) {
-        newWs.send(JSON.stringify({ type: 'disconnect_notice' }));
-      }
-    };
-    window.addEventListener('beforeunload', beforeUnloadHandler);
 
     set({ ws: newWs });
   },
