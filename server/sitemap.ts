@@ -8,6 +8,23 @@ import { BLOG_POSTS_FULL } from './blogContent';
 
 const BASE_URL = 'https://tikjogos.com.br';
 
+// Parse Portuguese date strings like "07 Fev 2026" to ISO "2026-02-07"
+const PT_MONTHS: Record<string, string> = {
+  jan: '01', fev: '02', mar: '03', abr: '04', mai: '05', jun: '06',
+  jul: '07', ago: '08', set: '09', out: '10', nov: '11', dez: '12',
+};
+function parseDate(raw: string): string {
+  const match = raw.match(/^(\d{1,2})\s+(\w{3})\s+(\d{4})$/i);
+  if (match) {
+    const [, day, mon, year] = match;
+    const mm = PT_MONTHS[mon.toLowerCase()];
+    if (mm) return `${year}-${mm}-${day.padStart(2, '0')}`;
+  }
+  // Already ISO or fallback
+  if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.split('T')[0];
+  return today();
+}
+
 // All theme slugs (must match THEME_SEO keys in seo.ts and routes in App.tsx)
 const THEME_SLUGS = [
   'animes', 'attack-on-titan', 'bandas-de-rock', 'brawl-stars', 'bts',
@@ -22,17 +39,27 @@ const THEME_SLUGS = [
 
 // i18n route groups: [pt, en, es]
 const I18N_PAGES: Array<{ paths: [string, string, string]; priority: string; changefreq: string }> = [
+  // Core pages
   { paths: ['/', '/en', '/es'], priority: '1.0', changefreq: 'daily' },
+  { paths: ['/desenho-impostor', '/en/desenho-impostor', '/es/desenho-impostor'], priority: '0.9', changefreq: 'weekly' },
+  { paths: ['/respostas-em-comum', '/en/common-answers', '/es/respuestas-en-comun'], priority: '0.9', changefreq: 'weekly' },
+  { paths: ['/modo-local', '/en/local-mode', '/es/modo-local'], priority: '0.7', changefreq: 'weekly' },
+  // How-to-play
   { paths: ['/como-jogar/jogo-do-impostor', '/en/how-to-play/impostor-game', '/es/como-jugar/juego-del-impostor'], priority: '0.9', changefreq: 'weekly' },
   { paths: ['/como-jogar/jogo-do-impostor-desenho', '/en/how-to-play/impostor-drawing-game', '/es/como-jugar/juego-del-impostor-dibujo'], priority: '0.8', changefreq: 'weekly' },
   { paths: ['/como-jogar/sincronia', '/en/how-to-play/sincronia', '/es/como-jugar/sincronia'], priority: '0.8', changefreq: 'weekly' },
-  { paths: ['/desenho-impostor', '/en/desenho-impostor', '/es/desenho-impostor'], priority: '0.8', changefreq: 'weekly' },
-  { paths: ['/respostas-em-comum', '/en/common-answers', '/es/respuestas-en-comun'], priority: '0.8', changefreq: 'weekly' },
-  { paths: ['/modo-local', '/en/local-mode', '/es/modo-local'], priority: '0.7', changefreq: 'weekly' },
-  { paths: ['/temas', '/en/temas', '/es/temas-del-juego'], priority: '0.8', changefreq: 'weekly' },
+  // Themes
+  { paths: ['/temas', '/en/themes', '/es/temas-del-juego'], priority: '0.8', changefreq: 'weekly' },
   { paths: ['/criar-tema', '/en/create-theme', '/es/crear-tema'], priority: '0.6', changefreq: 'monthly' },
-  { paths: ['/doacoes', '/en/donations', '/es/donaciones'], priority: '0.5', changefreq: 'monthly' },
+  // Game modes & other games
+  { paths: ['/modos-de-jogo', '/en/game-modes', '/es/modos-de-juego'], priority: '0.7', changefreq: 'weekly' },
+  { paths: ['/outros-jogos', '/en/other-games', '/es/otros-juegos'], priority: '0.7', changefreq: 'weekly' },
+  // Blog
   { paths: ['/blog', '/en/blog', '/es/blog'], priority: '0.7', changefreq: 'weekly' },
+  // Legal & support
+  { paths: ['/privacidade', '/en/privacy', '/es/privacidad'], priority: '0.3', changefreq: 'yearly' },
+  { paths: ['/termos', '/en/terms', '/es/terminos'], priority: '0.3', changefreq: 'yearly' },
+  { paths: ['/doacoes', '/en/donations', '/es/donaciones'], priority: '0.5', changefreq: 'monthly' },
 ];
 
 function today(): string {
@@ -68,11 +95,14 @@ function generateMainSitemap(): string {
       `${BASE_URL}${en}`,
       `${BASE_URL}${es}`,
     ];
-    entries.push(urlEntry(`${BASE_URL}${pt}`, {
-      priority: page.priority,
-      changefreq: page.changefreq,
-      hreflangs,
-    }));
+    // Each language version gets its own <url> with all hreflang links
+    for (const p of [pt, en, es]) {
+      entries.push(urlEntry(`${BASE_URL}${p}`, {
+        priority: page.priority,
+        changefreq: page.changefreq,
+        hreflangs,
+      }));
+    }
   }
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -120,7 +150,7 @@ function generateBlogSitemap(): string {
     entries.push(urlEntry(`${BASE_URL}/blog/${post.slug}`, {
       priority: '0.6',
       changefreq: 'monthly',
-      lastmod: post.date || today(),
+      lastmod: parseDate(post.date || today()),
     }));
   }
 

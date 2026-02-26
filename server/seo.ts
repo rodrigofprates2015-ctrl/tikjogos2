@@ -263,6 +263,38 @@ const PAGE_SEO: Record<string, { title: string; description: string }> = {
   },
 };
 
+// Bidirectional hreflang mapping: PT base path -> [pt, en, es] full paths
+// Used to inject hreflang tags on all language versions of a page
+const HREFLANG_MAP: Array<[string, string, string]> = [
+  ['/como-jogar/jogo-do-impostor', '/en/how-to-play/impostor-game', '/es/como-jugar/juego-del-impostor'],
+  ['/como-jogar/jogo-do-impostor-desenho', '/en/how-to-play/impostor-drawing-game', '/es/como-jugar/juego-del-impostor-dibujo'],
+  ['/como-jogar/sincronia', '/en/how-to-play/sincronia', '/es/como-jugar/sincronia'],
+  ['/desenho-impostor', '/en/desenho-impostor', '/es/desenho-impostor'],
+  ['/respostas-em-comum', '/en/common-answers', '/es/respuestas-en-comun'],
+  ['/modo-local', '/en/local-mode', '/es/modo-local'],
+  ['/temas', '/en/themes', '/es/temas-del-juego'],
+  ['/criar-tema', '/en/create-theme', '/es/crear-tema'],
+  ['/modos-de-jogo', '/en/game-modes', '/es/modos-de-juego'],
+  ['/outros-jogos', '/en/other-games', '/es/otros-juegos'],
+  ['/privacidade', '/en/privacy', '/es/privacidad'],
+  ['/termos', '/en/terms', '/es/terminos'],
+  ['/doacoes', '/en/donations', '/es/donaciones'],
+];
+
+// Build a lookup: any path -> hreflang tags string
+const hreflangLookup = new Map<string, string>();
+for (const [pt, en, es] of HREFLANG_MAP) {
+  const tags = [
+    `<link rel="alternate" hreflang="pt" href="${BASE_URL}${pt}" />`,
+    `<link rel="alternate" hreflang="en" href="${BASE_URL}${en}" />`,
+    `<link rel="alternate" hreflang="es" href="${BASE_URL}${es}" />`,
+    `<link rel="alternate" hreflang="x-default" href="${BASE_URL}${pt}" />`,
+  ].join('\n    ');
+  hreflangLookup.set(pt, tags);
+  hreflangLookup.set(en, tags);
+  hreflangLookup.set(es, tags);
+}
+
 /** Parse a "DD Mon YYYY" date string into an ISO date */
 function parseBlogDate(dateStr: string): string {
   const months: Record<string, string> = {
@@ -427,6 +459,7 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
         title: pageSeo.title,
         description: pageSeo.description,
         canonical: `${BASE_URL}${path}`,
+        hreflangTags: hreflangLookup.get(path),
       };
     }
   }
@@ -437,6 +470,7 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
       title: pageSeo.title,
       description: pageSeo.description,
       canonical: `${BASE_URL}${path}`,
+      hreflangTags: hreflangLookup.get(path),
     };
   }
 
