@@ -9,6 +9,7 @@ import fs from "fs";
 import path from "path";
 import cookieParser from "cookie-parser";
 import { analyticsMiddleware } from "./analyticsMiddleware";
+import { registerSitemapRoutes } from "./sitemap";
 
 const app = express();
 
@@ -82,6 +83,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Sitemap and robots.txt — registered before routes/static so they take priority
+  registerSitemapRoutes(app);
+
   await registerRoutes(httpServer, app);
 
   // Import and run seed
