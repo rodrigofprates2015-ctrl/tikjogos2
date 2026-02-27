@@ -36,6 +36,7 @@ const Temas = lazy(() => import("@/pages/Temas"));
 const GameModes = lazy(() => import("@/pages/GameModes"));
 const DesenhoImpostor = lazy(() => import("@/pages/DesenhoImpostor"));
 const RespostasEmComum = lazy(() => import("@/pages/RespostasEmComum"));
+const SincBrGame = lazy(() => import("@/pages/SincBrGame"));
 
 function VersionManager() {
   useEffect(() => {
@@ -154,6 +155,9 @@ function AppRouter() {
       {i18nRoutes("/respostas-em-comum", RespostasEmComum)}
       {i18nRoutes("/common-answers", RespostasEmComum)}
       {i18nRoutes("/respuestas-en-comun", RespostasEmComum)}
+
+      {i18nRoutes("/sincronia-br", SincBrGame)}
+      {i18nRoutes("/sincronia-battle-royale", SincBrGame)}
 
       {/* Modo local */}
       {i18nRoutes("/modo-local", ModoLocal)}
