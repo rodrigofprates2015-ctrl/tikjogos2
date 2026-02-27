@@ -237,20 +237,85 @@ function ResultOverlay({ result, myUid, pointsGained }: { result: import('@/lib/
 
 // ── Game Screen ──
 
+// ── Match End Overlay ──
+
+function MatchEndOverlay({ leaderboard, myUid }: { leaderboard: BRLeaderboardEntry[]; myUid: string }) {
+  const top5 = leaderboard.slice(0, 5);
+  const myEntry = leaderboard.find(e => e.uid === myUid);
+  const myRank = myEntry?.rank || 0;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 animate-fade-in">
+      <div className="bg-[#242642] rounded-3xl border-2 border-amber-500/50 p-6 max-w-md w-full text-center space-y-4">
+        <div className="flex justify-center">
+          <Trophy size={48} className="text-amber-400 animate-bounce" />
+        </div>
+        <h2 className="text-2xl font-black text-white">Partida Encerrada!</h2>
+        <p className="text-white/50 text-sm">Nova partida começa em instantes...</p>
+
+        {/* My result */}
+        {myEntry && (
+          <div className={cn(
+            'rounded-xl p-3 border',
+            myRank <= 3 ? 'bg-amber-500/20 border-amber-500/40' : 'bg-[#1a1b2e] border-[#2f3252]'
+          )}>
+            <p className="text-white/60 text-xs">Sua posição</p>
+            <p className="text-3xl font-black text-amber-400">#{myRank}</p>
+            <p className="text-white font-bold">{myEntry.score} pontos</p>
+          </div>
+        )}
+
+        {/* Top 5 */}
+        <div className="space-y-1">
+          {top5.map((entry, i) => (
+            <div
+              key={entry.uid}
+              className={cn(
+                'flex items-center px-3 py-2 rounded-lg text-sm',
+                entry.uid === myUid ? 'bg-amber-500/15' : 'bg-[#1a1b2e]'
+              )}
+            >
+              <span className={cn(
+                'w-8 text-center font-black text-lg',
+                i === 0 ? 'text-amber-400' : i === 1 ? 'text-gray-300' : i === 2 ? 'text-orange-400' : 'text-white/40'
+              )}>
+                {i === 0 ? <Crown size={20} className="inline text-amber-400" /> : `${i + 1}`}
+              </span>
+              <span className={cn(
+                'flex-1 truncate ml-2 text-left',
+                entry.uid === myUid ? 'text-amber-300 font-bold' : 'text-white/70'
+              )}>
+                {entry.name} {entry.uid === myUid ? '(você)' : ''}
+              </span>
+              <span className="text-amber-400 font-bold">{entry.score} pts</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="pt-2">
+          <div className="w-6 h-6 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-white/30 text-xs mt-2">Reiniciando...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function GameScreen() {
   const {
     question, questionNumber, timeLeft, duration, myAnswer, hasSubmitted,
     playerCount, myScore, leaderboard, roundResult, showingResult,
     lastPointsGained, uid, currentRoomLabel, leaveRoom, submitAnswer, setMyAnswer,
+    matchTimeLeft, showingMatchEnd, matchEndLeaderboard,
   } = useSincBRStore();
 
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!showingResult && !hasSubmitted && inputRef.current) {
+    if (!showingResult && !hasSubmitted && !showingMatchEnd && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [showingResult, hasSubmitted, questionNumber]);
+  }, [showingResult, hasSubmitted, questionNumber, showingMatchEnd]);
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -259,16 +324,38 @@ function GameScreen() {
 
   const progressPct = duration > 0 ? (timeLeft / duration) * 100 : 0;
 
+  // Format match time as mm:ss
+  const matchMin = Math.floor(matchTimeLeft / 60);
+  const matchSec = matchTimeLeft % 60;
+  const matchTimeStr = `${matchMin}:${matchSec.toString().padStart(2, '0')}`;
+
   return (
     <div className="min-h-screen w-full bg-[#1a1b2e] flex flex-col">
+      {/* Match End Overlay */}
+      {showingMatchEnd && (
+        <MatchEndOverlay leaderboard={matchEndLeaderboard} myUid={uid} />
+      )}
+
       {/* Header */}
       <div className="bg-[#242642] border-b border-[#2f3252] px-4 py-2 flex items-center justify-between">
         <button onClick={leaveRoom} className="text-white/50 hover:text-white transition-colors flex items-center gap-1 text-sm">
           <LogOut size={16} /> Sair
         </button>
-        <div className="text-center">
+        <div className="text-center flex items-center gap-3">
           <span className="text-amber-400 font-bold text-sm">{currentRoomLabel}</span>
-          <span className="text-white/30 text-xs ml-2">#{questionNumber}</span>
+          <span className="text-white/30 text-xs">#{questionNumber}</span>
+          {/* Match timer */}
+          <span className={cn(
+            'font-mono font-bold text-sm px-2 py-0.5 rounded-lg border',
+            matchTimeLeft <= 30
+              ? 'text-red-400 border-red-500/40 bg-red-500/10 animate-pulse'
+              : matchTimeLeft <= 60
+                ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
+                : 'text-white/60 border-[#3a3d5c] bg-[#1a1b2e]'
+          )}>
+            <Clock size={12} className="inline mr-1" />
+            {matchTimeStr}
+          </span>
         </div>
         <div className="flex items-center gap-1 text-white/50 text-sm">
           <Users size={14} /> {playerCount}

@@ -60,6 +60,12 @@ export type SincBRState = {
   playerCount: number;
   myScore: number;
 
+  // Match timer (3-minute match)
+  matchTimeLeft: number;
+  matchDuration: number;
+  showingMatchEnd: boolean;
+  matchEndLeaderboard: BRLeaderboardEntry[];
+
   // Leaderboard
   leaderboard: BRLeaderboardEntry[];
 
@@ -88,9 +94,28 @@ function generateUID(): string {
 }
 
 let countdownInterval: ReturnType<typeof setInterval> | null = null;
+let matchCountdownInterval: ReturnType<typeof setInterval> | null = null;
 
 function clearCountdown() {
   if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+}
+
+function clearMatchCountdown() {
+  if (matchCountdownInterval) { clearInterval(matchCountdownInterval); matchCountdownInterval = null; }
+}
+
+function startMatchCountdown(set: (partial: Partial<SincBRState> | ((s: SincBRState) => Partial<SincBRState>)) => void, get: () => SincBRState, seconds: number) {
+  clearMatchCountdown();
+  set({ matchTimeLeft: seconds });
+  matchCountdownInterval = setInterval(() => {
+    const { matchTimeLeft } = get();
+    if (matchTimeLeft <= 1) {
+      clearMatchCountdown();
+      set({ matchTimeLeft: 0 });
+      return;
+    }
+    set({ matchTimeLeft: matchTimeLeft - 1 });
+  }, 1000);
 }
 
 function startCountdown(set: (partial: Partial<SincBRState> | ((s: SincBRState) => Partial<SincBRState>)) => void, get: () => SincBRState, seconds: number) {
@@ -124,6 +149,10 @@ export const useSincBRStore = create<SincBRState>((set, get) => ({
   hasSubmitted: false,
   playerCount: 0,
   myScore: 0,
+  matchTimeLeft: 180,
+  matchDuration: 180,
+  showingMatchEnd: false,
+  matchEndLeaderboard: [],
   leaderboard: [],
   roundResult: null,
   showingResult: false,
@@ -208,9 +237,14 @@ export const useSincBRStore = create<SincBRState>((set, get) => ({
             hasSubmitted: false,
             roundResult: null,
             showingResult: false,
+            showingMatchEnd: false,
+            matchDuration: data.matchDuration || 180,
           });
           if (data.timeLeft > 0 && data.question) {
             startCountdown(set, get, data.timeLeft);
+          }
+          if (data.matchTimeLeft != null) {
+            startMatchCountdown(set, get, data.matchTimeLeft);
           }
         }
 
@@ -224,8 +258,12 @@ export const useSincBRStore = create<SincBRState>((set, get) => ({
             hasSubmitted: false,
             roundResult: null,
             showingResult: false,
+            showingMatchEnd: false,
           });
           startCountdown(set, get, data.duration);
+          if (data.matchTimeLeft != null) {
+            startMatchCountdown(set, get, data.matchTimeLeft);
+          }
         }
 
         if (data.type === 'br-round-result') {
@@ -254,6 +292,23 @@ export const useSincBRStore = create<SincBRState>((set, get) => ({
             lastPointsGained: gained,
             myScore: myEntry?.score || get().myScore,
           });
+          if (data.matchTimeLeft != null) {
+            startMatchCountdown(set, get, data.matchTimeLeft);
+          }
+        }
+
+        if (data.type === 'br-match-end') {
+          clearCountdown();
+          clearMatchCountdown();
+          const lb = data.leaderboard as BRLeaderboardEntry[];
+          set({
+            showingMatchEnd: true,
+            showingResult: false,
+            roundResult: null,
+            matchEndLeaderboard: lb,
+            matchTimeLeft: 0,
+            question: null,
+          });
         }
 
         if (data.type === 'br-player-count') {
@@ -274,6 +329,7 @@ export const useSincBRStore = create<SincBRState>((set, get) => ({
     newWs.onclose = () => {
       window.removeEventListener('beforeunload', beforeUnload);
       clearCountdown();
+      clearMatchCountdown();
       // If we were playing, go back to selection
       if (get().phase === 'playing') {
         set({
@@ -284,6 +340,8 @@ export const useSincBRStore = create<SincBRState>((set, get) => ({
           question: null,
           roundResult: null,
           showingResult: false,
+          showingMatchEnd: false,
+          matchEndLeaderboard: [],
           myScore: 0,
           leaderboard: [],
           isConnecting: false,
@@ -301,6 +359,7 @@ export const useSincBRStore = create<SincBRState>((set, get) => ({
       ws.close();
     }
     clearCountdown();
+    clearMatchCountdown();
     set({
       phase: 'selection',
       currentRoomId: null,
@@ -309,6 +368,8 @@ export const useSincBRStore = create<SincBRState>((set, get) => ({
       question: null,
       roundResult: null,
       showingResult: false,
+      showingMatchEnd: false,
+      matchEndLeaderboard: [],
       myScore: 0,
       leaderboard: [],
       myAnswer: '',

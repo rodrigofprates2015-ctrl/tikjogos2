@@ -27,6 +27,9 @@ interface BRRoom {
   questionNumber: number;
   roundTimer: ReturnType<typeof setInterval> | null;
   roundStartedAt: number;
+  // Match timer: each match lasts MATCH_DURATION seconds, then scores reset
+  matchStartedAt: number;
+  matchTimer: ReturnType<typeof setTimeout> | null;
 }
 
 type ResultGroup = {
@@ -181,6 +184,8 @@ function pickQuestion(category?: string, exclude?: number): { id: number; text: 
 const ROUND_DURATION = 13; // seconds to answer
 const RESULT_DURATION = 5; // seconds to show result
 const TOTAL_CYCLE = ROUND_DURATION + RESULT_DURATION; // 18s total cycle
+const MATCH_DURATION = 180; // 3 minutes per match
+const MATCH_END_DISPLAY = 8; // seconds to show final results before new match
 const MAX_PLAYERS = 50;
 const HEARTBEAT_INTERVAL = 5000;
 const PONG_TIMEOUT = 15000;
@@ -207,6 +212,8 @@ function initRooms() {
       questionNumber: 0,
       roundTimer: null,
       roundStartedAt: 0,
+      matchStartedAt: 0,
+      matchTimer: null,
     };
     brRooms.set(def.id, room);
     brRoomConnections.set(def.id, new Set());
@@ -271,8 +278,45 @@ function processAnswers(room: BRRoom): RoundResult | null {
 
 // ── Game loop per room ──
 
+function resetMatchScores(room: BRRoom) {
+  room.players.forEach(player => {
+    player.score = 0;
+    player.questionsAnswered = 0;
+    player.questionsCorrect = 0;
+  });
+  room.questionNumber = 0;
+}
+
+function startMatchTimer(room: BRRoom) {
+  if (room.matchTimer) { clearTimeout(room.matchTimer); room.matchTimer = null; }
+  room.matchStartedAt = Date.now();
+
+  room.matchTimer = setTimeout(() => {
+    // Match ended — stop the round loop, broadcast final results, then restart
+    stopRoundLoop(room);
+
+    const finalLeaderboard = getLeaderboard(room);
+    broadcastToRoom(room.id, {
+      type: 'br-match-end',
+      leaderboard: finalLeaderboard,
+      playerCount: connectedPlayerCount(room),
+    });
+
+    // After showing final results, reset scores and start a new match
+    setTimeout(() => {
+      resetMatchScores(room);
+      if (connectedPlayerCount(room) >= 1) {
+        startRoomLoop(room);
+      }
+    }, MATCH_END_DISPLAY * 1000);
+  }, MATCH_DURATION * 1000);
+}
+
 function startRoomLoop(room: BRRoom) {
   if (room.roundTimer) return; // already running
+
+  // Start the match timer
+  startMatchTimer(room);
 
   function nextRound() {
     const prevId = room.currentQuestion?.id;
@@ -281,23 +325,33 @@ function startRoomLoop(room: BRRoom) {
     room.answers = new Map();
     room.roundStartedAt = Date.now();
 
+    // Calculate remaining match time
+    const matchElapsed = Math.floor((Date.now() - room.matchStartedAt) / 1000);
+    const matchTimeLeft = Math.max(0, MATCH_DURATION - matchElapsed);
+
     broadcastToRoom(room.id, {
       type: 'br-question',
       question: room.currentQuestion.text,
       questionNumber: room.questionNumber,
       duration: ROUND_DURATION,
       playerCount: connectedPlayerCount(room),
+      matchTimeLeft,
     });
   }
 
   function endRound() {
     const result = processAnswers(room);
     const lb = getLeaderboard(room);
+
+    const matchElapsed = Math.floor((Date.now() - room.matchStartedAt) / 1000);
+    const matchTimeLeft = Math.max(0, MATCH_DURATION - matchElapsed);
+
     broadcastToRoom(room.id, {
       type: 'br-round-result',
       result,
       leaderboard: lb,
       playerCount: connectedPlayerCount(room),
+      matchTimeLeft,
     });
   }
 
@@ -320,8 +374,13 @@ function startRoomLoop(room: BRRoom) {
   }, TOTAL_CYCLE * 1000);
 }
 
-function stopRoomLoop(room: BRRoom) {
+function stopRoundLoop(room: BRRoom) {
   if (room.roundTimer) { clearInterval(room.roundTimer); room.roundTimer = null; }
+}
+
+function stopRoomLoop(room: BRRoom) {
+  stopRoundLoop(room);
+  if (room.matchTimer) { clearTimeout(room.matchTimer); room.matchTimer = null; }
 }
 
 // ── Public stats for admin ──
@@ -353,14 +412,18 @@ export function setupSincBR(httpServer: Server, app: Express) {
 
   // REST: list rooms
   app.get('/api/br/rooms', (_req, res) => {
-    const list = Array.from(brRooms.values()).map(r => ({
-      id: r.id,
-      label: r.label,
-      category: r.category || 'todas',
-      playerCount: connectedPlayerCount(r),
-      maxPlayers: MAX_PLAYERS,
-      questionNumber: r.questionNumber,
-    }));
+    const list = Array.from(brRooms.values()).map(r => {
+      const matchElapsed = r.matchStartedAt ? Math.floor((Date.now() - r.matchStartedAt) / 1000) : 0;
+      return {
+        id: r.id,
+        label: r.label,
+        category: r.category || 'todas',
+        playerCount: connectedPlayerCount(r),
+        maxPlayers: MAX_PLAYERS,
+        questionNumber: r.questionNumber,
+        matchTimeLeft: r.matchStartedAt ? Math.max(0, MATCH_DURATION - matchElapsed) : MATCH_DURATION,
+      };
+    });
     res.json(list);
   });
 
@@ -417,6 +480,8 @@ export function setupSincBR(httpServer: Server, app: Express) {
           // Send current state
           const elapsed = room.roundStartedAt ? Math.floor((Date.now() - room.roundStartedAt) / 1000) : 0;
           const timeLeft = Math.max(0, ROUND_DURATION - elapsed);
+          const matchElapsed = room.matchStartedAt ? Math.floor((Date.now() - room.matchStartedAt) / 1000) : 0;
+          const matchTimeLeft = Math.max(0, MATCH_DURATION - matchElapsed);
 
           ws.send(JSON.stringify({
             type: 'br-joined',
@@ -426,6 +491,8 @@ export function setupSincBR(httpServer: Server, app: Express) {
             questionNumber: room.questionNumber,
             timeLeft,
             duration: ROUND_DURATION,
+            matchTimeLeft,
+            matchDuration: MATCH_DURATION,
             leaderboard: getLeaderboard(room),
             playerCount: nowConnected,
             myScore: existing?.score || 0,
@@ -497,6 +564,7 @@ export function setupSincBR(httpServer: Server, app: Express) {
       stopRoomLoop(room);
       room.questionNumber = 0;
       room.currentQuestion = null;
+      room.matchStartedAt = 0;
     }
 
     console.log(`[BR] Player ${uid} left ${roomId} (${connected} remaining)`);
