@@ -178,9 +178,9 @@ function pickQuestion(category?: string, exclude?: number): { id: number; text: 
 
 // ── Fixed rooms ──
 
-const ROUND_DURATION = 30; // seconds to answer
+const ROUND_DURATION = 13; // seconds to answer
 const RESULT_DURATION = 5; // seconds to show result
-const TOTAL_CYCLE = ROUND_DURATION + RESULT_DURATION; // 35s total cycle
+const TOTAL_CYCLE = ROUND_DURATION + RESULT_DURATION; // 18s total cycle
 const MAX_PLAYERS = 50;
 const HEARTBEAT_INTERVAL = 5000;
 const PONG_TIMEOUT = 15000;

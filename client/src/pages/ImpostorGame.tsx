@@ -1145,6 +1145,15 @@ const SincroniaGameCard = () => {
           {t('home.createRoom', 'CRIAR SALA').toUpperCase()}
         </button>
 
+        {/* Battle Royale button */}
+        <button
+          onClick={() => navigate('/sincronia-br')}
+          className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-amber-500 to-orange-500 border-amber-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
+        >
+          <Swords size={28} className="animate-bounce" />
+          BATTLE ROYALE
+        </button>
+
         {/* Save nickname checkbox */}
         <div className="flex items-center justify-between px-1">
           <label className="flex items-center gap-2 cursor-pointer">
