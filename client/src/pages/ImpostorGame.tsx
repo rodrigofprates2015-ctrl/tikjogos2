@@ -2905,11 +2905,10 @@ const ModeSelectScreen = () => {
         }
       }
       
-      // Check if it's Palavra Secreta with classic theme (no custom theme code)
-      const isClassicPalavraSecreta = selectedMode === 'palavraSecreta' && !selectedThemeCode;
+      // If Palavra Secreta with gameConfig (any built-in theme, not community themes), use it
+      const isPalavraSecretaBuiltIn = selectedMode === 'palavraSecreta' && !selectedThemeCode;
       
-      // If classic Palavra Secreta and has gameConfig, use it
-      if (isClassicPalavraSecreta && gameConfig) {
+      if (isPalavraSecretaBuiltIn && gameConfig) {
         // Validate player count
         if (room.players.length <= gameConfig.impostorCount) {
           toast({
@@ -2923,7 +2922,7 @@ const ModeSelectScreen = () => {
         
         await startGameWithConfig(gameConfig, selectedThemeCode || undefined);
       } else {
-        // For other modes or custom themes, start normally
+        // For other modes or community themes, start normally
         await startGame(selectedThemeCode || undefined);
       }
     } catch (error) {

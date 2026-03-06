@@ -28,18 +28,16 @@ const PalavraSuperSecretaSubmodeScreen = () => {
       // Store submode for startGame to use
       localStorage.setItem('selectedSubmode', submode);
       
-      // If it's classic submode and has gameConfig, use it
-      const isClassic = submode === 'classico';
       const hasCustomTheme = themeCode && themeCode.length === 6;
       
       console.log('[PalavraSuperSecreta] Starting game:', {
         submode,
-        isClassic,
         hasCustomTheme,
         hasGameConfig: !!gameConfig
       });
       
-      if (isClassic && !hasCustomTheme && gameConfig) {
+      // Always pass gameConfig when available so hints and impostor count work on all themes
+      if (!hasCustomTheme && gameConfig) {
         console.log('[PalavraSuperSecreta] Using gameConfig:', gameConfig);
         startGameWithConfig(gameConfig, undefined);
       } else {
