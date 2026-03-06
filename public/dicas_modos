@@ -1,0 +1,217 @@
+ natal: {
+    title: 'Natal',
+    desc: 'Palavras natalinas',
+    words: ['Papai Noel', 'Jesus Cristo', 'Anjo', 'Menino Jesus', 'Reis Magos', 'Elfo', 'Rena', 'Família', 'Árvore de Natal', 'Presentes', 'Luzes', 'Pisca-pisca', 'Estrela', 'Sino', 'Vela', 'Guirlanda', 'Bola de Natal', 'Presépio', 'Meia', 'Trenó', 'Chaminé', 'Boneco de neve', 'Floco de neve', 'Bota', 'Gorro', 'Festão', 'Ceia', 'Peru', 'Panetone', 'Rabanada', 'Uva-passa', 'Nozes', 'Castanha', 'Vinho quente', 'Canções natalinas', 'Cartão de Natal', 'Tradição', 'Véspera', 'Amor', 'Paz', 'Esperança', 'Alegria', 'União', 'Magia', 'Perdão', 'Generosidade', 'Harmonia', 'Fraternidade', 'Reflexão', 'Gratidão', 'Renovação'],
+    hints: ['Lenda', 'Fundamento', 'Divindade', 'Inocência', 'Jornada', 'Ofício', 'Condução', 'Vínculo', 'Centralidade', 'Retribuição', 'Vigilância', 'Intermitência', 'Orientação', 'Anúncio', 'Efêmero', 'Recepção', 'Esfericidade', 'Representação', 'Extremidade', 'Deslizamento', 'Passagem', 'Sazonalidade', 'Geometria', 'Proteção', 'Topo', 'Continuidade', 'Ritual', 'Abundância', 'Fermentação', 'Reaproveitamento', 'Controvérsia', 'Resistência', 'Proteína', 'Temperatura', 'Lirismo', 'Cordialidade', 'Hábito', 'Expectativa', 'Absoluto', 'Ausência', 'Perspectiva', 'Euforia', 'Coesão', 'Sobrenatural', 'Conciliação', 'Altruísmo', 'Equilíbrio', 'Irmandade', 'Introspecção', 'Reconhecimento', 'Ciclo']
+  },
+  estrategia: {
+    title: 'Clash Royale',
+    desc: 'Estratégia mobile',
+    words: ['Mago', 'Príncipe', 'Mosqueteira', 'Gigante', 'Arqueiras', 'Corredor', 'P.E.K.K.A', 'Golem', 'Dragão Bebê', 'Bruxa', 'Mineiro', 'Cavaleiro', 'Barril de Goblins', 'Tronco', 'Tesla', 'Lava Hound', 'Lenhador', 'Fantasma Real', 'Mago de Gelo', 'Executor'],
+    hints: ['Elementar', 'Impetuosidade', 'Distância', 'Resiliência', 'Dualidade', 'Agilidade', 'Blindagem', 'Lentidão', 'Aéreo', 'Invocação', 'Infiltração', 'Equilíbrio', 'Arremesso', 'Interrupção', 'Defesa', 'Divisão', 'Aceleração', 'Transparência', 'Controle', 'Retorno']
+  },
+  animes: {
+    title: 'Mundo dos Animes',
+    desc: 'Universo japonês',
+    words: ['Goku', 'Naruto', 'Luffy', 'Tanjiro', 'Mikasa', 'Saitama', 'Sasuke', 'Deku', 'Gojo', 'Ichigo', 'Sharingan', 'Bankai', 'Kamehameha', 'Rasengan', 'Titan', 'Shinigami', 'Chakra', 'Espada Nichirin', 'Akatsuki', 'Grimório'],
+    hints: ['Superação', 'Reconhecimento', 'Liberdade', 'Empatia', 'Proteção', 'Tédio', 'Rancor', 'Legado', 'Absoluto', 'Dever', 'Percepção', 'Liberação', 'Energia', 'Concentração', 'Escala', 'Ceifador', 'Fluxo', 'Forja', 'Divergência', 'Conhecimento']
+  },
+  herois: {
+    title: 'Super-Heróis',
+    desc: 'Quadrinhos e cinema',
+    words: ['Homem-Aranha', 'Thor', 'Hulk', 'Capitão América', 'Homem de Ferro', 'Viúva Negra', 'Pantera Negra', 'Doutor Estranho', 'Thanos', 'Loki', 'Ultron', 'Groot', 'Rocket', 'Wanda', 'Visão', 'Escudo', 'Mjölnir', 'Joia do Infinito', 'Hydra', 'Vibranium'],
+    hints: ['Responsabilidade', 'Divindade', 'Dualidade', 'Liderança', 'Intelecto', 'Dissimulação', 'Ancestralidade', 'Misticismo', 'Equilíbrio', 'Travessura', 'Lógica', 'Natureza', 'Sobrevivência', 'Realidade', 'Sintético', 'Proteção', 'Dignidade', 'Singularidade', 'Conspiração', 'Raridade']
+  },
+  seriesMisterio: {
+    title: 'Stranger Things',
+    desc: 'Mistério e suspense',
+    words: ['Eleven', 'Mike', 'Lucas', 'Dustin', 'Will', 'Max', 'Hopper', 'Joyce', 'Vecna', 'Demogorgon', 'Mind Flayer', 'Hawkins', 'Upside Down', 'Barb', 'Robin', 'Steve', 'Billy', 'Eddie', 'Murray', 'Kali', 'Brenner', 'Suzie', 'Erica', 'Laboratório', 'Neva', 'Walkie-talkie', 'Arcade', 'Starcourt', 'Hellfire', 'Byers'],
+    hints: ['Trauma', 'Idealismo', 'Ceticismo', 'Carisma', 'Vulnerabilidade', 'Velocidade', 'Autoridade', 'Persistência', 'Remorso', 'Predação', 'Dominação', 'Pacatice', 'Reflexo', 'Negligência', 'Perspicácia', 'Redenção', 'Fúria', 'Performance', 'Paranoia', 'Marginalidade', 'Paternalismo', 'Distância', 'Astúcia', 'Confinamento', 'Inverno', 'Sinal', 'Lazer', 'Consumo', 'Rebeldia', 'Vínculo']
+  },
+  futebol: {
+    title: 'Futebol',
+    desc: 'Times brasileiros',
+    words: ['Flamengo', 'Corinthians', 'São Paulo', 'Palmeiras', 'Santos', 'Vasco da Gama', 'Cruzeiro', 'Grêmio', 'Internacional', 'Atlético Mineiro', 'Fluminense', 'Botafogo', 'Atlético Paranaense', 'Bahia', 'Esporte', 'Vitória', 'Coritiba', 'Goiás', 'Fortaleza', 'Ceará'],
+    hints: ['Massivo', 'Identidade', 'Soberania', 'Constância', 'Juventude', 'Navegação', 'Altitude', 'Imortalidade', 'Paixão', 'Resiliência', 'Aristocracia', 'Solidão', 'Modernidade', 'Regionalismo', 'Tradição', 'Rugido', 'Paraná', 'Centro', 'Fortaleza', 'Longevidade']
+  },
+  valorant: {
+    title: 'Valorant',
+    desc: 'FPS Tático',
+    words: ['Spike', 'Plant', 'Defuse', 'Clutch', 'Ace', 'Headshot', 'Ranked', 'Radiant', 'Immortal', 'Ascendant', 'Diamond', 'Platinum', 'Gold', 'Jett', 'Phoenix', 'Sage', 'Sova', 'Viper', 'Cypher', 'Reyna', 'Killjoy', 'Breach', 'Omen', 'Raze', 'Skye', 'Yoru', 'Astra', 'KAY/O', 'Chamber', 'Neon', 'Fade', 'Harbor', 'Gekko', 'Deadlock', 'Iso', 'Clove', 'Vyse', 'Ascent', 'Bind', 'Haven', 'Split', 'Breeze', 'Fracture', 'Lotus', 'Icebox', 'Pearl', 'Sunset', 'Vandal', 'Phantom', 'Operator', 'Sheriff', 'Spectre', 'Guardian'],
+    hints: ['Objetivo', 'Posicionamento', 'Anulação', 'Isolamento', 'Superioridade', 'Precisão', 'Hierarquia', 'Auge', 'Eternidade', 'Elevação', 'Pureza', 'Resistência', 'Valor', 'Evasão', 'Renascimento', 'Estabilidade', 'Rastreio', 'Toxicidade', 'Vigilância', 'Sustento', 'Automação', 'Impacto', 'Obscuridade', 'Entusiasmo', 'Conexão', 'Dimensão', 'Cosmos', 'Supressão', 'Ostentação', 'Eletricidade', 'Pesadelo', 'Fluidez', 'Simbioze', 'Restrição', 'Foco', 'Dualidade', 'Aço', 'Verticalidade', 'Passagem', 'Trindade', 'Divisão', 'Amplitude', 'Ruptura', 'Tranquilidade', 'Frio', 'Submerso', 'Crepúsculo', 'Potência', 'Sutileza', 'Distância', 'Autoridade', 'Velocidade', 'Vigilância']
+  },
+  roblox: {
+    title: 'Roblox',
+    desc: 'Plataforma Criativa',
+    words: ['Robux', 'Avatar', 'Noob', 'Admin', 'Ban', 'Parkour', 'Tycoon', 'Adopt Me', 'Brookhaven', 'Bloxburg', 'Murder Mystery 2', 'Doors', 'Piggy', 'Pet Simulator', 'Obby', 'Oof', 'Builder\'s Club', 'Premium', 'Evento', 'Skin', 'Item', 'Chat', 'Mapa', 'Servidor', 'Hacker', 'Glitch', 'Trade', 'Showcase', 'Tower of Hell', 'Arsenal', 'MeepCity', 'BedWars', 'Natural Disaster', 'Jailbreak'],
+    hints: ['Capital', 'Projeção', 'Inexperiência', 'Hierarquia', 'Exclusão', 'Obstáculo', 'Acúmulo', 'Cuidado', 'Simulação', 'Subsistência', 'Intriga', 'Passagem', 'Perseguição', 'Coleção', 'Desafio', 'Reação', 'Irmandade', 'Privilégio', 'Sazonalidade', 'Estética', 'Utilitário', 'Interação', 'Ambiente', 'Hospedagem', 'Intrusão', 'Falha', 'Negociação', 'Exposição', 'Ascensão', 'Confronto', 'Convivência', 'Território', 'Catástrofe', 'Fuga']
+  },
+  supernatural: {
+    title: 'Supernatural',
+    desc: 'Caçadores',
+    words: ['Dean Winchester', 'Sam Winchester', 'Castiel', 'Crowley', 'Impala 67', 'Bobby Singer', 'Lucifer', 'Anjo', 'Demônio', 'Fantasma', 'Sal Grosso', 'Água Benta', 'Bunker', 'Apocalipse', 'Caçador', 'Diário de John', 'Purgatório', 'Inferno', 'Céu', 'Colt', 'Faca de Ruby', 'Marca de Caim', 'Possessão', 'Exorcismo', 'Encruzilhada', 'Pacto', 'John Winchester', 'Mary Winchester', 'Rowena', 'Chuck (Deus)', 'Escuridão (Amara)', 'Metatron', 'Leviatã', 'Vampiro', 'Lobisomem', 'Kansas'],
+    hints: ['Proteção', 'Destino', 'Dúvida', 'Oportunismo', 'Herança', 'Suporte', 'Rebelião', 'Dever', 'Danação', 'Remanescente', 'Pureza', 'Sacramento', 'Isolamento', 'Profecia', 'Ofício', 'Registros', 'Intermediário', 'Sofrimento', 'Paraíso', 'Singularidade', 'Traição', 'Corrupção', 'Invasão', 'Libertação', 'Escolha', 'Negociação', 'Ausência', 'Origem', 'Ambição', 'Criação', 'Vazio', 'Escriba', 'Fome', 'Sede', 'Ciclo', 'Fundação']
+  },
+  dragonball: {
+    title: 'Dragon Ball',
+    desc: 'Saiyajins',
+    words: ['Goku', 'Vegeta', 'Gohan', 'Piccolo', 'Freeza', 'Cell', 'Majin Boo', 'Esferas do Dragão', 'Shenlong', 'Saiyajin', 'Super Saiyajin', 'Kamehameha', 'Genki Dama', 'Fusão', 'Potara', 'Trunks', 'Goten', 'Bulma', 'Kuririn', 'Mestre Kame', 'Nuvem Voadora', 'Radar do Dragão', 'Torneio de Artes Marciais', 'Ki', 'Teletransporte', 'Androide 18', 'Bills', 'Whis', 'Broly', 'Planeta Vegeta', 'Oozaru (Macaco Gigante)', 'Senhor Kaioh', 'Semente dos Deuses', 'Zeno', 'Bardock', 'Cápsula Corp'],
+    hints: ['Pureza', 'Orgulho', 'Potencial', 'Sabedoria', 'Tirania', 'Perfeição', 'Caos', 'Busca', 'Realização', 'Linhagem', 'Ascensão', 'Energia', 'Coletividade', 'União', 'Elo', 'Futuro', 'Inocência', 'Intelecto', 'Resiliência', 'Experiência', 'Pureza', 'Localização', 'Glória', 'Essência', 'Instante', 'Ciborgue', 'Capricho', 'Zelo', 'Instinto', 'Origem', 'Primitivo', 'Tutela', 'Vitalidade', 'Totalidade', 'Precursor', 'Inovação']
+  },
+  naruto: {
+    title: 'Naruto',
+    desc: 'Mundo Ninja',
+    words: ['Naruto Uzumaki', 'Sasuke Uchiha', 'Sakura Haruno', 'Kakashi Hatake', 'Hokage', 'Vila da Folha (Konoha)', 'Chakra', 'Rasengan', 'Chidori', 'Sharingan', 'Byakugan', 'Rinnegan', 'Akatsuki', 'Itachi Uchiha', 'Gaara', 'Orochimaru', 'Jiraiya', 'Tsunade', 'Hinata Hyuga', 'Kurama (Raposa de 9 Caudas)', 'Bijuu', 'Jinchuuriki', 'Kunai', 'Shuriken', 'Bandana Ninja', 'Exame Chunin', 'Vale do Fim', 'Madara Uchiha', 'Obito', 'Pain', 'Jutsu Sexy', 'Clone das Sombras', 'Vila da Névoa', 'Ramen do Ichiraku', 'Dattebayo'],
+    hints: ['Solidão', 'Vingança', 'Determinação', 'Remorso', 'Liderança', 'Comunidade', 'Energia', 'Rotação', 'Vibração', 'Percepção', 'Alcance', 'Divindade', 'Divergência', 'Sacrifício', 'Isolamento', 'Imortalidade', 'Errante', 'Aposta', 'Devoção', 'Ódio', 'Poder', 'Sacrifício', 'Alcance', 'Precisão', 'Compromisso', 'Provação', 'Dualidade', 'Ambbição', 'Idealismo', 'Paz', 'Distração', 'Multiplicidade', 'Umidade', 'Conforto', 'Convicção']
+  },
+  rock: {
+    title: 'Rock',
+    desc: 'Bandas icônicas',
+    words: ['The Beatles', 'Rolling Stones', 'Queen', 'AC/DC', 'Guns N\' Roses', 'Nirvana', 'Metallica', 'Iron Maiden', 'Pink Floyd', 'Led Zeppelin', 'Red Hot Chili Peppers', 'Linkin Park', 'Kiss', 'Aerosmith', 'Bon Jovi', 'U2', 'Coldplay', 'Foo Fighters', 'Black Sabbath', 'System of a Down', 'Ramones', 'The Doors', 'Green Day', 'Pearl Jam', 'Slipknot', 'Evanescence', 'Sepultura', 'Legião Urbana', 'Capital Inicial', 'Titãs', 'CPM 22', 'Charlie Brown Jr', 'Pitty', 'Raul Seixas', 'Mamonas Assassinas'],
+    hints: ['Revolução', 'Longevidade', 'Teatralidade', 'Energia', 'Excesso', 'Apatia', 'Intensidade', 'Folclore', 'Misticismo', 'Peso', 'Vitalidade', 'Angústia', 'Espetáculo', 'Persistência', 'Carisma', 'Ativismo', 'Atmosfera', 'Resiliência', 'Origem', 'Protesto', 'Simplicidade', 'Transição', 'Rebeldia', 'Expressão', 'Identidade', 'Melancolia', 'Raiz', 'Poesia', 'Juventude', 'Diversidade', 'Velocidade', 'Skate', 'Atitude', 'Maluquice', 'Irreverência']
+  },
+  minecraft: {
+    title: 'Minecraft',
+    desc: 'Sobrevivência',
+    words: ['Steve', 'Alex', 'Creeper', 'Enderman', 'Zumbi', 'Esqueleto', 'Aranha', 'Aldeão (Villager)', 'Bruxa', 'Herobrine', 'Ender Dragon', 'Wither', 'Diamante', 'Ouro', 'Ferro', 'Carvão', 'Redstone', 'Picareta', 'Espada', 'Machado', 'Crafting Table (Bancada)', 'Fornalha', 'Baú', 'Cama', 'Portal do Nether', 'The End', 'Fortaleza', 'Bioma', 'Deserto', 'Floresta', 'Caverna', 'Mineração', 'Construção', 'Bloco de Terra', 'Areia de Almas', 'Bedrock', 'Obsidiana', 'Tnt'],
+    hints: ['Padrão', 'Diferença', 'Instabilidade', 'Abstração', 'Decadência', 'Arqueria', 'Agilidade', 'Escambo', 'Alquimia', 'Mito', 'Soberania', 'Atrofia', 'Raridade', 'Brilho', 'Resistência', 'Combustão', 'Mecânica', 'Extração', 'Confronto', 'Eficiência', 'Manufatura', 'Transformação', 'Armazenamento', 'Repouso', 'Passagem', 'Finalidade', 'Estrutura', 'Ecossistema', 'Aridez', 'Vegetação', 'Escuridão', 'Esforço', 'Criação', 'Base', 'Lentidão', 'Inabalável', 'Temperatura', 'Ruptura']
+  },
+  gta: {
+    title: 'GTA',
+    desc: 'Mundo Aberto',
+    words: ['CJ (Carl Johnson)', 'Franklin Clinton', 'Michael De Santa', 'Trevor Philips', 'Niko Bellic', 'Tommy Vercetti', 'Los Santos', 'Liberty City', 'Vice City', 'San Andreas', 'Grove Street', 'Ballas', 'Vagos', 'Polícia (LSPD)', '5 Estrelas', 'Helicóptero', 'Tanque de Guerra', 'Jetpack', 'Missão', 'Roubo de Carros', 'Assalto a Banco', 'Dinheiro', 'Carro Esportivo', 'Moto', 'Armas', 'Wanted (Procurado)', 'Lester Crest', 'Big Smoke', 'Ryder', 'Lamar Davis', 'Cassino', 'Golpe', 'Modo Online', 'Garagem', 'Los Santos Customs', 'Paraquedas', 'Cheat'],
+    hints: ['Retorno', 'Ambição', 'Crise', 'Instabilidade', 'Esperança', 'Ascensão', 'Simulação', 'Metrópole', 'Nostalgia', 'Estado', 'Raiz', 'Rivalidade', 'Território', 'Autoridade', 'Consequência', 'Aéreo', 'Blindagem', 'Verticalidade', 'Objetivo', 'Apropriação', 'Planejamento', 'Capital', 'Velocidade', 'Liberdade', 'Arsenal', 'Perseguição', 'Logística', 'Traição', 'Dissimulação', 'Parceria', 'Risco', 'Execução', 'Interação', 'Coleção', 'Estética', 'Queda', 'Vantagem']
+  },
+  fnaf: {
+    title: 'FNAF',
+    desc: 'Terror Animatrônico',
+    words: ['Animatrônicos', 'Freddy Fazbear', 'Bonnie', 'Chica', 'Foxy', 'Golden Freddy', 'Springtrap', 'Glitchtrap', 'Circus Baby', 'Ennard', 'Puppet', 'Marionete', 'Ballora', 'Funtime Freddy', 'Funtime Foxy', 'Molten Freddy', 'Scraptrap', 'Helpy', 'Vanny', 'Vanessa', 'William Afton', 'Michael Afton', 'Gregory', 'Glamrock Freddy', 'Roxanne Wolf', 'Montgomery Gator', 'Sun (Daycare Attendant)', 'Moon (Daycare Attendant)', 'Pizzaria', 'Fazbear Entertainment', 'Escritório', 'Câmeras', 'Monitores', 'Corredor', 'Ventilação', 'Portas', 'Gerador', 'Energia', 'Lanternas', 'Tablet', 'Noite', 'Turno', 'Vigilância', 'Sobrevivência', 'Jumpscare', 'Missões', 'Mapas', 'Minigames', 'Colecionáveis', 'Easter eggs', 'FNAF 1', 'FNAF 2', 'FNAF 3', 'FNAF 4', 'Sister Location', 'Security Breach', 'Ultimate Custom Night', 'Custom Night', 'Teorias', 'Lore'],
+    hints: ['Autômatos', 'Liderança', 'Ritmo', 'Fome', 'Isolamento', 'Anomalia', 'Persistência', 'Contágio', 'Inocência', 'Simbioze', 'Controle', 'Manipulação', 'Equilíbrio', 'Entretenimento', 'Espetáculo', 'Fusão', 'Decadência', 'Suporte', 'Relutância', 'Dever', 'Culpa', 'Redenção', 'Invasão', 'Proteção', 'Vaidade', 'Agressividade', 'Dualidade', 'Dualidade', 'Estabelecimento', 'Corporação', 'Confinamento', 'Observação', 'Interface', 'Passagem', 'Condução', 'Restrição', 'Fonte', 'Recurso', 'Foco', 'Controle', 'Escuridão', 'Trabalho', 'Segurança', 'Resistência', 'Reação', 'Objetivo', 'Orientação', 'Interatividade', 'Busca', 'Segredo', 'Origem', 'Evolução', 'Finalização', 'Quarto', 'Subsolo', 'Modernidade', 'Desafio', 'Personalização', 'Especulação', 'História']
+  },
+  fortnite: {
+    title: 'Fortnite',
+    desc: 'Battle Royale',
+    words: ['Battle Royale', 'Battle Pass', 'Skin', 'V-Bucks', 'Emote', 'Drop', 'Loot', 'Chest', 'Storm', 'Battle Bus', 'Mapa', 'Zona', 'Squad', 'Duo', 'Solo', 'Build', 'Edit', 'Shotgun', 'Sniper', 'AR', 'Victory Royale', 'XP', 'Nível', 'Item Shop', 'Season', 'Update', 'Patch', 'Collab', 'Evento'],
+    hints: ['Gênero', 'Progressão', 'Estética', 'Capital', 'Expressão', 'Início', 'Recurso', 'Sorte', 'Restrição', 'Condução', 'Terreno', 'Segurança', 'Coletividade', 'Parceria', 'Individualidade', 'Estrutura', 'Modificação', 'Proximidade', 'Distância', 'Versatilidade', 'Triunfo', 'Experiência', 'Hierarquia', 'Comércio', 'Ciclo', 'Renovação', 'Correção', 'Conexão', 'Espetáculo']
+  },
+  freefire: {
+    title: 'Free Fire',
+    desc: 'Mobile Royale',
+    words: ['Battle Royale', 'Garena', 'Drop', 'Loot', 'Mapa', 'Safe Zone', 'Squad', 'Solo', 'Ranked', 'Skin', 'Personagem', 'Habilidade', 'Diamante', 'Arma', 'Granada', 'Sniper', 'Capa', 'Rush', 'Lobby', 'Sala', 'Guilda', 'Passe', 'Evento', 'Update', 'Headshot', 'Booyah', 'Colete', 'Capacete', 'Pet'],
+    hints: ['Gênero', 'Corporação', 'Início', 'Recurso', 'Terreno', 'Segurança', 'Coletividade', 'Individualidade', 'Prestígio', 'Estética', 'Identidade', 'Vantagem', 'Capital', 'Confronto', 'Área', 'Distância', 'Proteção', 'Impetuosidade', 'Espera', 'Privacidade', 'Irmandade', 'Assinatura', 'Sazonalidade', 'Melhoria', 'Precisão', 'Triunfo', 'Blindagem', 'Proteção', 'Companhia']
+  },
+  brawlstars: {
+    title: 'Brawl Stars',
+    desc: 'Arena Mobile',
+    words: ['Brawler', 'Super', 'Gadget', 'Star Power', 'Gem Grab', 'Showdown', 'Brawl Ball', 'Heist', 'Siege', 'Knockout', 'Mapa', 'Skin', 'Troféu', 'Rank', 'Poder', 'Upgrade', 'Time', 'Solo', 'Dupla', 'Evento', 'Passe', 'Season', 'Caixa', 'Ataque'],
+    hints: ['Identidade', 'Trunfo', 'Acessório', 'Potencial', 'Ganância', 'Sobrevivência', 'Dinâmica', 'Invasão', 'Engenharia', 'Eliminação', 'Terreno', 'Estética', 'Prestígio', 'Hierarquia', 'Força', 'Melhoria', 'Coletividade', 'Individualidade', 'Parceria', 'Sazonalidade', 'Progressão', 'Ciclo', 'Sorte', 'Ofensiva']
+  },
+  pokemon: {
+    title: 'Pokémon',
+    desc: 'Treinadores',
+    words: ['Pikachu', 'Pokébola', 'Treinador', 'Ginásio', 'Insígnia', 'Pokédex', 'Ash', 'Equipe Rocket', 'Charmander', 'Bulbasaur', 'Squirtle', 'Evolução', 'Tipo', 'Fogo', 'Água', 'Grama', 'Elétrico', 'Lendário', 'Mítico', 'Batalha', 'Ataque', 'Defesa', 'HP', 'XP', 'Região', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Galar', 'Starter', 'Capturar', 'Elite Four', 'Campeão', 'Mega Evolução', 'Shiny', 'Raid'],
+    hints: ['Ícone', 'Confinamento', 'Vocação', 'Provação', 'Mérito', 'Conhecimento', 'Persistência', 'Antagonismo', 'Calor', 'Natureza', 'Fluidez', 'Metamorfose', 'Essência', 'Energia', 'Pureza', 'Vitalidade', 'Frequência', 'Mito', 'Raridade', 'Confronto', 'Iniciativa', 'Resistência', 'Vitalidade', 'Aprendizado', 'Território', 'Origem', 'Continuidade', 'Natureza', 'Espírito', 'Tradição', 'Escolha', 'Domínio', 'Hierarquia', 'Glória', 'Ascensão', 'Singularidade', 'Coletividade']
+  },
+  godofwar: {
+    title: 'God of War',
+    desc: 'Saga de Kratos',
+    words: ['Kratos', 'Atreus', 'Leviathan', 'Blades of Chaos', 'Mitologia', 'Nórdica', 'Olimpo', 'Deus', 'Guerra', 'Vingança', 'Pai', 'Filho', 'Ragnarok', 'Thor', 'Odin', 'Freya', 'Batalha', 'Boss', 'Machado', 'Espadas', 'Valhalla', 'Monstro', 'Saga', 'Herói'],
+    hints: ['Fúria', 'Curiosidade', 'Frio', 'Rancor', 'Crença', 'Inverno', 'Altitude', 'Soberania', 'Conflito', 'Reparação', 'Responsabilidade', 'Legado', 'Destino', 'Impetuosidade', 'Sabedoria', 'Duelo', 'Combate', 'Desafio', 'Corte', 'Lâmina', 'Glória', 'Abominação', 'Jornada', 'Sacrifício']
+  },
+  kpop: {
+    title: 'K-POP',
+    desc: 'Grupos coreanos',
+    words: ['BTS', 'BLACKPINK', 'TWICE', 'EXO', 'STRAY KIDS', 'SEVENTEEN', 'TXT', 'IVE', 'AESPA', 'ITZY', 'RED VELVET', 'ENHYPEN', 'NCT', 'NCT 127', 'NCT DREAM', 'GOT7', 'MONSTA X', 'ATEEZ', 'LE SSERAFIM', 'NEWJEANS', '(G)I-DLE', 'BABYMONSTER', 'TREASURE', 'BIGBANG', 'SHINee', 'SUPER JUNIOR', 'MAMAMOO', 'KISS OF LIFE', 'STAYC', 'ILLIT'],
+    hints: ['Impacto', 'Dualidade', 'Frequência', 'Origem', 'Rebeldia', 'Unidade', 'Esperança', 'Narcisismo', 'Futurismo', 'Confiança', 'Textura', 'Conexão', 'Infinito', 'Localização', 'Juventude', 'Sorte', 'Intensidade', 'Exploração', 'Resiliência', 'Nostalgia', 'Independência', 'Potencial', 'Raridade', 'Fundação', 'Brilho', 'Experiência', 'Harmonia', 'Vitalidade', 'Estrela', 'Atração']
+  },
+  bts: {
+    title: 'BTS',
+    desc: 'Universo Bangtan',
+    words: ['RM', 'Jin', 'Suga', 'J-Hope', 'Jimin', 'V', 'Jungkook', 'ARMY', 'BigHit', 'HYBE', 'Bangtan', 'Mic Drop', 'Dynamite', 'Butter', 'Permission to Dance', 'Fake Love', 'Boy With Luv', 'Spring Day', 'Run BTS', 'Golden Maknae', 'Rap Line', 'Vocal Line', 'Maknae Line', 'Lightstick', 'Concert', 'World Tour', 'Comeback', 'Album', 'Solo', 'Fandom', 'Stage', 'Dance'],
+    hints: ['Liderança', 'Estética', 'Introspecção', 'Otimismo', 'Fluidez', 'Expressividade', 'Versatilidade', 'Lealdade', 'Origem', 'Expansão', 'Resistência', 'Autoridade', 'Energia', 'Fluidez', 'Liberdade', 'Desilusão', 'Afeto', 'Nostalgia', 'Dinamismo', 'Perfeição', 'Rima', 'Melodia', 'Juventude', 'Identidade', 'Espetáculo', 'Alcance', 'Retorno', 'Obra', 'Individualidade', 'Comunidade', 'Plataforma', 'Movimento']
+  },
+  harrypotter: {
+    title: 'Harry Potter',
+    desc: 'Mundo Bruxo',
+    words: ['Harry Potter', 'Hermione Granger', 'Ron Weasley', 'Albus Dumbledore', 'Severus Snape', 'Lord Voldemort', 'Draco Malfoy', 'Minerva McGonagall', 'Sirius Black', 'Rubeus Hagrid', 'Bellatrix Lestrange', 'Neville Longbottom', 'Luna Lovegood', 'Ginny Weasley', 'Hogwarts', 'Grifinória', 'Sonserina', 'Corvinal', 'Lufa-Lufa', 'Beco Diagonal', 'Plataforma 9¾', 'Quadribol', 'Varinha das Varinhas', 'Pedra Filosofal', 'Câmara Secreta', 'Prisioneiro de Azkaban', 'Cálice de Fogo', 'Ordem da Fênix', 'Enigma do Príncipe', 'Relíquias da Morte', 'Horcrux', 'Patrono', 'Azkaban'],
+    hints: ['Escolhido', 'Intelecto', 'Lealdade', 'Enigma', 'Amargura', 'Imortalidade', 'Expectativa', 'Rigor', 'Inocência', 'Acolhimento', 'Devoção', 'Coragem', 'Excentricidade', 'Determinação', 'Refúgio', 'Impulso', 'Astúcia', 'Sabedoria', 'Paciência', 'Comércio', 'Transição', 'Competição', 'Soberania', 'Alquimia', 'Ancestralidade', 'Fuga', 'Seleção', 'Resistência', 'Memória', 'Trindade', 'Fragmentação', 'Essência', 'Isolamento']
+  },
+  starwars: {
+    title: 'Star Wars',
+    desc: 'Galáxia distante',
+    words: ['Luke Skywalker', 'Leia Organa', 'Han Solo', 'Darth Vader', 'Anakin Skywalker', 'Obi-Wan Kenobi', 'Yoda', 'Palpatine', 'Kylo Ren', 'Rey', 'Chewbacca', 'R2-D2', 'C-3PO', 'Boba Fett', 'Mandalorian', 'Grogu', 'Millennium Falcon', 'Estrela da Morte', 'Tatooine', 'Endor', 'Hoth', 'Naboo', 'Coruscant', 'Jedi', 'Sith', 'Sabre de Luz', 'Ordem 66', 'Guerra dos Clones', 'Império Galáctico', 'Aliança Rebelde', 'Lado Sombrio', 'Força', 'Trilogia Original', 'Saga Skywalker', 'Stormtrooper'],
+    hints: ['Esperança', 'Liderança', 'Ceticismo', 'Redenção', 'Tragédia', 'Tutela', 'Sabedoria', 'Manipulação', 'Conflito', 'Busca', 'Fidelidade', 'Utilidade', 'Protocolo', 'Ofício', 'Doutrina', 'Inocência', 'Velocidade', 'Aniquilação', 'Aridez', 'Natureza', 'Frio', 'Estética', 'Metrópole', 'Ordem', 'Caos', 'Energia', 'Traição', 'Escala', 'Controle', 'Insurgência', 'Tentação', 'Essência', 'Fundação', 'Legado', 'Soldado']
+  },
+  walkingdead: {
+    title: 'The Walking Dead',
+    desc: 'Apocalipse',
+    words: ['Rick Grimes', 'Daryl Dixon', 'Michonne', 'Negan', 'Carl Grimes', 'Maggie Greene', 'Glenn Rhee', 'Carol Peletier', 'Morgan Jones', 'Judith Grimes', 'Governador', 'Lucille', 'Alexandria', 'Hilltop', 'Reino', 'Santuário', 'Whisperers', 'Alpha', 'Beta', 'Caminhantes', 'CDC', 'Prisão', 'Atlanta', 'Sobreviventes', 'Apocalipse', 'Horda', 'Facão', 'Besta', 'Crossbow', 'Série', 'Temporada'],
+    hints: ['Autoridade', 'Sobrevivência', 'Honra', 'Carisma', 'Maturidade', 'Liderança', 'Agilidade', 'Evolução', 'Espiritualidade', 'Esperança', 'Tirania', 'Punição', 'Civilização', 'Subsistência', 'Teatralidade', 'Refúgio', 'Mimetismo', 'Dominação', 'Fidelidade', 'Fome', 'Ciência', 'Confinamento', 'Origem', 'Resiliência', 'Fim', 'Massa', 'Corte', 'Silêncio', 'Precisão', 'Obra', 'Tempo']
+  },
+  lacasadepapel: {
+    title: 'La Casa de Papel',
+    desc: 'Assaltos',
+    words: ['Professor', 'Tóquio', 'Berlim', 'Nairóbi', 'Rio', 'Denver', 'Moscou', 'Lisboa', 'Palermo', 'Helsinque', 'Oslo', 'Marselha', 'Bogotá', 'Raquel Murillo', 'Máscara de Dalí', 'Macacão Vermelho', 'Casa da Moeda', 'Banco da Espanha', 'Ouro', 'Cofre', 'Assalto', 'Plano', 'Túnel', 'Reféns', 'Polícia Nacional', 'Interpol', 'Helicóptero', 'Impressora', 'Dinheiro', 'Resistência', 'Bella Ciao'],
+    hints: ['Estratégia', 'Impulso', 'Hedonismo', 'Falsificação', 'Tecnologia', 'Inocência', 'Sacrifício', 'Conexão', 'Caos', 'Força', 'Lealdade', 'Logística', 'Metalurgia', 'Dúvida', 'Identidade', 'Uniformidade', 'Instituição', 'Lugar', 'Raridade', 'Segurança', 'Ruptura', 'Lógica', 'Passagem', 'Coerção', 'Autoridade', 'Vigilância', 'Extração', 'Produção', 'Capital', 'Ideologia', 'Hino']
+  },
+  theboys: {
+    title: 'The Boys',
+    desc: 'Anti-Heróis',
+    words: ['Homelander', 'Billy Butcher', 'Starlight', 'Queen Maeve', 'A-Train', 'The Deep', 'Black Noir', 'Soldier Boy', 'Vought', 'Compound V', 'The Seven', 'Ryan Butcher', 'Temp V', 'Lamplighter', 'Stormfront', 'Translucent', 'Supes', 'Torres Vought', 'Madelyn Stillwell', 'Ashley Barrett', 'Neuman', 'Red River', 'Godolkin', 'Payback'],
+    hints: ['Complexo', 'Vingança', 'Idealismo', 'Desilusão', 'Velocidade', 'Insegurança', 'Misterioso', 'Passado', 'Monopólio', 'Origem', 'Elite', 'Potencial', 'Risco', 'Remorso', 'Ódio', 'Invisibilidade', 'Anomalia', 'Sede', 'Ambição', 'Estresse', 'Conspiração', 'Abandono', 'Instituição', 'Retaliação']
+  },
+  got: {
+    title: 'Game of Thrones',
+    desc: 'Westeros',
+    words: ['Jon Snow', 'Daenerys Targaryen', 'Tyrion Lannister', 'Cersei Lannister', 'Jaime Lannister', 'Arya Stark', 'Sansa Stark', 'Ned Stark', 'Bran Stark', 'Robb Stark', 'Casa Stark', 'Casa Lannister', 'Casa Targaryen', 'Dragões', 'Trono de Ferro', 'Winterfell', 'Porto Real', 'Muralha', 'Patrulha da Noite', 'White Walkers', 'Rei da Noite', 'Além da Muralha', 'Valar Morghulis', 'Valar Dohaeris', 'Espada Longclaw', 'Espada Agulha', 'Fogo Valiriano', 'Casamento Vermelho', 'Baía dos Escravos', 'Meereen', 'Dothraki', 'Imaculados', 'Sete Reinos', 'Westeros'],
+    hints: ['Dever', 'Ambição', 'Intelecto', 'Poder', 'Redenção', 'Identidade', 'Sobrevivência', 'Honra', 'Visão', 'Legado', 'Resistência', 'Riqueza', 'Fogo', 'Poder', 'Soberania', 'Norte', 'Capital', 'Isolamento', 'Vigilância', 'Frio', 'Extinção', 'Desconhecido', 'Fatalidade', 'Servidão', 'Herança', 'Precisão', 'Destruição', 'Traição', 'Liberdade', 'Conquista', 'Nômades', 'Disciplina', 'Domínio', 'Continente']
+  },
+  round6: {
+    title: 'Round 6',
+    desc: 'Squid Game',
+    words: ['Seong Gi-hun', 'Kang Sae-byeok', 'Oh Il-nam', 'Cho Sang-woo', 'Front Man', 'Jogador 001', 'Jogador 456', 'Boneca Gigante', 'Luz Vermelha Luz Verde', 'Batatinha Frita 1 2 3', 'Dalgona', 'Biscoito de Açúcar', 'Ponte de Vidro', 'Cabo de Guerra', 'Bolinhas de Gude', 'Máscara Quadrada', 'Máscara Triangular', 'Máscara Circular', 'Cartão Convite', 'Ilha', 'VIPs', 'Cofre', 'Prêmio em Dinheiro', 'Último Jogo'],
+    hints: ['Dívida', 'Infiltração', 'Nostalgia', 'Estratégia', 'Autoridade', 'Origem', 'Finalidade', 'Vigilância', 'Imobilidade', 'Ritmo', 'Precisão', 'Fragilidade', 'Transparência', 'Força', 'Infância', 'Hierarquia', 'Execução', 'Trabalho', 'Oportunidade', 'Isolamento', 'Espectador', 'Segurança', 'Acúmulo', 'Confronto']
+  },
+  onepiece: {
+    title: 'One Piece',
+    desc: 'Piratas',
+    words: ['Luffy', 'Zoro', 'Nami', 'Usopp', 'Sanji', 'Chopper', 'Robin', 'Franky', 'Brook', 'Jinbe', 'Shanks', 'Barba Branca', 'Barba Negra', 'Ace', 'Sabo', 'Gol D. Roger', 'Chapéu de Palha', 'Going Merry', 'Thousand Sunny', 'Grand Line', 'Novo Mundo', 'Akuma no Mi', 'Haki', 'Gear Second', 'Gear Fourth', 'Gear Fifth', 'Marinha', 'Almirante', 'Yonkou', 'Revolucionários', 'Laugh Tale', 'Wano', 'Dressrosa', 'Skypiea'],
+    hints: ['Ambição', 'Disciplina', 'Navegação', 'Criatividade', 'Etiqueta', 'Empatia', 'Memória', 'Engenharia', 'Eternidade', 'Honra', 'Equilíbrio', 'Família', 'Oportunismo', 'Sacrifício', 'Ideologia', 'Legado', 'Símbolo', 'Sentimento', 'Sonho', 'Barreira', 'Desafio', 'Maldição', 'Vontade', 'Pressão', 'Escala', 'Libertação', 'Ordem', 'Hierarquia', 'Soberania', 'Mudança', 'Destino', 'Isolamento', 'Tragédia', 'Altitude']
+  },
+  aot: {
+    title: 'Attack on Titan',
+    desc: 'Titãs',
+    words: ['Eren Yeager', 'Mikasa', 'Armin', 'Levi', 'Erwin', 'Hange', 'Titã', 'Titã Colossal', 'Titã Blindado', 'Titã Bestial', 'Titã Fundador', 'Muralha Maria', 'Muralha Rose', 'Muralha Sina', 'Tropa de Exploração', 'Equipamento 3D', 'Paradis', 'Marley', 'Rumbling', 'Eldianos', 'Ymir', 'Paths', 'Shiganshina'],
+    hints: ['Liberdade', 'Devoção', 'Curiosidade', 'Disciplina', 'Sacrifício', 'Obsessão', 'Gigantismo', 'Vapor', 'Resistência', 'Intelecto', 'Origem', 'Proteção', 'Segurança', 'Interior', 'Jornada', 'Mobilidade', 'Isolamento', 'Doutrina', 'Aniquilação', 'Ancestralidade', 'Divindade', 'Conexão', 'Início']
+  },
+  jjk: {
+    title: 'Jujutsu Kaisen',
+    desc: 'Feiticeiros',
+    words: ['Yuji Itadori', 'Satoru Gojo', 'Megumi Fushiguro', 'Nobara Kugisaki', 'Sukuna', 'Geto', 'Toji Fushiguro', 'Domínio', 'Expansão de Domínio', 'Energia Amaldiçoada', 'Maldição', 'Feiticeiro', 'Escola Jujutsu', 'Shibuya', 'Técnica Inata', 'Seis Olhos', 'Infinito', 'Black Flash', 'Mahito', 'Jogo do Abate', 'Rika', 'Yuta Okkotsu'],
+    hints: ['Sacrifício', 'Absoluto', 'Potencial', 'Determinação', 'Soberania', 'Ideologia', 'Instinto', 'Campo', 'Ruptura', 'Essência', 'Danação', 'Ofício', 'Instituição', 'Tragédia', 'Identidade', 'Percepção', 'Paradoxo', 'Sincronicidade', 'Mutação', 'Conflito', 'Devoção', 'Cópia']
+  },
+  demonslayer: {
+    title: 'Demon Slayer',
+    desc: 'Caçadores de Onis',
+    words: ['Tanjiro', 'Nezuko', 'Zenitsu', 'Inosuke', 'Kagaya', 'Muzan', 'Hashira', 'Respiração da Água', 'Respiração do Fogo', 'Respiração do Trovão', 'Respiração da Besta', 'Lâmina Nichirin', 'Onis', 'Lua Superior', 'Lua Inferior', 'Trem Infinito', 'Distrito do Entretenimento', 'Espadas', 'Caçador', 'Demônio', 'Sangue', 'Kibutsuji'],
+    hints: ['Empatia', 'Resiliência', 'Dualidade', 'Instinto', 'Paternalismo', 'Ambição', 'Pilar', 'Fluidez', 'Intensidade', 'Instantâneo', 'Primitivo', 'Forja', 'Danação', 'Elite', 'Hierarquia', 'Confinamento', 'Hedonismo', 'Ofício', 'Dever', 'Noite', 'Linhagem', 'Medo']
+  },
+  mha: {
+    title: 'My Hero Academia',
+    desc: 'Escola de Heróis',
+    words: ['Izuku Midoriya', 'All Might', 'Bakugo', 'Todoroki', 'Uraraka', 'Endeavor', 'One For All', 'All For One', 'Quirk', 'U.A.', 'Herói', 'Vilão', 'Liga dos Vilões', 'Shigaraki', 'Dabi', 'Hawks', 'Eraser Head', 'Gran Torino', 'Estágio', 'Festival Esportivo', 'Nomu', 'Uniforme', 'Treinamento', 'Plus Ultra'],
+    hints: ['Esforço', 'Símbolo', 'Orgulho', 'Dualidade', 'Leveza', 'Obsessão', 'Transferência', 'Ganância', 'Identidade', 'Instituição', 'Idealismo', 'Antagonismo', 'Coletividade', 'Decadência', 'Rancor', 'Liberdade', 'Nulidade', 'Experiência', 'Aprendizado', 'Espetáculo', 'Abominação', 'Identidade', 'Preparação', 'Lema']
+  },
+  tokyoghoul: {
+    title: 'Tokyo Ghoul',
+    desc: 'Universo Ghoul',
+    words: ['Kaneki', 'Touka', 'Rize', 'Anteiku', 'CCG', 'Investigador', 'Ghoul', 'Máscara', 'Kagune', 'Kakuja', 'Aogiri', 'Jason', 'Hinami', 'Arima', 'Quinx', 'Olho Vermelho', 'Café', 'Identidade', 'Tragédia', 'Metamorfose', 'Caçador'],
+    hints: ['Hibridismo', 'Resiliência', 'Fome', 'Convivência', 'Ordem', 'Dever', 'Fome', 'Dissimulação', 'Biologia', 'Corrupção', 'Insurgência', 'Sádico', 'Inocência', 'Perfeição', 'Hibridismo', 'Anomalia', 'Sustento', 'Segredo', 'Narrativa', 'Mudança', 'Vigilância']
+  },
+  chainsawman: {
+    title: 'Chainsaw Man',
+    desc: 'Demônios e Serras',
+    words: ['Denji', 'Pochita', 'Makima', 'Power', 'Aki', 'Chainsaw', 'Demônio', 'Caçador de Demônios', 'Contrato', 'Sangue', 'Katana Man', 'Gun Devil', 'Controle', 'Inferno', 'Anjo', 'Violência', 'Motoserra', 'Caos', 'Medo', 'Morte', 'Infernal'],
+    hints: ['Simplicidade', 'Fidelidade', 'Dominação', 'Narcisismo', 'Dever', 'Hibridismo', 'Conceito', 'Ofício', 'Acordo', 'Vitalidade', 'Rivalidade', 'Trauma', 'Vontade', 'Danação', 'Melancolia', 'Instinto', 'Mecânica', 'Desordem', 'Essência', 'Fim', 'Manifestação']
+  }
+};
