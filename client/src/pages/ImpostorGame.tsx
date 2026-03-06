@@ -2320,7 +2320,7 @@ const GameConfigModal: React.FC<GameConfigModalProps> = ({ isOpen, onClose }) =>
     
     toast({
       title: "Configurações salvas!",
-      description: "As configurações serão aplicadas ao tema clássico no modo Palavra Secreta."
+      description: "As configurações serão aplicadas ao modo Palavra Secreta."
     });
     
     onClose();
@@ -2337,7 +2337,7 @@ const GameConfigModal: React.FC<GameConfigModalProps> = ({ isOpen, onClose }) =>
             <h2 className="text-base md:text-2xl lg:text-3xl font-black text-white leading-tight md:leading-normal">
               Configurações da Partida
             </h2>
-            <p className="text-slate-400 text-xs md:text-sm font-medium leading-tight md:leading-normal">Apenas para tema clássico - Palavra Secreta</p>
+            <p className="text-slate-400 text-xs md:text-sm font-medium leading-tight md:leading-normal">Modo Palavra Secreta</p>
           </div>
           <button 
             onClick={onClose}

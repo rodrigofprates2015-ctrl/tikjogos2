@@ -1129,6 +1129,41 @@ const WORD_HINTS: Record<string, string> = {
   'Gratidão': 'Sorriso',
   'Renovação': 'Ciclo'
 };
+
+// Hints indexed by submode/theme key, parallel to PALAVRA_SECRETA_SUBMODES_DATA words array
+const THEME_HINTS: Record<string, string[]> = {
+  natal: ['Lenda','Fundamento','Divindade','Inocência','Jornada','Ofício','Condução','Vínculo','Centralidade','Retribuição','Vigilância','Intermitência','Orientação','Anúncio','Efêmero','Recepção','Esfericidade','Representação','Extremidade','Deslizamento','Passagem','Sazonalidade','Geometria','Proteção','Topo','Continuidade','Ritual','Abundância','Fermentação','Reaproveitamento','Controvérsia','Resistência','Proteína','Temperatura','Lirismo','Cordialidade','Hábito','Expectativa','Absoluto','Ausência','Perspectiva','Euforia','Coesão','Sobrenatural','Conciliação','Altruísmo','Equilíbrio','Irmandade','Introspecção','Reconhecimento','Ciclo'],
+  estrategia: ['Elementar','Impetuosidade','Distância','Resiliência','Dualidade','Agilidade','Blindagem','Lentidão','Aéreo','Invocação','Infiltração','Equilíbrio','Arremesso','Interrupção','Defesa','Divisão','Aceleração','Transparência','Controle','Retorno'],
+  animes: ['Superação','Reconhecimento','Liberdade','Empatia','Proteção','Tédio','Rancor','Legado','Absoluto','Dever','Percepção','Liberação','Energia','Concentração','Escala','Ceifador','Fluxo','Forja','Divergência','Conhecimento'],
+  herois: ['Responsabilidade','Divindade','Dualidade','Liderança','Intelecto','Dissimulação','Ancestralidade','Misticismo','Equilíbrio','Travessura','Lógica','Natureza','Sobrevivência','Realidade','Sintético','Proteção','Dignidade','Singularidade','Conspiração','Raridade'],
+  seriesMisterio: ['Trauma','Idealismo','Ceticismo','Carisma','Vulnerabilidade','Velocidade','Autoridade','Persistência','Remorso','Predação','Dominação','Pacatice','Reflexo','Negligência','Perspicácia','Redenção','Fúria','Performance','Paranoia','Marginalidade','Paternalismo','Distância','Astúcia','Confinamento','Inverno','Sinal','Lazer','Consumo','Rebeldia','Vínculo'],
+  futebol: ['Massivo','Identidade','Soberania','Constância','Juventude','Navegação','Altitude','Imortalidade','Paixão','Resiliência','Aristocracia','Solidão','Modernidade','Regionalismo','Tradição','Rugido','Paraná','Centro','Fortaleza','Longevidade'],
+  disney: ['Ícone','Parceria','Ingenuidade','Nobreza','Lealdade','Realeza','Fantasia','Inovação','Heroísmo','Galáxia','Congelamento','Isolamento','Coragem','Orgulho','Poder','Astúcia','Desejo','Profundidade','Aventura','Liberdade','Encantamento','Infinito','Amizade','Oceano','Sonho','Magia','Destino','Nobreza','Beleza','Transformação'],
+  valorant: ['Objetivo','Posicionamento','Anulação','Isolamento','Superioridade','Precisão','Hierarquia','Auge','Eternidade','Elevação','Pureza','Resistência','Valor','Evasão','Renascimento','Estabilidade','Rastreio','Toxicidade','Vigilância','Sustento','Automação','Impacto','Obscuridade','Entusiasmo','Conexão','Dimensão','Cosmos','Supressão','Ostentação','Eletricidade','Pesadelo','Fluidez','Simbioze','Restrição','Foco','Dualidade','Aço','Verticalidade','Passagem','Trindade','Divisão','Amplitude','Ruptura','Tranquilidade','Frio','Submerso','Crepúsculo','Potência','Sutileza','Distância','Autoridade','Velocidade','Vigilância'],
+  roblox: ['Capital','Projeção','Inexperiência','Hierarquia','Exclusão','Obstáculo','Acúmulo','Cuidado','Simulação','Subsistência','Intriga','Passagem','Perseguição','Coleção','Desafio','Reação','Irmandade','Privilégio','Sazonalidade','Estética','Utilitário','Interação','Ambiente','Hospedagem','Intrusão','Falha','Negociação','Exposição','Ascensão','Confronto','Convivência','Território','Catástrofe','Fuga'],
+  supernatural: ['Proteção','Destino','Dúvida','Oportunismo','Herança','Suporte','Rebelião','Dever','Danação','Remanescente','Pureza','Sacramento','Isolamento','Profecia','Ofício','Registros','Intermediário','Sofrimento','Paraíso','Singularidade','Traição','Corrupção','Invasão','Libertação','Escolha','Negociação','Ausência','Origem','Ambição','Criação','Vazio','Escriba','Fome','Sede','Ciclo','Fundação'],
+  dragonball: ['Pureza','Orgulho','Potencial','Sabedoria','Tirania','Perfeição','Caos','Busca','Realização','Linhagem','Ascensão','Energia','Coletividade','União','Elo','Futuro','Inocência','Intelecto','Resiliência','Experiência','Pureza','Localização','Glória','Essência','Instante','Ciborgue','Capricho','Zelo','Instinto','Origem','Primitivo','Tutela','Vitalidade','Totalidade','Precursor','Inovação'],
+  naruto: ['Solidão','Vingança','Determinação','Remorso','Liderança','Comunidade','Energia','Rotação','Vibração','Percepção','Alcance','Divindade','Divergência','Sacrifício','Isolamento','Imortalidade','Errante','Aposta','Devoção','Ódio','Poder','Sacrifício','Alcance','Precisão','Compromisso','Provação','Dualidade','Ambição','Idealismo','Paz','Distração','Multiplicidade','Umidade','Conforto','Convicção'],
+  rock: ['Revolução','Longevidade','Teatralidade','Energia','Excesso','Apatia','Intensidade','Folclore','Misticismo','Peso','Vitalidade','Angústia','Espetáculo','Persistência','Carisma','Ativismo','Atmosfera','Resiliência','Origem','Protesto','Simplicidade','Transição','Rebeldia','Expressão','Identidade','Melancolia','Raiz','Poesia','Juventude','Diversidade','Velocidade','Skate','Atitude','Maluquice','Irreverência'],
+  minecraft: ['Padrão','Diferença','Instabilidade','Abstração','Decadência','Arqueria','Agilidade','Escambo','Alquimia','Mito','Soberania','Atrofia','Raridade','Brilho','Resistência','Combustão','Mecânica','Extração','Confronto','Eficiência','Manufatura','Transformação','Armazenamento','Repouso','Passagem','Finalidade','Estrutura','Ecossistema','Aridez','Vegetação','Escuridão','Esforço','Criação','Base','Lentidão','Inabalável','Temperatura','Ruptura'],
+  gta: ['Retorno','Ambição','Crise','Instabilidade','Esperança','Ascensão','Simulação','Metrópole','Nostalgia','Estado','Raiz','Rivalidade','Território','Autoridade','Consequência','Aéreo','Blindagem','Verticalidade','Objetivo','Apropriação','Planejamento','Capital','Velocidade','Liberdade','Arsenal','Perseguição','Logística','Traição','Dissimulação','Parceria','Risco','Execução','Interação','Coleção','Estética','Queda','Vantagem'],
+  fnaf: ['Autômatos','Liderança','Ritmo','Fome','Isolamento','Anomalia','Persistência','Contágio','Inocência','Simbioze','Controle','Manipulação','Equilíbrio','Entretenimento','Espetáculo','Fusão','Decadência','Suporte','Relutância','Dever','Culpa','Redenção','Invasão','Proteção','Vaidade','Agressividade','Dualidade','Dualidade','Estabelecimento','Corporação','Confinamento','Observação','Interface','Passagem','Condução','Restrição','Fonte','Recurso','Foco','Controle','Escuridão','Trabalho','Segurança','Resistência','Reação','Objetivo','Orientação','Interatividade','Busca','Segredo','Origem','Evolução','Finalização','Quarto','Subsolo','Modernidade','Desafio','Personalização','Especulação','História'],
+  fortnite: ['Gênero','Progressão','Estética','Capital','Expressão','Início','Recurso','Sorte','Restrição','Condução','Terreno','Segurança','Coletividade','Parceria','Individualidade','Estrutura','Modificação','Proximidade','Distância','Versatilidade','Triunfo','Experiência','Hierarquia','Comércio','Ciclo','Renovação','Correção','Conexão','Espetáculo'],
+  freefire: ['Gênero','Corporação','Início','Recurso','Terreno','Segurança','Coletividade','Individualidade','Prestígio','Estética','Identidade','Vantagem','Capital','Confronto','Área','Distância','Proteção','Impetuosidade','Espera','Privacidade','Irmandade','Assinatura','Sazonalidade','Melhoria','Precisão','Triunfo','Blindagem','Proteção','Companhia'],
+  brawlstars: ['Identidade','Trunfo','Acessório','Potencial','Ganância','Sobrevivência','Dinâmica','Invasão','Engenharia','Eliminação','Terreno','Estética','Prestígio','Hierarquia','Força','Melhoria','Coletividade','Individualidade','Parceria','Sazonalidade','Progressão','Ciclo','Sorte','Ofensiva'],
+  pokemon: ['Ícone','Confinamento','Vocação','Provação','Mérito','Conhecimento','Persistência','Antagonismo','Calor','Natureza','Fluidez','Metamorfose','Essência','Energia','Pureza','Vitalidade','Frequência','Mito','Raridade','Confronto','Iniciativa','Resistência','Vitalidade','Aprendizado','Território','Origem','Continuidade','Natureza','Espírito','Tradição','Escolha','Domínio','Hierarquia','Glória','Ascensão','Singularidade','Coletividade'],
+  godofwar: ['Fúria','Curiosidade','Frio','Rancor','Crença','Inverno','Altitude','Soberania','Conflito','Reparação','Responsabilidade','Legado','Destino','Impetuosidade','Sabedoria','Duelo','Combate','Desafio','Corte','Lâmina','Glória','Abominação','Jornada','Sacrifício'],
+  kpop: ['Impacto','Dualidade','Frequência','Origem','Rebeldia','Unidade','Esperança','Narcisismo','Futurismo','Confiança','Textura','Conexão','Infinito','Localização','Juventude','Sorte','Intensidade','Exploração','Resiliência','Nostalgia','Independência','Potencial','Raridade','Fundação','Brilho','Experiência','Harmonia','Vitalidade','Estrela','Atração'],
+  bts: ['Liderança','Estética','Introspecção','Otimismo','Fluidez','Expressividade','Versatilidade','Lealdade','Origem','Expansão','Resistência','Autoridade','Energia','Fluidez','Liberdade','Desilusão','Afeto','Saudade','Desafio','Perfeição','Coletividade','Melodia','Hierarquia','Luz','Alcance','Jornada','Retorno','Obra','Individualidade','Fandom','Palco','Movimento'],
+  harrypotter: ['Cicatriz','Amizade','Inteligência','Lealdade','Coragem','Ambição','Sabedoria','Bondade','Liderança','Magia','Proteção','Poder','Astúcia','Sacrifício','Conhecimento','Comércio','Esporte','Destino','Segredo','Maldade','Rebeldia','Amor','Mistério','Fogo','Prisão','Aventura','Tempo','Competição','Revelação','Morte','Fragmento','Proteção','Punição','Isolamento'],
+  starwars: ['Esperança','Diplomacia','Aventura','Escuridão','Redenção','Sabedoria','Equilíbrio','Tirania','Conflito','Resistência','Lealdade','Mecânica','Protocolo','Caça','Honra','Inocência','Velocidade','Destruição','Deserto','Floresta','Gelo','Beleza','Poder','Ordem','Traição','Energia','Tragédia','Guerra','Império','Rebelião','Tentação','Força','Clássico','Saga','Obediência'],
+  walkingdead: ['Liderança','Instinto','Habilidade','Vingança','Inocência','Determinação','Sacrifício','Sobrevivência','Redenção','Futuro','Tirania','Crueldade','Comunidade','Colina','Reino','Controle','Sussurro','Dominação','Lealdade','Ameaça','Ciência','Confinamento','Origem','Resistência','Colapso','Horda','Corte','Força','Precisão','Série','Temporada'],
+  lacasadepapel: ['Estratégia','Identidade','Frieza','Emoção','Romance','Impulsividade','Sacrifício','Autoridade','Elegância','Brutalidade','Inteligência','Lealdade','Traição','Determinação','Disfarce','Uniformidade','Instituição','Segurança','Riqueza','Proteção','Invasão','Planejamento','Escavação','Reféns','Perseguição','Espionagem','Fuga','Impressão','Capital','Resistência','Revolução'],
+  theboys: ['Patriotismo','Brutalidade','Esperança','Coragem','Velocidade','Profundidade','Invisibilidade','Legado','Corporação','Substância','Hierarquia','Proteção','Temporário','Redenção','Ideologia','Transparência','Poderes','Torre','Controle','Gestão','Política','Orfanato','Universidade','Vingança'],
+  got: ['Bastardo','Dragões','Astúcia','Crueldade','Honra','Traição','Amor','Coragem','Visão','Determinação','Lealdade','Ganância','Ambição','Poder','Trono','Inverno','Capital','Barreira','Dever','Morte','Profecia','Além','Filosofia','Servidão','Destino','Precisão','Fogo','Tragédia','Escravidão','Libertação','Nômade','Guerreiros','Reinos','Continente'],
+  round6: ['Endividamento','Frieza','Mistério','Traição','Liderança','Identidade','Número','Número','Jogo','Infância','Doçura','Escultura','Transparência','Sorte','Amizade','Máscara','Máscara','Máscara','Convite'],
+};
+
 function setupGameMode(mode: GameModeType, players: Player[], impostorId: string, selectedSubmode?: string, roomCode?: string, customWords?: string[], themeCode?: string): GameData {
   const code = roomCode || 'default';
   
@@ -2204,11 +2239,28 @@ export async function registerRoutes(
           hasWord: !!gameData.word
         });
         
-        // Add hint for impostor if enabled and it's classic palavraSecreta
-        // Note: firstPlayerHintOnly logic will be handled on frontend based on speaking order
+        // Add hint for impostor if enabled (all built-in submodes, not community themes)
+        // Note: firstPlayerHintOnly logic is handled on the frontend based on speaking order
         if (gameConfig.enableHints && gameMode === 'palavraSecreta' && !themeCode && gameData.word) {
-          const hint = WORD_HINTS[gameData.word];
-          console.log(`[StartGame] Looking for hint for word "${gameData.word}":`, hint);
+          const submode = selectedSubmode || 'classico';
+          let hint: string | undefined;
+
+          if (submode === 'classico') {
+            // Classic mode uses the word→hint dictionary
+            hint = WORD_HINTS[gameData.word];
+          } else {
+            // Other built-in themes use positional hints (same index as the word in the words array)
+            const themeWords = PALAVRA_SECRETA_SUBMODES_DATA[submode];
+            const themeHints = THEME_HINTS[submode];
+            if (themeWords && themeHints) {
+              const wordIndex = themeWords.indexOf(gameData.word);
+              if (wordIndex !== -1 && wordIndex < themeHints.length) {
+                hint = themeHints[wordIndex];
+              }
+            }
+          }
+
+          console.log(`[StartGame] Looking for hint for word "${gameData.word}" (submode: ${submode}):`, hint);
           if (hint) {
             gameData.hint = hint;
             console.log(`[StartGame] ✅ Added hint for word "${gameData.word}": "${hint}"`);
