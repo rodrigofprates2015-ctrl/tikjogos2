@@ -8,7 +8,7 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
 import { LobbyChat } from "@/components/LobbyChat";
 import { VoiceControlButton, VoiceChatJoinButton, SpeakingIndicator } from "@/components/InlineVoiceControls";
-import { useVoiceChatContext } from "@/hooks/VoiceChatContext";
+import { useVoiceChatContext, VoiceChatProvider } from "@/hooks/VoiceChatContext";
 
 import { PremiumBanner } from "@/components/PremiumBanner";
 import { MobileNav } from "@/components/MobileNav";
@@ -4762,7 +4762,7 @@ const VotingPlayerList = ({
 };
 
 
-export default function ImpostorGame() {
+function ImpostorGameInner() {
   const { status } = useGameStore();
   const [isDonationOpen, setIsDonationOpen] = useState(false);
 
@@ -4792,5 +4792,15 @@ export default function ImpostorGame() {
       {status === 'submodeSelect' && <PalavraSuperSecretaSubmodeScreen />}
       {status === 'playing' && <GameScreen />}
     </div>
+  );
+}
+
+// VoiceChatProvider (and agora-rtc-sdk-ng) is scoped here so it's only
+// loaded when this page chunk is parsed, not on the initial app bootstrap.
+export default function ImpostorGame() {
+  return (
+    <VoiceChatProvider>
+      <ImpostorGameInner />
+    </VoiceChatProvider>
   );
 }

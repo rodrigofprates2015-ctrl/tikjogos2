@@ -6,11 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { useEffect, lazy, Suspense } from "react";
 import NotFound from "@/pages/not-found";
-const ImpostorGame = lazy(() => import("@/pages/ImpostorGame"));
-const RoomRedirect = lazy(() => import("@/pages/RoomRedirect"));
-const VoiceChatProvider = lazy(() =>
-  import("@/hooks/VoiceChatContext").then((m) => ({ default: m.VoiceChatProvider }))
-);
+// ImpostorGame is the home page — keep it eager so there's no lazy waterfall on /
+import ImpostorGame from "@/pages/ImpostorGame";
+import RoomRedirect from "@/pages/RoomRedirect";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 
@@ -360,16 +358,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Suspense fallback={null}>
-          <VoiceChatProvider>
-            <LanguageProvider>
-              <VersionManager />
-              <SessionTracker />
-              <AppRouter />
-              <Toaster />
-            </LanguageProvider>
-          </VoiceChatProvider>
-        </Suspense>
+        <LanguageProvider>
+          <VersionManager />
+          <SessionTracker />
+          <AppRouter />
+          <Toaster />
+        </LanguageProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

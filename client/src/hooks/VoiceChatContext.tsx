@@ -1,10 +1,5 @@
 import { createContext, useContext, ReactNode, useState, useCallback, useRef, useEffect } from 'react';
-import AgoraRTC, { 
-  IAgoraRTCClient, 
-  IMicrophoneAudioTrack,
-  IRemoteAudioTrack,
-  UID
-} from 'agora-rtc-sdk-ng';
+import type { IAgoraRTCClient, IMicrophoneAudioTrack, IRemoteAudioTrack, UID } from 'agora-rtc-sdk-ng';
 
 interface VoiceChatContextType {
   isConnected: boolean;
@@ -61,68 +56,80 @@ export function VoiceChatProvider({ children }: { children: ReactNode }) {
   const clientRef = useRef<IAgoraRTCClient | null>(null);
   const localAudioTrackRef = useRef<IMicrophoneAudioTrack | null>(null);
   const remoteAudioTracksRef = useRef<Map<UID, IRemoteAudioTrack>>(new Map());
+  // Cache the dynamic import so we only load agora-rtc-sdk-ng once
+  const agoraRef = useRef<typeof import('agora-rtc-sdk-ng') | null>(null);
 
   const getNumericUid = useCallback((odUserId: string) => {
     return Math.abs(hashCode(odUserId)) % 1000000;
   }, []);
 
   useEffect(() => {
-    const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
-    clientRef.current = client;
+    let cancelled = false;
 
-    client.on('user-published', async (user, mediaType) => {
-      if (mediaType === 'audio') {
-        await client.subscribe(user, mediaType);
-        if (user.audioTrack) {
-          remoteAudioTracksRef.current.set(user.uid, user.audioTrack);
-          user.audioTrack.play();
+    // Dynamic import — agora-rtc-sdk-ng is only fetched after the page mounts,
+    // keeping it out of the initial JS parse on page load.
+    import('agora-rtc-sdk-ng').then((AgoraRTC) => {
+      if (cancelled) return;
+      agoraRef.current = AgoraRTC;
+
+      const client = AgoraRTC.default.createClient({ mode: 'rtc', codec: 'vp8' });
+      clientRef.current = client;
+
+      client.on('user-published', async (user, mediaType) => {
+        if (mediaType === 'audio') {
+          await client.subscribe(user, mediaType);
+          if (user.audioTrack) {
+            remoteAudioTracksRef.current.set(user.uid, user.audioTrack);
+            user.audioTrack.play();
+          }
         }
-      }
-    });
+      });
 
-    client.on('user-unpublished', (user, mediaType) => {
-      if (mediaType === 'audio') {
-        user.audioTrack?.stop();
+      client.on('user-unpublished', (user, mediaType) => {
+        if (mediaType === 'audio') {
+          user.audioTrack?.stop();
+          remoteAudioTracksRef.current.delete(user.uid);
+        }
+      });
+
+      client.on('user-left', (user) => {
         remoteAudioTracksRef.current.delete(user.uid);
-      }
-    });
-
-    client.on('user-left', (user) => {
-      remoteAudioTracksRef.current.delete(user.uid);
-      setSpeakingUsers(prev => {
-        const next = new Set(prev);
-        next.delete(user.uid);
-        return next;
+        setSpeakingUsers(prev => {
+          const next = new Set(prev);
+          next.delete(user.uid);
+          return next;
+        });
       });
-    });
 
-    client.enableAudioVolumeIndicator();
-    client.on('volume-indicator', (volumes) => {
-      const speaking = new Set<UID>();
-      volumes.forEach(vol => {
-        if (vol.level > 5) {
-          speaking.add(vol.uid);
+      client.enableAudioVolumeIndicator();
+      client.on('volume-indicator', (volumes) => {
+        const speaking = new Set<UID>();
+        volumes.forEach(vol => {
+          if (vol.level > 5) {
+            speaking.add(vol.uid);
+          }
+        });
+        setSpeakingUsers(speaking);
+
+        const localVol = volumes.find(v => v.uid === 0);
+        if (localVol) {
+          setLocalVolume(localVol.level);
         }
       });
-      setSpeakingUsers(speaking);
-
-      const localVol = volumes.find(v => v.uid === 0);
-      if (localVol) {
-        setLocalVolume(localVol.level);
-      }
     });
 
     return () => {
-      client.removeAllListeners();
+      cancelled = true;
       if (localAudioTrackRef.current) {
         localAudioTrackRef.current.close();
       }
-      client.leave();
+      clientRef.current?.removeAllListeners();
+      clientRef.current?.leave();
     };
   }, []);
 
   const join = useCallback(async (channelName: string, userName: string, odUserId: string) => {
-    if (!clientRef.current) return;
+    if (!clientRef.current || !agoraRef.current) return;
     
     setIsConnecting(true);
     setError(null);
@@ -133,7 +140,7 @@ export function VoiceChatProvider({ children }: { children: ReactNode }) {
       
       await clientRef.current.join(appId, channelName, token, numericUid);
       
-      const audioTrack = await AgoraRTC.createMicrophoneAudioTrack({
+      const audioTrack = await agoraRef.current.default.createMicrophoneAudioTrack({
         encoderConfig: 'speech_low_quality'
       });
       localAudioTrackRef.current = audioTrack;
