@@ -4,11 +4,13 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-import { VoiceChatProvider } from "@/hooks/VoiceChatContext";
 import { useEffect, lazy, Suspense } from "react";
 import NotFound from "@/pages/not-found";
-import ImpostorGame from "@/pages/ImpostorGame";
-import RoomRedirect from "@/pages/RoomRedirect";
+const ImpostorGame = lazy(() => import("@/pages/ImpostorGame"));
+const RoomRedirect = lazy(() => import("@/pages/RoomRedirect"));
+const VoiceChatProvider = lazy(() =>
+  import("@/hooks/VoiceChatContext").then((m) => ({ default: m.VoiceChatProvider }))
+);
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 
@@ -358,14 +360,16 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <VoiceChatProvider>
-          <LanguageProvider>
-            <VersionManager />
-            <SessionTracker />
-            <AppRouter />
-            <Toaster />
-          </LanguageProvider>
-        </VoiceChatProvider>
+        <Suspense fallback={null}>
+          <VoiceChatProvider>
+            <LanguageProvider>
+              <VersionManager />
+              <SessionTracker />
+              <AppRouter />
+              <Toaster />
+            </LanguageProvider>
+          </VoiceChatProvider>
+        </Suspense>
       </TooltipProvider>
     </QueryClientProvider>
   );
