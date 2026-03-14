@@ -129,16 +129,11 @@ interface RCThemeCard {
 }
 
 const RC_THEME_CARDS: RCThemeCard[] = [
-  { id: 'todas', name: 'Todas as Categorias', emoji: '🎲', description: 'Perguntas aleatórias de todos os temas', questionCount: 170, isRecommended: true },
+  { id: 'classico', name: 'Clássico', emoji: '🎲', description: 'Perguntas clássicas sobre cotidiano, cultura e nostalgia', questionCount: 190, isRecommended: true, cover: 'https://images.tcdn.com.br/img/editor/up/702656/blogdicasondeguardarmiudezascasa.jpg' },
   { id: 'animes', name: 'Animes', emoji: '⚔️', description: 'Perguntas sobre personagens e universos de anime', questionCount: 30, cover: animesCover },
   { id: 'marvel', name: 'Marvel', emoji: '🦸', description: 'Perguntas sobre heróis e vilões da Marvel', questionCount: 30, cover: marvelCover },
   { id: 'jogos', name: 'Jogos', emoji: '🎮', description: 'Perguntas sobre games e personagens', questionCount: 30, cover: jogosCover },
   { id: 'desenho_animado', name: 'Desenho Animado', emoji: '🎬', description: 'Personagens icônicos dos desenhos animados', questionCount: 30, cover: desenhoAnimadoCover },
-  { id: 'brasil', name: 'Brasil', emoji: '🇧🇷', description: 'Perguntas sobre cultura brasileira', questionCount: 10 },
-  { id: 'escola', name: 'Vida Escolar', emoji: '🏫', description: 'Perguntas sobre o dia a dia na escola', questionCount: 10 },
-  { id: 'comida', name: 'Comida', emoji: '🍔', description: 'Perguntas sobre comidas e bebidas', questionCount: 10 },
-  { id: 'geral', name: 'Geral / Vida', emoji: '🌎', description: 'Perguntas sobre o cotidiano', questionCount: 10 },
-  { id: 'engracadas', name: 'Engraçadas', emoji: '😂', description: 'Perguntas criativas e divertidas', questionCount: 10 },
 ];
 
 // ── ThemeSelectScreen ──────────────────────────────────────────────────
@@ -189,7 +184,7 @@ const RCThemeSelectScreen = () => {
             {RC_THEME_CARDS.map((theme) => (
               <button
                 key={theme.id}
-                onClick={() => selectTheme(theme.id === 'todas' ? undefined : theme.id)}
+                onClick={() => selectTheme(theme.id)}
                 className="relative rounded-3xl bg-slate-800 border-4 border-slate-900 hover:bg-slate-750 hover:-translate-y-1 hover:border-slate-700 transition-all duration-200 text-left shadow-lg group overflow-hidden"
               >
                 {/* Cover image */}
@@ -255,7 +250,7 @@ const RCLobbyScreen = () => {
   if (!room || !user) return null;
   const isHost = room.hostId === user.uid;
   const players = room.players || [];
-  const selectedTheme = RC_THEME_CARDS.find(t => t.id === (config.category || 'todas'));
+  const selectedTheme = RC_THEME_CARDS.find(t => t.id === (config.category || 'classico'));
 
   const copyLink = () => {
     const shareLink = `${window.location.origin}/sala/${room.code}`;
