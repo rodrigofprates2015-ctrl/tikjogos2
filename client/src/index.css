@@ -120,19 +120,17 @@
 @layer base {
   html {
     @apply h-full;
-    overflow-x: hidden;
   }
   
   body {
     @apply font-poppins min-h-screen;
     background: #2b6da8;
     color: white;
-    overflow-x: hidden;
   }
   
   #root {
     @apply min-h-screen flex flex-col;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 }
 
@@ -155,7 +153,6 @@
 
   /* Isolate ad containers from causing layout shifts on the rest of the page */
   .adsense-container {
-    contain: layout style;
     content-visibility: auto;
   }
 
