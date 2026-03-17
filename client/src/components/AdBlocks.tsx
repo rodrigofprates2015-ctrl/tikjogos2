@@ -111,30 +111,7 @@ export function AdBlockInContent() {
 }
 
 // Bloco 1:1 visível apenas em mobile, entre o form e o footer
-export function AdBlockSquareMobile() {
-  const [isMobile, setIsMobile] = useState(false);
 
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)');
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  if (!isMobile) return null;
-
-  return (
-    <div className="w-full px-4 py-4">
-      <AdBlock
-        slot="9101189574"
-        format="auto"
-        responsive={true}
-        style={{ width: '100%', minHeight: '250px' }}
-      />
-    </div>
-  );
-}
 
 // Componente interno do overlay intersticial — mantém ref estável no <ins>
 function InterstitialOverlay({
