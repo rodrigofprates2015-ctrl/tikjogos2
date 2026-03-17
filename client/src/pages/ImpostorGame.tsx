@@ -94,6 +94,7 @@ import personagemEsquerdo from "@assets/personagem esquerdo.png";
 import personagemDireito from "@assets/personagem direito.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
 import { SideAds } from "@/components/AdSense";
+import { AdBlockSquareMobile, useInterstitialAd } from "@/components/AdBlocks";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
 
@@ -917,7 +918,7 @@ const HOME_META: Record<string, { title: string; description: string }> = {
   },
 };
 
-const DrawingGameCard = () => {
+const DrawingGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void) => void }) => {
   const drawingStore = useDrawingGameStore();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -931,11 +932,13 @@ const DrawingGameCard = () => {
       toast({ title: "Nome necessário", description: "Por favor, digite seu nome.", variant: "destructive" });
       return;
     }
-    setDrawLoading(true);
     drawingStore.setUser(drawName);
-    await drawingStore.createRoom();
-    setDrawLoading(false);
-    navigate('/desenho-impostor');
+    onCreateRoom(async () => {
+      setDrawLoading(true);
+      await drawingStore.createRoom();
+      setDrawLoading(false);
+      navigate('/desenho-impostor');
+    });
   };
 
   const handleDrawJoin = async () => {
@@ -1070,7 +1073,7 @@ const DrawingGameCard = () => {
   );
 };
 
-const SincroniaGameCard = () => {
+const SincroniaGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void) => void }) => {
   const rcStore = useRCGameStore();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -1084,11 +1087,13 @@ const SincroniaGameCard = () => {
       toast({ title: "Nome necessário", description: "Por favor, digite seu nome.", variant: "destructive" });
       return;
     }
-    setRcLoading(true);
     rcStore.setUser(rcName);
-    await rcStore.createRoom();
-    setRcLoading(false);
-    navigate('/respostas-em-comum');
+    onCreateRoom(async () => {
+      setRcLoading(true);
+      await rcStore.createRoom();
+      setRcLoading(false);
+      navigate('/respostas-em-comum');
+    });
   };
 
   const handleRcJoin = async () => {
@@ -1235,6 +1240,7 @@ const HomeScreen = () => {
   const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia'>('impostor');
   const { toast } = useToast();
   const { t, langPath, lang } = useLanguage();
+  const { show: showInterstitial, InterstitialAd } = useInterstitialAd();
 
   // Set page title and meta description per language
   useEffect(() => {
@@ -1340,7 +1346,7 @@ const HomeScreen = () => {
       saveNickname(name);
     }
     setUser(name);
-    createRoom();
+    showInterstitial(() => createRoom());
   };
 
   const handleJoin = async () => {
@@ -1658,19 +1664,22 @@ const HomeScreen = () => {
           {/* Drawing game form */}
           {selectedGame === 'desenho' && (
             <div className="animate-fade-in">
-              <DrawingGameCard />
+              <DrawingGameCard onCreateRoom={showInterstitial} />
             </div>
           )}
 
           {/* Sincronia game form */}
           {selectedGame === 'sincronia' && (
             <div className="animate-fade-in">
-              <SincroniaGameCard />
+              <SincroniaGameCard onCreateRoom={showInterstitial} />
             </div>
           )}
         </div>
 
       </div>
+
+      {/* Square ad — mobile only, between form and footer */}
+      <AdBlockSquareMobile />
 
       {/* Footer */}
       <footer className="w-full bg-[#0f172a] border-t-8 border-[#242642] pt-16 pb-8 z-20 relative">
@@ -1750,6 +1759,9 @@ const HomeScreen = () => {
       <TopRightButtons onDonateClick={() => setIsDonationOpen(true)} />
       <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />
       <ThemeWorkshopModal isOpen={isThemeWorkshopOpen} onClose={() => setIsThemeWorkshopOpen(false)} />
+
+      {/* Interstitial ad overlay — shown on Criar Sala */}
+      {InterstitialAd}
     </div>
   );
 };
