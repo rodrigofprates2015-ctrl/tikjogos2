@@ -19,17 +19,34 @@ export function AdBlock({ slot, format = "auto", responsive = true, style }: AdB
 
   useEffect(() => {
     const el = insRef.current;
-    if (!el) return;
-    // AdSense marks initialized elements with data-adsbygoogle-status
-    if (el.dataset.adsbygoogleStatus) return;
-    const timer = setTimeout(() => {
+    if (!el || el.dataset.adsbygoogleStatus) return;
+
+    const tryPush = () => {
+      if (el.dataset.adsbygoogleStatus) return;
+      if (el.offsetWidth === 0) return; // not ready yet
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch (error) {
         console.error('AdSense error:', error);
       }
-    }, 150);
-    return () => clearTimeout(timer);
+    };
+
+    // Use ResizeObserver to push only once the element has a real width
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          ro.disconnect();
+          tryPush();
+          break;
+        }
+      }
+    });
+    ro.observe(el);
+
+    // Fallback: if already visible on mount
+    tryPush();
+
+    return () => ro.disconnect();
   }, []);
 
   return (
@@ -120,14 +137,30 @@ function InterstitialOverlay({
   useEffect(() => {
     const el = insRef.current;
     if (!el || el.dataset.adsbygoogleStatus) return;
-    const timer = setTimeout(() => {
+
+    const tryPush = () => {
+      if (el.dataset.adsbygoogleStatus) return;
+      if (el.offsetWidth === 0) return;
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch (e) {
         console.error('InterstitialAd error:', e);
       }
-    }, 150);
-    return () => clearTimeout(timer);
+    };
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          ro.disconnect();
+          tryPush();
+          break;
+        }
+      }
+    });
+    ro.observe(el);
+    tryPush();
+
+    return () => ro.disconnect();
   }, []);
 
   return (
