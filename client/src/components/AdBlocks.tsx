@@ -95,9 +95,10 @@ export function AdBlockSquareMobile() {
   return (
     <div className="block md:hidden w-full px-4 py-4">
       <AdBlock
-        slot="1234567896"
-        format="rectangle"
-        style={{ width: '100%', aspectRatio: '1 / 1', minHeight: '250px' }}
+        slot="9101189574"
+        format="auto"
+        responsive={true}
+        style={{ width: '100%', minHeight: '250px' }}
       />
     </div>
   );
@@ -192,8 +193,9 @@ export function useInterstitialAd() {
             className="adsbygoogle"
             style={{ display: 'block', width: '100%', minHeight: '250px' }}
             data-ad-client="ca-pub-9927561573478881"
-            data-ad-slot="1234567897"
-            data-ad-format="rectangle"
+            data-ad-slot="4766433750"
+            data-ad-format="fluid"
+            data-ad-layout-key="-fg+b+v-54+5s"
             data-full-width-responsive="true"
           />
         </div>
