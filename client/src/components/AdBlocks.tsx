@@ -117,15 +117,6 @@ export function AdBlockInContent() {
 // Bloco 1:1 visível apenas em mobile, entre o form e o footer
 
 
-// Calcula a largura do slot antes de montar o overlay.
-// iOS Safari não resolve minWidth/width:100% para offsetWidth até depois
-// de um reflow completo — passar a largura como valor fixo em px evita
-// que o AdSense leia offsetWidth=0 no momento do push.
-function resolveAdWidth(): number {
-  // innerWidth é sempre disponível, mesmo antes do primeiro paint
-  return Math.min(window.innerWidth - 32, 380);
-}
-
 // Componente interno do overlay intersticial — mantém ref estável no <ins>
 function InterstitialOverlay({
   countdown,
@@ -135,9 +126,12 @@ function InterstitialOverlay({
   onDismiss: () => void;
 }) {
   const insRef = useRef<HTMLModElement>(null);
-  // Largura calculada uma vez, antes do mount, para que o <ins> já
-  // tenha width explícito em px desde o primeiro render.
-  const adWidth = useRef(resolveAdWidth());
+
+  // Largura calculada sincronamente antes do primeiro render.
+  // window.innerWidth está sempre disponível; não depende de layout pós-mount.
+  // O <ins> recebe esse valor como width fixo em px, igual ao padrão do
+  // AdSense em outros sites (ex: ssstik.io usa 377px fixo no style inline).
+  const slotWidth = useRef(Math.min(window.innerWidth, 380));
 
   useEffect(() => {
     const el = insRef.current;
@@ -148,11 +142,8 @@ function InterstitialOverlay({
 
     const doPush = () => {
       if (pushed || el.dataset.adsbygoogleStatus) return;
-      // offsetWidth deve ser não-zero porque o style inline já tem width em px.
-      // Se por algum motivo ainda for 0 (ex: display:none herdado), aborta.
-      if (el.offsetWidth <= 0) return;
+      if (el.offsetWidth <= 0) return; // segurança: nunca push com width=0
       pushed = true;
-      if (timer) clearTimeout(timer);
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch (e) {
@@ -160,26 +151,33 @@ function InterstitialOverlay({
       }
     };
 
-    // Dois rAFs: o primeiro garante que o React commitou o DOM,
-    // o segundo garante que o browser calculou o layout.
-    // O setTimeout de 150 ms é um buffer extra para o iOS Safari,
-    // que pode atrasar o reflow em overlays com backdrop-filter.
-    const raf1 = requestAnimationFrame(() => {
+    // Dois rAFs garantem que React commitou o DOM e o browser calculou layout.
+    // setTimeout 100ms é buffer extra para iOS Safari em overlays fixed.
+    const raf = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        timer = setTimeout(doPush, 150);
+        timer = setTimeout(doPush, 100);
       });
     });
 
     return () => {
-      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf);
       if (timer) clearTimeout(timer);
     };
   }, []);
 
+  const w = slotWidth.current;
+
   return (
+    // Sem backdrop-filter: cria compositing layer separado no iOS que
+    // atrasa o reflow e faz offsetWidth=0 no momento do push.
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85">
-      <div className="relative bg-[#1a1b2e] rounded-3xl shadow-2xl border border-white/10"
-           style={{ width: adWidth.current, maxWidth: 'calc(100vw - 32px)' }}>
+
+      {/* Container com largura fixa em px — sem padding lateral para que
+          o <ins> ocupe exatamente a largura que o AdSense vai medir */}
+      <div
+        className="relative bg-[#1a1b2e] rounded-3xl shadow-2xl border border-white/10 overflow-hidden"
+        style={{ width: w }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Anúncio</span>
@@ -200,23 +198,18 @@ function InterstitialOverlay({
           </button>
         </div>
 
-        {/* Ad slot — largura fixa em px para que offsetWidth seja não-zero
-            no iOS Safari antes do primeiro reflow do overlay */}
-        <div className="p-2" style={{ minHeight: '260px' }}>
-          <ins
-            ref={insRef}
-            className="adsbygoogle"
-            style={{
-              display: 'block',
-              width: adWidth.current,
-              minHeight: '250px',
-            }}
-            data-ad-client="ca-pub-9927561573478881"
-            data-ad-slot="9101189574"
-            data-ad-format="rectangle"
-            data-full-width-responsive="false"
-          />
-        </div>
+        {/* Slot sem padding — width fixo em px igual ao container,
+            data-ad-format="auto" + data-full-width-responsive="true"
+            igual ao padrão que o AdSense usa em intersticial nativo */}
+        <ins
+          ref={insRef}
+          className="adsbygoogle"
+          style={{ display: 'block', width: w, minHeight: 250 }}
+          data-ad-client="ca-pub-9927561573478881"
+          data-ad-slot="9101189574"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
       </div>
     </div>
   );
