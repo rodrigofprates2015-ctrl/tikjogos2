@@ -131,28 +131,29 @@ function InterstitialOverlay({
     const el = insRef.current;
     if (!el || el.dataset.adsbygoogleStatus) return;
 
-    let timer: ReturnType<typeof setTimeout>;
+    let ro: ResizeObserver | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let pushed = false;
 
-    const tryPush = () => {
-      if (el.dataset.adsbygoogleStatus) return;
+    const doPush = () => {
+      if (pushed || el.dataset.adsbygoogleStatus) return;
 
-      // Walk up the DOM to find the first ancestor with a real width.
-      // The <ins> itself has no intrinsic width; its parent div uses padding
-      // which can still report 0 before the first paint on some browsers.
-      let resolvedWidth = 0;
-      let node: HTMLElement | null = el;
-      while (node) {
-        const w = node.getBoundingClientRect().width;
-        if (w > 0) { resolvedWidth = w; break; }
-        node = node.parentElement;
-      }
+      // AdSense reads offsetWidth at push-time. Set an explicit pixel width
+      // on the <ins> so offsetWidth is non-zero even before CSS resolves.
+      const w = el.offsetWidth > 0
+        ? el.offsetWidth
+        : (el.parentElement?.offsetWidth ?? 0) > 0
+          ? el.parentElement!.offsetWidth
+          : Math.min(window.innerWidth - 32, 380);
 
-      // Last resort: use the viewport minus some margin
-      if (resolvedWidth <= 0) {
-        resolvedWidth = Math.min(window.innerWidth - 32, 380);
-      }
+      el.style.width = `${w}px`;
 
-      el.style.width = `${resolvedWidth}px`;
+      // Guard: only push when offsetWidth is confirmed non-zero
+      if (el.offsetWidth <= 0) return;
+
+      pushed = true;
+      ro?.disconnect();
+      if (timer) clearTimeout(timer);
 
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -161,15 +162,37 @@ function InterstitialOverlay({
       }
     };
 
-    // rAF ensures the overlay has been painted before we measure;
-    // the extra 300 ms gives AdSense time to initialise its script.
-    const raf = requestAnimationFrame(() => {
-      timer = setTimeout(tryPush, 300);
+    // Primary path: wait for two animation frames (layout + paint) then push.
+    // Two rAFs are needed because the first rAF fires before layout is committed.
+    const raf1 = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!pushed) doPush();
+
+        // Fallback: if offsetWidth is still 0 after paint (e.g. slow CSS),
+        // watch the element with ResizeObserver and push on first non-zero size.
+        if (!pushed) {
+          ro = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+              if (entry.contentRect.width > 0) {
+                doPush();
+                break;
+              }
+            }
+          });
+          ro.observe(el);
+
+          // Hard timeout: give up after 3 s to avoid a zombie observer
+          timer = setTimeout(() => {
+            ro?.disconnect();
+          }, 3000);
+        }
+      });
     });
 
     return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(timer);
+      cancelAnimationFrame(raf1);
+      ro?.disconnect();
+      if (timer) clearTimeout(timer);
     };
   }, []);
 
