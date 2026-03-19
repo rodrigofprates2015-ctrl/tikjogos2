@@ -154,7 +154,7 @@ function InterstitialOverlay({
 
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm">
-      <div className="relative w-full max-w-sm mx-4 bg-[#1a1b2e] rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+      <div className="relative w-full max-w-sm mx-4 bg-[#1a1b2e] rounded-3xl shadow-2xl border border-white/10">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Anúncio</span>
@@ -176,11 +176,11 @@ function InterstitialOverlay({
         </div>
 
         {/* Ad slot */}
-        <div className="p-2">
+        <div className="p-2" style={{ minHeight: '260px' }}>
           <ins
             ref={insRef}
             className="adsbygoogle"
-            style={{ display: 'block', width: '100%', minHeight: '250px' }}
+            style={{ display: 'block', minHeight: '250px' }}
             data-ad-client="ca-pub-9927561573478881"
             data-ad-slot="4766433750"
             data-ad-format="fluid"
