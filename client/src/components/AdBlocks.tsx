@@ -136,12 +136,21 @@ function InterstitialOverlay({
     const tryPush = () => {
       if (el.dataset.adsbygoogleStatus) return;
 
-      const parent = el.parentElement;
-      const parentWidth = parent ? parent.getBoundingClientRect().width : 0;
-      const resolvedWidth = parentWidth > 0 ? parentWidth : window.innerWidth - 32;
+      // Walk up the DOM to find the first ancestor with a real width.
+      // The <ins> itself has no intrinsic width; its parent div uses padding
+      // which can still report 0 before the first paint on some browsers.
+      let resolvedWidth = 0;
+      let node: HTMLElement | null = el;
+      while (node) {
+        const w = node.getBoundingClientRect().width;
+        if (w > 0) { resolvedWidth = w; break; }
+        node = node.parentElement;
+      }
 
-      // Don't push if we still can't determine a valid width
-      if (resolvedWidth <= 0) return;
+      // Last resort: use the viewport minus some margin
+      if (resolvedWidth <= 0) {
+        resolvedWidth = Math.min(window.innerWidth - 32, 380);
+      }
 
       el.style.width = `${resolvedWidth}px`;
 
@@ -152,10 +161,16 @@ function InterstitialOverlay({
       }
     };
 
-    // Allow the overlay to paint and the browser to compute layout before pushing
-    timer = setTimeout(tryPush, 300);
+    // rAF ensures the overlay has been painted before we measure;
+    // the extra 300 ms gives AdSense time to initialise its script.
+    const raf = requestAnimationFrame(() => {
+      timer = setTimeout(tryPush, 300);
+    });
 
-    return () => clearTimeout(timer);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(timer);
+    };
   }, []);
 
   return (
@@ -186,11 +201,11 @@ function InterstitialOverlay({
           <ins
             ref={insRef}
             className="adsbygoogle"
-            style={{ display: 'block', width: '100%', minWidth: '280px', minHeight: '250px' }}
+            style={{ display: 'block', minWidth: '280px', minHeight: '250px' }}
             data-ad-client="ca-pub-9927561573478881"
             data-ad-slot="9101189574"
-            data-ad-format="auto"
-            data-full-width-responsive="true"
+            data-ad-format="rectangle"
+            data-full-width-responsive="false"
           />
         </div>
       </div>
