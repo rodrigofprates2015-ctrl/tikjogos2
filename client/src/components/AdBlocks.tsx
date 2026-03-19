@@ -117,6 +117,15 @@ export function AdBlockInContent() {
 // Bloco 1:1 visível apenas em mobile, entre o form e o footer
 
 
+// Calcula a largura do slot antes de montar o overlay.
+// iOS Safari não resolve minWidth/width:100% para offsetWidth até depois
+// de um reflow completo — passar a largura como valor fixo em px evita
+// que o AdSense leia offsetWidth=0 no momento do push.
+function resolveAdWidth(): number {
+  // innerWidth é sempre disponível, mesmo antes do primeiro paint
+  return Math.min(window.innerWidth - 32, 380);
+}
+
 // Componente interno do overlay intersticial — mantém ref estável no <ins>
 function InterstitialOverlay({
   countdown,
@@ -126,35 +135,24 @@ function InterstitialOverlay({
   onDismiss: () => void;
 }) {
   const insRef = useRef<HTMLModElement>(null);
+  // Largura calculada uma vez, antes do mount, para que o <ins> já
+  // tenha width explícito em px desde o primeiro render.
+  const adWidth = useRef(resolveAdWidth());
 
   useEffect(() => {
     const el = insRef.current;
     if (!el || el.dataset.adsbygoogleStatus) return;
 
-    let ro: ResizeObserver | null = null;
-    let timer: ReturnType<typeof setTimeout> | null = null;
     let pushed = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
     const doPush = () => {
       if (pushed || el.dataset.adsbygoogleStatus) return;
-
-      // AdSense reads offsetWidth at push-time. Set an explicit pixel width
-      // on the <ins> so offsetWidth is non-zero even before CSS resolves.
-      const w = el.offsetWidth > 0
-        ? el.offsetWidth
-        : (el.parentElement?.offsetWidth ?? 0) > 0
-          ? el.parentElement!.offsetWidth
-          : Math.min(window.innerWidth - 32, 380);
-
-      el.style.width = `${w}px`;
-
-      // Guard: only push when offsetWidth is confirmed non-zero
+      // offsetWidth deve ser não-zero porque o style inline já tem width em px.
+      // Se por algum motivo ainda for 0 (ex: display:none herdado), aborta.
       if (el.offsetWidth <= 0) return;
-
       pushed = true;
-      ro?.disconnect();
       if (timer) clearTimeout(timer);
-
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch (e) {
@@ -162,43 +160,26 @@ function InterstitialOverlay({
       }
     };
 
-    // Primary path: wait for two animation frames (layout + paint) then push.
-    // Two rAFs are needed because the first rAF fires before layout is committed.
+    // Dois rAFs: o primeiro garante que o React commitou o DOM,
+    // o segundo garante que o browser calculou o layout.
+    // O setTimeout de 150 ms é um buffer extra para o iOS Safari,
+    // que pode atrasar o reflow em overlays com backdrop-filter.
     const raf1 = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        if (!pushed) doPush();
-
-        // Fallback: if offsetWidth is still 0 after paint (e.g. slow CSS),
-        // watch the element with ResizeObserver and push on first non-zero size.
-        if (!pushed) {
-          ro = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-              if (entry.contentRect.width > 0) {
-                doPush();
-                break;
-              }
-            }
-          });
-          ro.observe(el);
-
-          // Hard timeout: give up after 3 s to avoid a zombie observer
-          timer = setTimeout(() => {
-            ro?.disconnect();
-          }, 3000);
-        }
+        timer = setTimeout(doPush, 150);
       });
     });
 
     return () => {
       cancelAnimationFrame(raf1);
-      ro?.disconnect();
       if (timer) clearTimeout(timer);
     };
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm">
-      <div className="relative w-full max-w-sm mx-4 bg-[#1a1b2e] rounded-3xl shadow-2xl border border-white/10">
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85">
+      <div className="relative bg-[#1a1b2e] rounded-3xl shadow-2xl border border-white/10"
+           style={{ width: adWidth.current, maxWidth: 'calc(100vw - 32px)' }}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Anúncio</span>
@@ -219,12 +200,17 @@ function InterstitialOverlay({
           </button>
         </div>
 
-        {/* Ad slot */}
-        <div className="p-2" style={{ width: '100%', minHeight: '260px' }}>
+        {/* Ad slot — largura fixa em px para que offsetWidth seja não-zero
+            no iOS Safari antes do primeiro reflow do overlay */}
+        <div className="p-2" style={{ minHeight: '260px' }}>
           <ins
             ref={insRef}
             className="adsbygoogle"
-            style={{ display: 'block', minWidth: '280px', minHeight: '250px' }}
+            style={{
+              display: 'block',
+              width: adWidth.current,
+              minHeight: '250px',
+            }}
             data-ad-client="ca-pub-9927561573478881"
             data-ad-slot="9101189574"
             data-ad-format="rectangle"
