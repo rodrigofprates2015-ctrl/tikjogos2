@@ -21,32 +21,29 @@ export function AdBlock({ slot, format = "auto", responsive = true, style }: AdB
     const el = insRef.current;
     if (!el || el.dataset.adsbygoogleStatus) return;
 
+    let rafId: number;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 60;
+
     const tryPush = () => {
       if (el.dataset.adsbygoogleStatus) return;
-      if (el.offsetWidth === 0) return; // not ready yet
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (error) {
-        console.error('AdSense error:', error);
+      attempts++;
+      const width = el.getBoundingClientRect().width;
+      if (width > 0) {
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+        } catch (error) {
+          console.error('AdSense error:', error);
+        }
+        return;
+      }
+      if (attempts < MAX_ATTEMPTS) {
+        rafId = requestAnimationFrame(tryPush);
       }
     };
 
-    // Use ResizeObserver to push only once the element has a real width
-    const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.contentRect.width > 0) {
-          ro.disconnect();
-          tryPush();
-          break;
-        }
-      }
-    });
-    ro.observe(el);
-
-    // Fallback: if already visible on mount
-    tryPush();
-
-    return () => ro.disconnect();
+    rafId = requestAnimationFrame(tryPush);
+    return () => cancelAnimationFrame(rafId);
   }, []);
 
   return (
@@ -127,29 +124,29 @@ function InterstitialOverlay({
     const el = insRef.current;
     if (!el || el.dataset.adsbygoogleStatus) return;
 
+    let rafId: number;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 60; // ~1s at 60fps
+
     const tryPush = () => {
       if (el.dataset.adsbygoogleStatus) return;
-      if (el.offsetWidth === 0) return;
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (e) {
-        console.error('InterstitialAd error:', e);
+      attempts++;
+      const width = el.getBoundingClientRect().width;
+      if (width > 0) {
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+        } catch (e) {
+          console.error('InterstitialAd error:', e);
+        }
+        return;
+      }
+      if (attempts < MAX_ATTEMPTS) {
+        rafId = requestAnimationFrame(tryPush);
       }
     };
 
-    const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.contentRect.width > 0) {
-          ro.disconnect();
-          tryPush();
-          break;
-        }
-      }
-    });
-    ro.observe(el);
-    tryPush();
-
-    return () => ro.disconnect();
+    rafId = requestAnimationFrame(tryPush);
+    return () => cancelAnimationFrame(rafId);
   }, []);
 
   return (
