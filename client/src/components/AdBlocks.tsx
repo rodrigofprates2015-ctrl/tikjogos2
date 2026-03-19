@@ -124,29 +124,23 @@ function InterstitialOverlay({
     const el = insRef.current;
     if (!el || el.dataset.adsbygoogleStatus) return;
 
-    let rafId: number;
-    let attempts = 0;
-    const MAX_ATTEMPTS = 60; // ~1s at 60fps
+    // Force explicit width so AdSense can measure correctly on mobile
+    const parent = el.parentElement;
+    if (parent) {
+      const parentWidth = parent.getBoundingClientRect().width || window.innerWidth - 32;
+      el.style.width = `${parentWidth}px`;
+    }
 
-    const tryPush = () => {
+    const timer = setTimeout(() => {
       if (el.dataset.adsbygoogleStatus) return;
-      attempts++;
-      const width = el.getBoundingClientRect().width;
-      if (width > 0) {
-        try {
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-        } catch (e) {
-          console.error('InterstitialAd error:', e);
-        }
-        return;
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (e) {
+        console.error('InterstitialAd error:', e);
       }
-      if (attempts < MAX_ATTEMPTS) {
-        rafId = requestAnimationFrame(tryPush);
-      }
-    };
+    }, 300);
 
-    rafId = requestAnimationFrame(tryPush);
-    return () => cancelAnimationFrame(rafId);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -173,15 +167,14 @@ function InterstitialOverlay({
         </div>
 
         {/* Ad slot */}
-        <div className="p-2" style={{ minHeight: '260px' }}>
+        <div className="p-2" style={{ width: '100%', minHeight: '260px' }}>
           <ins
             ref={insRef}
             className="adsbygoogle"
-            style={{ display: 'block', minHeight: '250px' }}
+            style={{ display: 'block', width: '100%', minWidth: '280px', minHeight: '250px' }}
             data-ad-client="ca-pub-9927561573478881"
-            data-ad-slot="4766433750"
-            data-ad-format="fluid"
-            data-ad-layout-key="-fg+b+v-54+5s"
+            data-ad-slot="9101189574"
+            data-ad-format="auto"
             data-full-width-responsive="true"
           />
         </div>
