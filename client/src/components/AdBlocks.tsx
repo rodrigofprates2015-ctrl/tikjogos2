@@ -28,7 +28,13 @@ export function AdBlock({ slot, format = "auto", responsive = true, style }: AdB
     const tryPush = () => {
       if (el.dataset.adsbygoogleStatus) return;
       attempts++;
-      const width = el.getBoundingClientRect().width;
+
+      // Prefer the element's own width; fall back to its parent's width
+      let width = el.getBoundingClientRect().width;
+      if (width <= 0 && el.parentElement) {
+        width = el.parentElement.getBoundingClientRect().width;
+      }
+
       if (width > 0) {
         try {
           (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -37,6 +43,7 @@ export function AdBlock({ slot, format = "auto", responsive = true, style }: AdB
         }
         return;
       }
+
       if (attempts < MAX_ATTEMPTS) {
         rafId = requestAnimationFrame(tryPush);
       }
@@ -124,21 +131,29 @@ function InterstitialOverlay({
     const el = insRef.current;
     if (!el || el.dataset.adsbygoogleStatus) return;
 
-    // Force explicit width so AdSense can measure correctly on mobile
-    const parent = el.parentElement;
-    if (parent) {
-      const parentWidth = parent.getBoundingClientRect().width || window.innerWidth - 32;
-      el.style.width = `${parentWidth}px`;
-    }
+    let timer: ReturnType<typeof setTimeout>;
 
-    const timer = setTimeout(() => {
+    const tryPush = () => {
       if (el.dataset.adsbygoogleStatus) return;
+
+      const parent = el.parentElement;
+      const parentWidth = parent ? parent.getBoundingClientRect().width : 0;
+      const resolvedWidth = parentWidth > 0 ? parentWidth : window.innerWidth - 32;
+
+      // Don't push if we still can't determine a valid width
+      if (resolvedWidth <= 0) return;
+
+      el.style.width = `${resolvedWidth}px`;
+
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch (e) {
         console.error('InterstitialAd error:', e);
       }
-    }, 300);
+    };
+
+    // Allow the overlay to paint and the browser to compute layout before pushing
+    timer = setTimeout(tryPush, 300);
 
     return () => clearTimeout(timer);
   }, []);
