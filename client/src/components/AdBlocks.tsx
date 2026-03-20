@@ -20,37 +20,11 @@ export function AdBlock({ slot, format = "auto", responsive = true, style }: AdB
   useEffect(() => {
     const el = insRef.current;
     if (!el || el.dataset.adsbygoogleStatus) return;
-
-    let rafId: number;
-    let attempts = 0;
-    const MAX_ATTEMPTS = 60;
-
-    const tryPush = () => {
-      if (el.dataset.adsbygoogleStatus) return;
-      attempts++;
-
-      // Prefer the element's own width; fall back to its parent's width
-      let width = el.getBoundingClientRect().width;
-      if (width <= 0 && el.parentElement) {
-        width = el.parentElement.getBoundingClientRect().width;
-      }
-
-      if (width > 0) {
-        try {
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-        } catch (error) {
-          console.error('AdSense error:', error);
-        }
-        return;
-      }
-
-      if (attempts < MAX_ATTEMPTS) {
-        rafId = requestAnimationFrame(tryPush);
-      }
-    };
-
-    rafId = requestAnimationFrame(tryPush);
-    return () => cancelAnimationFrame(rafId);
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (e) {
+      console.error('AdSense error:', e);
+    }
   }, []);
 
   return (
@@ -114,81 +88,50 @@ export function AdBlockInContent() {
   );
 }
 
-// Hook interno reutilizável: faz push assim que o <ins> tem offsetWidth > 0
-function usePushWhenVisible(ref: React.RefObject<HTMLModElement | null>) {
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || el.dataset.adsbygoogleStatus) return;
-
-    let rafId: number;
-    let attempts = 0;
-    const MAX = 60;
-
-    const tryPush = () => {
-      if (el.dataset.adsbygoogleStatus) return;
-      attempts++;
-      const w = el.offsetWidth > 0 ? el.offsetWidth
-              : (el.parentElement?.offsetWidth ?? 0);
-      if (w > 0) {
-        try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch {}
-        return;
-      }
-      if (attempts < MAX) rafId = requestAnimationFrame(tryPush);
-    };
-
-    rafId = requestAnimationFrame(tryPush);
-    return () => cancelAnimationFrame(rafId);
-  }, [ref]);
-}
-
-// Mobile: bloco quadrado 1:1, largura total, visível apenas em telas < md
-function AdBlockSquareMobile() {
-  const insRef = useRef<HTMLModElement>(null);
-  usePushWhenVisible(insRef);
-  return (
-    <ins
-      ref={insRef}
-      className="adsbygoogle"
-      style={{ display: 'block' }}
-      data-ad-client="ca-pub-9927561573478881"
-      data-ad-slot="7536067322"
-      data-ad-format="auto"
-      data-full-width-responsive="true"
-    />
-  );
-}
-
-// Desktop: leaderboard 728×90, visível apenas em telas >= md
-function AdBlockLeaderboardDesktop() {
-  const insRef = useRef<HTMLModElement>(null);
-  usePushWhenVisible(insRef);
-  return (
-    <ins
-      ref={insRef}
-      className="adsbygoogle"
-      style={{ display: 'inline-block', width: '728px', height: '90px' }}
-      data-ad-client="ca-pub-9927561573478881"
-      data-ad-slot="7536067322"
-      data-ad-format="horizontal"
-      data-full-width-responsive="false"
-    />
-  );
-}
-
-// Bloco entre form e footer:
-// - Mobile (<md): quadrado 1:1, largura total
-// - Desktop (>=md): leaderboard 728×90 centralizado
-// Cada variante é um componente separado com ref próprio para evitar
-// que o AdSense tente fazer push no <ins> oculto pelo CSS.
+// Bloco entre form e footer.
+// Usa window.innerWidth para decidir qual variante montar — apenas um
+// <ins> existe no DOM por vez, evitando push em elemento com width=0.
+// Mobile (<768px): auto responsivo 1:1
+// Desktop (>=768px): leaderboard 728×90
 export function AdBlockBetweenFormAndFooter() {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const insRef = useRef<HTMLModElement>(null);
+
+  useEffect(() => {
+    const el = insRef.current;
+    if (!el) return;
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch {}
+  }, []);
+
+  if (isMobile) {
+    return (
+      <div className="w-full bg-[#13142a] py-4 px-4">
+        <ins
+          ref={insRef}
+          className="adsbygoogle"
+          style={{ display: 'block' }}
+          data-ad-client="ca-pub-9927561573478881"
+          data-ad-slot="7536067322"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full bg-[#13142a] py-4 px-4">
-      <div className="block md:hidden">
-        <AdBlockSquareMobile />
-      </div>
-      <div className="hidden md:flex justify-center">
-        <AdBlockLeaderboardDesktop />
-      </div>
+    <div className="w-full bg-[#13142a] py-4 flex justify-center">
+      <ins
+        ref={insRef}
+        className="adsbygoogle"
+        style={{ display: 'inline-block', width: '728px', height: '90px' }}
+        data-ad-client="ca-pub-9927561573478881"
+        data-ad-slot="7536067322"
+        data-ad-format="horizontal"
+        data-full-width-responsive="false"
+      />
     </div>
   );
 }
@@ -203,45 +146,24 @@ function InterstitialOverlay({
 }) {
   const insRef = useRef<HTMLModElement>(null);
 
-  // Largura calculada sincronamente antes do primeiro render.
-  // window.innerWidth está sempre disponível; não depende de layout pós-mount.
-  // O <ins> recebe esse valor como width fixo em px, igual ao padrão do
-  // AdSense em outros sites (ex: ssstik.io usa 377px fixo no style inline).
-  const slotWidth = useRef(Math.min(window.innerWidth, 380));
+  // Largura fixa em px calculada antes do mount — o AdSense lê offsetWidth
+  // no momento do push; com width explícito no style o valor nunca é 0.
+  const w = Math.min(window.innerWidth, 380);
 
   useEffect(() => {
     const el = insRef.current;
     if (!el || el.dataset.adsbygoogleStatus) return;
-
-    let pushed = false;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    const doPush = () => {
-      if (pushed || el.dataset.adsbygoogleStatus) return;
-      if (el.offsetWidth <= 0) return; // segurança: nunca push com width=0
-      pushed = true;
+    // Pequeno delay para o overlay terminar de pintar antes do push,
+    // especialmente necessário no iOS Safari com overlays fixed.
+    const t = setTimeout(() => {
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch (e) {
         console.error('InterstitialAd error:', e);
       }
-    };
-
-    // Dois rAFs garantem que React commitou o DOM e o browser calculou layout.
-    // setTimeout 100ms é buffer extra para iOS Safari em overlays fixed.
-    const raf = requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        timer = setTimeout(doPush, 100);
-      });
-    });
-
-    return () => {
-      cancelAnimationFrame(raf);
-      if (timer) clearTimeout(timer);
-    };
+    }, 200);
+    return () => clearTimeout(t);
   }, []);
-
-  const w = slotWidth.current;
 
   return (
     // Sem backdrop-filter: cria compositing layer separado no iOS que
