@@ -114,8 +114,84 @@ export function AdBlockInContent() {
   );
 }
 
-// Bloco 1:1 visível apenas em mobile, entre o form e o footer
+// Hook interno reutilizável: faz push assim que o <ins> tem offsetWidth > 0
+function usePushWhenVisible(ref: React.RefObject<HTMLModElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || el.dataset.adsbygoogleStatus) return;
 
+    let rafId: number;
+    let attempts = 0;
+    const MAX = 60;
+
+    const tryPush = () => {
+      if (el.dataset.adsbygoogleStatus) return;
+      attempts++;
+      const w = el.offsetWidth > 0 ? el.offsetWidth
+              : (el.parentElement?.offsetWidth ?? 0);
+      if (w > 0) {
+        try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch {}
+        return;
+      }
+      if (attempts < MAX) rafId = requestAnimationFrame(tryPush);
+    };
+
+    rafId = requestAnimationFrame(tryPush);
+    return () => cancelAnimationFrame(rafId);
+  }, [ref]);
+}
+
+// Mobile: bloco quadrado 1:1, largura total, visível apenas em telas < md
+function AdBlockSquareMobile() {
+  const insRef = useRef<HTMLModElement>(null);
+  usePushWhenVisible(insRef);
+  return (
+    <ins
+      ref={insRef}
+      className="adsbygoogle"
+      style={{ display: 'block' }}
+      data-ad-client="ca-pub-9927561573478881"
+      data-ad-slot="7536067322"
+      data-ad-format="auto"
+      data-full-width-responsive="true"
+    />
+  );
+}
+
+// Desktop: leaderboard 728×90, visível apenas em telas >= md
+function AdBlockLeaderboardDesktop() {
+  const insRef = useRef<HTMLModElement>(null);
+  usePushWhenVisible(insRef);
+  return (
+    <ins
+      ref={insRef}
+      className="adsbygoogle"
+      style={{ display: 'inline-block', width: '728px', height: '90px' }}
+      data-ad-client="ca-pub-9927561573478881"
+      data-ad-slot="7536067322"
+      data-ad-format="horizontal"
+      data-full-width-responsive="false"
+    />
+  );
+}
+
+// Bloco entre form e footer:
+// - Mobile (<md): quadrado 1:1, largura total
+// - Desktop (>=md): leaderboard 728×90 centralizado
+// Cada variante é um componente separado com ref próprio para evitar
+// que o AdSense tente fazer push no <ins> oculto pelo CSS.
+export function AdBlockBetweenFormAndFooter() {
+  return (
+    <div className="w-full bg-[#13142a] py-4 px-4">
+      <div className="block md:hidden">
+        <AdBlockSquareMobile />
+      </div>
+      <div className="hidden md:flex justify-center">
+        <AdBlockLeaderboardDesktop />
+      </div>
+    </div>
+  );
+}
 
 // Componente interno do overlay intersticial — mantém ref estável no <ins>
 function InterstitialOverlay({

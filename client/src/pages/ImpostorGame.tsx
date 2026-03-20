@@ -94,7 +94,7 @@ import personagemEsquerdo from "@assets/personagem esquerdo.png";
 import personagemDireito from "@assets/personagem direito.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
 import { SideAds } from "@/components/AdSense";
-import { useInterstitialAd } from "@/components/AdBlocks";
+import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
 
@@ -1677,6 +1677,9 @@ const HomeScreen = () => {
         </div>
 
       </div>
+
+      {/* Ad block between form and footer */}
+      <AdBlockBetweenFormAndFooter />
 
       {/* Footer */}
       <footer className="w-full bg-[#0f172a] border-t-8 border-[#242642] pt-16 pb-8 z-20 relative">
