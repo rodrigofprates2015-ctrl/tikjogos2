@@ -4070,13 +4070,16 @@ const GameScreen = () => {
   const { user, room, returnToLobby, speakingOrder, speakingOrderPlayerMap, setSpeakingOrder, showSpeakingOrderWheel, setShowSpeakingOrderWheel, triggerSpeakingOrderWheel } = useGameStore();
   const [isRevealed, setIsRevealed] = useState(true);
   const [isSubmittingVote, setIsSubmittingVote] = useState(false);
+  const { show: showInterstitial, InterstitialAd } = useInterstitialAd();
 
-  const handleNewRound = async () => {
-    try {
-      await returnToLobby();
-    } catch (error) {
-      console.error('Error in returnToLobby:', error);
-    }
+  const handleNewRound = () => {
+    showInterstitial(async () => {
+      try {
+        await returnToLobby();
+      } catch (error) {
+        console.error('Error in returnToLobby:', error);
+      }
+    });
   };
 
   const handleStartSorteio = () => {
@@ -4714,6 +4717,8 @@ const GameScreen = () => {
 
         {renderStageContent()}
       </div>
+
+      {InterstitialAd}
     </div>
   );
 };
