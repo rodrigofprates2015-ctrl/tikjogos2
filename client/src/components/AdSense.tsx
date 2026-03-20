@@ -86,37 +86,39 @@ export const DisplayAd = ({ className, format = "auto" }: { className?: string; 
   />
 );
 
-// Anúncios laterais verticais fixos (300x600 - Half Page)
+// Anúncios laterais verticais fixos (300x600).
+// Só monta no DOM em telas >= 1536px (2xl). Em mobile/tablet não renderiza
+// nada — evita que push() seja chamado em <ins> ocultos por CSS, o que
+// consumiria slots da fila e impediria outros anúncios de carregar.
 export const SideAds = () => {
-  const leftRef = useRef<HTMLDivElement>(null);
-  const rightRef = useRef<HTMLDivElement>(null);
-  const leftPushed = useRef(false);
-  const rightPushed = useRef(false);
+  const is2xl = typeof window !== 'undefined' && window.innerWidth >= 1536;
+  if (!is2xl) return null;
+
+  return <SideAdsInner />;
+};
+
+function SideAdsInner() {
+  const leftInsRef = useRef<HTMLModElement>(null);
+  const rightInsRef = useRef<HTMLModElement>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        window.adsbygoogle = window.adsbygoogle || [];
-        if (!leftPushed.current && leftRef.current && leftRef.current.offsetWidth > 0) {
-          window.adsbygoogle.push({});
-          leftPushed.current = true;
-        }
-        if (!rightPushed.current && rightRef.current && rightRef.current.offsetWidth > 0) {
-          window.adsbygoogle.push({});
-          rightPushed.current = true;
-        }
-      } catch (e) {
-        console.error("SideAds push error:", e);
+    try {
+      if (leftInsRef.current && !leftInsRef.current.dataset.adsbygoogleStatus) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
       }
-    }, 100);
-    return () => clearTimeout(timer);
+      if (rightInsRef.current && !rightInsRef.current.dataset.adsbygoogleStatus) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      }
+    } catch (e) {
+      console.error("SideAds push error:", e);
+    }
   }, []);
 
   return (
     <>
-      {/* Left Side Ad */}
-      <div ref={leftRef} className="fixed left-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block">
+      <div className="fixed left-0 top-1/2 -translate-y-1/2 z-40">
         <ins
+          ref={leftInsRef}
           className="adsbygoogle"
           style={{ display: "block", width: "300px", height: "600px" }}
           data-ad-client="ca-pub-9927561573478881"
@@ -124,9 +126,9 @@ export const SideAds = () => {
           data-ad-format="vertical"
         />
       </div>
-      {/* Right Side Ad */}
-      <div ref={rightRef} className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden 2xl:block">
+      <div className="fixed right-0 top-1/2 -translate-y-1/2 z-40">
         <ins
+          ref={rightInsRef}
           className="adsbygoogle"
           style={{ display: "block", width: "300px", height: "600px" }}
           data-ad-client="ca-pub-9927561573478881"
