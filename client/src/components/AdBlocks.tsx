@@ -196,15 +196,12 @@ function InterstitialOverlay({
           </button>
         </div>
 
-        {/* Slot sem padding — width fixo em px igual ao container,
-            data-ad-format="auto" + data-full-width-responsive="true"
-            igual ao padrão que o AdSense usa em intersticial nativo */}
         <ins
           ref={insRef}
           className="adsbygoogle"
           style={{ display: 'block', width: w, minHeight: 250 }}
           data-ad-client="ca-pub-9927561573478881"
-          data-ad-slot="9101189574"
+          data-ad-slot="7536067322"
           data-ad-format="auto"
           data-full-width-responsive="true"
         />
