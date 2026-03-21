@@ -505,10 +505,10 @@ function GameScreen() {
 
         {/* Keyboard — sticky at bottom, compact for mobile */}
         {!isDefending && !isGameOver && (
-          <div className="sticky bottom-0 w-full bg-[#1a1b2e] pt-1 pb-2 px-1">
+          <div className="sticky bottom-0 w-full bg-[#1a1b2e] pt-1 pb-[env(safe-area-inset-bottom,8px)] px-[max(8px,env(safe-area-inset-left,8px))]" style={{ paddingRight: 'max(8px, env(safe-area-inset-right, 8px))' }}>
             <div className="flex flex-col gap-1">
               {KEYBOARD_ROWS.map((row, i) => (
-                <div key={i} className="flex justify-center gap-1">
+                <div key={i} className="flex justify-center gap-[3px]">
                   {row.map(key => {
                     const isBackspace = key === '⌫';
                     const disabled = !isMyTurn || !iAmAlive;
@@ -518,14 +518,14 @@ function GameScreen() {
                         onClick={() => handleKey(key)}
                         disabled={disabled}
                         className={cn(
-                          'flex items-center justify-center rounded font-bold select-none transition-all active:scale-95 text-xs',
-                          isBackspace ? 'px-2 h-10 min-w-[36px] flex-none' : 'h-10 flex-1',
+                          'flex items-center justify-center rounded font-bold select-none transition-all active:scale-95 text-[11px] h-10',
+                          isBackspace ? 'px-2 min-w-[34px] flex-none' : 'flex-1 min-w-0',
                           disabled
                             ? 'bg-[#2a2a2c] text-slate-600 cursor-not-allowed'
                             : 'bg-[#818384] text-white active:bg-[#a0a0a2]'
                         )}
                       >
-                        {isBackspace ? <Delete size={15} /> : key}
+                        {isBackspace ? <Delete size={14} /> : key}
                       </button>
                     );
                   })}

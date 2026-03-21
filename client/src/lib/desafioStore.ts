@@ -194,9 +194,15 @@ export const useDesafioStore = create<DesafioState>((set, get) => ({
   },
 
   leaveGame: () => {
-    const { ws } = get();
+    const { ws, room, user } = get();
     if (ws && ws.readyState === WebSocket.OPEN) {
-      try { ws.send(JSON.stringify({ type: 'leave' })); } catch {}
+      try {
+        ws.send(JSON.stringify({
+          type: 'desafio-leave',
+          roomCode: room?.code,
+          playerId: user?.uid,
+        }));
+      } catch {}
       ws.close();
     }
     set({ status: 'home', room: null, ws: null });

@@ -3992,14 +3992,41 @@ export async function registerRoutes(
     try {
       const { playerId } = z.object({ playerId: z.string() }).parse(req.body);
       const roomCode = req.params.code.toUpperCase();
-      // Reuse the existing impostor disconnect logic via storage
       const room = await storage.getRoom(roomCode);
       if (room) {
+        const wasHost = room.hostId === playerId;
         const updatedPlayers = room.players.map(p =>
           p.uid === playerId ? { ...p, connected: false } : p
         );
-        const updated = await storage.updateRoom(roomCode, { players: updatedPlayers });
-        if (updated) broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+
+        // Transfer host if the leaving player was the host
+        let newHostId = room.hostId;
+        if (wasHost) {
+          const connectedPlayers = updatedPlayers.filter(p => p.connected !== false && p.uid !== playerId);
+          if (connectedPlayers.length > 0) {
+            newHostId = connectedPlayers[0].uid;
+          } else {
+            // No one connected — pick any remaining player
+            const others = updatedPlayers.filter(p => p.uid !== playerId);
+            if (others.length > 0) newHostId = others[0].uid;
+          }
+        }
+
+        const updated = await storage.updateRoom(roomCode, {
+          players: updatedPlayers,
+          hostId: newHostId,
+        });
+        if (updated) {
+          broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+          if (wasHost && newHostId !== playerId) {
+            const newHostPlayer = updatedPlayers.find(p => p.uid === newHostId);
+            broadcastToRoom(roomCode, {
+              type: 'host-changed',
+              newHostId,
+              newHostName: newHostPlayer?.name,
+            });
+          }
+        }
       }
       res.status(204).send();
     } catch {
@@ -4104,11 +4131,15 @@ export async function registerRoutes(
           const prefixo = gd.currentWord || '';
           const desafianteId = gd.lastAction?.desafianteId;
 
-          // Validate: palavra must start with prefixo (normalized) and exist in dictionary
+          // Validate: palavra must start with prefixo, be strictly longer than prefixo,
+          // and exist in the dictionary.
+          // If the fragment is already a complete word (e.g. "RATO"), the defender must
+          // reveal a longer word (e.g. "RATOEIRA") — revealing the same word loses.
           const normPalavra = normalizeWord(palavra);
           const normPrefixo = normalizeWord(prefixo);
           const startsWithPrefix = normPalavra.startsWith(normPrefixo);
-          const wordExists = startsWithPrefix ? await verificarPalavra(palavra) : false;
+          const isLongerThanPrefix = normPalavra.length > normPrefixo.length;
+          const wordExists = startsWithPrefix && isLongerThanPrefix ? await verificarPalavra(palavra) : false;
 
           // If valid defense: desafiante loses a life; else desafiado loses a life
           const loserUid = wordExists ? desafianteId : playerId;
@@ -4152,6 +4183,41 @@ export async function registerRoutes(
           });
 
           if (updated) broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+        }
+
+        // ── desafio-leave ──────────────────────────────────────────
+        if (data.type === 'desafio-leave' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const playerId = data.playerId as string;
+
+          const room = await storage.getRoom(roomCode);
+          if (!room || room.gameMode !== 'desafioPalavra') return;
+
+          const playerToRemove = room.players.find(p => p.uid === playerId);
+          if (!playerToRemove) return;
+
+          const wasHost = room.hostId === playerId;
+          const updatedPlayers = room.players.filter(p => p.uid !== playerId);
+
+          let newHostId = room.hostId;
+          if (wasHost && updatedPlayers.length > 0) {
+            const connected = updatedPlayers.filter(p => p.connected !== false);
+            newHostId = (connected.length > 0 ? connected[0] : updatedPlayers[0]).uid;
+          }
+
+          const updated = await storage.updateRoom(roomCode, {
+            players: updatedPlayers,
+            hostId: newHostId,
+          });
+
+          if (updated) {
+            broadcastToRoom(roomCode, { type: 'player-removed', playerId, playerName: playerToRemove.name });
+            if (wasHost && newHostId !== playerId) {
+              const newHostPlayer = updatedPlayers.find(p => p.uid === newHostId);
+              broadcastToRoom(roomCode, { type: 'host-changed', newHostId, newHostName: newHostPlayer?.name });
+            }
+            broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+          }
         }
 
       } catch (error) {
