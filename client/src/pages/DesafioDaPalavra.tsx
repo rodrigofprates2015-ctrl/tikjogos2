@@ -503,53 +503,32 @@ function GameScreen() {
           </div>
         )}
 
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Keyboard — Termo style */}
-        {!isDefending && isMyTurn && iAmAlive && !isGameOver && (
-          <div className="w-full px-2 pb-4 pt-2">
-            <div className="flex flex-col gap-1.5">
+        {/* Keyboard — sticky at bottom, compact for mobile */}
+        {!isDefending && !isGameOver && (
+          <div className="sticky bottom-0 w-full bg-[#1a1b2e] pt-1 pb-2 px-1">
+            <div className="flex flex-col gap-1">
               {KEYBOARD_ROWS.map((row, i) => (
-                <div key={i} className="flex justify-center gap-1.5">
+                <div key={i} className="flex justify-center gap-1">
                   {row.map(key => {
                     const isBackspace = key === '⌫';
+                    const disabled = !isMyTurn || !iAmAlive;
                     return (
                       <button
                         key={key}
                         onClick={() => handleKey(key)}
+                        disabled={disabled}
                         className={cn(
-                          'flex items-center justify-center rounded font-bold select-none transition-all active:scale-95 bg-[#818384] text-white',
-                          isBackspace
-                            ? 'px-3 py-3 min-w-[44px] text-sm'
-                            : 'w-9 h-14 flex-1 max-w-[44px] text-sm'
+                          'flex items-center justify-center rounded font-bold select-none transition-all active:scale-95 text-xs',
+                          isBackspace ? 'px-2 h-10 min-w-[36px] flex-none' : 'h-10 flex-1',
+                          disabled
+                            ? 'bg-[#2a2a2c] text-slate-600 cursor-not-allowed'
+                            : 'bg-[#818384] text-white active:bg-[#a0a0a2]'
                         )}
                       >
-                        {isBackspace ? <Delete size={18} /> : key}
+                        {isBackspace ? <Delete size={15} /> : key}
                       </button>
                     );
                   })}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Keyboard placeholder when not your turn */}
-        {!isDefending && (!isMyTurn || !iAmAlive) && !isGameOver && (
-          <div className="w-full px-2 pb-4 pt-2 opacity-20 pointer-events-none">
-            <div className="flex flex-col gap-1.5">
-              {KEYBOARD_ROWS.map((row, i) => (
-                <div key={i} className="flex justify-center gap-1.5">
-                  {row.map(key => (
-                    <div
-                      key={key}
-                      className={cn(
-                        'flex items-center justify-center rounded bg-[#3a3a3c]',
-                        key === '⌫' ? 'px-3 py-3 min-w-[44px]' : 'w-9 h-14 flex-1 max-w-[44px]'
-                      )}
-                    />
-                  ))}
                 </div>
               ))}
             </div>
