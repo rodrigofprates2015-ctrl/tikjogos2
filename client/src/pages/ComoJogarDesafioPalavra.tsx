@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "wouter";
-import { Gamepad2, Swords, CheckCircle2, HelpCircle, Lightbulb, Trophy, Users } from "lucide-react";
+import { Gamepad2, Rocket, Swords, CheckCircle2, HelpCircle, Lightbulb, Trophy, Users } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 import { SideAds, BottomAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
