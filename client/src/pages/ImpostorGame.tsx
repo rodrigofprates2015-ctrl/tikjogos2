@@ -90,6 +90,7 @@ import tripulantePincelImg from "@assets/TripulantePincel.webp";
 import impostorPincelImg from "@assets/Impostor_pincel.webp";
 
 import sincroniaLogo from "@assets/Sincronia.png";
+import logoDesafioPalavra from "@assets/logo_desafio_palavra.png";
 import personagemEsquerdo from "@assets/personagem esquerdo.png";
 import personagemDireito from "@assets/personagem direito.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
@@ -1237,7 +1238,7 @@ const HomeScreen = () => {
   const [saveNicknameChecked, setSaveNicknameChecked] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isThemeWorkshopOpen, setIsThemeWorkshopOpen] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia'>('impostor');
+  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia' | 'desafio'>('impostor');
   const { toast } = useToast();
   const { t, langPath, lang } = useLanguage();
   const { show: showInterstitial, InterstitialAd } = useInterstitialAd();
@@ -1539,16 +1540,39 @@ const HomeScreen = () => {
                 className="h-12 md:h-16 object-contain mx-auto"
               />
             </button>
+
+            {/* Desafio da Palavra logo tab */}
+            <button
+              onClick={() => setSelectedGame('desafio')}
+              className={cn(
+                "flex-1 rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer relative",
+                selectedGame === 'desafio'
+                  ? "border-violet-500 bg-[#2f3252] shadow-lg shadow-violet-500/20 scale-105"
+                  : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
+              )}
+              data-testid="tab-desafio"
+            >
+              <img
+                src={logoDesafioPalavra}
+                alt="Desafio da Palavra"
+                className="h-12 md:h-16 object-contain mx-auto"
+              />
+              {/* Badge NOVO */}
+              <span className="absolute -top-2 -right-1 bg-violet-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shadow-md shadow-violet-900/50 animate-pulse">
+                NOVO
+              </span>
+            </button>
           </div>
 
           {/* Animated indicator line */}
           <div className="relative h-1 bg-[#1a1c2e] rounded-full mb-5 mx-2">
             <div 
               className={cn(
-                "absolute top-0 h-full w-1/3 rounded-full transition-all duration-300",
+                "absolute top-0 h-full w-1/4 rounded-full transition-all duration-300",
                 selectedGame === 'impostor' && "left-0 bg-gradient-to-r from-orange-500 to-amber-500",
-                selectedGame === 'desenho' && "left-1/3 bg-gradient-to-r from-[#46cfa5] to-[#2ea87e]",
-                selectedGame === 'sincronia' && "left-2/3 bg-gradient-to-r from-[#43065c] to-[#6b21a8]"
+                selectedGame === 'desenho' && "left-1/4 bg-gradient-to-r from-[#46cfa5] to-[#2ea87e]",
+                selectedGame === 'sincronia' && "left-2/4 bg-gradient-to-r from-[#43065c] to-[#6b21a8]",
+                selectedGame === 'desafio' && "left-3/4 bg-gradient-to-r from-violet-500 to-purple-600"
               )}
             />
           </div>
@@ -1672,6 +1696,28 @@ const HomeScreen = () => {
           {selectedGame === 'sincronia' && (
             <div className="animate-fade-in">
               <SincroniaGameCard onCreateRoom={showInterstitial} />
+            </div>
+          )}
+
+          {/* Desafio da Palavra */}
+          {selectedGame === 'desafio' && (
+            <div className="animate-fade-in space-y-4">
+              <div className="flex justify-center mb-1">
+                <img
+                  src={logoDesafioPalavra}
+                  alt="Desafio da Palavra"
+                  className="h-24 md:h-32 object-contain"
+                />
+              </div>
+              <p className="text-center text-sm text-slate-400 leading-relaxed px-2">
+                Adicione letras para formar uma palavra. Desafie quem achar que está blefando. Último com vida vence!
+              </p>
+              <button
+                onClick={() => window.location.href = '/desafio-da-palavra'}
+                className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-violet-600 to-purple-600 border-violet-900 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
+              >
+                JOGAR AGORA
+              </button>
             </div>
           )}
         </div>
