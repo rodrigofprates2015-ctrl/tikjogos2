@@ -285,6 +285,48 @@ O jogo é uma maratona psicológica, não um sprint. Desenvolver uma visão peri
         date: '28 Jan 2026',
         category: 'Dicas',
       },
+      post11: {
+        title: 'Desafio da Palavra: o novo jogo de letras do TikJogos',
+        excerpt: 'Adicione letras, blefe e desafie seus amigos neste jogo de palavras multiplayer. Conheça as regras, estratégias e como jogar.',
+        content: `O **Desafio da Palavra** chegou ao TikJogos para transformar suas noites com amigos em duelos de vocabulário e blefe. A premissa é simples: cada jogador adiciona uma letra ao fragmento na mesa, mas sempre deve ter uma palavra real em mente. Quem blefar e for desafiado perde uma vida. Último com vida vence.
+
+### Como Funciona
+
+A mecânica é direta: na sua vez, você escolhe uma letra pelo teclado e ela é adicionada ao fragmento atual. Você precisa ter uma palavra válida em mente que comece com esse fragmento — mas não precisa revelá-la a menos que seja desafiado.
+
+O jogador seguinte pode, em vez de adicionar uma letra, **desafiar** você. Isso significa que ele acha que o fragmento atual não leva a nenhuma palavra real. Quando desafiado, você revela a palavra que tinha em mente:
+
+- **Palavra válida** → o desafiante perde uma ❤️
+- **Palavra inválida ou inexistente** → você perde uma ❤️
+
+### A Ordem dos Turnos
+
+A sequência é definida no início e nunca muda: 1→2→3→1→2→3. Mesmo que alguém seja eliminado, a ordem continua — o jogador eliminado é simplesmente pulado. Isso garante que ninguém leve vantagem por ter pontuado antes.
+
+### Estratégias para Vencer
+
+**Blefe calculado**: adicione letras incomuns (como "X", "W" ou "K") que parecem impossíveis mas você tem uma palavra em mente. Isso pressiona os adversários a desafiar — e perder.
+
+**Desafie com certeza**: só desafie quando tiver quase certeza de que o fragmento não leva a nada. Um desafio errado custa uma vida preciosa.
+
+**Palavras longas são escudos**: quanto mais longa a palavra que você tem em mente, mais letras pode adicionar com segurança antes de ser desafiado.
+
+**Leia os adversários**: jogadores que hesitam antes de adicionar uma letra ou escolhem letras muito incomuns provavelmente estão blefando.
+
+### Por que é Viciante?
+
+O **Desafio da Palavra** combina vocabulário, psicologia e blefe em tempo real. Diferente de jogos de palavras tradicionais, aqui você não precisa ser o mais culto — precisa ser o mais convincente. Um jogador com vocabulário mediano mas boa leitura dos adversários pode facilmente vencer alguém com muito mais palavras na cabeça.
+
+Além disso, a mecânica de vidas cria tensão crescente: conforme os jogadores vão sendo eliminados, cada duelo pesa mais. O último turno de uma partida acirrada é pura adrenalina.
+
+### Jogue Agora
+
+O **Desafio da Palavra** está disponível gratuitamente no TikJogos. Crie uma sala, compartilhe o código com seus amigos e veja quem tem o vocabulário — e os nervos — mais fortes.`,
+        author: 'Time TikJogos',
+        role: 'Novidades',
+        date: '21 Mar 2026',
+        category: 'Novidades',
+      },
       post9: {
         title: 'Jogo do Impostor: Guia de Estratégias e Análise do Metagame no TikJogos',
         excerpt: 'Domine o jogo do impostor com táticas de especialista, análise comportamental e lógica sistêmica. Guia técnico completo.',
@@ -788,6 +830,48 @@ The game is a psychological marathon, not a sprint. Developing peripheral vision
         date: 'Jan 28, 2026',
         category: 'Tips',
       },
+      post11: {
+        title: 'Word Challenge: the new letter game on TikJogos',
+        excerpt: 'Add letters, bluff and challenge your friends in this multiplayer word game. Learn the rules, strategies and how to play.',
+        content: `**Word Challenge** has arrived on TikJogos to turn your game nights into vocabulary and bluffing duels. The premise is simple: each player adds a letter to the fragment on the table, but must always have a real word in mind. Whoever bluffs and gets challenged loses a life. Last one standing wins.
+
+### How It Works
+
+The mechanic is straightforward: on your turn, you pick a letter from the keyboard and it gets added to the current fragment. You need to have a valid word in mind that starts with that fragment — but you don't have to reveal it unless challenged.
+
+The next player can, instead of adding a letter, **challenge** you. This means they think the current fragment doesn't lead to any real word. When challenged, you reveal the word you had in mind:
+
+- **Valid word** → the challenger loses a ❤️
+- **Invalid or nonexistent word** → you lose a ❤️
+
+### Turn Order
+
+The sequence is set at the start and never changes: 1→2→3→1→2→3. Even if someone is eliminated, the order continues — the eliminated player is simply skipped. This ensures no one gains an advantage from having scored earlier.
+
+### Strategies to Win
+
+**Calculated bluffing**: add uncommon letters (like "X", "W" or "K") that seem impossible but you have a word in mind. This pressures opponents to challenge — and lose.
+
+**Challenge with confidence**: only challenge when you're almost certain the fragment leads nowhere. A wrong challenge costs a precious life.
+
+**Long words are shields**: the longer the word you have in mind, the more letters you can safely add before being challenged.
+
+**Read your opponents**: players who hesitate before adding a letter or choose very unusual letters are probably bluffing.
+
+### Why It's Addictive
+
+**Word Challenge** combines vocabulary, psychology and real-time bluffing. Unlike traditional word games, you don't need to be the most knowledgeable — you need to be the most convincing. A player with average vocabulary but good opponent-reading can easily beat someone with far more words in their head.
+
+The lives mechanic also creates escalating tension: as players get eliminated, each duel carries more weight. The final turn of a close match is pure adrenaline.
+
+### Play Now
+
+**Word Challenge** is available for free on TikJogos. Create a room, share the code with your friends and see who has the stronger vocabulary — and nerves.`,
+        author: 'TikJogos Team',
+        role: 'News',
+        date: 'Mar 21, 2026',
+        category: 'News',
+      },
       post9: {
         title: 'Impostor Game: Strategy Guide and Metagame Analysis on TikJogos',
         excerpt: 'Master the impostor game with expert tactics, behavioral analysis, and systemic logic. Complete technical guide.',
@@ -1285,6 +1369,48 @@ El juego es una maratón psicológica, no un sprint. Desarrollar visión perifé
         role: 'Instructora de Vuelo',
         date: '28 Jan 2026',
         category: 'Consejos',
+      },
+      post11: {
+        title: 'Desafío de la Palabra: el nuevo juego de letras de TikJogos',
+        excerpt: 'Añade letras, farolea y desafía a tus amigos en este juego de palabras multijugador. Conoce las reglas, estrategias y cómo jugar.',
+        content: `El **Desafío de la Palabra** llegó a TikJogos para convertir tus noches de juego en duelos de vocabulario y faroleo. La premisa es simple: cada jugador añade una letra al fragmento en la mesa, pero siempre debe tener una palabra real en mente. Quien farolee y sea desafiado pierde una vida. El último en pie gana.
+
+### Cómo Funciona
+
+La mecánica es directa: en tu turno, eliges una letra del teclado y se añade al fragmento actual. Debes tener una palabra válida en mente que comience con ese fragmento — pero no necesitas revelarla a menos que seas desafiado.
+
+El siguiente jugador puede, en lugar de añadir una letra, **desafiarte**. Esto significa que cree que el fragmento actual no lleva a ninguna palabra real. Cuando te desafían, revelas la palabra que tenías en mente:
+
+- **Palabra válida** → el desafiante pierde una ❤️
+- **Palabra inválida o inexistente** → tú pierdes una ❤️
+
+### Orden de Turnos
+
+La secuencia se define al inicio y nunca cambia: 1→2→3→1→2→3. Aunque alguien sea eliminado, el orden continúa — el jugador eliminado simplemente se salta. Esto garantiza que nadie obtenga ventaja por haber puntuado antes.
+
+### Estrategias para Ganar
+
+**Faroleo calculado**: añade letras poco comunes (como "X", "W" o "K") que parezcan imposibles pero tengas una palabra en mente. Esto presiona a los rivales a desafiar — y perder.
+
+**Desafía con seguridad**: solo desafía cuando estés casi seguro de que el fragmento no lleva a ninguna palabra. Un desafío equivocado cuesta una vida valiosa.
+
+**Las palabras largas son escudos**: cuanto más larga sea la palabra que tienes en mente, más letras puedes añadir con seguridad antes de ser desafiado.
+
+**Lee a tus rivales**: los jugadores que dudan antes de añadir una letra o eligen letras muy inusuales probablemente están faroleando.
+
+### Por Qué Es Adictivo
+
+El **Desafío de la Palabra** combina vocabulario, psicología y faroleo en tiempo real. A diferencia de los juegos de palabras tradicionales, no necesitas ser el más culto — necesitas ser el más convincente. Un jugador con vocabulario moderado pero buena lectura de los rivales puede fácilmente vencer a alguien con mucho más vocabulario.
+
+La mecánica de vidas también crea tensión creciente: conforme los jugadores son eliminados, cada duelo pesa más. El último turno de una partida reñida es pura adrenalina.
+
+### Juega Ahora
+
+El **Desafío de la Palabra** está disponible gratis en TikJogos. Crea una sala, comparte el código con tus amigos y descubre quién tiene el vocabulario — y los nervios — más fuertes.`,
+        author: 'Equipo TikJogos',
+        role: 'Novedades',
+        date: '21 Mar 2026',
+        category: 'Novedades',
       },
       post9: {
         title: 'Juego del Impostor: Guía de Estrategias y Análisis del Metajuego en TikJogos',

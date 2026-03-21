@@ -19,6 +19,7 @@ const TermsOfUse = lazy(() => import("@/pages/TermsOfUse"));
 const ComoJogar = lazy(() => import("@/pages/ComoJogar"));
 const ComoJogarDesenho = lazy(() => import("@/pages/ComoJogarDesenho"));
 const ComoJogarSincronia = lazy(() => import("@/pages/ComoJogarSincronia"));
+const ComoJogarDesafioPalavra = lazy(() => import("@/pages/ComoJogarDesafioPalavra"));
 const CriarTema = lazy(() => import("@/pages/CriarTema"));
 const Doacoes = lazy(() => import("@/pages/Doacoes"));
 const OutrosJogos = lazy(() => import("@/pages/OutrosJogos"));
@@ -187,6 +188,10 @@ function AppRouter() {
       {i18nRoutes("/como-jogar/sincronia", ComoJogarSincronia)}
       {i18nRoutes("/how-to-play/sincronia", ComoJogarSincronia)}
       {i18nRoutes("/como-jugar/sincronia", ComoJogarSincronia)}
+
+      {i18nRoutes("/como-jogar/desafio-da-palavra", ComoJogarDesafioPalavra)}
+      {i18nRoutes("/how-to-play/word-challenge", ComoJogarDesafioPalavra)}
+      {i18nRoutes("/como-jugar/desafio-de-la-palabra", ComoJogarDesafioPalavra)}
 
       {/* Legacy redirects — keep old URLs working */}
       {i18nRoutes("/comojogar", ComoJogar)}

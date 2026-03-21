@@ -2,6 +2,23 @@ import { BlogPost } from '@/components/BlogCard';
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    id: '11',
+    slug: 'desafio-da-palavra-novo-jogo-tikjogos',
+    title: 'Desafio da Palavra: o novo jogo de letras do TikJogos',
+    excerpt: 'Adicione letras, blefe e desafie seus amigos neste jogo de palavras multiplayer. Conheça as regras, estratégias e como jogar.',
+    content: `O **Desafio da Palavra** chegou ao TikJogos para transformar suas noites com amigos em duelos de vocabulário e blefe.`,
+    author: {
+      name: 'Time TikJogos',
+      role: 'Novidades',
+      avatar: 'https://picsum.photos/seed/desafio/100/100',
+    },
+    date: '21 Mar 2026',
+    category: 'Novidades',
+    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=1200',
+    readTime: '4 min',
+    featured: false,
+  },
+  {
     id: '10',
     slug: 'jogo-do-impostor-desenho',
     title: 'Jogo do Impostor Desenho: A Nova Sensação que Combina Gartic e Impostor',
@@ -351,6 +368,10 @@ export function getBlogPostBySlug(slug: string): BlogPost | undefined {
  * PT slugs are the default (stored in the post object).
  */
 export const BLOG_SLUGS: Record<string, { en: string; es: string }> = {
+  '11': {
+    en: 'word-challenge-new-game-tikjogos',
+    es: 'desafio-de-la-palabra-nuevo-juego-tikjogos',
+  },
   '10': {
     en: 'impostor-drawing-game',
     es: 'juego-del-impostor-dibujo',

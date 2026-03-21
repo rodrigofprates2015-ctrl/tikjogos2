@@ -90,7 +90,8 @@ import tripulantePincelImg from "@assets/TripulantePincel.webp";
 import impostorPincelImg from "@assets/Impostor_pincel.webp";
 
 import sincroniaLogo from "@assets/Sincronia.png";
-import logoDesafioPalavra from "@assets/logo_desafio_palavra.png";
+import logoDesafioPalavraSmall from "@assets/logo_desafio_palavra_small.webp";
+import logoDesafioPalavraForms from "@assets/logo_desafio_palavra_forms.webp";
 import personagemEsquerdo from "@assets/personagem esquerdo.png";
 import personagemDireito from "@assets/personagem direito.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
@@ -1274,7 +1275,7 @@ const DesafioGameCard = () => {
     <div className="space-y-3">
       <div className="flex justify-center mb-1">
         <img
-          src={logoDesafioPalavra}
+          src={logoDesafioPalavraForms}
           alt="Desafio da Palavra"
           className="h-24 md:h-32 object-contain"
         />
@@ -1670,7 +1671,7 @@ const HomeScreen = () => {
               data-testid="tab-desafio"
             >
               <img
-                src={logoDesafioPalavra}
+                src={logoDesafioPalavraSmall}
                 alt="Desafio da Palavra"
                 className="h-12 md:h-16 object-contain mx-auto"
               />

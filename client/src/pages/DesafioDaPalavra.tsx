@@ -7,7 +7,7 @@ import {
   Users, Copy, Share2, Trophy, RotateCcw, Crown,
   LogOut, Home, AlertTriangle, Delete,
 } from 'lucide-react';
-import logoDesafio from '@assets/logo_desafio_palavra.png';
+import logoDesafio from '@assets/logo_desafio_palavra_small.webp';
 import logoTikjogos from '@assets/logo_nova_tikjogos (1).png';
 
 const KEYBOARD_ROWS = [
