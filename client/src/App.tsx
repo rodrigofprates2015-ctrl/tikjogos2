@@ -9,6 +9,7 @@ import NotFound from "@/pages/not-found";
 // ImpostorGame is the home page — keep it eager so there's no lazy waterfall on /
 import ImpostorGame from "@/pages/ImpostorGame";
 import RoomRedirect from "@/pages/RoomRedirect";
+import DesafioDaPalavra from "@/pages/DesafioDaPalavra";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 
@@ -134,6 +135,12 @@ function AppRouter() {
       <Route path="/es" component={ImpostorGame} />
 
       {i18nRoutes("/sala/:codigo", RoomRedirect)}
+
+      {/* Desafio da Palavra */}
+      <Route path="/desafio-da-palavra" component={DesafioDaPalavra} />
+      <Route path="/desafio/:codigo">
+        {(params) => <DesafioDaPalavra initialCode={params.codigo} />}
+      </Route>
 
       {/* Criar tema */}
       {i18nRoutes("/criar-tema", CriarTema)}

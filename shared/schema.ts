@@ -51,6 +51,9 @@ export type Player = {
   name: string;
   waitingForGame?: boolean;
   connected?: boolean;  // Track connection status - true = connected, false = temporarily disconnected
+  // Desafio da Palavra fields
+  vidas?: number;
+  ordem?: number;
 };
 
 export type RoomStatus = "waiting" | "playing";
@@ -102,6 +105,22 @@ export type GameData = {
   gameConfig?: GameConfig;
   impostorIds?: string[];
   hint?: string;
+  // Desafio da Palavra fields
+  currentWord?: string;
+  vidasMap?: Record<string, number>;
+  turnIndex?: number;
+  wordStatus?: 'aguardando' | 'jogando' | 'defendendo' | 'fim_de_jogo';
+  lastAction?: {
+    type: 'desafio' | 'finalizar' | 'inserir';
+    desafianteId?: string;
+    desafiadoId?: string;
+    resultado?: boolean;
+    acusadorId?: string;
+    letra?: string;
+    playerName?: string;
+  };
+  vencedorId?: string;
+  vencedorName?: string;
 };
 
 export const themes = pgTable("themes", {

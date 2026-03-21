@@ -3780,5 +3780,445 @@ export async function registerRoutes(
     });
   }, DRAW_HEARTBEAT_INTERVAL);
 
+  // ═══════════════════════════════════════════════════════════════
+  // DESAFIO DA PALAVRA — multiplayer word-building game
+  // ═══════════════════════════════════════════════════════════════
+
+  // Desafio da Palavra uses the existing impostor room storage (storage.*) with
+  // gameMode = 'desafioPalavra'. All lobby/connection logic is shared.
+  // New WebSocket message types are handled in the existing wss (game-ws).
+
+  // Normalize string: lowercase, remove accents, ç→c
+  function normalizeWord(str: string): string {
+    return str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ç/g, 'c');
+  }
+
+  // Verify if a word exists in Dicionário Aberto
+  async function verificarPalavra(palavra: string): Promise<boolean> {
+    try {
+      const norm = normalizeWord(palavra);
+      const url = `https://api.dicionario-aberto.net/word/${encodeURIComponent(norm)}`;
+      const res = await fetch(url);
+      if (!res.ok) return false;
+      const data = await res.json();
+      return Array.isArray(data) ? data.length > 0 : !!data;
+    } catch {
+      return false;
+    }
+  }
+
+  // Check if any word starts with the given prefix (i.e., prefix can still grow)
+  async function temExtensoes(prefixo: string): Promise<boolean> {
+    try {
+      const norm = normalizeWord(prefixo);
+      const url = `https://api.dicionario-aberto.net/search-prefix/${encodeURIComponent(norm)}`;
+      const res = await fetch(url);
+      if (!res.ok) return false;
+      const data: Array<{ word: string }> = await res.json();
+      // Look for words strictly longer than the prefix
+      return data.some(item => normalizeWord(item.word).length > norm.length);
+    } catch {
+      return false;
+    }
+  }
+
+  // POST /api/desafio/rooms/create
+  app.post('/api/desafio/rooms/create', async (req, res) => {
+    try {
+      const { hostId, hostName } = z.object({
+        hostId: z.string(),
+        hostName: z.string().min(1).max(30),
+      }).parse(req.body);
+
+      let code: string;
+      let attempts = 0;
+      do {
+        code = generateRoomCode();
+        attempts++;
+      } while ((await storage.getRoom(code)) && attempts < 10);
+
+      const host: Player = { uid: hostId, name: hostName, connected: true };
+      const room = await storage.createRoom({
+        code,
+        hostId,
+        status: 'waiting',
+        gameMode: 'desafioPalavra',
+        currentCategory: null,
+        currentWord: null,
+        impostorId: null,
+        gameData: null,
+        players: [host],
+      });
+
+      res.json(room);
+    } catch (error) {
+      console.error('[Desafio] Create room error:', error);
+      res.status(400).json({ error: 'Failed to create room' });
+    }
+  });
+
+  // POST /api/desafio/rooms/join
+  app.post('/api/desafio/rooms/join', async (req, res) => {
+    try {
+      const { code, playerId, playerName } = z.object({
+        code: z.string(),
+        playerId: z.string(),
+        playerName: z.string().min(1).max(30),
+      }).parse(req.body);
+
+      const roomCode = code.toUpperCase();
+      const room = await storage.getRoom(roomCode);
+      if (!room) return res.status(404).json({ error: 'Sala não encontrada' });
+      if (room.gameMode !== 'desafioPalavra') return res.status(400).json({ error: 'Sala não é do tipo Desafio da Palavra' });
+      if (room.status === 'playing') {
+        const existing = room.players.find(p => p.uid === playerId);
+        if (!existing) return res.status(400).json({ error: 'Jogo já em andamento' });
+      }
+      if (room.players.length >= 4 && !room.players.find(p => p.uid === playerId)) {
+        return res.status(400).json({ error: 'Sala cheia (máximo 4 jogadores)' });
+      }
+
+      const player: Player = { uid: playerId, name: playerName, connected: true };
+      const updated = await storage.addPlayerToRoom(roomCode, player);
+      if (!updated) return res.status(500).json({ error: 'Failed to join room' });
+
+      broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+      res.json(updated);
+    } catch (error) {
+      console.error('[Desafio] Join room error:', error);
+      res.status(400).json({ error: 'Failed to join room' });
+    }
+  });
+
+  // POST /api/desafio/rooms/:code/start
+  app.post('/api/desafio/rooms/:code/start', async (req, res) => {
+    try {
+      const roomCode = req.params.code.toUpperCase();
+      const room = await storage.getRoom(roomCode);
+      if (!room) return res.status(404).json({ error: 'Room not found' });
+      if (room.gameMode !== 'desafioPalavra') return res.status(400).json({ error: 'Wrong game mode' });
+
+      const activePlayers = room.players.filter(p => p.connected !== false);
+      if (activePlayers.length < 2) return res.status(400).json({ error: 'Mínimo 2 jogadores' });
+
+      // Shuffle turn order
+      const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
+      const vidasMap: Record<string, number> = {};
+      const updatedPlayers = room.players.map((p, _i) => {
+        const ordem = shuffled.findIndex(s => s.uid === p.uid);
+        vidasMap[p.uid] = 3;
+        return { ...p, vidas: 3, ordem: ordem >= 0 ? ordem : 99 };
+      });
+
+      const gameData = {
+        currentWord: '',
+        vidasMap,
+        turnIndex: 0,
+        wordStatus: 'jogando' as const,
+        lastAction: undefined,
+        vencedorId: undefined,
+        vencedorName: undefined,
+      };
+
+      const updated = await storage.updateRoom(roomCode, {
+        status: 'playing',
+        players: updatedPlayers,
+        gameData,
+      });
+
+      if (!updated) return res.status(500).json({ error: 'Failed to start game' });
+
+      broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+      res.json(updated);
+    } catch (error) {
+      console.error('[Desafio] Start error:', error);
+      res.status(400).json({ error: 'Failed to start game' });
+    }
+  });
+
+  // POST /api/desafio/rooms/:code/reset
+  app.post('/api/desafio/rooms/:code/reset', async (req, res) => {
+    try {
+      const roomCode = req.params.code.toUpperCase();
+      const room = await storage.getRoom(roomCode);
+      if (!room) return res.status(404).json({ error: 'Room not found' });
+
+      const resetPlayers = room.players.map(p => ({
+        uid: p.uid,
+        name: p.name,
+        connected: p.connected,
+        waitingForGame: false,
+      }));
+
+      const updated = await storage.updateRoom(roomCode, {
+        status: 'waiting',
+        gameData: null,
+        players: resetPlayers,
+      });
+
+      if (!updated) return res.status(500).json({ error: 'Failed to reset' });
+      broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+      res.json(updated);
+    } catch (error) {
+      res.status(400).json({ error: 'Failed to reset room' });
+    }
+  });
+
+  // POST /api/desafio/rooms/:code/disconnect-notice  (sendBeacon fallback)
+  app.post('/api/desafio/rooms/:code/disconnect-notice', async (req, res) => {
+    try {
+      const { playerId } = z.object({ playerId: z.string() }).parse(req.body);
+      const roomCode = req.params.code.toUpperCase();
+      // Reuse the existing impostor disconnect logic via storage
+      const room = await storage.getRoom(roomCode);
+      if (room) {
+        const updatedPlayers = room.players.map(p =>
+          p.uid === playerId ? { ...p, connected: false } : p
+        );
+        const updated = await storage.updateRoom(roomCode, { players: updatedPlayers });
+        if (updated) broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+      }
+      res.status(204).send();
+    } catch {
+      res.status(400).json({ error: 'Failed' });
+    }
+  });
+
+  // ── Desafio da Palavra: WebSocket handlers (added to existing wss) ──
+  // These are injected into the existing wss.on('connection') handler via a
+  // separate listener on the same wss instance.
+
+  wss.on('connection', (ws) => {
+    ws.on('message', async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+
+        // ── inserir-letra ──────────────────────────────────────────
+        if (data.type === 'desafio-inserir-letra' && data.roomCode && data.playerId && data.letra) {
+          const roomCode = data.roomCode as string;
+          const playerId = data.playerId as string;
+          const letra = (data.letra as string).toUpperCase().trim();
+
+          if (letra.length !== 1 || !/[A-ZÀ-Ú]/.test(letra)) return;
+
+          const room = await storage.getRoom(roomCode);
+          if (!room || room.status !== 'playing' || room.gameMode !== 'desafioPalavra') return;
+
+          const gd = room.gameData as any;
+          if (!gd || gd.wordStatus !== 'jogando') return;
+
+          // Verify it's this player's turn
+          const activePlayers = room.players
+            .filter(p => (gd.vidasMap?.[p.uid] ?? 0) > 0)
+            .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
+          const currentPlayer = activePlayers[gd.turnIndex % activePlayers.length];
+          if (!currentPlayer || currentPlayer.uid !== playerId) return;
+
+          const newWord = (gd.currentWord || '') + letra;
+          const nextTurnIndex = (gd.turnIndex + 1) % activePlayers.length;
+
+          const updated = await storage.updateRoom(roomCode, {
+            gameData: {
+              ...gd,
+              currentWord: newWord,
+              turnIndex: nextTurnIndex,
+              lastAction: {
+                type: 'inserir',
+                letra,
+                playerName: currentPlayer.name,
+              },
+            },
+          });
+
+          if (updated) broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+        }
+
+        // ── desafiar ───────────────────────────────────────────────
+        if (data.type === 'desafio-desafiar' && data.roomCode && data.desafianteId) {
+          const roomCode = data.roomCode as string;
+          const desafianteId = data.desafianteId as string;
+
+          const room = await storage.getRoom(roomCode);
+          if (!room || room.status !== 'playing' || room.gameMode !== 'desafioPalavra') return;
+
+          const gd = room.gameData as any;
+          if (!gd || gd.wordStatus !== 'jogando') return;
+          if (!gd.currentWord || gd.currentWord.length === 0) return;
+
+          // The challenged player is whoever inserted the last letter (previous turn)
+          const activePlayers = room.players
+            .filter(p => (gd.vidasMap?.[p.uid] ?? 0) > 0)
+            .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
+
+          const prevIndex = ((gd.turnIndex - 1) + activePlayers.length) % activePlayers.length;
+          const desafiado = activePlayers[prevIndex];
+          if (!desafiado || desafiado.uid === desafianteId) return;
+
+          const updated = await storage.updateRoom(roomCode, {
+            gameData: {
+              ...gd,
+              wordStatus: 'defendendo',
+              lastAction: {
+                type: 'desafio',
+                desafianteId,
+                desafiadoId: desafiado.uid,
+              },
+            },
+          });
+
+          if (updated) broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+        }
+
+        // ── defender-palavra ───────────────────────────────────────
+        if (data.type === 'desafio-defender' && data.roomCode && data.playerId && data.palavra) {
+          const roomCode = data.roomCode as string;
+          const playerId = data.playerId as string;
+          const palavra = (data.palavra as string).trim();
+
+          const room = await storage.getRoom(roomCode);
+          if (!room || room.status !== 'playing' || room.gameMode !== 'desafioPalavra') return;
+
+          const gd = room.gameData as any;
+          if (!gd || gd.wordStatus !== 'defendendo') return;
+          if (gd.lastAction?.desafiadoId !== playerId) return;
+
+          const prefixo = gd.currentWord || '';
+          const desafianteId = gd.lastAction?.desafianteId;
+
+          // Validate: palavra must start with prefixo (normalized) and exist in dictionary
+          const normPalavra = normalizeWord(palavra);
+          const normPrefixo = normalizeWord(prefixo);
+          const startsWithPrefix = normPalavra.startsWith(normPrefixo);
+          const wordExists = startsWithPrefix ? await verificarPalavra(palavra) : false;
+
+          // If valid defense: desafiante loses a life; else desafiado loses a life
+          const loserUid = wordExists ? desafianteId : playerId;
+          const newVidasMap = { ...gd.vidasMap };
+          if (loserUid && newVidasMap[loserUid] !== undefined) {
+            newVidasMap[loserUid] = Math.max(0, newVidasMap[loserUid] - 1);
+          }
+
+          // Update player vidas on player objects too
+          const updatedPlayers = room.players.map(p => ({
+            ...p,
+            vidas: newVidasMap[p.uid] ?? p.vidas,
+          }));
+
+          // Check for winner (only one player with lives left)
+          const alive = updatedPlayers.filter(p => (newVidasMap[p.uid] ?? 0) > 0);
+          const isGameOver = alive.length <= 1;
+
+          // Reset word and advance turn after challenge resolution
+          const activePlayers = updatedPlayers
+            .filter(p => (newVidasMap[p.uid] ?? 0) > 0)
+            .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
+
+          const updated = await storage.updateRoom(roomCode, {
+            status: isGameOver ? 'waiting' : 'playing',
+            players: updatedPlayers,
+            gameData: {
+              ...gd,
+              currentWord: '',
+              vidasMap: newVidasMap,
+              turnIndex: 0,
+              wordStatus: isGameOver ? 'fim_de_jogo' : 'jogando',
+              lastAction: {
+                type: 'desafio',
+                desafianteId,
+                desafiadoId: playerId,
+                resultado: wordExists,
+              },
+              vencedorId: isGameOver ? alive[0]?.uid : undefined,
+              vencedorName: isGameOver ? alive[0]?.name : undefined,
+            },
+          });
+
+          if (updated) broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+        }
+
+        // ── finalizar (acusar fim de palavra) ──────────────────────
+        if (data.type === 'desafio-finalizar' && data.roomCode && data.acusadorId) {
+          const roomCode = data.roomCode as string;
+          const acusadorId = data.acusadorId as string;
+
+          const room = await storage.getRoom(roomCode);
+          if (!room || room.status !== 'playing' || room.gameMode !== 'desafioPalavra') return;
+
+          const gd = room.gameData as any;
+          if (!gd || gd.wordStatus !== 'jogando') return;
+          if (!gd.currentWord || gd.currentWord.length < 2) return;
+
+          const palavra = gd.currentWord as string;
+
+          // Check: is the current word a real word AND has no extensions?
+          const wordExists = await verificarPalavra(palavra);
+          const hasExtensions = await temExtensoes(palavra);
+
+          // Accusation succeeds if word is real AND dead (no extensions)
+          // In that case, whoever placed the last letter loses a life
+          // Accusation fails if word can still grow → acusador loses a life
+          const activePlayers = room.players
+            .filter(p => (gd.vidasMap?.[p.uid] ?? 0) > 0)
+            .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
+
+          // Last letter was placed by the player at (turnIndex - 1)
+          const prevIndex = ((gd.turnIndex - 1) + activePlayers.length) % activePlayers.length;
+          const lastPlayer = activePlayers[prevIndex];
+
+          let loserUid: string;
+          const acusacaoCorreta = wordExists && !hasExtensions;
+          if (acusacaoCorreta) {
+            // Last letter placer loses
+            loserUid = lastPlayer?.uid ?? acusadorId;
+          } else {
+            // Acusador loses
+            loserUid = acusadorId;
+          }
+
+          const newVidasMap = { ...gd.vidasMap };
+          if (newVidasMap[loserUid] !== undefined) {
+            newVidasMap[loserUid] = Math.max(0, newVidasMap[loserUid] - 1);
+          }
+
+          const updatedPlayers = room.players.map(p => ({
+            ...p,
+            vidas: newVidasMap[p.uid] ?? p.vidas,
+          }));
+
+          const alive = updatedPlayers.filter(p => (newVidasMap[p.uid] ?? 0) > 0);
+          const isGameOver = alive.length <= 1;
+
+          const updated = await storage.updateRoom(roomCode, {
+            status: isGameOver ? 'waiting' : 'playing',
+            players: updatedPlayers,
+            gameData: {
+              ...gd,
+              currentWord: '',
+              vidasMap: newVidasMap,
+              turnIndex: 0,
+              wordStatus: isGameOver ? 'fim_de_jogo' : 'jogando',
+              lastAction: {
+                type: 'finalizar',
+                acusadorId,
+                resultado: acusacaoCorreta,
+              },
+              vencedorId: isGameOver ? alive[0]?.uid : undefined,
+              vencedorName: isGameOver ? alive[0]?.name : undefined,
+            },
+          });
+
+          if (updated) broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+        }
+
+      } catch (error) {
+        // Ignore parse errors from other game types
+      }
+    });
+  });
+
   return httpServer;
 }
