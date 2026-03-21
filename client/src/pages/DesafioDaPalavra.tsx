@@ -320,12 +320,21 @@ function GameScreen() {
   const wordStatus = gd.wordStatus ?? 'jogando';
   const lastAction = gd.lastAction;
 
-  // Players sorted by turn order, only alive
-  const alivePlayers = room.players
-    .filter(p => (vidasMap[p.uid] ?? 0) > 0)
-    .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
+  // All players sorted by fixed turn order
+  const allSortedPlayers = [...room.players].sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
+  const alivePlayers = allSortedPlayers.filter(p => (vidasMap[p.uid] ?? 0) > 0);
 
-  const currentTurnPlayer = alivePlayers[turnIndex % Math.max(alivePlayers.length, 1)];
+  // Walk forward from turnIndex, skipping eliminated players, to find whose turn it is.
+  // turnIndex is a global counter so the sequence 1-2-3-1-2-3 never resets.
+  const currentTurnPlayer = (() => {
+    const n = allSortedPlayers.length;
+    if (n === 0) return undefined;
+    for (let i = 0; i < n; i++) {
+      const candidate = allSortedPlayers[(turnIndex + i) % n];
+      if ((vidasMap[candidate.uid] ?? 0) > 0) return candidate;
+    }
+    return undefined;
+  })();
 
   const isMyTurn = currentTurnPlayer?.uid === user.uid;
   const myVidas = vidasMap[user.uid] ?? 0;

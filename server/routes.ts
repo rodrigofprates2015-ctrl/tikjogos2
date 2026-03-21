@@ -3826,6 +3826,25 @@ export async function registerRoutes(
     }
   }
 
+  // Returns the current turn player by cycling through ALL players (sorted by ordem),
+  // skipping eliminated ones. turnIndex is a global counter that never resets to 0,
+  // so the sequence 1-2-3-1-2-3 is always preserved regardless of who lost a life.
+  function getDesafioTurnPlayer(
+    players: { uid: string; ordem?: number }[],
+    vidasMap: Record<string, number>,
+    turnIndex: number,
+  ) {
+    const allSorted = [...players].sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
+    const n = allSorted.length;
+    if (n === 0) return null;
+    // Walk forward from turnIndex position until we find a living player
+    for (let i = 0; i < n; i++) {
+      const candidate = allSorted[(turnIndex + i) % n];
+      if ((vidasMap[candidate.uid] ?? 0) > 0) return candidate;
+    }
+    return null;
+  }
+
   // POST /api/desafio/rooms/create
   app.post('/api/desafio/rooms/create', async (req, res) => {
     try {
@@ -4012,14 +4031,11 @@ export async function registerRoutes(
           if (!gd || gd.wordStatus !== 'jogando') return;
 
           // Verify it's this player's turn
-          const activePlayers = room.players
-            .filter(p => (gd.vidasMap?.[p.uid] ?? 0) > 0)
-            .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
-          const currentPlayer = activePlayers[gd.turnIndex % activePlayers.length];
+          const currentPlayer = getDesafioTurnPlayer(room.players, gd.vidasMap ?? {}, gd.turnIndex ?? 0);
           if (!currentPlayer || currentPlayer.uid !== playerId) return;
 
           const newWord = (gd.currentWord || '') + letra;
-          const nextTurnIndex = (gd.turnIndex + 1) % activePlayers.length;
+          const nextTurnIndex = (gd.turnIndex ?? 0) + 1;
 
           const updated = await storage.updateRoom(roomCode, {
             gameData: {
@@ -4049,18 +4065,12 @@ export async function registerRoutes(
           if (!gd || gd.wordStatus !== 'jogando') return;
           if (!gd.currentWord || gd.currentWord.length === 0) return;
 
-          const activePlayers = room.players
-            .filter(p => (gd.vidasMap?.[p.uid] ?? 0) > 0)
-            .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
-
           // Only the current turn player can challenge (they choose: add letter OR challenge)
-          const currentIndex = gd.turnIndex % activePlayers.length;
-          const currentPlayer = activePlayers[currentIndex];
+          const currentPlayer = getDesafioTurnPlayer(room.players, gd.vidasMap ?? {}, gd.turnIndex ?? 0);
           if (!currentPlayer || currentPlayer.uid !== desafianteId) return;
 
           // The challenged player is whoever placed the last letter (previous turn)
-          const prevIndex = ((gd.turnIndex - 1) + activePlayers.length) % activePlayers.length;
-          const desafiado = activePlayers[prevIndex];
+          const desafiado = getDesafioTurnPlayer(room.players, gd.vidasMap ?? {}, (gd.turnIndex ?? 0) - 1);
           if (!desafiado || desafiado.uid === desafianteId) return;
 
           const updated = await storage.updateRoom(roomCode, {
@@ -4117,10 +4127,9 @@ export async function registerRoutes(
           const alive = updatedPlayers.filter(p => (newVidasMap[p.uid] ?? 0) > 0);
           const isGameOver = alive.length <= 1;
 
-          // Reset word and advance turn after challenge resolution
-          const activePlayers = updatedPlayers
-            .filter(p => (newVidasMap[p.uid] ?? 0) > 0)
-            .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
+          // Advance turn: desafiante used their turn to challenge, so next is turnIndex + 1.
+          // turnIndex is a global counter — never reset to 0 so the sequence stays fixed.
+          const nextTurnIndex = (gd.turnIndex ?? 0) + 1;
 
           const updated = await storage.updateRoom(roomCode, {
             status: isGameOver ? 'waiting' : 'playing',
@@ -4129,7 +4138,7 @@ export async function registerRoutes(
               ...gd,
               currentWord: '',
               vidasMap: newVidasMap,
-              turnIndex: 0,
+              turnIndex: nextTurnIndex,
               wordStatus: isGameOver ? 'fim_de_jogo' : 'jogando',
               lastAction: {
                 type: 'desafio',
