@@ -27,6 +27,48 @@ export interface BlogPostFull {
 
 export const BLOG_POSTS_FULL: BlogPostFull[] = [
   {
+    slug: 'desafio-da-palavra-novo-jogo-tikjogos',
+    slugEn: 'word-challenge-new-game-tikjogos',
+    slugEs: 'desafio-de-la-palabra-nuevo-juego-tikjogos',
+    title: 'Desafio da Palavra: o novo jogo de letras do TikJogos',
+    titleEn: 'Word Challenge: the new letter game on TikJogos',
+    titleEs: 'Desafío de la Palabra: el nuevo juego de letras de TikJogos',
+    excerpt: 'Adicione letras, blefe e desafie seus amigos neste jogo de palavras multiplayer. Conheça as regras, estratégias e como jogar.',
+    excerptEn: 'Add letters, bluff and challenge your friends in this multiplayer word game. Learn the rules, strategies and how to play.',
+    excerptEs: 'Añade letras, farolea y desafía a tus amigos en este juego de palabras multijugador. Conoce las reglas, estrategias y cómo jugar.',
+    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=1200',
+    date: '21 Mar 2026',
+    authorName: 'Time TikJogos',
+    readTime: '4 min',
+    category: 'Novidades',
+    content: `O **Desafio da Palavra** chegou ao TikJogos para transformar suas noites com amigos em duelos de vocabulário e blefe. A premissa é simples: cada jogador adiciona uma letra ao fragmento na mesa, mas sempre deve ter uma palavra real em mente. Quem blefar e for desafiado perde uma vida. Último com vida vence.
+
+### Como Funciona
+
+Na sua vez, você escolhe uma letra pelo teclado e ela é adicionada ao fragmento atual. Você precisa ter uma palavra válida em mente que comece com esse fragmento — mas não precisa revelá-la a menos que seja desafiado.
+
+O jogador seguinte pode, em vez de adicionar uma letra, **desafiar** você. Quando desafiado, você revela a palavra que tinha em mente:
+
+- **Palavra válida** → o desafiante perde uma ❤️
+- **Palavra inválida ou inexistente** → você perde uma ❤️
+
+### A Ordem dos Turnos
+
+A sequência é definida no início e nunca muda: 1→2→3→1→2→3. Mesmo que alguém seja eliminado, a ordem continua — o jogador eliminado é simplesmente pulado.
+
+### Estratégias para Vencer
+
+**Blefe calculado**: adicione letras incomuns que parecem impossíveis mas você tem uma palavra em mente. Isso pressiona os adversários a desafiar — e perder.
+
+**Desafie com certeza**: só desafie quando tiver quase certeza de que o fragmento não leva a nada. Um desafio errado custa uma vida.
+
+**Palavras longas são escudos**: quanto mais longa a palavra que você tem em mente, mais letras pode adicionar com segurança.
+
+### Jogue Agora
+
+O **Desafio da Palavra** está disponível gratuitamente no TikJogos. Crie uma sala, compartilhe o código com seus amigos e veja quem tem o vocabulário — e os nervos — mais fortes.`,
+  },
+  {
     slug: 'jogo-do-impostor-desenho',
     slugEn: 'impostor-drawing-game',
     slugEs: 'juego-del-impostor-dibujo',

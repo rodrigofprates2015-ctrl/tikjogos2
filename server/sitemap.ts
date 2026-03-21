@@ -48,6 +48,8 @@ const I18N_PAGES: Array<{ paths: [string, string, string]; priority: string; cha
   { paths: ['/como-jogar/jogo-do-impostor', '/en/how-to-play/impostor-game', '/es/como-jugar/juego-del-impostor'], priority: '0.9', changefreq: 'weekly' },
   { paths: ['/como-jogar/jogo-do-impostor-desenho', '/en/how-to-play/impostor-drawing-game', '/es/como-jugar/juego-del-impostor-dibujo'], priority: '0.8', changefreq: 'weekly' },
   { paths: ['/como-jogar/sincronia', '/en/how-to-play/sincronia', '/es/como-jugar/sincronia'], priority: '0.8', changefreq: 'weekly' },
+  { paths: ['/desafio-da-palavra', '/en/desafio-da-palavra', '/es/desafio-da-palavra'], priority: '0.9', changefreq: 'weekly' },
+  { paths: ['/como-jogar/desafio-da-palavra', '/en/how-to-play/word-challenge', '/es/como-jugar/desafio-de-la-palabra'], priority: '0.8', changefreq: 'weekly' },
   // Themes
   { paths: ['/temas', '/en/themes', '/es/temas-del-juego'], priority: '0.8', changefreq: 'weekly' },
   { paths: ['/criar-tema', '/en/create-theme', '/es/crear-tema'], priority: '0.6', changefreq: 'monthly' },
@@ -145,13 +147,17 @@ function generateBlogSitemap(): string {
     hreflangs: [`${BASE_URL}/blog`, `${BASE_URL}/en/blog`, `${BASE_URL}/es/blog`],
   }));
 
-  // Individual posts
+  // Individual posts — PT, EN and ES versions
   for (const post of BLOG_POSTS_FULL) {
-    entries.push(urlEntry(`${BASE_URL}/blog/${post.slug}`, {
-      priority: '0.6',
-      changefreq: 'monthly',
-      lastmod: parseDate(post.date || today()),
-    }));
+    const lastmod = parseDate(post.date || today());
+    const hreflangs: [string, string, string] = [
+      `${BASE_URL}/blog/${post.slug}`,
+      `${BASE_URL}/en/blog/${post.slugEn || post.slug}`,
+      `${BASE_URL}/es/blog/${post.slugEs || post.slug}`,
+    ];
+    for (const loc of hreflangs) {
+      entries.push(urlEntry(loc, { priority: '0.6', changefreq: 'monthly', lastmod, hreflangs }));
+    }
   }
 
   return `<?xml version="1.0" encoding="UTF-8"?>

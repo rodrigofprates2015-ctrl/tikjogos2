@@ -1345,6 +1345,14 @@ const DesafioGameCard = () => {
           ENTRAR
         </button>
       </div>
+
+      {/* How to play */}
+      <Link href="/como-jogar/desafio-da-palavra">
+        <button className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-teal-500 to-cyan-500 border-teal-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2">
+          <BookOpen size={28} />
+          COMO JOGAR
+        </button>
+      </Link>
     </div>
   );
 };
