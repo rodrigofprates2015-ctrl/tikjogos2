@@ -326,12 +326,8 @@ function GameScreen() {
     .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
 
   const currentTurnPlayer = alivePlayers[turnIndex % Math.max(alivePlayers.length, 1)];
-  // Next player (who can challenge)
-  const nextPlayerIndex = (turnIndex + 1) % Math.max(alivePlayers.length, 1);
-  const nextPlayer = alivePlayers[nextPlayerIndex];
 
   const isMyTurn = currentTurnPlayer?.uid === user.uid;
-  const isNextPlayer = nextPlayer?.uid === user.uid;
   const myVidas = vidasMap[user.uid] ?? 0;
   const iAmAlive = myVidas > 0;
 
@@ -568,8 +564,8 @@ function GameScreen() {
               }
             </div>
 
-            {/* Challenge / Finalize — only next player, only when word exists */}
-            {iAmAlive && isNextPlayer && !isMyTurn && currentWord.length > 0 && (
+            {/* Challenge / Finalize — only next player (= current turn player), only when word exists */}
+            {iAmAlive && isMyTurn && currentWord.length > 0 && (
               <div className="flex gap-2">
                 <button
                   onClick={desafiar}

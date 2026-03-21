@@ -4053,10 +4053,10 @@ export async function registerRoutes(
             .filter(p => (gd.vidasMap?.[p.uid] ?? 0) > 0)
             .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
 
-          // Only the NEXT player in turn order can challenge
-          const nextIndex = gd.turnIndex % activePlayers.length;
-          const nextPlayer = activePlayers[nextIndex];
-          if (!nextPlayer || nextPlayer.uid !== desafianteId) return;
+          // Only the current turn player can challenge (they choose: add letter OR challenge)
+          const currentIndex = gd.turnIndex % activePlayers.length;
+          const currentPlayer = activePlayers[currentIndex];
+          if (!currentPlayer || currentPlayer.uid !== desafianteId) return;
 
           // The challenged player is whoever placed the last letter (previous turn)
           const prevIndex = ((gd.turnIndex - 1) + activePlayers.length) % activePlayers.length;
@@ -4161,10 +4161,10 @@ export async function registerRoutes(
             .filter(p => (gd.vidasMap?.[p.uid] ?? 0) > 0)
             .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
 
-          // Only the NEXT player in turn order can accuse
-          const nextIndex = gd.turnIndex % activePlayers.length;
-          const nextPlayer = activePlayers[nextIndex];
-          if (!nextPlayer || nextPlayer.uid !== acusadorId) return;
+          // Only the current turn player can accuse (they choose: add letter OR accuse)
+          const currentIndex = gd.turnIndex % activePlayers.length;
+          const currentPlayer = activePlayers[currentIndex];
+          if (!currentPlayer || currentPlayer.uid !== acusadorId) return;
 
           const palavra = gd.currentWord as string;
 
