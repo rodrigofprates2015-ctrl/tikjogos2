@@ -4049,11 +4049,16 @@ export async function registerRoutes(
           if (!gd || gd.wordStatus !== 'jogando') return;
           if (!gd.currentWord || gd.currentWord.length === 0) return;
 
-          // The challenged player is whoever inserted the last letter (previous turn)
           const activePlayers = room.players
             .filter(p => (gd.vidasMap?.[p.uid] ?? 0) > 0)
             .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
 
+          // Only the NEXT player in turn order can challenge
+          const nextIndex = gd.turnIndex % activePlayers.length;
+          const nextPlayer = activePlayers[nextIndex];
+          if (!nextPlayer || nextPlayer.uid !== desafianteId) return;
+
+          // The challenged player is whoever placed the last letter (previous turn)
           const prevIndex = ((gd.turnIndex - 1) + activePlayers.length) % activePlayers.length;
           const desafiado = activePlayers[prevIndex];
           if (!desafiado || desafiado.uid === desafianteId) return;
@@ -4152,18 +4157,20 @@ export async function registerRoutes(
           if (!gd || gd.wordStatus !== 'jogando') return;
           if (!gd.currentWord || gd.currentWord.length < 2) return;
 
+          const activePlayers = room.players
+            .filter(p => (gd.vidasMap?.[p.uid] ?? 0) > 0)
+            .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
+
+          // Only the NEXT player in turn order can accuse
+          const nextIndex = gd.turnIndex % activePlayers.length;
+          const nextPlayer = activePlayers[nextIndex];
+          if (!nextPlayer || nextPlayer.uid !== acusadorId) return;
+
           const palavra = gd.currentWord as string;
 
           // Check: is the current word a real word AND has no extensions?
           const wordExists = await verificarPalavra(palavra);
           const hasExtensions = await temExtensoes(palavra);
-
-          // Accusation succeeds if word is real AND dead (no extensions)
-          // In that case, whoever placed the last letter loses a life
-          // Accusation fails if word can still grow → acusador loses a life
-          const activePlayers = room.players
-            .filter(p => (gd.vidasMap?.[p.uid] ?? 0) > 0)
-            .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
 
           // Last letter was placed by the player at (turnIndex - 1)
           const prevIndex = ((gd.turnIndex - 1) + activePlayers.length) % activePlayers.length;

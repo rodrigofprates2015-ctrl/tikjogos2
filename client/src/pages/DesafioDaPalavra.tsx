@@ -294,9 +294,355 @@ function LobbyScreen() {
   );
 }
 
-// ─── GameScreen placeholder ───────────────────────────────────────────────────
+// ─── GameScreen ───────────────────────────────────────────────────────────────
+
 function GameScreen() {
-  return <div className="min-h-screen bg-[#1a1b2e] flex items-center justify-center text-white">Game em breve…</div>;
+  const {
+    room, user, status,
+    inserirLetra, desafiar, finalizar, defender,
+    defenseInput, setDefenseInput,
+    returnToLobby,
+  } = useDesafioStore();
+  const defenseRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (status === 'defendendo' && defenseRef.current) defenseRef.current.focus();
+  }, [status]);
+
+  if (!room || !user) return null;
+  const gd = room.gameData;
+  if (!gd) return null;
+
+  const vidasMap = gd.vidasMap ?? {};
+  const currentWord = gd.currentWord ?? '';
+  const turnIndex = gd.turnIndex ?? 0;
+  const wordStatus = gd.wordStatus ?? 'jogando';
+  const lastAction = gd.lastAction;
+
+  // Players sorted by turn order, only alive
+  const alivePlayers = room.players
+    .filter(p => (vidasMap[p.uid] ?? 0) > 0)
+    .sort((a, b) => (a.ordem ?? 99) - (b.ordem ?? 99));
+
+  const currentTurnPlayer = alivePlayers[turnIndex % Math.max(alivePlayers.length, 1)];
+  // Next player (who can challenge)
+  const nextPlayerIndex = (turnIndex + 1) % Math.max(alivePlayers.length, 1);
+  const nextPlayer = alivePlayers[nextPlayerIndex];
+
+  const isMyTurn = currentTurnPlayer?.uid === user.uid;
+  const isNextPlayer = nextPlayer?.uid === user.uid;
+  const myVidas = vidasMap[user.uid] ?? 0;
+  const iAmAlive = myVidas > 0;
+
+  // Defense state
+  const isDefending = wordStatus === 'defendendo';
+  const iAmDefending = isDefending && gd.lastAction?.desafiadoId === user.uid;
+  const defenderPlayer = room.players.find(p => p.uid === gd.lastAction?.desafiadoId);
+  const challengerPlayer = room.players.find(p => p.uid === gd.lastAction?.desafianteId);
+
+  const isGameOver = wordStatus === 'fim_de_jogo';
+  const isHost = room.hostId === user.uid;
+
+  const handleKey = useCallback((key: string) => {
+    if (!isMyTurn || !iAmAlive || isDefending || isGameOver) return;
+    if (key === '⌫') return; // backspace não faz sentido aqui
+    inserirLetra(key);
+  }, [isMyTurn, iAmAlive, isDefending, isGameOver, inserirLetra]);
+
+  const handleDefend = () => {
+    if (!defenseInput.trim()) { toast({ title: 'Digite a palavra', variant: 'destructive' }); return; }
+    const norm = defenseInput.trim().toUpperCase();
+    if (!norm.startsWith(currentWord.toUpperCase())) {
+      toast({ title: `A palavra deve começar com "${currentWord}"`, variant: 'destructive' });
+      return;
+    }
+    defender(defenseInput.trim());
+  };
+
+  // ── Last action feedback ──
+  const renderFeedback = () => {
+    if (!lastAction) return null;
+    if (lastAction.type === 'inserir') {
+      return (
+        <div className="text-center text-sm text-slate-400 animate-fade-in">
+          <span className="font-bold text-white">{lastAction.playerName}</span> adicionou{' '}
+          <span className="font-black text-orange-400 text-base">"{lastAction.letra}"</span>
+        </div>
+      );
+    }
+    if ((lastAction.type === 'desafio' || lastAction.type === 'finalizar') && lastAction.resultado !== undefined) {
+      const loser = lastAction.type === 'desafio'
+        ? room.players.find(p => p.uid === (lastAction.resultado ? lastAction.desafianteId : lastAction.desafiadoId))
+        : room.players.find(p => p.uid === lastAction.acusadorId);
+      const won = lastAction.resultado;
+      return (
+        <div className={cn(
+          'text-center text-sm font-bold px-4 py-2 rounded-2xl border-2 animate-fade-in',
+          won ? 'bg-emerald-900/40 border-emerald-600 text-emerald-300' : 'bg-rose-900/40 border-rose-600 text-rose-300'
+        )}>
+          {lastAction.type === 'desafio'
+            ? won
+              ? `✅ Palavra válida! ${loser?.name} perdeu uma ❤️`
+              : `❌ Palavra inválida! ${loser?.name} perdeu uma ❤️`
+            : won
+              ? `✅ Palavra morta! Acusação correta.`
+              : `❌ Palavra pode crescer! ${loser?.name} perdeu uma ❤️`}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // ── Game Over ──
+  if (isGameOver) {
+    const winner = room.players.find(p => p.uid === gd.vencedorId);
+    const iWon = gd.vencedorId === user.uid;
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#1a1b2e] px-4 py-6">
+        <div className="fixed inset-0 pointer-events-none z-0">
+          <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse" />
+          <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }} />
+        </div>
+        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in relative z-10 flex flex-col gap-6 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <Trophy className={cn('w-20 h-20', iWon ? 'text-yellow-400' : 'text-slate-500')} />
+            <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">Fim de Jogo</p>
+            <p className="text-3xl font-black text-white">
+              {winner ? `${winner.name} venceu!` : 'Empate!'}
+            </p>
+          </div>
+
+          {/* Placar final */}
+          <div className="bg-[#1a1c2e] rounded-2xl border border-[#2f3252] divide-y divide-[#2f3252]">
+            {room.players
+              .sort((a, b) => (vidasMap[b.uid] ?? 0) - (vidasMap[a.uid] ?? 0))
+              .map((p, i) => (
+                <div key={p.uid} className="flex items-center gap-3 px-4 py-3">
+                  <span className="text-slate-500 font-black w-5 text-sm">{i + 1}.</span>
+                  <span className={cn('font-black flex-1 text-left', p.uid === user.uid ? 'text-emerald-400' : 'text-white')}>
+                    {p.name}{p.uid === user.uid ? ' (você)' : ''}
+                  </span>
+                  <HeartIcons count={vidasMap[p.uid] ?? 0} />
+                </div>
+              ))}
+          </div>
+
+          {isHost ? (
+            <button
+              onClick={returnToLobby}
+              className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-violet-600 to-purple-600 border-violet-900 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
+            >
+              <RotateCcw size={24} /> NOVA RODADA
+            </button>
+          ) : (
+            <p className="text-slate-400 text-sm font-bold">Aguardando o host iniciar nova rodada…</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Main game ──
+  return (
+    <div className="min-h-screen w-full flex flex-col items-center bg-[#1a1b2e]" style={{ backgroundColor: '#1a1b2e' }}>
+      {/* Fixed blobs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/10 rounded-full blur-[100px]" />
+      </div>
+
+      <div className="w-full max-w-lg flex flex-col min-h-screen relative z-10">
+
+        {/* Header */}
+        <header className="w-full pt-4 pb-3 px-4 flex items-center justify-between border-b border-[#2f3252]">
+          <img src={logoDesafio} alt="Desafio da Palavra" className="h-8 object-contain" />
+          <button
+            onClick={returnToLobby}
+            className="p-2 rounded-xl bg-slate-800 hover:bg-rose-500 transition-all border-b-4 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white"
+          >
+            <Home size={18} strokeWidth={3} />
+          </button>
+        </header>
+
+        {/* Players bar */}
+        <div className="flex gap-2 px-3 pt-3 overflow-x-auto pb-1 scrollbar-hide">
+          {room.players.map(p => {
+            const vidas = vidasMap[p.uid] ?? 0;
+            const isActive = currentTurnPlayer?.uid === p.uid && !isDefending;
+            const isDead = vidas === 0;
+            return (
+              <div
+                key={p.uid}
+                className={cn(
+                  'flex-shrink-0 flex flex-col items-center gap-1.5 px-3 py-2 rounded-2xl border-2 transition-all min-w-[80px]',
+                  isDead
+                    ? 'opacity-30 border-slate-800 bg-slate-900/30'
+                    : isActive
+                      ? 'border-orange-400 bg-orange-500/10 shadow-lg shadow-orange-500/20'
+                      : 'border-[#2f3252] bg-[#242642]'
+                )}
+              >
+                <span className={cn(
+                  'text-xs font-black truncate max-w-[72px]',
+                  p.uid === user.uid ? 'text-emerald-400' : 'text-white'
+                )}>
+                  {p.name}
+                </span>
+                <HeartIcons count={vidas} />
+                {isActive && !isDead && (
+                  <span className="text-orange-400 text-[10px] font-black">← VEZ</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Word display */}
+        <div className="flex flex-col items-center gap-3 px-4 pt-4 pb-2">
+          <p className="text-slate-500 text-xs uppercase tracking-widest font-bold">Palavra na mesa</p>
+
+          {/* Letter tiles */}
+          <div className="flex flex-wrap justify-center gap-2 min-h-[56px] items-center">
+            {currentWord.length === 0 ? (
+              <span className="text-slate-600 text-2xl font-black">—</span>
+            ) : (
+              currentWord.split('').map((ch, i) => (
+                <div
+                  key={i}
+                  className="w-12 h-14 flex items-center justify-center rounded-lg border-2 border-b-4 border-[#3a3a3c] bg-[#121213] text-white text-2xl font-black uppercase"
+                >
+                  {ch}
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Feedback */}
+          {renderFeedback()}
+        </div>
+
+        {/* Defense overlay */}
+        {isDefending && (
+          <div className="mx-4 mb-2 bg-yellow-900/30 border-2 border-yellow-500/50 rounded-2xl p-4 flex flex-col gap-3">
+            <div className="flex items-center gap-2 text-yellow-300 font-black">
+              <AlertTriangle className="w-5 h-5" />
+              MODO DEFESA
+            </div>
+            <p className="text-yellow-200 text-sm">
+              <strong>{challengerPlayer?.name}</strong> desafiou <strong>{defenderPlayer?.name}</strong>!
+              {iAmDefending
+                ? ' Revele a palavra que você tinha em mente.'
+                : ` Aguardando ${defenderPlayer?.name} revelar a palavra…`}
+            </p>
+            {iAmDefending && (
+              <div className="flex gap-2">
+                <input
+                  ref={defenseRef}
+                  value={defenseInput}
+                  onChange={e => setDefenseInput(e.target.value.toUpperCase())}
+                  placeholder={`Começa com "${currentWord}"…`}
+                  className="input-dark flex-1 uppercase"
+                  onKeyDown={e => e.key === 'Enter' && handleDefend()}
+                />
+                <button
+                  onClick={handleDefend}
+                  className="px-5 py-3 rounded-2xl font-black text-base border-b-4 bg-yellow-500 border-yellow-700 text-black hover:brightness-110 active:border-b-0 active:translate-y-1 transition-all"
+                >
+                  REVELAR
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Turn indicator + action buttons */}
+        {!isDefending && !isGameOver && (
+          <div className="px-4 pb-2 flex flex-col gap-2">
+            <div className="text-center text-sm font-bold">
+              {isMyTurn && iAmAlive
+                ? <span className="text-orange-400">Sua vez! Escolha uma letra.</span>
+                : !iAmAlive
+                  ? <span className="text-slate-500">Você foi eliminado. Aguarde o fim da rodada.</span>
+                  : <span className="text-slate-400">Vez de <strong className="text-white">{currentTurnPlayer?.name}</strong></span>
+              }
+            </div>
+
+            {/* Challenge / Finalize — only next player, only when word exists */}
+            {iAmAlive && isNextPlayer && !isMyTurn && currentWord.length > 0 && (
+              <div className="flex gap-2">
+                <button
+                  onClick={desafiar}
+                  className="flex-1 px-4 py-3 rounded-2xl font-black text-sm border-b-4 bg-yellow-500 border-yellow-700 text-black hover:brightness-110 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2"
+                >
+                  <Swords size={18} /> DESAFIAR
+                </button>
+                <button
+                  onClick={finalizar}
+                  className="flex-1 px-4 py-3 rounded-2xl font-black text-sm border-b-4 bg-emerald-500 border-emerald-700 text-white hover:brightness-110 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2"
+                >
+                  <Flag size={18} /> FINALIZAR
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Keyboard — Termo style */}
+        {!isDefending && isMyTurn && iAmAlive && !isGameOver && (
+          <div className="w-full px-2 pb-4 pt-2">
+            <div className="flex flex-col gap-1.5">
+              {KEYBOARD_ROWS.map((row, i) => (
+                <div key={i} className="flex justify-center gap-1.5">
+                  {row.map(key => {
+                    const isBackspace = key === '⌫';
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => handleKey(key)}
+                        className={cn(
+                          'flex items-center justify-center rounded font-bold select-none transition-all active:scale-95 bg-[#818384] text-white',
+                          isBackspace
+                            ? 'px-3 py-3 min-w-[44px] text-sm'
+                            : 'w-9 h-14 flex-1 max-w-[44px] text-sm'
+                        )}
+                      >
+                        {isBackspace ? <Delete size={18} /> : key}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Keyboard placeholder when not your turn */}
+        {!isDefending && (!isMyTurn || !iAmAlive) && !isGameOver && (
+          <div className="w-full px-2 pb-4 pt-2 opacity-20 pointer-events-none">
+            <div className="flex flex-col gap-1.5">
+              {KEYBOARD_ROWS.map((row, i) => (
+                <div key={i} className="flex justify-center gap-1.5">
+                  {row.map(key => (
+                    <div
+                      key={key}
+                      className={cn(
+                        'flex items-center justify-center rounded bg-[#3a3a3c]',
+                        key === '⌫' ? 'px-3 py-3 min-w-[44px]' : 'w-9 h-14 flex-1 max-w-[44px]'
+                      )}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function DesafioDaPalavra({ initialCode }: { initialCode?: string }) {
