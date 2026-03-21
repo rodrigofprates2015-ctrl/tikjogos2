@@ -41,85 +41,7 @@ function NotificationToast() {
   );
 }
 
-// HOMESCREEN
-function HomeScreen() {
-  const { setUser, saveNickname, loadSavedNickname, isLoading } = useDesafioStore();
-  const [name, setName] = useState('');
-  const [code, setCode] = useState('');
-  const [saveChecked, setSaveChecked] = useState(false);
-  const { toast } = useToast();
 
-  useEffect(() => {
-    const saved = loadSavedNickname();
-    if (saved) { setName(saved); setSaveChecked(true); }
-  }, []);
-
-  const handleCreate = () => {
-    if (!name.trim()) { toast({ title: 'Nome necessário', variant: 'destructive' }); return; }
-    if (saveChecked) saveNickname(name.trim());
-    setUser(name.trim());
-    setTimeout(() => useDesafioStore.getState().createRoom(), 0);
-  };
-
-  const handleJoin = async () => {
-    if (!name.trim()) { toast({ title: 'Nome necessário', variant: 'destructive' }); return; }
-    if (!code.trim()) { toast({ title: 'Código inválido', variant: 'destructive' }); return; }
-    if (saveChecked) saveNickname(name.trim());
-    setUser(name.trim());
-    setTimeout(async () => {
-      const ok = await useDesafioStore.getState().joinRoom(code.trim());
-      if (!ok) toast({ title: 'Sala não encontrada', variant: 'destructive' });
-    }, 0);
-  };
-
-  return (
-    <div className="min-h-screen w-full flex flex-col bg-[#1a1b2e] selection:bg-purple-500/30">
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }} />
-      </div>
-      <div className="flex-1 flex flex-col items-center justify-center pt-6 px-4 relative z-20">
-        <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in">
-          <div className="flex justify-center mb-6">
-            <img src={logoDesafio} alt="Desafio da Palavra" className="h-24 md:h-32 object-contain" />
-          </div>
-          <div className="space-y-3">
-            <input type="text" placeholder="Seu nickname" value={name} onChange={e => setName(e.target.value)} maxLength={20} className="input-dark" onKeyDown={e => e.key === 'Enter' && handleCreate()} />
-            <button onClick={handleCreate} disabled={isLoading} className={cn('w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl', !isLoading ? 'bg-gradient-to-r from-violet-600 to-purple-600 border-violet-900 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50')}>
-              {isLoading ? <Loader2 size={28} className="animate-spin" /> : <Zap size={28} className="animate-bounce" />}
-              CRIAR SALA
-            </button>
-            <div className="flex items-center px-1">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={saveChecked} onChange={e => setSaveChecked(e.target.checked)} className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#7c3aed]" />
-                <span className="text-sm text-[#8aa0b0]">Guardar nickname</span>
-              </label>
-            </div>
-            <div className="flex items-center gap-4 py-1">
-              <div className="flex-1 h-px bg-[#4a6a8a]" /><span className="text-[#8aa0b0] text-sm font-bold">OU</span><div className="flex-1 h-px bg-[#4a6a8a]" />
-            </div>
-            <div className="flex gap-3">
-              <input type="text" placeholder="CÓDIGO" value={code} onChange={e => setCode(e.target.value.toUpperCase())} maxLength={3} className="input-code flex-1" onKeyDown={e => e.key === 'Enter' && handleJoin()} />
-              <button onClick={handleJoin} disabled={isLoading} className={cn('px-6 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-2 transition-all duration-300 border-b-[6px] shadow-2xl whitespace-nowrap', !isLoading ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50')}>
-                ENTRAR
-              </button>
-            </div>
-            <div className="bg-[#1a1c2e] rounded-2xl p-4 border border-[#2f3252] text-xs text-[#8aa0b0] space-y-1.5 mt-2">
-              <p className="font-bold text-[#a0b0c0] text-sm mb-2">Como jogar</p>
-              <p>• Cada jogador adiciona <strong className="text-white">uma letra</strong> por vez.</p>
-              <p>• <strong className="text-yellow-400">Desafiar</strong>: em vez de adicionar letra, desafie se achar que as letras na mesa não levam a nenhuma palavra.</p>
-              <p>• O desafiado revela a palavra que tinha em mente. Palavra válida → desafiante perde ❤️. Inválida → desafiado perde ❤️.</p>
-              <p>• Sem vidas = eliminado. Último vivo vence!</p>
-            </div>
-          </div>
-        </div>
-        <div className="mt-6 mb-4">
-          <img src={logoTikjogos} alt="TikJogos" className="h-4 w-auto opacity-60" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ─── LobbyScreen ──────────────────────────────────────────────────────────────
 
@@ -642,6 +564,14 @@ export default function DesafioDaPalavra({ initialCode }: { initialCode?: string
   const { status, room, user, setUser, loadSavedNickname } = useDesafioStore();
   const { toast } = useToast();
 
+  // Se chegou aqui sem estar em jogo, volta para a home onde fica o formulário
+  useEffect(() => {
+    if (status === 'home' && !initialCode) {
+      window.location.replace('/');
+    }
+  }, [status, initialCode]);
+
+  // Deep-link via /desafio/:codigo — auto-join se tiver nickname salvo
   useEffect(() => {
     if (!initialCode) return;
     const saved = loadSavedNickname();
@@ -657,7 +587,6 @@ export default function DesafioDaPalavra({ initialCode }: { initialCode?: string
   return (
     <>
       <NotificationToast />
-      {status === 'home' && <HomeScreen />}
       {status === 'lobby' && <LobbyScreen />}
       {(status === 'playing' || status === 'defendendo') && <GameScreen />}
     </>
