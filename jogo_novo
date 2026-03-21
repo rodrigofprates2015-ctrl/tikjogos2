@@ -1,0 +1,1934 @@
+analise o que o site já tem que nos ajude a criar esse novo jogo, recicle tudo o que for possível, criação de lobby, sistema de jogadores, validação de player on/off, EXATAMENTE TODO QUE FOR REAPROVEITAVEL para esse novo jogo, ainda não construa nada, só pense em como vamos fazer
+
+# DESAFIO DA PALAVRA - BLUEPRINT TÉCNICO PARA REAPROVEITAMENTO
+
+**Data:** 2026-03-21  
+**Objetivo:** Especificar EXATAMENTE o que reutilizar do sistema multijogador existente (Impostor Game) para o novo jogo "Desafio da Palavra"  
+**Escopo:** NÃO construir nada ainda; apenas planejar e documentar a reutilização máxima  
+
+---
+
+## 1. ARQUITETURA GERAL - O QUE REUTILIZAMOS INTEGRALMENTE
+
+### 1.1 Stack Teknológica (100% Reutilizável)
+```
+Frontend:  React.js + Zustand + Tailwind CSS + Lucide Icons
+Backend:   Node.js + Express.js + ws (WebSocket)
+Storage:   In-Memory Map<string, Room> (por design)
+Database:  Postgres via Drizzle ORM (secundário)
+API Ext:   Dicionário Aberto (novo)
+Deploy:    Replit/Railway (sem mudanças)
+```
+
+**Arquivos de Configuração:** Copiar exatamente
+- `package.json` (adicionar `axios` para API de dicionário)
+- `tsconfig.json` (sem mudanças)
+- `vite.config.ts` (sem mudanças)
+- `drizzle.config.ts` (sem mudanças)
+
+---
+
+## 2. SISTEMA DE LOBBY - 100% REUTILIZÁVEL
+
+### 2.1 Fluxo de Lobby Completo
+
+#### **O que já temos:**
+- ✅ Geração de código de sala (3 caracteres, sem colisão)
+- ✅ Criação de salas com `hostId`
+- ✅ Entrada por código com idempotência
+- ✅ Link compartilhável `/sala/:codigo`
+- ✅ Sistema de desconexão (suave + rígida)
+- ✅ Pulsação de jogadores (heartbeat)
+- ✅ Transferência de host automática
+- ✅ Expiração de sala após 1 hora
+
+#### **Código Exato para Copiar:**
+
+```typescript
+// server/routes.ts - Função generateRoomCode()
+function generateRoomCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = randomBytes(3);
+  let code = '';
+  for (let i = 0; i < 3; i++) code += chars[bytes[i] % chars.length];
+  return code;
+}
+```
+
+```typescript
+// POST /api/rooms/create
+app.post('/api/rooms/create', (req, res) => {
+  // [COPIAR LINHAS INTEGRALMENTE]
+  // - Validar com Zod
+  // - generateRoomCode()
+  // - Criar Player com uid+name
+  // - storage.createRoom()
+  // - Retornar Room
+});
+```
+
+```typescript
+// POST /api/rooms/join
+app.post('/api/rooms/join', (req, res) => {
+  // [COPIAR LINHAS INTEGRALMENTE]
+  // - Normalizar código
+  // - storage.getRoom()
+  // - Verificar se jogo em andamento (waitingForGame)
+  // - storage.addPlayerToRoom() (idempotente!)
+  // - broadcastToRoom('room-update')
+});
+```
+
+### 2.2 Estrutura de Dados da Sala
+
+**Reutilizar schema exatamente:**
+
+```typescript
+// shared/schema.ts
+rooms = pgTable("rooms", {
+  code: text("code").primaryKey(),        // "AB3"
+  hostId: text("host_id"),                // uid
+  status: text("status").default("waiting"), // "waiting" | "playing"
+  gameMode: text("game_mode"),            // "desafio-palavra" (novo valor)
+  currentCategory: text("current_category"), // Não usado, OK deixar
+  currentWord: text("current_word"),      // Armazenar palavra atual em gameData
+  impostorId: text("impostor_id"),        // Não usado, OK deixar
+  gameData: jsonb("game_data"),           // ⭐ ESTENDER AQUI
+  players: jsonb("players").default([]),  // Reutilizar 100%
+  createdAt: timestamp("created_at"),
+});
+
+type Player = {
+  uid: string;              // Reutilizar 100%
+  name: string;             // Reutilizar 100%
+  waitingForGame?: boolean; // Reutilizar 100%
+  connected?: boolean;      // Reutilizar 100%
+  // ADICIONAR para Desafio da Palavra:
+  vidas?: number;           // 3 (novo)
+  ordem?: number;           // Ordem de turno (novo)
+};
+```
+
+**Estender `gameData` apenas com novos campos:**
+```typescript
+type GameData = {
+  // Campos existentes (ignorar)
+  word?: string;
+  location?: string;
+  roles?: Record<string, string>;
+  // ... (copiar tudo do Impostor)
+  
+  // NOVOS campos para Desafio da Palavra:
+  currentWord?: string;          // "S", "SA", "SAP"
+  vidas?: Record<string, number>; // { uid: 3 }
+  turnIndex?: number;             // 0-3 (qual jogador)
+  status?: "aguardando" | "jogando" | "defendendo" | "fim_de_jogo";
+  lastAction?: {
+    type: "desafio" | "finalizar";
+    desafiantId?: string;
+    resultado?: boolean; // true = desafiante perdeu vida
+  };
+  guesses?: string[];   // Letras já inseridas
+};
+```
+
+### 2.3 Componentes React Reutilizáveis
+
+**Home Screen (client/src/pages/ImpostorGame.tsx)**
+- ✅ Copiar `HomeScreen` integralmente
+- ✅ Copiar lógica de `handleCreate()` 
+- ✅ Copiar lógica de `handleJoin()`
+- ✅ Copiar persistência de nickname com `localStorage`
+- ⚠️ Apenas mudar URL de redirecionamento: `/sala/:codigo`
+
+**LobbyScreen (mesmo arquivo)**
+- ✅ Copiar estrutura de visualização de jogadores
+- ✅ Copiar botão "Sacar do Jogo" (para host)
+- ✅ Copiar lista de players com badges
+- ✅ **NÃO copiar:** Seleção de modo (Impostor vs Outras Funções)
+  - Isso terá flow diferente no novo jogo
+
+**RoomRedirect (client/src/pages/RoomRedirect.tsx)**
+- ✅ Copiar 100%
+- ✅ Rota: `/sala/:codigo`
+
+---
+
+## 3. VALIDAÇÃO DE PLAYER ON/OFF - 100% REUTILIZÁVEL
+
+### 3.1 Sistema de Desconexão Bifásico
+
+**Constantes (manter identicamente):**
+```typescript
+const HEARTBEAT_INTERVAL = 5000;        // ping a cada 5s
+const PONG_TIMEOUT = 15000;             // soft disconnect após 15s
+const HARD_EXIT_FALLBACK_GRACE = 15000; // hard remove após 15s
+```
+
+**Lógica de Desconexão (copiar exatamente):**
+
+1. **Soft Disconnect** (jogador sai por 15s)
+   ```
+   - player.connected = false
+   - Broadcast: 'player-disconnected'
+   - Agendar: hardExitRemoval em 15s
+   ```
+
+2. **Hard Exit** (após 15s)
+   ```
+   - Remover jogador do array
+   - Se era host: transferir para primeiro jogador conectado
+   - Broadcast: 'player-removed', 'host-changed'
+   - Se sala vazia: agendar exclusão em 10s
+   ```
+
+**Uso no Novo Jogo:**
+- Quando um jogador desconecta, se era a vez dele, pular de turno
+- Se sobrar 1 jogador: game over (ele vence)
+- Manter desconexão suave/rígida idêntica
+
+### 3.2 Manipuladores WebSocket - Reutilizar Estrutura
+
+```typescript
+// server/routes.ts - Manipulador 'join-room'
+// COPIAR:
+wss.on('connection', (ws) => {
+  ws.on('message', (data) => {
+    const msg = JSON.parse(data);
+    
+    if (msg.type === 'join-room') {
+      // [COPIAR INTEGRALMENTE]
+      // - Registrar em roomConnections
+      // - Registrar em playerConnections
+      // - markPlayerConnected() se reconexão
+      // - Enviar estado atual
+    }
+    
+    if (msg.type === 'pong') {
+      // [COPIAR INTEGRALMENTE]
+      // - Atualizar lastPong
+    }
+    
+    // ... outros tipos
+  });
+});
+```
+
+**Novos tipos de mensagem para Desafio da Palavra:**
+```typescript
+// Mensagens novas (adicionar)
+if (msg.type === 'inserir-letra') {
+  // { roomCode, playerId, letra }
+}
+
+if (msg.type === 'desafiar') {
+  // { roomCode, desafiantId, desafiadoId }
+}
+
+if (msg.type === 'finalizar') {
+  // { roomCode, acusadorId }
+}
+
+if (msg.type === 'defender-palavra') {
+  // { roomCode, playerId, palavra }
+}
+```
+
+---
+
+## 4. STATE MANAGEMENT - 100% REUTILIZÁVEL
+
+### 4.1 Zustand Store (client/src/lib/gameStore.ts)
+
+**Copiar integralmente:**
+- ✅ `user` (Player | null)
+- ✅ `room` (Room | null)
+- ✅ `isLoading`
+- ✅ `ws` (WebSocket | null)
+- ✅ `gameModes` e `selectedMode`
+- ✅ `notifications` (toast system)
+- ✅ `setUser()` com `generateUID()`
+- ✅ `connectWebSocket()` com reconexão exponencial
+- ✅ `updateRoom()` com roteamento de tela
+
+**Adaptar:**
+```typescript
+// Tipo GameStatus: ESTENDER
+type GameStatus =
+  | 'home'           // [COPIAR]
+  | 'lobby'          // [COPIAR]
+  | 'modeSelect'     // [REMOVIDO - não necessário]
+  | 'gameConfig'     // [REMOVIDO - não necessário]
+  | 'spinning'       // [REMOVIDO - não necessário]
+  | 'playing'        // [ADAPTAR para o novo fluxo]
+  | 'defendendo';    // [NOVO] Modo de defesa
+
+// Ações novas para adicionar:
+const store = {
+  // ... existentes
+  setVidas: (uid, vidas) => set(state => ({
+    room: { ...state.room, gameData: { ...state.room.gameData, vidas: { ...state.room.gameData.vidas, [uid]: vidas } } }
+  })),
+  avancarTurno: () => { /* lógica */ },
+  // ...
+};
+```
+
+### 4.2 Ciclo de Vida Completo
+
+```
+HOME
+  ↓ setUser(nome) + createRoom()
+LOBBY (room.status = 'waiting')
+  ↓ [host clica "Iniciar Jogo"]
+  ↓ POST /api/rooms/:code/start
+PLAYING (room.status = 'playing')
+  ↓ [Fluxo de turnos: inserir letra → desafiar/finalizar → próximo turno]
+  ↓ [Quando 1 jogador com vidas, ele vence]
+LOBBY (host clica "Nova Rodada")
+```
+
+---
+
+## 5. ENDPOINTS HTTP - REUTILIZAR E ESTENDER
+
+### 5.1 Endpoints Reutilizáveis (copiar exatamente)
+
+```
+POST   /api/rooms/create          (criar sala)
+POST   /api/rooms/join            (entrar em sala)
+GET    /api/rooms/:code           (consultar estado da sala)
+POST   /api/rooms/:code/disconnect-notice (desconexão graceful)
+```
+
+### 5.2 Novo Endpoint para Inicio do Jogo
+
+```typescript
+POST /api/rooms/:code/start
+Body: {
+  gameMode: "desafio-palavra",
+  // config específica do jogo
+}
+Response: Room atualizado com status='playing'
+```
+
+**Lógica interna:**
+1. Embaralhar ordem de jogadores
+2. Inicializar `gameData`:
+   ```
+   currentWord: ""
+   vidas: { uid1: 3, uid2: 3, ... }
+   turnIndex: 0
+   status: "jogando"
+   guesses: []
+   ```
+3. Broadcast `room-update` a todos os clientes
+
+### 5.3 Endpoints de Jogo (WebSocket apenas)
+
+Não usar HTTP, usar WebSocket:
+```
+'inserir-letra'    → servidor valida e broadcast
+'desafiar'         → muda para modo defendendo
+'defender-palavra' → verifica validez e resultado
+'finalizar'        → verifica se palavra é morta
+```
+
+---
+
+## 6. SISTEMA DE PERSISTÊNCIA - 100% REUTILIZÁVEL
+
+### 6.1 MemoryStorage (servidor/storage.ts)
+
+**Copiar integralmente:**
+```typescript
+class MemoryStorage implements IStorage {
+  private rooms = new Map<string, Room>();
+  
+  async createRoom(insertRoom: InsertRoom): Promise<Room> { }
+  async getRoom(code: string): Promise<Room | undefined> { }
+  async addPlayerToRoom(code: string, player: Player): Promise<Room | undefined> { }
+  async updateRoom(code: string, updates: Partial<Room>): Promise<Room | undefined> { }
+  // ... e.t.c
+}
+```
+
+**Não precisa mudar nada:**
+- Salas em memória = perfeito para jogo efêmero
+- TTL de 1 hora = adequado
+- Sem persistência em DB = não necessária
+
+---
+
+## 7. ESTRUTURA DE ARQUIVOS - O QUE COPIAR
+
+### 7.1 Backend (server/)
+
+```
+server/
+├── index.ts              [COPIAR] Inicialização do servidor
+├── routes.ts             [COPIAR] 90% de endpoints HTTP + WebSocket
+│                         [ESTENDER] Novos tipos de mensagem WS
+└── storage.ts            [COPIAR 100%] Armazenamento em memória
+```
+
+### 7.2 Shared (shared/)
+
+```
+shared/
+└── schema.ts             [COPIAR + ESTENDER]
+                          - Manter tipos Player e Room
+                          - Adicionar campos GameData
+```
+
+### 7.3 Client (client/)
+
+```
+client/src/
+├── lib/
+│   └── gameStore.ts      [COPIAR + ADAPTAR]
+│                         - Manter createRoom, joinRoom, connectWebSocket
+│                         - Adaptar GameStatus
+│                         - Adicionar actions do novo jogo
+├── pages/
+│   └── ImpostorGame.tsx  [COPIAR + SUBSTITUIR]
+│                         - Manter HomeScreen, LobbyScreen, RoomRedirect
+│                         - SUBSTITUIR: GameScreen (todo o jogo)
+└── ...
+```
+
+---
+
+## 8. API EXTERNA - NOVO
+
+### 8.1 Dicionário Aberto
+
+```typescript
+// API: https://api.dicionario-aberto.net/
+
+// Endpoint 1: Verificar palavra
+GET /search-exact/{palavra}
+Response: { exists: boolean, word: string }
+
+// Endpoint 2: Buscar com prefixo
+GET /search-prefix/{prefixo}
+Response: [{ word, definition }, ...]
+
+// Endpoint 3: Listar palavras que começam com prefixo
+GET /list-prefix/{prefixo}?limit=10
+Response: [{ word }, { word }, ...]
+```
+
+**Será usado no servidor para validação:**
+```typescript
+// Novo helper server-side
+async function verificarPalavra(palavra: string): Promise<boolean> {
+  const response = await fetch(`https://api.dicionario-aberto.net/search-exact/${palavra}`);
+  return response.json().exists;
+}
+
+async function listarExtensoes(prefixo: string): Promise<string[]> {
+  const response = await fetch(`https://api.dicionario-aberto.net/search-prefix/${prefixo}`);
+  const data = await response.json();
+  return data.map(item => item.word);
+}
+```
+
+---
+
+## 9. COMPONENTS REACT - O QUE REUTILIZAR
+
+### 9.1 Componentes já implementados (reutilizar 100%)
+
+- ✅ `HomeScreen` - Entrada de nome, criar/entrar sala
+- ✅ `LobbyScreen` - Lista de jogadores, código da sala
+- ✅ `RoomRedirect` - Redirecionamento de `/sala/:codigo`
+- ✅ `VoiceChatProvider` - Áudio (se aplicável)
+
+### 9.2 Novo Componente a Criar
+
+**GameScreen** (substituir o GameScreen do Impostor)
+```
+GameScreen
+├── PlayerList (vidas em corações)
+├── WordDisplay (palavra atual com animação)
+├── KeyboardVisual (A-Z)
+├── ActionButtons
+│   ├── Desafiar
+│   ├── Finalizar
+│   └── Inserir Letra
+└── DefenseModal (quando em "defendendo")
+    └── WordInput
+```
+
+---
+
+## 10. NORMALIZAÇÃO DE STRINGS - CRÍTICA
+
+### 10.1 Função Obrigatória (copiar exatamente)
+
+```typescript
+function normalize(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")  // Remove acentos
+    .replace(/ç/g, "c");               // ç → c
+}
+
+// Uso:
+const palavraUsuario = "Açúcar";
+const palavraAPI = "acucar";
+normalize(palavraUsuario) === normalize(palavraAPI); // true
+```
+
+---
+
+## 11. CHECKLIST DE REUTILIZAÇÃO
+
+### 11.1 Backend (server/)
+
+- [ ] Copiar `server/index.ts` integralmente
+- [ ] Copiar `server/storage.ts` integralmente
+- [ ] Copiar 90% de `server/routes.ts`
+  - [ ] `generateRoomCode()`
+  - [ ] `POST /api/rooms/create`
+  - [ ] `POST /api/rooms/join`
+  - [ ] WebSocket `join-room` handler
+  - [ ] WebSocket `pong` handler
+  - [ ] Desconexão logic
+  - [ ] broadcastToRoom()
+- [ ] **Adicionar** novos handlers WebSocket:
+  - [ ] `inserir-letra`
+  - [ ] `desafiar`
+  - [ ] `finalizar`
+  - [ ] `defender-palavra`
+
+### 11.2 Shared (shared/)
+
+- [ ] Copiar `shared/schema.ts`
+- [ ] Adicionar campos a `Player`:
+  - [ ] `vidas?: number`
+  - [ ] `ordem?: number`
+- [ ] Estender `GameData`:
+  - [ ] `currentWord?: string`
+  - [ ] `vidas?: Record<string, number>`
+  - [ ] `turnIndex?: number`
+  - [ ] `status?: "aguardando" | "jogando" | "defendendo" | "fim_de_jogo"`
+  - [ ] `lastAction?: { type, ... }`
+  - [ ] `guesses?: string[]`
+
+### 11.3 Client (client/)
+
+- [ ] Copiar `client/src/lib/gameStore.ts`
+  - [ ] Adaptar `GameStatus`
+  - [ ] Adicionar ações para novo jogo
+- [ ] Copiar componentes:
+  - [ ] `HomeScreen`
+  - [ ] `LobbyScreen`
+  - [ ] `RoomRedirect`
+- [ ] **Criar novo**:
+  - [ ] `GameScreen` para Desafio da Palavra
+- [ ] Adicionar `normalize()` em utils
+
+### 11.4 Configuração
+
+- [ ] Copiar `package.json` (adicionar `axios`)
+- [ ] Copiar `tsconfig.json`
+- [ ] Copiar `vite.config.ts`
+- [ ] Copiar `drizzle.config.ts`
+
+---
+
+## 12. TEMPO ESTIMADO DE IMPLEMENTAÇÃO
+
+| Tarefa | Tempo | Notas |
+|--------|-------|-------|
+| Copiar backend | 15min | Copiar/colar + pequenos ajustes |
+| Copiar client base | 20min | Store + HomeScreen + LobbyScreen |
+| Implementar GameScreen | 2-3h | Lógica do jogo, anims, UX |
+| Testar fluxo completo | 1h | Criar sala, entrar, jogar |
+| **TOTAL** | **~4-4.5h** | Para um desenvolvedor |
+
+---
+
+## 13. DECISÕES ARQUITETURAIS MANTIDAS
+
+✅ **Manter:**
+- In-memory storage para salas
+- WebSocket para tempo real
+- Zustand para state management
+- Tailwind CSS para styling
+- 3-char room codes
+
+✅ **Adaptar:**
+- Desconexão suave/rígida: manter lógica, mas pular de turno se for vez do desconectado
+- GameStatus: adicionar `defendendo`
+- gameData: apenas estender com novos campos
+
+❌ **Não usar:**
+- modo "Seleção de Modo" (ModeSelectScreen) - vai direto do lobby para playing
+- modo "Spinner" (spinning wheel) - não necessário
+
+---
+
+## CONCLUSÃO
+
+**O sistema de Impostor Game foi muito bem arquitetado para reutilização!**
+
+- 🟢 **90% do código de backend** pode ser copiado literalmente
+- 🟢 **100% do sistema de lobby** é reutilizável
+- 🟢 **100% do sistema de validação de players** é reutilizável
+- 🟡 **50% do sistema de client** é reutilizável (componentes sim, GameScreen não)
+- 🔴 **0% da lógica de jogo** é compartilhada (Desafio da Palavra é jogo diferente)
+
+**Economias esperadas:**
+- Backend: 3-4 horas de desenvolvimento
+- Frontend (base): 2-3 horas de desenvolvimento
+- Total: ~5-6 horas economizadas
+- Novo trabalho: ~2-3 horas para GameScreen novo
+- **ROI: ~70% de reutilização**
+
+ESPECIFICAÇÃO TÉCNICA: DESAFIO DA PALAVRA (MULTIPLAYER ONLINE)
+
+OBJETIVO DO PROMPT (REPLIT/AI)
+Construir uma aplicação Fullstack (React + Node.js/Firebase) multiplataforma. O jogo deve gerenciar estados em tempo real para até 4 jogadores, permitindo que joguem simultaneamente em PC, Android e iOS (via Web App).
+
+REGRAS E MECÂNICAS DETALHADAS
+A. O Fluxo de Jogo
+
+Entrada: O jogador da vez insira apenas UMA letra.
+
+Continuidade: Após inserir a letra, o turno passa para o próximo jogador ativo. Não há validação automática de palavra completa para não haver interrupção ou problema.
+
+Vidas: Cada jogador inicia com 3 vidas (ícones de coração).
+
+Condição de Vitória: O último jogador com vidas restantes vence.
+
+B. Ações Especiais (O Coração do Jogo)
+
+DESAFIAR (Desafio):
+
+Acionado quando o Jogador A acha que o Jogador B inseriu uma letra que não leva nenhuma palavra real.
+
+Logística: O jogo entra no "Modo de Defesa". O Jogador B deve digitar a palavra completa que ele tinha em mente.
+
+Trava de Prefixo: O sistema bloqueia as letras que já estão na mesa; o Jogador B é apenas digital ou sufixo.
+
+Julgamento: O sistema consulta a API. Se a palavra existir E começar com o prefixo da mesa, o Desafiante perde vida. Caso contrário, o Desafiado perde vida.
+
+FINALIZAR (Acusar Fim):
+
+Acionado quando o Jogador Acha que a palavra na mesa já está completa e não existem palavras maiores que a utilizam.
+
+Exemplo: Mesa tem "SAPO". O jogador acha que não existe "SAPOS" ou "SAPO..." no dicionário.
+
+Julgamento: A API verifica se a palavra atual é válida E se existem extensões (prefix-search). Se a palavra for realmente "morta" (sem extensões), quem colocou a última letra perde. Se ainda houver como crescer, quem acusou o fim perder.
+
+LÓGICA DO ALGORITMO E VALIDAÇÃO
+A. Normalização de Strings (Crucial)
+
+O algoritmo deve tratar a comparação de strings usando a seguinte lógica para ignorar acentos e cedilhas:
+
+function normalize(str) { return str.toLowerCase() .normalize("NFD") .replace(/[\u0300-\u036f]/g, "") // Remove acentos .replace(/ç/g, "c"); }
+
+B. Algoritmo de Verificação de Desafio
+
+Receber prefixo_mesa e palavra_defesa.
+
+Verifique se normalize(palavra_defesa).startsWith(normalize(prefixo_mesa)).
+
+Consultar API https://api.dicionario-aberto.net/search-prefix/{palavra_defesa} .
+
+Filtrar resultados para encontrar uma correspondência exata onde normalize(resultado) === normalize(palavra_defesa).
+
+C. Algoritmo de Acusar Fim
+
+Consultar prefixo de pesquisa para a palavra na mesa.
+
+Se exact_match for verdadeiro E total_results (com comprimento > mesa) for zero: Sucesso na acusação.
+
+ARQUITETURA MULTIJOGADOR (FIRESTORE)
+O banco de dados deve ser estruturado para sincronização em tempo real:
+
+Coleção: quartos/{roomId}
+
+currentWord: string (letras na mesa)
+
+turnIndex: inteiro (quem joga agora)
+
+status: "aguardando" | "jogando" | "defendendo" | "fim de jogo"
+
+lastAction: objeto (detalhes do último desafio para feedback)
+
+Subcoleção: players/{uid}
+
+nome: string
+
+vidas: inteiro
+
+está online: booleano
+
+ordem: inteiro (posição na roda)
+
+UI/UX E INTERFACE
+Responsividade: Layout em Flexbox/Grid. No celular, os botões de ação (desafiar/finalizar) devem ser grandes e acessíveis com o medo.
+
+Teclado: Implemente um teclado visual (AZ) para evitar que o teclado nativo do Android/iOS quebre o layout da aplicação.
+
+Feedback visual:
+
+Letras na mesa com animação de "Bounce" ao entrar.
+
+Corações que "quebram" ou piscam em vermelho ao perder vida.
+
+Overlay de "Aguardando Jogador" para turnos alheios.
+
+STACK TECNOLÓGICA PARA O REPLIT
+Frontend: React.js com Tailwind CSS e ícones Lucide.
+
+Backend/Banco de dados: Firebase (Autenticação + Firestore).
+
+API Externa: Dicionário Aberto (JSON/GET).
+
+Reutilize o jogo do impostor, pq é o melhor sistema de lobby que temos
+
+Analisarei sistematicamente o sistema de salas/lobby multijogador. Começarei explorando a estrutura do projeto e, em seguida, detalharei cada componente.
+
+Agora, deixe-me ler todos os arquivos principais simultaneamente:
+
+Agora, deixe-me ler as seções críticas do arquivo routes.ts:
+
+Agora, vamos analisar os componentes da tela inicial e da tela de lobby do ImpostorGame:
+
+Agora, vamos analisar o componente LobbyScreen e a página RoomRedirect:
+
+Agora, deixe-me analisar o arquivo server/index.ts para entender como o servidor é inicializado:
+
+Agora tenho uma visão completa de todo o sistema. Deixe-me criar as anotações:
+
+🏠 Mesa de Sala — A Estrutura de Dados Essencial
+
+shared/schema.ts
+Linhas 26-40
+
+A roomstabela é a única fonte de verdade para todo o estado do modo multijogador. Principais decisões de projeto:
+
+code(PK) : Uma sequência alfanumérica de 3 caracteres (ex: "AB3") usada como chave primária — sem ID de incremento automático. Este É o código de entrada que os jogadores compartilham.
+hostId: O uidjogador que criou a sala. Controla quem pode iniciar o jogo, expulsar jogadores, etc.
+status: "waiting"(lobby) ou "playing"(no jogo). Este único campo controla todo o roteamento de tela do lado do cliente.
+gameData: jsonbUm objeto JSON flexível que armazena TODO o estado específico de cada modo de jogo (palavras, funções, votos, respostas, etc.) — evitando a necessidade de tabelas separadas para cada modo de jogo.
+players: jsonbA lista completa de jogadores é armazenada como um array JSON diretamente na linha da sala — sem room_playerstabela de junção separada.
+⚠️ Importante para reutilização : Os quartos são armazenados na memória (não no banco de dados), mesmo quando DatabaseStorageusados ​​— veja storage.ts. O banco de dados é usado apenas para usuários/temas/posts.
+
+👤 Tipo de jogador — Objeto de identidade mínimo
+
+shared/schema.ts
+Linhas 44-52
+
+A Playertipografia é intencionalmente minimalista:
+
+type Player = {
+  uid: string;          // Client-generated random ID (not auth-based)
+  name: string;         // Display name entered on home screen
+  waitingForGame?: boolean;  // True if player joined mid-game
+  connected?: boolean;  // WebSocket heartbeat status
+};
+Nenhuma autenticação necessária — uidé gerada no lado do cliente por meio generateUID()de gameStore.ts. Isso significa:
+
+A adesão é muito simples (sem necessidade de login).
+Ausência de identidade persistente entre as sessões
+O host é identificado porroom.hostId === player.uid
+Para reutilização em jogos de palavras : Este tipo é diretamente reutilizável tal como está.
+
+🎮 GameData — Um bloco JSON flexível para todo o estado do jogo
+
+shared/schema.ts
+Linhas 62-100
+
+Todo o estado específico de cada modo de jogo reside neste único GameDatatipo, armazenado como uma coluna JSONB. Este é o ponto de extensibilidade para novos modos de jogo:
+
+word, location, roles— para modos de palavra/localização
+factions, factionMap— para o modo de duas facções
+answers— votespara as fases de perguntas e respostas e votação
+impostorIds— suporta múltiplos impostores
+hint— dica opcional para o impostor
+gameConfig— armazena a configuração de tempo de execução (contagem de impostores, dicas ativadas)
+Para um jogo de palavras : você adicionaria campos como currentWord, guesses, roundNumber, scoresaqui. A coluna JSONB significa que não é necessária migração de esquema ao adicionar novos campos — basta estender o tipo TypeScript.
+
+🗄️ Arquitetura de armazenamento — Backend duplo com salas em memória
+
+servidor/armazenamento.ts
+Linhas 1-40
+
+A camada de armazenamento possui uma peculiaridade arquitetônica crítica:
+
+IStorageA interface define todas as operações. Existem duas implementações:
+
+MemoryStorage— usado quando nenhuma DATABASE_URLvariável de ambiente está definida
+DatabaseStorage— usado em produção (Postgres via Drizzle ORM)
+⚠️ Importante : Até mesmo DatabaseStorageos dados das salas são armazenados na memória ( private rooms: Map<string, Room>) — NÃO no banco de dados. Somente usuários, temas e posts são enviados para o Postgres. Isso significa:
+
+As salas são perdidas ao reiniciar o servidor.
+Não é possível dimensionamento horizontal sem sessões persistentes ou uma camada Redis.
+A limpeza dos quartos é realizada a cada 30 minutos viasetInterval
+Por quê? As salas são efêmeras (duram 1 hora), exigem muitas alterações (cada ação do jogador atualiza a sala) e a estrutura JSON não se beneficia do armazenamento relacional.
+
+🏠 createRoom — Inserção simples de mapas
+
+servidor/armazenamento.ts
+Linhas 88-100
+
+A criação de salas é uma operação realizada puramente em memória:
+
+async createRoom(insertRoom: InsertRoom): Promise<Room> {
+  const room: Room = {
+    ...insertRoom,
+    createdAt: new Date().toISOString()
+  };
+  this.rooms.set(room.code, room);  // Map key = room code
+  return room;
+}
+O codecódigo é gerado antes desta chamada (em routes.ts), sendo passado como parte de InsertRoom. A camada de armazenamento não possui lógica de geração de código.
+
+➕ adicionarJogadorÀSala — Jogador Idempotente Entrar
+
+servidor/armazenamento.ts
+Linhas 104-120
+
+async addPlayerToRoom(code: string, player: Player): Promise<Room | undefined> {
+  const playerExists = room.players.some(p => p.uid === player.uid);
+  if (playerExists) return room;  // Idempotent: no-op if already in room
+  
+  const updatedRoom = { ...room, players: [...room.players, player] };
+  this.rooms.set(code, updatedRoom);
+  return updatedRoom;
+}
+A idempotência é fundamental aqui — se um jogador se reconectar e a chamada HTTP join for feita novamente, ele não será duplicado. A join-roommensagem WebSocket lida com o processo de reconexão separadamente (restaurando connected: trueo status).
+
+🎲 generateRoomCode() — Como os códigos de quarto são criados
+
+servidor/rotas.ts
+Linhas 253-261
+
+function generateRoomCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = randomBytes(3);
+  let code = '';
+  for (let i = 0; i < 3; i++) code += chars[bytes[i] % chars.length];
+  return code;
+}
+Decisões de projeto :
+
+3 caracteres — curto o suficiente para digitar em dispositivos móveis, entropia suficiente para uso casual.
+Conjunto de caracteres = 32 caracteres — exclui deliberadamente 0, 1, I, Opara evitar confusão visual (0/O, 1/I)
+crypto.randomBytes— criptograficamente aleatório, nãoMath.random()
+Espaço total : 32³ = 32.768 códigos possíveis . Com um TTL de 1 hora e uso típico, a probabilidade de colisão é baixa.
+Sem verificação de colisão : Se um código já existir no mapa, a nova sala o sobrescreverá — um pequeno bug para cenários de alto tráfego.
+Para um jogo de palavras : Esta função pode ser copiada e colada diretamente. Considere usar de 4 a 6 caracteres se você espera mais salas simultâneas.
+
+🚀 POST /api/rooms/create — Endpoint de Criação de Salas
+
+servidor/rotas.ts
+Linhas 2051-2110
+
+Corpo da solicitação :{ hostId: string, hostName: string }
+
+Fluxo :
+
+Validar corpo com esquema Zod
+Ligue generateRoomCode()para obter um código de 3 caracteres.
+Crie um Playerobjeto para o host comconnected: true
+Chamada storage.createRoom()com status "waiting", vazia gameData, host como primeiro jogador
+Contador de incrementos impostorTotalRoomsCreated(análise)
+Caso especial: se hostName === "testeadm26", adicione automaticamente 4 jogadores bots.
+Retorna o objeto completo da sala como JSON.
+Não é necessária autenticação — qualquer cliente pode criar uma sala. O usuário hostIdé confiável para o cliente.
+
+⚠️ Nota de segurança : hostIdo ID é gerado pelo cliente e não é verificado. Um cliente malicioso poderia se passar por outro jogador hostId. Isso é aceitável para um jogo casual entre amigos, mas não para partidas competitivas.
+
+🚪 POST /api/rooms/join — Entrada em salas por código
+
+servidor/rotas.ts
+Linhas 2108-2150
+
+Corpo da solicitação :{ code: string, playerId: string, playerName: string }
+
+Fluxo :
+
+Normalizar código para maiúsculas
+Procure por espaço no armazenamento — retorne 404 se não for encontrado.
+Cancele qualquer temporizador de exclusão de sala vazia pendente (alguém vai entrar!).
+Verificar se o jogo está em andamento: se estiver room.status === 'playing', definir waitingForGame: trueno novo jogador
+Chamada storage.addPlayerToRoom()(idempotente)
+Transmita room-updatepara todas as conexões WebSocket existentes na sala.
+Retornar ao quarto atualizado
+Comportamento principal : Os jogadores podem entrar no meio da partida, mas são marcados como ausentes waitingForGame: true. Eles veem a tela do lobby e aguardam a próxima rodada. Essa é a mecânica de entrada tardia .
+
+Para um jogo de palavras : você pode bloquear completamente as entradas durante o jogo ou permitir espectadores. Altere o passo 4 de acordo.
+
+🔌 Configuração do servidor WebSocket — Dois mapas principais
+
+servidor/rotas.ts
+Linhas 1282-1295
+
+const wss = new WebSocketServer({ noServer: true });
+const roomConnections = new Map<string, Set<WebSocket>>();
+const playerConnections = new Map<WebSocket, { roomCode: string; playerId?: string; lastPong: number }>(); 
+Dois mapas complementares alimentam o sistema em tempo real:
+
+roomConnections: roomCode → Set<WebSocket>— usado para transmissão. Para enviar uma mensagem a todos em uma sala, repita este conjunto.
+
+playerConnections: WebSocket → { roomCode, playerId, lastPong }— usado para pesquisa reversa. Quando um WebSocket é fechado ou expira, descobre a qual jogador/sala ele pertence.
+
+broadcastToRoom(roomCode, data)Utiliza-se roomConnectionspara distribuir mensagens a todos os clientes conectados em uma sala.
+
+URL do WebSocket : /game-ws(atualizado de HTTP via httpServer.on('upgrade'))
+
+🔄 Manipulador de entrada em sala WebSocket — Lógica de conexão e reconexão
+
+servidor/rotas.ts
+Linhas 1648-1700
+
+Quando um cliente envia dados { type: 'join-room', roomCode, playerId }via WebSocket:
+
+Registre o WebSocket roomConnections(para transmissão).
+Cadastre-se playerConnectionscom lastPong: Date.now()(para batimento cardíaco)
+Procure o cômodo no depósito.
+Se o jogador já estiver na sala → caminho de reconexão : chamar markPlayerConnected()which:
+Cancela qualquer temporizador de saída forçada pendente.
+Conjuntosplayer.connected = true
+player-reconnectedEvento de transmissões
+Se for um novo jogador → envie o estado atual da sala.
+Esse design de caminho duplo significa que o WebSocket join-roomé chamado tanto na primeira conexão quanto na reconexão após uma interrupção de rede.
+
+📴 Ciclo de Vida da Desconexão — Saída Suave vs. Saída Rústica
+
+servidor/rotas.ts
+Linhas 1399-1445
+
+O sistema possui um modelo de desconexão bifásica :
+
+Fase 1 — Desconexão suave ( markPlayerDisconnected):
+
+Conjuntos player.connected = falsearmazenados
+Remove o WebSocket deroomConnections
+player-disconnectedEvento de transmissões
+O jogador permanece no quarto (não é removido).
+Fase 2 — Saída forçada ( handlePlayerHardExit, após HARD_EXIT_FALLBACK_GRACE = 15s):
+
+Remove o jogador do room.playersarray
+A transferência é feita para o host se o jogador que saiu era o host (prioridade: jogadores conectados primeiro).
+Transmissões player-removede host-changedeventos
+Se o quarto ficar vazio, o sistema programa a exclusão do quarto após 10 segundos.
+Gatilhos para desconexão suave :
+
+closeEvento WebSocket
+Tempo limite de batimento cardíaco (sem jogar Pong em 15 segundos)
+disconnect_noticemensagem (descarregar navegador)
+sendBeaconpara/api/rooms/:code/disconnect-notice
+Gatilhos para saída forçada :
+
+leaveMensagem WebSocket intencional
+Expiração do período de tolerância após desconexão temporária
+Chute do apresentador
+🎪 Zustand GameStore — A Máquina de Estados do Cliente Completa
+
+client/src/lib/gameStore.ts
+Linhas 1-140
+
+Todo o estado do modo multijogador do lado do cliente reside em um único armazenamento Zustand . Campos de estado principais:
+
+user: Player | null          // Current player identity (uid + name)
+room: Room | null            // Full room snapshot from server
+status: GameStatus           // Screen routing state machine
+ws: WebSocket | null         // Active WebSocket connection
+gameModes: GameMode[]        // Available modes from /api/game-modes
+selectedMode: GameModeType   // Mode chosen in ModeSelectScreen
+lobbyChatMessages: []        // In-memory chat history (max 50)
+notifications: []            // Toast-style player event notifications
+GameStatusé o roteador de tela :
+
+'home' → 'lobby' → 'modeSelect' → 'gameConfig' → 'submodeSelect' → 'spinning' → 'playing'
+Cada valor corresponde a um componente React diferente renderizado em ImpostorGame.tsx.
+
+🆔 generateUID() — Identidade do Jogador no Lado do Cliente
+
+client/src/lib/gameStore.ts
+Linhas 155-175
+
+function generateUID(): string {
+  return 'user-' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+}
+Os UIDs dos jogadores são gerados inteiramente no cliente — sem envolvimento do servidor, sem autenticação. Isso significa:
+
+Um novo UID é criado a cada setUser()chamada.
+Atualizar a página cria uma nova identidade (o jogador aparece como uma nova pessoa).
+O savedNicknamecomando `in` localStoragesalva apenas o nome , não o UID.
+⚠️ Implicação : Se um jogador atualizar a página durante o jogo, ele receberá um novo UID e aparecerá como um novo jogador. O UID antigo será eventualmente removido pelo sistema de pulsação.
+
+Para um jogo de palavras : considere persistir o UID localStoragejunto com o apelido para uma melhor experiência de reconexão.
+
+🔌 connectWebSocket() — Lógica de conexão completa + reconexão
+
+client/src/lib/gameStore.ts
+Linhas 261-420
+
+Esta é a função mais complexa da loja. Ela:
+
+Abre wss://host/game-ws
+Ao abrir : envia { type: 'join-room', roomCode, playerId }+sync_request
+Batimento cardíaco : responde ao servidor pingcompong
+Roteamento de mensagens : despachos room-update, etc.player-leftkickedlobby-chat-message
+Reconexão : recuo exponencial (1,5s → 3s → 5s → 8s → 13s... até 10 tentativas)
+Detecção de desconexão (método duplo para confiabilidade):
+beforeunload// pagehide→ unloadenvia disconnect_noticevia WebSocket
+Também envia sendBeaconpara /api/rooms/:code/disconnect-notice(sobrevive ao fechamento da aba)
+Visibilidade da aba : envia um aviso sync_requestquando a aba volta a ficar visível.
+A room-updatemensagem é o principal mecanismo de sincronização — o servidor envia o objeto de sala completo após cada mudança de estado, e o cliente substitui sua cópia local inteiramente (sem atualizações parciais).
+
+📊 updateRoom() — Estado do servidor → Roteamento da tela do cliente
+
+client/src/lib/gameStore.ts
+Linhas 540-600
+
+Essa função é chamada sempre que uma room-updatemensagem WebSocket chega. Ela serve de ponte entre o estado do servidor e a interface do usuário do cliente .
+
+room.status === 'waiting'  →  status = 'lobby'
+room.status === 'playing'  →  status = 'playing'  (unless waitingForGame)
+player.waitingForGame      →  status = 'lobby'  (mid-game joiner)
+Casos especiais :
+
+Se hostIdapontar para um jogador que não está em players[], corrige para players[0](rede de segurança do lado do cliente).
+Quando a sala é reiniciada 'waiting', limpa selectedMode, speakingOrder,showSpeakingOrderWheel
+enteredDuringGameA flag é ativada se o jogador entrar em uma sala que já está em jogo.
+É por isso que os jogadores que não são o host seguem automaticamente a navegação do host — as ações do host mudam room.statusno servidor, que transmite a mensagem room-update, que chama updateRoom()todos os clientes, que alteram seu statusestado, que então renderiza novamente a tela correta.
+
+🏠 createRoom() + joinRoom() — Os dois pontos de entrada
+
+client/src/lib/gameStore.ts
+Linhas 602-685
+
+createRoom():
+
+1. Requires user to be set (setUser() called first)
+2. POST /api/rooms/create { hostId, hostName }
+3. Set room + status='lobby' in store
+4. connectWebSocket(room.code)
+joinRoom(code):
+
+1. Requires user to be set
+2. POST /api/rooms/join { code, playerId, playerName }
+3. Returns false if 404 (room not found)
+4. Set room + status='lobby' in store  
+5. connectWebSocket(room.code)
+Ambas as funções :
+
+Definido isLoading: truedurante a busca
+Chamada connectWebSocket()após sucesso do HTTP (WebSocket é secundário ao HTTP)
+Transição para 'lobby'o status independentemente do estado atual do jogo na sala (o WebSocket room-updatecorrigirá isso).
+Para um jogo de palavras : Essas duas funções representam a superfície mínima da API necessária. Copie-as, alterando apenas os URLs dos endpoints.
+
+🏠 Componente da Tela Inicial — Interface de Usuário do Ponto de Entrada
+
+client/src/pages/ImpostorGame.tsx
+Linhas 1234-1370
+
+A tela inicial lida com três caminhos de entrada:
+
+1. Criação manual ( handleCreate):
+
+setUser(name) → showInterstitial(() => createRoom())
+2. Junção manual ( handleJoin):
+
+setUser(name) → joinRoom(code.toUpperCase())
+3. Entrada automática a partir de URL ( /sala/:codigo):
+
+RoomRedirectA página armazena o código emsessionStorage('autoJoinRoomCode')
+HomeScreenLê o arquivo ao ser montado e preenche previamente o campo de entrada de código.
+O usuário ainda precisa inserir seu nome manualmente.
+4. Criação automática a partir de páginas da galeria/tema :
+
+Conjunto de páginas temáticas sessionStorage('autoStartGame', 'true')+selectedThemeCode
+HomeScreenLê essas informações ao montar o dispositivo e faz chamadas automáticas createRoom()se o apelido estiver salvo.
+Persistência do apelido : Armazenado em localStorage('tikjogos_saved_nickname'). Verificado na montagem, preenche previamente o campo de nome.
+
+🎮 Componente LobbyScreen — Interface do usuário da sala de espera
+
+client/src/pages/ImpostorGame.tsx
+Linhas 2640-2900
+
+A tela do lobby é exibida quando status === 'lobby'. Principais recursos:
+
+Exibição do código da sala : Mostrado room.codeem destaque. Clicar copia ${origin}/sala/${room.code}para a área de transferência (link compartilhável).
+
+Lista de jogadores : Exibe todos room.players. Mostra:
+
+Distintivo de coroa para anfitrião ( room.hostId === player.uid)
+Distintivo "VOCÊ" para jogador atual
+waitingForGameindicador para participantes no meio do jogo
+Botão de expulsão (somente para o anfitrião, não para si mesmo)
+Controles de bate-papo por voz (Agora RTC)
+Controles do host :
+
+Botão "MODO ESCOLHER" (ativado somente quando players.length >= 3)
+Configurações → GameConfigModal(contagem de impostores, dicas)
+Botão Sair
+Visualização não-host : Mostra "Aguardando o capitão..." com pontos animados
+
+LobbyChatcomponente na parte inferior — bate-papo em tempo real via lobby-chatmensagens WebSocket
+
+📺 ImpostorGameInner — O Roteador de Tela
+
+client/src/pages/ImpostorGame.tsx
+Linhas 4786-4830
+
+O componente de nível superior é um interruptor simples baseado em status:
+
+if (status === 'home') return <HomeScreen />;
+
+// All other screens share a dark background container:
+return (
+  <div className="min-h-screen bg-[#1C202C]">
+    {status === 'lobby'      && <LobbyScreen />}
+    {status === 'modeSelect' && <ModeSelectScreen />}
+    {status === 'submodeSelect' && <PalavraSuperSecretaSubmodeScreen />}
+    {status === 'playing'    && <GameScreen />}
+  </div>
+);
+Nota : status === 'gameConfig'e status === 'spinning'NÃO são renderizados como telas de nível superior aqui — eles são tratados como sobreposições modais dentro de ModeSelectScreen.
+
+VoiceChatProviderEnvolve todo o componente para restringir o carregamento do SDK Agora RTC somente a esta página.
+
+🔗 RoomRedirect — Gerenciador de links de salas compartilháveis
+
+client/src/pages/RoomRedirect.tsx
+Linhas 1-26
+
+Rota: /sala/:codigo(também /en/sala/:codigo, /es/sala/:codigo)
+
+Finalidade : Permite compartilhar um link direto como este https://tikjogos.com/sala/AB3. Quando alguém abre este URL:
+
+Extrai o código da sala do parâmetro da URL.
+Armazena-o emsessionStorage('autoJoinRoomCode')
+Redireciona para /(página inicial)
+HomeScreenLê autoJoinRoomCodeao montar e preenche previamente a entrada de código.
+O usuário ainda precisa digitar seu nome e clicar em "Entrar na Sala".
+Por que não participar diretamente? O usuário precisa definir seu nome de exibição primeiro. A abordagem de redirecionamento para a página inicial reutiliza o fluxo de entrada de nome existente.
+
+Para um jogo de palavras : Copie este padrão exatamente. A sessionStoragetransição é limpa e simples.
+
+Agora, deixe-me verificar o ciclo de vida completo, analisando a gameConfigtela e o startfluxo do endpoint:
+
+⏰ Limpeza do quarto — TTL de 1 hora via setInterval
+
+servidor/armazenamento.ts
+Linhas 157-167
+
+cleanupOldRooms(): void {
+  const oneHourAgo = Date.now() - 60 * 60 * 1000;
+  entries.forEach(([code, room]) => {
+    if (new Date(room.createdAt).getTime() < oneHourAgo) {
+      this.rooms.delete(code);
+    }
+  });
+}
+Chamadas a cada 30 minutos através do endereço setIntervalna parte inferior da tela storage.ts. Salas com mais de 1 hora de duração são excluídas.
+
+Além disso, as salas são excluídas imediatamente quando:
+
+Todos os jogadores se desconectam e o temporizador de sala vazia de 10 segundos é acionado ( scheduleEmptyRoomDeletionem routes.ts)
+Para um jogo de palavras : O tempo total de jogo (TTL) de 1 hora é razoável. Você pode aumentá-lo para jogos mais longos ou diminuí-lo para jogos com ritmo mais acelerado.
+
+Agora tenho uma visão completa. Permita-me compilar um resumo abrangente:
+
+🔬 Análise completa: Sistema de salas/lobby multijogador
+Aqui está a análise completa da arquitetura do sistema multijogador do jogo Impostor, organizada para ser reutilizada em um novo jogo de palavras.
+
+1. 🏗️ Visão Geral da Arquitetura
+O sistema utiliza uma pilha de 3 camadas :
+
+Client (React + Zustand)
+    ↕ HTTP REST (create/join/start/reset)
+    ↕ WebSocket /game-ws (real-time sync)
+Server (Express + ws)
+    ↕ In-Memory Map<string, Room>
+Storage (MemoryStorage or DatabaseStorage)
+Uma observação importante : mesmo em produção com Postgres ( DatabaseStorage), as salas são armazenadas na memória em um Map<string, Room>. Somente usuários, temas e posts de blog são gravados no banco de dados. As salas são efêmeras por natureza.
+
+2. 🎲 Geração de código de sala ( server/routes.ts:253)
+function generateRoomCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 32 chars, no 0/O/1/I
+  const bytes = randomBytes(3);                      // crypto-secure
+  let code = '';
+  for (let i = 0; i < 3; i++) code += chars[bytes[i] % chars.length];
+  return code;  // e.g. "AB3", "X7K"
+}
+3 caracteres de um alfabeto de 32 caracteres = 32.768 códigos possíveis
+Exclui caracteres visualmente ambíguos ( 0, O, 1, I)
+Usos crypto.randomBytes(não Math.random)
+Sem verificação de colisão — uma nova sala sobrescreve silenciosamente uma existente com o mesmo código (raro, mas possível).
+3. 🏠 Estrutura de dados da sala ( shared/schema.ts:26)
+// Database table (but stored in-memory at runtime)
+rooms = pgTable("rooms", {
+  code: text("code").primaryKey(),        // "AB3" — the join code
+  hostId: text("host_id"),                // uid of the host player
+  status: text("status").default("waiting"), // "waiting" | "playing"
+  gameMode: text("game_mode"),            // "palavraSecreta" | "palavras" | etc.
+  currentCategory: text("current_category"),
+  currentWord: text("current_word"),
+  impostorId: text("impostor_id"),
+  gameData: jsonb("game_data"),           // All game-mode-specific state
+  players: jsonb("players").default([]),  // Player[] array
+  createdAt: timestamp("created_at"),
+});
+
+type Player = {
+  uid: string;              // Client-generated random ID
+  name: string;             // Display name
+  waitingForGame?: boolean; // True if joined mid-game
+  connected?: boolean;      // WebSocket heartbeat status
+};
+A gameDatacoluna JSONB é o ponto de extensibilidade — ela armazena tudo, desde wordo início votesaté hintso fim, impostorIdssem necessidade de alterações no esquema.
+
+4. 🚀 Fluxo de Criação de Ambientes
+HomeScreen
+  → handleCreate()
+    → setUser(name)           // Generates uid client-side
+    → createRoom()            // gameStore.ts:602
+      → POST /api/rooms/create { hostId, hostName }
+        → generateRoomCode()  // "AB3"
+        → storage.createRoom({ code, hostId, status:"waiting", players:[host] })
+        → impostorTotalRoomsCreated++
+      ← returns Room object
+    → set({ room, status:'lobby' })
+    → connectWebSocket(room.code)
+      → ws.send({ type:'join-room', roomCode, playerId })
+      → ws.send({ type:'sync_request' })
+5. 🚪 Fluxo de entrada na sala (por código)
+HomeScreen
+  → handleJoin()
+    → setUser(name)
+    → joinRoom(code)          // gameStore.ts:646
+      → POST /api/rooms/join { code, playerId, playerName }
+        → storage.getRoom(code)  // 404 if not found
+        → cancelEmptyRoomDeletion(code)
+        → player = { uid, name, waitingForGame: isGameInProgress, connected: true }
+        → storage.addPlayerToRoom(code, player)  // idempotent
+        → broadcastToRoom(code, { type:'room-update', room })
+      ← returns updated Room
+    → set({ room, status:'lobby' })
+    → connectWebSocket(room.code)
+Mecânica de entrada tardia : Se room.status === 'playing', o novo jogador recebe waitingForGame: true. Ele vê a tela do lobby e espera pela próxima rodada.
+
+6. 🔗 Participe através do link compartilhável ( /sala/:codigo)
+User opens https://tikjogos.com/sala/AB3
+  → RoomRedirect component
+    → sessionStorage.setItem('autoJoinRoomCode', 'AB3')
+    → navigate('/')
+  → HomeScreen mounts
+    → reads sessionStorage('autoJoinRoomCode')
+    → pre-fills code input
+    → user types name + clicks "Entrar na Sala"
+    → normal joinRoom() flow
+7. 🔄 Ciclo de vida completo: Início → Jogo
+STATUS MACHINE (client-side, driven by server room.status):
+
+'home'
+  ↓ createRoom() or joinRoom()
+'lobby'          ← room.status = "waiting"
+  ↓ host clicks "ESCOLHER MODO" (min 3 players)
+'modeSelect'     ← local state only (no server change)
+  ↓ host selects mode
+'submodeSelect'  ← only for palavraSecreta
+  ↓ (or directly)
+'gameConfig'     ← modal overlay, broadcast via WS to non-hosts
+  ↓ host clicks start
+  → POST /api/rooms/:code/start { gameMode, gameConfig, selectedSubmode }
+    → setupGameMode() assigns roles/words/impostors
+    → storage.updateRoom({ status:"playing", gameData, impostorId })
+    → broadcastToRoom({ type:'room-update', room })
+'playing'        ← room.status = "playing" triggers this on ALL clients
+  ↓ host clicks "Nova Rodada"
+  → POST /api/rooms/:code/reset
+    → storage.updateRoom({ status:"waiting", gameData:null, ... })
+    → broadcastToRoom({ type:'room-update', room })
+'lobby'          ← back to waiting
+Principal conclusão : Jogadores que não são o host seguem automaticamente a navegação do host porque cada ação do host muda room.statusno servidor, que transmite room-updatepara todos os clientes WebSocket, que acessam updateRoom()o armazenamento Zustand, que muda o status, que renderiza novamente a tela correta.
+
+8. 💓 Gestão de Conexões
+Evento	Comportamento
+Fechamento do WebSocket / tempo limite de pulsação	Desconexão suave: player.connected = falsepermanece no quarto
+15 segundos após a desconexão suave	Saída forçada: jogador removido, host transferido se necessário.
+leaveMensagem WS intencional	Saída imediata e imediata
+O jogador se reconecta em 15 segundos.	cancelHardExitRemoval(),player.connected = true
+Quarto vazio por 10s	Quarto excluído
+Quarto com mais de 1 hora	Limpeza concluída em 30 minutos.setInterval
+9. ♻️ Guia de Reutilização para um Novo Jogo de Palavras
+Diretamente reutilizável (copie como está) :
+
+generateRoomCode()— server/routes.ts:253
+Playertipo — compartilhado/esquema.ts:44
+MemoryStorage/ IStorageinterface — servidor/armazenamento.ts
+createRoom/ joinRoomfunções de armazenamento — client/src/lib/gameStore.ts:602
+connectWebSocket()com lógica de reconexão completa — gameStore.ts:261
+RoomRedirectpágina — client/src/pages/RoomRedirect.tsx
+broadcastToRoom()+ roomConnections/ playerConnectionsmapas — servidor/rotas.ts:1286
+Ciclo de vida de desconexão (saída suave/rígida, pulsação) — server/routes.ts:1399
+Necessita de adaptação :
+
+GameDatatipo — adicione os campos do seu jogo de palavras ( currentWord, guesses, scores, roundNumber)
+GameStatustipo — substitua 'modeSelect' | 'submodeSelect' | 'spinning'pelas fases do seu jogo
+POST /api/rooms/:code/start— substitua setupGameMode()pela sua lógica de seleção de palavras
+GameScreencomponente — substitua pela interface do usuário do seu jogo de palavras
+LobbyScreen— reutilizável com pequenas alterações de texto
+Principais decisões arquitetônicas a serem preservadas :
+
+Transmissão completa do objeto da sala a cada alteração (não diferenças) — simples e confiável.
+room.statuscomo a única fonte de verdade para roteamento de tela
+Armazenamento de salas na memória — não coloque salas no banco de dados a menos que precise de persistência.
+Detecção de desconexão dupla (WebSocket + sendBeacon) — essencial para navegadores móveis
+
+Analisarei sistematicamente todos os componentes solicitados. Vou começar lendo todos os arquivos relevantes simultaneamente.
+
+Agora, deixe-me recuperar o arquivo gameStore.ts completo e ler as rotas do servidor e o arquivo ImpostorGame.tsx:
+
+Agora, deixe-me ler a seção LobbyScreen do arquivo ImpostorGame.tsx e os manipuladores de mensagens WebSocket restantes:
+
+Agora, deixe-me ler o componente LobbyScreen do arquivo ImpostorGame.tsx:
+
+Agora, deixe-me obter as partes restantes do LobbyScreen e do esquema compartilhado:
+
+Agora, deixe-me obter as implementações das ações principais restantes do arquivo gameStore.ts:
+
+Agora tenho todas as informações necessárias. Deixe-me criar anotações detalhadas e apresentar a análise completa:
+
+Todos os tipos exportados — O modelo de dados completo
+
+client/src/lib/gameStore.ts
+Linhas 1-80
+
+Todos os tipos exportados de gameStore.ts:
+
+// Minimal player identity (client-side)
+type Player = {
+  uid: string;           // generated by generateUID()
+  name: string;
+  waitingForGame?: boolean; // true = joined mid-game, waiting for next round
+};
+
+// Server-side Player (shared/schema.ts) adds:
+//   connected?: boolean  — true=online, false=soft-disconnected
+
+type GameStatus =
+  | 'home'          // landing / name entry
+  | 'lobby'         // waiting room
+  | 'modeSelect'    // host picking game mode
+  | 'gameConfig'    // host configuring impostor count / hints
+  | 'submodeSelect' // palavraSecreta submode picker
+  | 'spinning'      // speaking-order wheel animation
+  | 'playing';      // active game round
+
+type GameConfig = {
+  impostorCount: number;
+  enableHints: boolean;
+  firstPlayerHintOnly: boolean;
+};
+
+type LobbyChatMessage = {
+  id: string;        // 'chat-{timestamp}-{senderId}'
+  senderId: string;
+  senderName: string;
+  message: string;
+  timestamp: number; // Unix ms
+};
+
+type GameModeType =
+  | 'palavraSecreta'      // Secret Word
+  | 'palavras'            // Words
+  | 'duasFaccoes'         // Two Factions
+  | 'categoriaItem'       // Category/Item
+  | 'perguntasDiferentes' // Different Questions
+  | 'palavraComunidade';  // Community Theme
+
+type PlayerVote = {
+  playerId: string; targetId: string;
+  playerName: string; targetName: string;
+};
+
+type PlayerAnswer = {
+  playerId: string; playerName: string; answer: string;
+};
+
+type GameData = {
+  word?: string; location?: string;
+  roles?: Record<string, string>;
+  factions?: { A: string; B: string };
+  factionMap?: Record<string, string>;
+  category?: string; item?: string;
+  question?: string; impostorQuestion?: string;
+  questionRevealed?: boolean;
+  votingStarted?: boolean; votesRevealed?: boolean;
+  votes?: PlayerVote[]; answers?: PlayerAnswer[];
+  answersRevealed?: boolean; crewQuestionRevealed?: boolean;
+  hint?: string; gameConfig?: GameConfig;
+  impostorIds?: string[];  // supports multiple impostors
+};
+
+type Room = {
+  code: string; hostId: string;
+  status: string;          // 'waiting' | 'playing'
+  gameMode: GameModeType | null;
+  currentCategory: string | null;
+  currentWord: string | null;
+  impostorId: string | null;
+  gameData: GameData | null;
+  players: Player[];
+  createdAt: string;
+};
+Interface GameState — Todos os campos e ações do estado
+
+client/src/lib/gameStore.ts
+Linhas 88-145
+
+Interface completa do GameState:
+
+Campos estaduais:
+
+user: Player | null           // current player identity
+room: Room | null             // current room snapshot
+status: GameStatus            // current UI screen
+isLoading: boolean            // HTTP request in-flight
+ws: WebSocket | null          // live WebSocket connection
+gameModes: GameMode[]         // fetched from /api/game-modes
+selectedMode: GameModeType | null
+submodeSelect: boolean        // palavraSecreta submode UI flag
+gameConfig: GameConfig | null // impostor config set by host
+notifications: Array<{        // toast-style event notifications
+  id: string;
+  type: 'player-left' | 'player-joined' | 'player-reconnected'
+       | 'host-changed' | 'disconnected' | 'player-kicked' | 'player-removed';
+  message: string;
+}>
+enteredDuringGame: boolean    // joined a room already in 'playing' state
+isDisconnected: boolean       // WS reconnect exhausted
+savedNickname: string | null  // persisted in localStorage
+speakingOrder: string[] | null        // ordered uid array from server
+speakingOrderPlayerMap: Record<string,string> | null  // uid→name
+showSpeakingOrderWheel: boolean
+lobbyChatMessages: LobbyChatMessage[]  // capped at 50 messages
+Ações:
+
+setUser(name)          createRoom()         joinRoom(code)
+startGame(themeCode?)  startGameWithConfig(config, themeCode?)
+returnToLobby()        leaveCurrentGame()   leaveGame()
+goToModeSelect()       goToGameConfig()     backToModeSelect()  backToLobby()
+connectWebSocket(code) updateRoom(room)     fetchGameModes()
+revealQuestion()       kickPlayer(uid)      triggerSpeakingOrderWheel()
+setSpeakingOrder()     setShowSpeakingOrderWheel()
+addNotification()      removeNotification() setDisconnected()
+sendLobbyChat(msg)     addLobbyChatMessage() clearLobbyChat()
+saveNickname()         clearSavedNickname() loadSavedNickname()
+setUser e generateUID — Como a identidade do jogador é criada
+
+client/src/lib/gameStore.ts
+Linhas 147-165
+
+function generateUID(): string {
+  return 'user-' + Math.random().toString(36).substr(2, 9)
+                 + Date.now().toString(36);
+  // Example: 'user-k7x2m9qp41kzf8'
+  // Format:  'user-' + 9 random base36 chars + timestamp in base36
+  // NOT cryptographically secure — collision risk is low but possible
+  // NOT persisted — a page refresh generates a new UID
+}
+
+setUser: (name: string) => {
+  const uid = generateUID();
+  set({ user: { uid, name } });
+  // No localStorage persistence of uid — only name is saved via saveNickname()
+}
+Principais implicações:
+
+O UID é efêmero por sessão — atualizar a página cria uma nova identidade.
+saveNickname()Armazena apenas o nome de exibição na localStoragechave.tikjogos_saved_nickname
+Ao reconectar, o mesmo UID é reutilizado (armazenado no userestado) para que o servidor possa identificar o jogador.
+As correspondências do servidor markPlayerConnected()por playerId(o UID) para restaurarconnected: true
+connectWebSocket — Lógica completa de reconexão e desconexão
+
+client/src/lib/gameStore.ts
+Linhas 260-510
+
+Ciclo de vida do WebSocket em connectWebSocket(code):
+
+1. Configuração da conexão:
+
+URL: ws(s)://{host}/game-ws(protocolo detectado automaticamente)
+Ao abrir: envia join-room+sync_request
+Reinicia reconnectAttempts = 0, limpa isDisconnecteda bandeira
+2. Estratégia de reconexão (recuo exponencial):
+
+Attempt 1: 1.5s  Attempt 2: 3s   Attempt 3: 5s
+Attempt 4: 8s   Attempt 5: 13s  Attempt 6: 21s
+Attempt 7-10: 30s each
+Max attempts: 10 → then sets isDisconnected=true + shows 'disconnected' notification
+3. Sincronizar com base na visibilidade/foco da aba:
+
+visibilitychange→ envia sync_requestquando a aba fica visível
+window focus→ Envia sync_requestquando a janela recupera o foco
+4. Detecção de saída abrupta (fechamento do navegador / navegação):
+
+beforeunload → handleDisconnect()
+pagehide (persisted=false) → handleDisconnect()
+unload → handleDisconnect()
+handleDisconnect()envia AMBOS:
+
+Mensagem WebSocket disconnect_notice(rápida, porém não confiável durante o descarregamento)
+navigator.sendBeacon('/api/rooms/{code}/disconnect-notice', JSON blob)(confiável)
+5. Resposta dos batimentos cardíacos:
+
+O servidor envia pinga cada 5 segundos.
+O cliente responde imediatamente compong
+O servidor registra lastPongo carimbo de data/hora por conexão.
+updateRoom — Reconciliação do estado da sala no lado do cliente
+
+client/src/lib/gameStore.ts
+Linhas 510-600
+
+updateRoom(room)é o reconciliador central do estado chamado em todas room-updateas mensagens WS:
+
+1. Guard: if no user, return early
+2. Validate hostId: if hostId points to a non-existent player,
+   correct it to room.players[0].uid
+3. Determine newStatus:
+   - player.waitingForGame=true AND room.status='playing' → stay 'lobby'
+   - room.status='playing' AND first time seeing this room → enteredDuringGame=true, stay 'lobby'
+   - room.status='playing' (normal) → 'playing'
+   - default → 'lobby'
+4. If room.status='waiting' (Nova Rodada / reset):
+   - Clear selectedMode, speakingOrder, speakingOrderPlayerMap, showSpeakingOrderWheel
+   - Set status='lobby'
+5. Otherwise: set room, status, enteredDuringGame, selectedMode
+A waitingForGameflag é definida no servidor quando um jogador entra em uma sala que já está em andamento playing. Ele vê o lobby com a mensagem "Aguardando a próxima rodada" e é excluído da partida ativa.
+
+Máquina de estados de pulsação e desconexão do servidor
+
+servidor/rotas.ts
+Linhas 1459-1640
+
+Sistema de desconexão de três níveis com temporização precisa:
+
+CONSTANTS:
+  HEARTBEAT_INTERVAL = 5000ms   → ping sent every 5s
+  PONG_TIMEOUT       = 15000ms  → soft disconnect after 15s silence
+  HARD_EXIT_FALLBACK_GRACE = 15000ms → hard remove after 15s of soft-disconnect
+Transições de estado:
+
+[CONNECTED]
+    │ server sends ping every 5s
+    │ client responds with pong → updates lastPong
+    │
+    ├─ pong received within 15s → stays CONNECTED
+    │
+    └─ no pong for >15s → [SOFT DISCONNECT]
+           │ player.connected = false
+           │ broadcasts 'player-disconnected'
+           │ broadcasts 'room-update'
+           │ scheduleHardExitRemoval(15s timer)
+           │
+           ├─ player reconnects within 15s → cancelHardExitRemoval()
+           │   player.connected = true
+           │   broadcasts 'player-reconnected'
+           │
+           └─ 15s grace expires → [HARD EXIT]
+                  │ player removed from room.players[]
+                  │ if was host → transfer to first connected player
+                  │ broadcasts 'player-removed'
+                  │ broadcasts 'host-changed' (if applicable)
+                  │ broadcasts 'room-update'
+                  └─ if room now empty → scheduleEmptyRoomDeletion(10s)
+Prioridade de transferência do host em caso de encerramento abrupto:
+
+Primeiro jogador conectado (ordem de entrada mais antiga)
+Primeiro jogador desconectado_pendente
+Primeiro jogador na matriz (alternativa)
+Estruturas de dados:
+
+roomConnections: Map<roomCode, Set<WebSocket>>
+playerConnections: Map<WebSocket, { roomCode, playerId, lastPong }>
+hardExitTimers: Map<'roomCode:playerId', NodeJS.Timeout>
+emptyRoomTimers: Map<roomCode, NodeJS.Timeout>
+Protocolo de mensagens WebSocket — Todos os tipos de mensagens
+
+servidor/rotas.ts
+Linhas 1654-1975
+
+Mensagens CLIENTE → SERVIDOR:
+
+tipo	carga útil	descrição
+join-room	{ roomCode, playerId }	Registra a conexão WS com a sala; aciona a lógica de reconexão se o jogador existir.
+pong	(nenhum)	Resposta de batimento cardíaco; atualiza lastPongo carimbo de data/hora.
+leave	(nenhum)	Saída brusca intencional; remove o jogador imediatamente.
+disconnect_notice	(nenhum)	Sinal de fechamento do navegador; desconexões suaves e, em seguida, agendamento de encerramento forçado.
+sync_request	(nenhum)	Solicita o estado atual da sala; também atualiza.lastPong
+host-back-to-lobby	{ roomCode }	O anfitrião redefine a sala para waiting, apagando todos os dados do jogo.
+host-game-config	{ roomCode }	O anfitrião entrou na tela de configuração; a mensagem foi transmitida a todos os jogadores.
+host-back-to-mode-select	{ roomCode }	O host retornou da configuração; repassou a mensagem para todos os jogadores.
+trigger-speaking-order	{ roomCode }	O host aciona a roleta; o servidor embaralha os jogadores conectados e transmite a ordem.
+kick-player	{ roomCode, targetPlayerId, requesterId }	O host expulsa o jogador; o servidor verifica o host através da conexão WS (não do payload).
+lobby-chat	{ roomCode, message }	Mensagem de chat; o servidor valida o remetente e limita a 200 caracteres.
+Mensagens do SERVIDOR para o CLIENTE:
+
+tipo	carga útil	descrição
+ping	(nenhum)	Sondagem de batimentos cardíacos a cada 5 segundos
+room-update	{ room: Room }	Captura instantânea completa do estado da sala; gatilhosupdateRoom()
+player-disconnected	{ playerId, playerName }	notificação de desconexão suave
+player-reconnected	{ playerId, playerName }	Notificação de reconexão
+player-left	{ playerName }	notificação de afastamento intencional
+player-removed	{ playerId, playerName, reason }	notificação de remoção de saída forçada
+player-kicked	{ playerId, playerName }	Notificação de expulsão para os jogadores restantes
+kicked	{ message }	Enviado ao jogador expulso antes de encerrar o WS dele.
+host-changed	{ newHostId, newHostName }	notificação de transferência de host
+host-game-config	(nenhum)	Relé: todos os jogadores navegam até a tela de configuração do jogo.
+host-back-to-mode-select	(nenhum)	Revezamento: todos os jogadores navegam até a tela de seleção de modo.
+start-speaking-order-wheel	{ speakingOrder: string[], playerMap: Record<string,string> }	Embaralhamento gerado pelo servidor; todos os clientes recebem a mesma ordem.
+lobby-chat-message	{ senderId, senderName, message, timestamp }	Mensagem de chat de transmissão
+error	{ message, details }	Erro de processamento no servidor
+Opção HTTP de fallback para desconexão: POST /api/rooms/:code/disconnect-notice com { playerId }corpo — usada sendBeacondurante o descarregamento da página para maior confiabilidade.
+
+Componente LobbyScreen — Estrutura completa e controles do host
+
+client/src/pages/ImpostorGame.tsx
+Linhas 2640-2880
+
+LobbyScreené um componente autônomo renderizado quando status === 'lobby'.
+
+Estado consumido de useGameStore():
+
+room, user, goToModeSelect, leaveGame, kickPlayer, gameConfig
+Estado derivado:
+
+isHost = room.hostId === user?.uid
+players = room.players || []
+currentPlayer = players.find(p => p.uid === user?.uid)
+isWaitingForNextRound = currentPlayer?.waitingForGame === true
+                        && room.status === 'playing'
+Seções de layout:
+
+Cabeçalho — Exibição do código da sala (fonte monocromática grande, laranja)
+
+Clique para copiar o link compartilhável:{origin}/sala/{code}
+Somente para o anfitrião: ⚙️ Botão Configurações → abre<GameConfigModal>
+Todos os jogadores: 🚪 Botão Sair → chamadasleaveGame()
+Lista de jogadores ( <ul>com space-y-3)
+
+Cada um <li>exibe: inicial do avatar, nome, emblemas
+Emblema da coroa (amarelo, em posição absoluta) no jogador anfitrião
+Crachá 'VOCÊ' no próprio cartão do usuário atual
+Cartão verde para si, cartão de ardósia para os outros.
+waitingForGameindicador : '⏳ Aguardando partida acabar'
+Controles de voz : <SpeakingIndicator>+ <VoiceControlButton>por jogador
+Botão de expulsão (ícone UserX): visível apenas para o anfitrião, oculto para o usuário.
+Chamadas kickPlayer(p.uid)→ envia kick-playermensagem WS
+data-testid="button-kick-{uid}"
+Área de ação (inferior, condicional):**
+
+isWaitingForNextRound : painel âmbar pulsando 'Aguardando próxima rodada...'
+isHost : botão 'ESCOLHER MODO' → chamadasgoToModeSelect()
+Desativado + acinzentado seplayers.length < 3
+Mostra aviso de 'Mínimo de 3 tripulantes'
+Não-host : painel azul pulsando 'Aguardando o capitão...'
+<LobbyChat />— balão de bate-papo flutuante (canto inferior direito)
+
+<GameConfigModal>— modal renderizado condicionalmente para configuração de impostor
+
+Requisito mínimo de jogadores: 3 jogadores para iniciar (ativado pelo botão no lado do cliente e também no lado do servidor)
+
+Componente LobbyChat — Chat Flutuante Reutilizável
+
+client/src/components/LobbyChat.tsx
+Linhas 1-130
+
+Widget de chat flutuante independente. Fixo no canto inferior direito, z-50.
+
+Adereços: Nenhum — lê diretamente deuseGameStore()
+
+Estado:
+
+isOpen: boolean       // toggle between bubble and panel
+message: string       // current input value
+Armazenar encadernações:
+
+lobbyChatMessages     // array of LobbyChatMessage (max 50)
+sendLobbyChat(msg)    // sends 'lobby-chat' WS message
+user                  // to identify own messages
+Comportamento:
+
+Recolhido : botão circular laranja com <MessageCircle>ícone
+Exibe um ícone vermelho com a contagem de mensagens não lidas (limitada a '9+') quando a janela é fechada e existem mensagens.
+data-testid="button-open-chat"
+Expandido : painel de 320px com cabeçalho, lista de mensagens e entrada de texto.
+Rola automaticamente para o final em novas mensagens.
+Focaliza automaticamente a entrada quando aberto.
+A tecla Enter envia a mensagem (Shift+Enter NÃO envia).
+Comprimento máximo da mensagem: 200 caracteres (imposto pelo maxLengthatributo)
+Mensagens próprias: alinhadas à direita, tonalidade laranja.
+Mensagens de terceiros: alinhadas à esquerda, tonalidade azul escura.
+Carimbos de data/hora formatados como HH:MM(localidade pt-BR)
+data-testid="container-lobby-chat"
+Reutilizável: Pode ser inserido em qualquer lugar — basta que esteja useGameStoredentro do escopo. Não requer acessórios.
+
+Paleta de cores: #0f1d32 fundo, #3d4a5cborda, #e07b39destaque, #1a2a42fundo da mensagem
+
+Componente do Sistema de Votação — Fluxo de Votação em 4 Fases
+
+client/src/components/VotingSystem.tsx
+Linhas 1-280
+
+Interface de votação totalmente independente com 4 fases controladas por parâmetros.
+
+Interface de adereços:
+
+roomCode: string
+userId: string
+userName: string
+isHost: boolean
+activePlayers: Player[]    // players eligible to vote/be voted
+impostorId: string         // revealed after voting
+votes: PlayerVote[]        // live vote array from room.gameData
+votingStarted: boolean     // from room.gameData.votingStarted
+votesRevealed: boolean     // from room.gameData.votesRevealed
+onNewRound: () => void     // callback for host to start new round
+Máquina de estados de fase (local useState):
+
+'discussion' → host sees 'Iniciar Votação' button
+    ↓ votingStarted=true
+'voting'     → player selects target, submits vote
+    ↓ hasMyVote=true
+'waitingVotes' → shows who has/hasn't voted yet
+    ↓ allVoted=true + host clicks 'Revelar'
+'result'     → shows winner, vote breakdown, 'Nova Rodada'
+Chamadas de API (HTTP, não WebSocket):
+
+POST /api/rooms/{code}/start-voting
+POST /api/rooms/{code}/submit-vote   { playerId, playerName, targetId, targetName }
+POST /api/rooms/{code}/reveal-impostor
+Condição de vitória: votesForImpostor > totalPlayers / 2 → a tripulação vence
+
+Controles exclusivos do host:
+
+Botão Iniciar votação (fase de discussão)
+Botão Cancelar/X (fases de votação + espera de votos) → chamadasonNewRound
+Botão Revelar Impostor (aguardando votos, somente quando todos votarem)
+Botão Nova Rodada (fase de resultado)
+Controles não relacionados ao host:
+
+Botões de seleção de voto (fase de votação)
+Botão Confirmar Voto
+Botão X na tela de resultados para descartar
+Reutilização: Totalmente baseado em propriedades, sem dependência do armazenamento. Pode ser usado em qualquer modo de jogo que precise de votação.
+
+atributos de testid de dados: button-start-voting , button-vote-{uid}, button-confirm-vote, button-reveal-impostor, button-new-round,button-cancel-voting
+
+Componente NotificationCenter — Notificações de eventos no estilo Toast
+
+client/src/components/NotificationCenter.tsx
+Linhas 1-55
+
+Pilha de notificações corrigida no canto superior direito. z-40, max-w-sm.
+
+Adereços: Nenhum — lê deuseGameStore()
+
+Armazenar encadernações:
+
+notifications   // array of { id, type, message }
+removeNotification(id)
+Tipos de notificação e seu tratamento visual:
+
+tipo	ícone	estilo
+'host-changed'	Coroa	fundo cinza-800, borda cinza-600
+'disconnected'	Wi-Fi desligado	fundo vermelho (#c44536) + borda, texto branco
+todos os outros	AlertCircle	fundo cinza-800, borda cinza-600
+Comportamento especial para 'disconnected'o tipo:
+
+Exibe um botão 'Recarregar' com <RefreshCw>um ícone.
+Chamadas com cliqueswindow.location.reload()
+Dispensado automaticamente após 10 segundos (em comparação com 4 segundos para todos os outros tipos)
+Tempo de desligamento automático (definido addNotification()na loja de jogos):
+
+'disconnected' → 10000ms
+all others     → 4000ms
+Reutilizável: Pode ser inserido em qualquer lugar dentro useGameStoredo escopo. Não são necessários acessórios.
+
+Animação: animate-fade-in Classe CSS em cada cartão de notificação.
+
+Componente MobileNav — Barra de navegação responsiva
+
+client/src/components/MobileNav.tsx
+Linhas 1-175
+
+Barra de navegação fixa no topo com layouts responsivos para desktop e dispositivos móveis.
+
+Adereços: Nenhum
+
+Dependências:
+
+useLanguage()   // for t() translations and langPath() URL prefixing
+useLocation()   // from wouter, for active link highlighting
+Itens de navegação (fixos no código):
+
+{ href: '/',            labelKey: 'nav.home',      icon: <Home> }
+{ href: '/blog',        labelKey: 'nav.blog',      icon: <Newspaper> }
+{ href: '/comojogar',   labelKey: 'nav.howToPlay', icon: <BookOpen> }
+{ href: '/outros-jogos',labelKey: 'nav.otherGames',icon: <Gamepad2> }
+{ href: '/doacoes',     labelKey: 'nav.donate',    icon: <Gift> }
+Área de trabalho (md+): Linha de links horizontais + <LanguageSwitcher>à direita
+
+Dispositivo móvel (<md): Botão de hambúrguer → <Sheet>(gaveta shadcn) desliza da esquerda para a direita
+
+280px de largura, #1a1b2efundo escuro
+Link ativo: roxo-600/20 fundo + acento na borda esquerda
+Seletor de idioma no rodapé da gaveta
+Link do Discord no rodapé.
+Estilo: bg-[#242642]/90 backdrop-blur-sm ,sticky top-0 z-50
+
+Reutilização: Totalmente independente. Utilizado em <Layout>um componente wrapper. Sem dependência do estado do jogo.
+
+Observação: o ícone do Discord é um SVG embutido (evita o custo do pacote react-icons/si).
+
+Segue o resumo completo da pesquisa:
+
+Análise completa: Presença do jogador, Loja de jogos, componentes da interface do usuário e protocolo WebSocket
+1. gameStore.ts— Estrutura Completa
+Todos os campos estaduais
+Campo	Tipo	Propósito
+user	Player | null	Identidade atual do jogador ( uid+ name)
+room	Room | null	Captura de tela completa da sala (sincronizada via WS)
+status	GameStatus	Tela atual da interface do usuário:'home' | 'lobby' | 'modeSelect' | 'gameConfig' | 'submodeSelect' | 'spinning' | 'playing'
+isLoading	boolean	sinalizador de solicitação HTTP em andamento
+ws	WebSocket | null	Objeto de conexão WebSocket ao vivo
+gameModes	GameMode[]	Obtido de/api/game-modes
+selectedMode	GameModeType | null	Modo escolhido pelo anfitrião
+submodeSelect	boolean	palavraSecretasinalizador de seleção de submodo
+gameConfig	GameConfig | null	Contagem de impostores + configurações de dicas
+notifications	Array<{id, type, message}>	fila de eventos estilo Toast
+enteredDuringGame	boolean	Entrei em uma sala que já estava no 'playing'estado
+isDisconnected	boolean	Tentativas de reconexão WS esgotadas (máximo de 10 tentativas)
+savedNickname	string | null	Persistiu emlocalStorage
+speakingOrder	string[] | null	Matriz de UIDs embaralhada pelo servidor para roda falante
+speakingOrderPlayerMap	Record<string,string> | null	Mapa UID→nome para exibição da roda
+showSpeakingOrderWheel	boolean	visibilidade da animação da roda
+lobbyChatMessages	LobbyChatMessage[]	Limitado a 50 mensagens ( .slice(-49))
+setUserGeração de UID
+function generateUID(): string {
+  return 'user-' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+  // e.g. 'user-k7x2m9qp41kzf8'
+}
+setUser(name) → uid = generateUID() → set({ user: { uid, name } })
+O UID é efêmero — uma atualização da página cria uma nova identidade.
+Apenas o nome de exibição é persistido via saveNickname()→localStorage['tikjogos_saved_nickname']
+Ao reconectar, o mesmo UID na memória é reutilizado para que o servidor possa identificar o jogador através demarkPlayerConnected()
+2. Detecção de Jogador Online/Offline — A Máquina de Estados Completa
+O sistema utiliza um modelo de desconexão de três níveis :
+
+CONNECTED
+  │  Server pings every 5s (HEARTBEAT_INTERVAL)
+  │  Client responds with pong → updates lastPong
+  │
+  ├─ pong within 15s → stays CONNECTED
+  │
+  └─ no pong for >15s (PONG_TIMEOUT) → SOFT DISCONNECT
+         │  player.connected = false (kept in room)
+         │  broadcasts 'player-disconnected'
+         │  scheduleHardExitRemoval(15s timer)
+         │
+         ├─ reconnects within 15s → cancelHardExitRemoval()
+         │   player.connected = true
+         │   broadcasts 'player-reconnected'
+         │
+         └─ 15s grace expires (HARD_EXIT_FALLBACK_GRACE) → HARD EXIT
+                │  player removed from room.players[]
+                │  host transfer if needed (priority: connected → pending → first)
+                │  broadcasts 'player-removed' + 'host-changed' + 'room-update'
+                └─ if room empty → scheduleEmptyRoomDeletion(10s)
+A saída abrupta também é acionada imediatamente por:
+
+leaveMensagem WS (botão de saída intencional)
+disconnect_noticeMensagem WS (fechamento do navegador) → desconexão suave + agendamento de encerramento forçado
+POST /api/rooms/:code/disconnect-noticevia sendBeacon(confiável durante o descarregamento da página)
+Reconexão do lado do cliente: Backoff exponencial — 1,5s, 3s, 5s, 8s, 13s, 21s, 30s×4. Após 10 tentativas falhas, define isDisconnected=truee exibe uma notificação persistente 'Recarregar'.
+
+3. LobbyScreenComponent
+Renderizado quando status === 'lobby'. Lê room, user, goToModeSelect, leaveGame, kickPlayer, gameConfigdo armazenamento.
+
+Seções:
+
+Cabeçalho — Código da sala grande em laranja (clique para copiar o link), botão de configurações exclusivo para anfitriões ⚙️, botão de saída
+Lista de jogadores — Cada ficha de jogador mostra: inicial do avatar, nome, emblema de coroa (anfitrião), emblema "VOCÊ" (próprio jogador), waitingForGameindicador e comandos de voz. O anfitrião vê um botão de expulsão (UserX) em todos os jogadores que não sejam ele mesmo.
+Área de ação (condicional):
+isWaitingForNextRound→ painel âmbar "Aguardando próxima rodada..."
+isHost→ Botão "MODO ESCOLHER" (desativado + aviso se players.length < 3)
+Não-host → painel azul "Aguardando o capitão..."
+<LobbyChat />— balão de bate-papo flutuante (canto inferior direito)
+<GameConfigModal>— modal de configuração do impostor renderizado condicionalmente
+4. Componentes de interface do usuário reutilizáveis
+LobbyChat
+Widget flutuante fixo no canto inferior direito (z-50), sem props — lê o armazenamento diretamente
+Recolhido: botão circular laranja com indicador de não lido (limitado a "9+")
+Expandido: painel de 320px, área de rolagem para 60 mensagens, entrada com tecla Enter para enviar (máximo de 200 caracteres)
+Mensagens próprias alinhadas à direita (tom laranja), outras alinhadas à esquerda (azul escuro).
+useGameStoreDisponível para instalação em qualquer lugar, reutilizável e sem necessidade de adaptações.
+VotingSystem
+Totalmente baseado em props (sem dependência de store) — aceita roomCode, userId, isHost, activePlayers, votes, votingStarted, votesRevealed,onNewRound
+Máquina de estados local de 4 fases :discussion → voting → waitingVotes → result
+Utiliza HTTP REST (não WebSocket) para todas as ações: start-voting, submit-vote,reveal-impostor
+Condição de vitória:votesForImpostor > totalPlayers / 2
+Controles do anfitrião: iniciar votação, cancelar, revelar impostor, nova rodada
+Componente mais reutilizável — pode ser inserido em qualquer modo de jogo que precise de votação.
+NotificationCenter
+Pilha fixa no canto superior direito (z-40), sem adereços — lê o armazenamento diretamente
+Três estilos visuais: disconnected(vermelho, com botão Recarregar, tempo limite de 10 segundos), host-changed(ícone de coroa), todos os outros (círculo de alerta, tempo limite de 4 segundos)
+Reutilizável e fácil de instalar em qualquer lugar.
+MobileNav
+Barra de navegação superior fixa (z-50) com layouts responsivos para desktop/dispositivos móveis
+Computador: links horizontais +<LanguageSwitcher>
+Dispositivos móveis: menu hambúrguer → <Sheet>menu lateral shadcn (280px, desliza da esquerda para a direita) com destaque para o link ativo e link do Discord.
+Sem dependência do estado do jogo — puramente navegação/i18n
+5. Protocolo de Mensagens WebSocket — Referência Completa
+CLIENTE → SERVIDOR:
+
+Mensagem	Carga útil principal	Acionar
+join-room	{ roomCode, playerId }	WSonopen
+pong	—	Resposta ao servidorping
+leave	—	leaveGame()botão
+disconnect_notice	—	beforeunloadeventospagehide​unload​
+sync_request	—	onopen, visibilidade da aba, foco da janela
+host-back-to-lobby	{ roomCode }	O anfitrião reinicia a sala.
+host-game-config	{ roomCode }	O host entra na tela de configuração.
+host-back-to-mode-select	{ roomCode }	O host sai da configuração.
+trigger-speaking-order	{ roomCode }	O apresentador aciona a roda da fala
+kick-player	{ roomCode, targetPlayerId }	O anfitrião expulsa um jogador.
+lobby-chat	{ roomCode, message }	Mensagem enviada pelo chat (limitada a 200 caracteres)
+SERVIDOR → CLIENTE:
+
+Mensagem	Carga útil principal	Efeito
+ping	—	O cliente deve responder compong
+room-update	{ room: Room }	Sincronização completa do estado →updateRoom()
+player-disconnected	{ playerId, playerName }	notificação de desconexão suave
+player-reconnected	{ playerId, playerName }	Notificação de reconexão
+player-left	{ playerName }	notificação de afastamento intencional
+player-removed	{ playerId, playerName, reason }	remoção de saída difícil
+player-kicked	{ playerId, playerName }	Enviar notificação para a sala
+kicked	{ message }	Enviado ao jogador expulso antes do fechamento do WS
+host-changed	{ newHostId, newHostName }	notificação de transferência de host
+host-game-config	—	Revezamento: todos os jogadores → gameConfigtela
+host-back-to-mode-select	—	Revezamento: todos os jogadores → modeSelecttela
+start-speaking-order-wheel	{ speakingOrder, playerMap }	Ordem embaralhada pelo servidor (idêntica para todos)
+lobby-chat-message	{ senderId, senderName, message, timestamp }	Chat de transmissão
+error	{ message, details }	Erro de processamento do servidor
+Recurso HTTP fallback: POST /api/rooms/:code/disconnect-notice com { playerId }— usado sendBeacondurante o descarregamento da página para garantir a entrega quando o WebSocket já pode estar fechado.
+
+
+te mandei coisa que já havia analisado para te ajudar no planejamento e documentacao da criação do novo jogo
+
+A logo nova do jogo é essa: https://github.com/rodrigofprates2015-ctrl/tikjogos2/blob/main/logo_palavr_%20copiar.png
