@@ -3,7 +3,7 @@ import { useDesafioStore } from '@/lib/desafioStore';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
-  Zap, Loader2, Heart, Swords, Flag, ArrowLeft,
+  Zap, Loader2, Heart, Swords, ArrowLeft,
   Users, Copy, Share2, Trophy, RotateCcw, Crown,
   LogOut, Home, AlertTriangle, Delete,
 } from 'lucide-react';
@@ -107,9 +107,9 @@ function HomeScreen() {
             <div className="bg-[#1a1c2e] rounded-2xl p-4 border border-[#2f3252] text-xs text-[#8aa0b0] space-y-1.5 mt-2">
               <p className="font-bold text-[#a0b0c0] text-sm mb-2">Como jogar</p>
               <p>• Cada jogador adiciona <strong className="text-white">uma letra</strong> por vez.</p>
-              <p>• <strong className="text-yellow-400">Desafiar</strong>: o próximo jogador pode desafiar se achar que a letra não leva a nenhuma palavra.</p>
-              <p>• <strong className="text-green-400">Finalizar</strong>: acuse que a palavra na mesa já está completa e não pode crescer.</p>
-              <p>• Quem perde o duelo perde uma ❤️. Sem vidas = eliminado. Último vivo vence!</p>
+              <p>• <strong className="text-yellow-400">Desafiar</strong>: em vez de adicionar letra, desafie se achar que as letras na mesa não levam a nenhuma palavra.</p>
+              <p>• O desafiado revela a palavra que tinha em mente. Palavra válida → desafiante perde ❤️. Inválida → desafiado perde ❤️.</p>
+              <p>• Sem vidas = eliminado. Último vivo vence!</p>
             </div>
           </div>
         </div>
@@ -299,7 +299,7 @@ function LobbyScreen() {
 function GameScreen() {
   const {
     room, user, status,
-    inserirLetra, desafiar, finalizar, defender,
+    inserirLetra, desafiar, defender,
     defenseInput, setDefenseInput,
     returnToLobby,
   } = useDesafioStore();
@@ -367,23 +367,17 @@ function GameScreen() {
         </div>
       );
     }
-    if ((lastAction.type === 'desafio' || lastAction.type === 'finalizar') && lastAction.resultado !== undefined) {
-      const loser = lastAction.type === 'desafio'
-        ? room.players.find(p => p.uid === (lastAction.resultado ? lastAction.desafianteId : lastAction.desafiadoId))
-        : room.players.find(p => p.uid === lastAction.acusadorId);
+    if (lastAction.type === 'desafio' && lastAction.resultado !== undefined) {
+      const loser = room.players.find(p => p.uid === (lastAction.resultado ? lastAction.desafianteId : lastAction.desafiadoId));
       const won = lastAction.resultado;
       return (
         <div className={cn(
           'text-center text-sm font-bold px-4 py-2 rounded-2xl border-2 animate-fade-in',
           won ? 'bg-emerald-900/40 border-emerald-600 text-emerald-300' : 'bg-rose-900/40 border-rose-600 text-rose-300'
         )}>
-          {lastAction.type === 'desafio'
-            ? won
-              ? `✅ Palavra válida! ${loser?.name} perdeu uma ❤️`
-              : `❌ Palavra inválida! ${loser?.name} perdeu uma ❤️`
-            : won
-              ? `✅ Palavra morta! Acusação correta.`
-              : `❌ Palavra pode crescer! ${loser?.name} perdeu uma ❤️`}
+          {won
+            ? `✅ Palavra válida! ${loser?.name} perdeu uma ❤️`
+            : `❌ Palavra inválida! ${loser?.name} perdeu uma ❤️`}
         </div>
       );
     }
@@ -564,7 +558,7 @@ function GameScreen() {
               }
             </div>
 
-            {/* Challenge / Finalize — only next player (= current turn player), only when word exists */}
+            {/* Desafiar — jogador da vez, quando há letras na mesa */}
             {iAmAlive && isMyTurn && currentWord.length > 0 && (
               <div className="flex gap-2">
                 <button
@@ -572,12 +566,6 @@ function GameScreen() {
                   className="flex-1 px-4 py-3 rounded-2xl font-black text-sm border-b-4 bg-yellow-500 border-yellow-700 text-black hover:brightness-110 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2"
                 >
                   <Swords size={18} /> DESAFIAR
-                </button>
-                <button
-                  onClick={finalizar}
-                  className="flex-1 px-4 py-3 rounded-2xl font-black text-sm border-b-4 bg-emerald-500 border-emerald-700 text-white hover:brightness-110 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2"
-                >
-                  <Flag size={18} /> FINALIZAR
                 </button>
               </div>
             )}

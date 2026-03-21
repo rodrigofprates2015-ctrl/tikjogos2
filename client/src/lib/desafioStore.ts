@@ -9,11 +9,10 @@ export type DesafioPlayer = {
 };
 
 export type DesafioLastAction = {
-  type: 'desafio' | 'finalizar' | 'inserir';
+  type: 'desafio' | 'inserir';
   desafianteId?: string;
   desafiadoId?: string;
   resultado?: boolean;
-  acusadorId?: string;
   letra?: string;
   playerName?: string;
 };
@@ -77,7 +76,6 @@ export type DesafioState = {
   inserirLetra: (letra: string) => void;
   desafiar: () => void;
   defender: (palavra: string) => void;
-  finalizar: () => void;
 };
 
 function generateUID(): string {
@@ -365,13 +363,4 @@ export const useDesafioStore = create<DesafioState>((set, get) => ({
     set({ defenseInput: '' });
   },
 
-  finalizar: () => {
-    const { ws, room, user } = get();
-    if (!ws || ws.readyState !== WebSocket.OPEN || !room || !user) return;
-    ws.send(JSON.stringify({
-      type: 'desafio-finalizar',
-      roomCode: room.code,
-      acusadorId: user.uid,
-    }));
-  },
 }));
