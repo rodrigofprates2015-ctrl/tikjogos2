@@ -189,9 +189,11 @@ function AppRouter() {
       {i18nRoutes("/how-to-play/sincronia", ComoJogarSincronia)}
       {i18nRoutes("/como-jugar/sincronia", ComoJogarSincronia)}
 
-      {i18nRoutes("/como-jogar/desafio-da-palavra", ComoJogarDesafioPalavra)}
-      {i18nRoutes("/how-to-play/word-challenge", ComoJogarDesafioPalavra)}
-      {i18nRoutes("/como-jugar/desafio-de-la-palabra", ComoJogarDesafioPalavra)}
+      <Route path="/como-jogar/desafio-da-palavra" component={ComoJogarDesafioPalavra} />
+      <Route path="/how-to-play/word-challenge" component={ComoJogarDesafioPalavra} />
+      <Route path="/en/how-to-play/word-challenge" component={ComoJogarDesafioPalavra} />
+      <Route path="/como-jugar/desafio-de-la-palabra" component={ComoJogarDesafioPalavra} />
+      <Route path="/es/como-jugar/desafio-de-la-palabra" component={ComoJogarDesafioPalavra} />
 
       {/* Legacy redirects — keep old URLs working */}
       {i18nRoutes("/comojogar", ComoJogar)}
