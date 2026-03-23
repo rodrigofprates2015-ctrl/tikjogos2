@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { X } from "lucide-react";
-import stickerSrc from "@assets/stick_1774302902986.webp";
+
 
 declare global {
   interface Window {
@@ -173,20 +173,10 @@ function InterstitialOverlay({
 
       {/* Container com largura fixa em px — sem padding lateral para que
           o <ins> ocupe exatamente a largura que o AdSense vai medir */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
-
-        {/* Sticker do mascote — atrás do popup, canto superior direito */}
-        <img
-          src={stickerSrc}
-          alt=""
-          className="absolute w-20 h-20 object-contain pointer-events-none select-none"
-          style={{ top: -56, right: -52, zIndex: 0 }}
-        />
-
-        <div
-          className="relative bg-[#1a1b2e] rounded-3xl shadow-2xl border border-white/10 overflow-hidden"
-          style={{ width: w, position: 'relative', zIndex: 1 }}
-        >
+      <div
+        className="relative bg-[#1a1b2e] rounded-3xl shadow-2xl border border-white/10 overflow-hidden"
+        style={{ width: w }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">TEMPO PRA BEBER ÁGUA - Anúncio</span>
@@ -216,7 +206,6 @@ function InterstitialOverlay({
           data-ad-format="auto"
           data-full-width-responsive="true"
         />
-      </div>
       </div>
     </div>
   );
