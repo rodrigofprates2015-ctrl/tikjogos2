@@ -4942,18 +4942,17 @@ function ImpostorGameInner() {
   const { status, user, room } = useGameStore();
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const { show: showNewRoundAd, InterstitialAd: NewRoundInterstitialAd } = useInterstitialAd();
-  const prevStatusRef = useRef(status);
 
   useEffect(() => {
-    const prevStatus = prevStatusRef.current;
-    prevStatusRef.current = status;
-    if (prevStatus === 'playing' && status === 'lobby') {
-      const isHost = room?.hostId === user?.uid;
-      if (!isHost) {
-        showNewRoundAd(() => {});
+    return useGameStore.subscribe((state, prevState) => {
+      if (prevState.status === 'playing' && state.status === 'lobby') {
+        const isHost = state.room?.hostId === state.user?.uid;
+        if (!isHost) {
+          showNewRoundAd(() => {});
+        }
       }
-    }
-  }, [status]);
+    });
+  }, []);
 
   if (status === 'home') {
     return (
