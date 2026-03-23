@@ -180,7 +180,7 @@ function InterstitialOverlay({
           src={stickerSrc}
           alt=""
           className="absolute w-20 h-20 object-contain pointer-events-none select-none"
-          style={{ top: -16, right: -16, zIndex: 0 }}
+          style={{ top: -56, right: -52, zIndex: 0 }}
         />
 
         <div
