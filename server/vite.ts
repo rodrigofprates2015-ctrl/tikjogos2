@@ -1,10 +1,9 @@
 import { type Express } from "express";
 import { createServer as createViteServer, createLogger } from "vite";
 import { type Server } from "http";
-import viteConfig from "../vite.config";
+import viteConfigFn from "../vite.config";
 import fs from "fs";
 import path from "path";
-import { nanoid } from "nanoid";
 import { getSeoForPath, injectSeoIntoHtml } from "./seo";
 
 const viteLogger = createLogger();
@@ -16,14 +15,17 @@ export async function setupVite(server: Server, app: Express) {
     allowedHosts: true as const,
   };
 
+  const resolvedConfig = typeof viteConfigFn === "function"
+    ? await viteConfigFn({ command: "serve", mode: "development" }, { mode: "development", command: "serve", isSsrBuild: false, isPreview: false })
+    : viteConfigFn;
+
   const vite = await createViteServer({
-    ...viteConfig,
+    ...resolvedConfig,
     configFile: false,
     customLogger: {
       ...viteLogger,
       error: (msg, options) => {
         viteLogger.error(msg, options);
-        // Don't exit on Vite errors in development - just log them
         console.error('[Vite Error]:', msg);
       },
     },
@@ -44,12 +46,7 @@ export async function setupVite(server: Server, app: Express) {
         "index.html",
       );
 
-      // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      template = template.replace(
-        `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`,
-      );
       let page = await vite.transformIndexHtml(url, template);
 
       const seo = getSeoForPath(url);
