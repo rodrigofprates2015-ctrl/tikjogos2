@@ -4,6 +4,7 @@ import { analyticsEvents, rooms } from '@shared/schema';
 import { sql, count, countDistinct, gte, avg, lt } from 'drizzle-orm';
 import { trackSessionEnd } from './analyticsMiddleware';
 import { getRCRoomStats } from './rcGame';
+import { getBRRoomStats } from './sincBrGame';
 import { getImpostorRoomStats, getDrawingRoomStats } from './routes';
 
 const router = Router();
@@ -71,6 +72,7 @@ export function createAnalyticsRouter(verifyAdmin: any) {
           impostor: await getImpostorRoomStats(),
           drawing: getDrawingRoomStats(),
           sincronia: getRCRoomStats(),
+          palavra: getBRRoomStats(),
           topPages: [], referrers: [],
         });
       }
@@ -318,6 +320,7 @@ export function createAnalyticsRouter(verifyAdmin: any) {
         impostor: await getImpostorRoomStats(),
         drawing: getDrawingRoomStats(),
         sincronia: getRCRoomStats(),
+        palavra: getBRRoomStats(),
         topPages: (topPages || []).map(p => ({ name: p.page || '/', value: p.count })),
         referrers: (referrerStats || []).map(r => ({ name: r.referrer || 'direct', value: r.count })),
       });

@@ -71,6 +71,10 @@ type DashboardData = {
       category: string; currentRound: number; totalRounds: number;
     }>;
   };
+  palavra?: {
+    rooms: Array<{ id: string; label: string; playerCount: number; questionNumber: number }>;
+    totalPlayers: number;
+  };
   topPages: NameValue[];
   referrers: NameValue[];
 };
@@ -336,7 +340,7 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
 
   if (!data) return null;
 
-  const { overview, timeSeries, devices, browsers, geo, games, impostor, drawing, sincronia } = data;
+  const { overview, timeSeries, devices, browsers, geo, games, impostor, drawing, sincronia, palavra } = data;
 
   return (
     <div className="space-y-6">
@@ -442,7 +446,13 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
             <StatMini label="Impostor Ativas" value={String(impostor?.activeRooms ?? 0)} icon={Gamepad2} accent="#6366f1" />
             <StatMini label="Desenho Ativas" value={String(drawing?.activeRooms ?? 0)} icon={Gamepad2} accent="#ec4899" />
             <StatMini label="Sincronia Ativas" value={String(sincronia?.activeRooms ?? 0)} icon={Sparkles} accent="#10b981" />
-            <StatMini label="Jogadores Online" value={String((impostor?.totalConnectedPlayers ?? 0) + (drawing?.totalConnectedPlayers ?? 0) + (sincronia?.totalConnectedPlayers ?? 0))} icon={Users} accent="#f59e0b" />
+            <StatMini label="Palavra (online)" value={String(palavra?.totalPlayers ?? 0)} icon={Users} accent="#f59e0b" />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <StatMini label="Impostor Jogadores" value={String(impostor?.totalConnectedPlayers ?? 0)} icon={Users} accent="#6366f1" />
+            <StatMini label="Desenho Jogadores" value={String(drawing?.totalConnectedPlayers ?? 0)} icon={Users} accent="#ec4899" />
+            <StatMini label="Sincronia Jogadores" value={String(sincronia?.totalConnectedPlayers ?? 0)} icon={Users} accent="#10b981" />
+            <StatMini label="Total Online" value={String((impostor?.totalConnectedPlayers ?? 0) + (drawing?.totalConnectedPlayers ?? 0) + (sincronia?.totalConnectedPlayers ?? 0) + (palavra?.totalPlayers ?? 0))} icon={Activity} accent="#f59e0b" />
           </div>
         </TabsContent>
 

@@ -1,8 +1,37 @@
 # Overview
 
-This is a multiplayer social deduction game called "Quem é o Impostor?" (Who is the Impostor?), inspired by games like Spyfall. Players join game rooms where one player is secretly assigned as the impostor while others are crew members. The impostor must blend in while crew members try to identify them through discussions and voting.
+**TikJogos** is a multiplayer social party game platform with 4 distinct game modes, real-time WebSocket gameplay, an admin dashboard, and analytics.
 
-The application features 5 distinct game modes:
+**Platform URL:** `/` (main app) | **Admin:** `/dashadmin`
+
+The platform features 4 games:
+1. **Impostor Clássico** — Social deduction game; one player is the impostor
+2. **Impostor Desenho** — Same concept but players draw instead of talk
+3. **Sincronia** — "Respostas em Comum"; players sync their answers across rounds
+4. **Desafio da Palavra** — Public Battle Royale word-matching rooms
+
+## Admin Dashboard (`/dashadmin`)
+
+The admin dashboard has:
+- Login with email/password authentication (JWT token stored in localStorage)
+- **Sidebar navigation** with 7 sections: Visão Geral, Impostor, Desenho, Sincronia, Palavra, Temas, Analytics
+- **Visão Geral:** Combined live stats for all 4 games + 30-day rooms chart from analytics API
+- **Per-game pages:** Live room tables with inspect dialogs, auto-refreshing every 5s
+- **Temas:** Theme moderation (approve/reject/delete community themes)
+- **Analytics:** Full analytics dashboard with charts (pageviews, visitors, session duration, devices, geo)
+- All 4 games exposed via admin API routes: `/api/admin/rooms`, `/api/admin/drawing-rooms`, `/api/admin/sincronia-rooms`, `/api/admin/palavra-rooms`
+
+The game supports 3-15 players with real-time WebSocket communication, session persistence, and Google AdSense integration for monetization.
+
+# User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+# System Architecture
+
+## Game Modes (legacy section below refers to Impostor Clássico)
+
+The application features 5 distinct Impostor Clássico sub-modes:
 - **Palavra Secreta** (Secret Word): Crew members receive the same word; impostor doesn't know it
 - **Locais & Funções** (Locations & Roles): Players receive locations and roles; impostor doesn't know the location
 - **Duas Facções** (Two Factions): Two teams with different words; impostor knows neither

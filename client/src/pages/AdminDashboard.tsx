@@ -1,29 +1,29 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import { 
-  Users, 
-  Home, 
-  Eye, 
-  LogOut, 
-  RefreshCw, 
+import {
+  Users,
+  Home,
+  Eye,
+  LogOut,
+  RefreshCw,
   Lock,
   AlertTriangle,
   User,
@@ -34,76 +34,658 @@ import {
   FileText,
   Search,
   BarChart3,
-  Paintbrush
+  Paintbrush,
+  Gamepad2,
+  Sparkles,
+  Type,
+  Menu,
+  X,
+  Activity,
+  Clock,
+  Circle,
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
 import AnalyticsDashboard from "./AnalyticsDashboard";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
-type Player = {
-  uid: string;
-  name: string;
-  waitingForGame?: boolean;
-  connected?: boolean;
-};
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-type GameData = {
-  eliminatedPlayers?: string[];
-  votingResults?: Record<string, string>;
-  [key: string]: any;
-};
-
+type Player = { uid: string; name: string; waitingForGame?: boolean; connected?: boolean };
+type GameData = { eliminatedPlayers?: string[]; votingResults?: Record<string, string>; [key: string]: any };
 type Room = {
-  code: string;
-  hostId: string;
-  status: string;
-  gameMode: string | null;
-  currentCategory: string | null;
-  currentWord: string | null;
-  impostorId: string | null;
-  gameData: GameData | null;
-  players: Player[];
-  createdAt: string;
+  code: string; hostId: string; status: string; gameMode: string | null;
+  currentCategory: string | null; currentWord: string | null; impostorId: string | null;
+  gameData: GameData | null; players: Player[]; createdAt: string;
 };
-
 type Theme = {
-  id: string;
-  titulo: string;
-  autor: string;
-  palavras: string[];
-  isPublic: boolean;
-  accessCode: string | null;
-  paymentStatus: string;
-  paymentId: string | null;
-  approved: boolean;
-  createdAt: string;
+  id: string; titulo: string; autor: string; palavras: string[]; isPublic: boolean;
+  accessCode: string | null; paymentStatus: string; paymentId: string | null;
+  approved: boolean; createdAt: string;
 };
-
-type DrawingPlayer = {
-  uid: string;
-  name: string;
-  connected?: boolean;
-};
-
+type DrawingPlayer = { uid: string; name: string; connected?: boolean };
 type DrawingGameData = {
-  word?: string;
-  impostorIds?: string[];
-  drawingOrder?: string[];
-  currentDrawerIndex?: number;
-  currentDrawerId?: string;
-  turnTimeLimit?: number;
+  word?: string; impostorIds?: string[]; drawingOrder?: string[];
+  currentDrawerIndex?: number; currentDrawerId?: string; turnTimeLimit?: number;
   votes?: Array<{ playerId: string; playerName: string; targetId: string; targetName: string }>;
-  votingStarted?: boolean;
-  votesRevealed?: boolean;
+  votingStarted?: boolean; votesRevealed?: boolean;
 };
+type DrawingRoom = { code: string; hostId: string; status: string; gameData: DrawingGameData | null; players: DrawingPlayer[]; createdAt: string };
+type SincRoom = { code: string; hostId: string; phase: string; playerCount: number; connectedPlayers: number; category: string; currentRound: number; totalRounds: number };
+type SincStats = { totalRoomsCreated: number; activeRooms: number; playingRooms: number; waitingRooms: number; totalConnectedPlayers: number; rooms: SincRoom[] };
+type PalavraRoom = { id: string; label: string; playerCount: number; questionNumber: number };
+type PalavraStats = { rooms: PalavraRoom[]; totalPlayers: number };
 
-type DrawingRoom = {
-  code: string;
-  hostId: string;
-  status: string;
-  gameData: DrawingGameData | null;
-  players: DrawingPlayer[];
-  createdAt: string;
-};
+type NavItem = "overview" | "impostor" | "desenho" | "sincronia" | "palavra" | "temas" | "analytics";
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function StatusDot({ active }: { active: boolean }) {
+  return (
+    <span className={`inline-block w-2 h-2 rounded-full ${active ? "bg-emerald-400 animate-pulse" : "bg-slate-500"}`} />
+  );
+}
+
+function StatCard({
+  label, value, icon: Icon, accent = "#6366f1", sub,
+}: { label: string; value: string | number; icon: any; accent?: string; sub?: string }) {
+  return (
+    <Card className="bg-slate-800/70 border-slate-700 hover:border-slate-600 transition-colors">
+      <CardContent className="pt-5 pb-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2.5 rounded-xl shrink-0" style={{ background: `${accent}22` }}>
+            <Icon className="w-5 h-5" style={{ color: accent }} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-2xl font-bold text-white tabular-nums">{value}</p>
+            <p className="text-xs text-slate-400 mt-0.5 leading-snug">{label}</p>
+            {sub && <p className="text-[11px] text-slate-500 mt-0.5">{sub}</p>}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Game-specific room tables ────────────────────────────────────────────────
+
+function ImpostorRoomsTable({ rooms, onInspect }: { rooms: Room[]; onInspect: (code: string) => void }) {
+  if (rooms.length === 0) return <EmptyState />;
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow className="border-slate-700 hover:bg-transparent">
+            <TableHead className="text-slate-400 font-medium">Status</TableHead>
+            <TableHead className="text-slate-400 font-medium">Código</TableHead>
+            <TableHead className="text-slate-400 font-medium">Jogadores</TableHead>
+            <TableHead className="text-slate-400 font-medium">Modo</TableHead>
+            <TableHead className="text-slate-400 font-medium">Criada</TableHead>
+            <TableHead className="text-slate-400 font-medium" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rooms.map((room) => (
+            <TableRow key={room.code} className="border-slate-700/50 hover:bg-slate-700/30" data-testid={`row-room-${room.code}`}>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <StatusDot active={room.status === "playing"} />
+                  <Badge className={room.status === "playing" ? "bg-emerald-600/80 text-emerald-100 text-xs" : "bg-slate-600/80 text-slate-300 text-xs"}>
+                    {room.status === "playing" ? "Jogando" : "Aguardando"}
+                  </Badge>
+                </div>
+              </TableCell>
+              <TableCell className="font-mono font-bold text-white text-sm">{room.code}</TableCell>
+              <TableCell className="text-slate-300 text-sm">{room.players.length}/10</TableCell>
+              <TableCell className="text-slate-400 text-sm">{room.gameMode || "—"}</TableCell>
+              <TableCell className="text-slate-500 text-xs">{new Date(room.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</TableCell>
+              <TableCell>
+                <Button size="sm" variant="ghost" onClick={() => onInspect(room.code)} className="text-slate-400 hover:text-white hover:bg-slate-700 h-7 px-2 text-xs" data-testid={`button-inspect-${room.code}`}>
+                  <Eye className="w-3.5 h-3.5 mr-1" /> Ver
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function DrawingRoomsTable({ rooms, onInspect }: { rooms: DrawingRoom[]; onInspect: (code: string) => void }) {
+  if (rooms.length === 0) return <EmptyState />;
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow className="border-slate-700 hover:bg-transparent">
+            <TableHead className="text-slate-400 font-medium">Status</TableHead>
+            <TableHead className="text-slate-400 font-medium">Código</TableHead>
+            <TableHead className="text-slate-400 font-medium">Jogadores</TableHead>
+            <TableHead className="text-slate-400 font-medium">Palavra</TableHead>
+            <TableHead className="text-slate-400 font-medium">Criada</TableHead>
+            <TableHead className="text-slate-400 font-medium" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rooms.map((room) => (
+            <TableRow key={room.code} className="border-slate-700/50 hover:bg-slate-700/30">
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <StatusDot active={room.status !== "waiting"} />
+                  <Badge className={room.status === "drawing" ? "bg-purple-600/80 text-purple-100 text-xs" : room.status === "voting" ? "bg-amber-600/80 text-amber-100 text-xs" : "bg-slate-600/80 text-slate-300 text-xs"}>
+                    {room.status === "drawing" ? "Desenhando" : room.status === "voting" ? "Votação" : room.status === "discussion" ? "Discussão" : "Aguardando"}
+                  </Badge>
+                </div>
+              </TableCell>
+              <TableCell className="font-mono font-bold text-white text-sm">{room.code}</TableCell>
+              <TableCell className="text-slate-300 text-sm">{room.players.length}</TableCell>
+              <TableCell className="text-slate-400 text-sm">{room.gameData?.word || "—"}</TableCell>
+              <TableCell className="text-slate-500 text-xs">{new Date(room.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</TableCell>
+              <TableCell>
+                <Button size="sm" variant="ghost" onClick={() => onInspect(room.code)} className="text-slate-400 hover:text-white hover:bg-slate-700 h-7 px-2 text-xs">
+                  <Eye className="w-3.5 h-3.5 mr-1" /> Ver
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function SincroniaRoomsTable({ stats }: { stats: SincStats | null }) {
+  if (!stats || stats.rooms.length === 0) return <EmptyState />;
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow className="border-slate-700 hover:bg-transparent">
+            <TableHead className="text-slate-400 font-medium">Status</TableHead>
+            <TableHead className="text-slate-400 font-medium">Código</TableHead>
+            <TableHead className="text-slate-400 font-medium">Jogadores</TableHead>
+            <TableHead className="text-slate-400 font-medium">Categoria</TableHead>
+            <TableHead className="text-slate-400 font-medium">Rodada</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {stats.rooms.map((room) => (
+            <TableRow key={room.code} className="border-slate-700/50 hover:bg-slate-700/30">
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <StatusDot active={room.phase === "playing"} />
+                  <Badge className={room.phase === "playing" ? "bg-emerald-600/80 text-emerald-100 text-xs" : "bg-slate-600/80 text-slate-300 text-xs"}>
+                    {room.phase === "playing" ? "Jogando" : "Aguardando"}
+                  </Badge>
+                </div>
+              </TableCell>
+              <TableCell className="font-mono font-bold text-white text-sm">{room.code}</TableCell>
+              <TableCell className="text-slate-300 text-sm">{room.connectedPlayers}/{room.playerCount}</TableCell>
+              <TableCell className="text-slate-400 text-sm capitalize">{room.category || "todas"}</TableCell>
+              <TableCell className="text-slate-400 text-sm">{room.currentRound}/{room.totalRounds}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function PalavraRoomsTable({ stats }: { stats: PalavraStats | null }) {
+  if (!stats || stats.rooms.length === 0) return <EmptyState />;
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow className="border-slate-700 hover:bg-transparent">
+            <TableHead className="text-slate-400 font-medium">Sala</TableHead>
+            <TableHead className="text-slate-400 font-medium">Jogadores Online</TableHead>
+            <TableHead className="text-slate-400 font-medium">Questão Atual</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {stats.rooms.map((room) => (
+            <TableRow key={room.id} className="border-slate-700/50 hover:bg-slate-700/30">
+              <TableCell className="font-semibold text-white text-sm">{room.label}</TableCell>
+              <TableCell className="text-slate-300 text-sm">
+                <div className="flex items-center gap-2">
+                  <StatusDot active={room.playerCount > 0} />
+                  {room.playerCount}
+                </div>
+              </TableCell>
+              <TableCell className="text-slate-400 text-sm">#{room.questionNumber}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="text-center py-12 text-slate-500">
+      <Circle className="w-8 h-8 mx-auto mb-3 opacity-30" />
+      <p className="text-sm">Nenhuma sala ativa no momento</p>
+    </div>
+  );
+}
+
+// ─── Inspectors ──────────────────────────────────────────────────────────────
+
+function ImpostorInspectDialog({ room, onClose }: { room: Room | null; onClose: () => void }) {
+  if (!room) return null;
+  const impostor = room.players.find(p => p.uid === room.impostorId);
+  return (
+    <Dialog open={!!room} onOpenChange={() => onClose()}>
+      <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-white flex items-center gap-2">
+            <Skull className="w-5 h-5 text-red-400" /> Impostor — Sala {room.code}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              ["Status", room.status === "playing" ? "Jogando" : "Aguardando"],
+              ["Modo", room.gameMode || "—"],
+              ["Categoria", room.currentCategory || "—"],
+              ["Palavra", room.currentWord || "—"],
+            ].map(([l, v]) => (
+              <div key={l} className="bg-slate-700/50 p-3 rounded-lg">
+                <p className="text-slate-400 text-xs mb-1">{l}</p>
+                <p className="text-white font-medium text-sm">{v}</p>
+              </div>
+            ))}
+          </div>
+          {impostor && (
+            <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-lg">
+              <p className="text-red-400 text-xs mb-1 flex items-center gap-2"><Skull className="w-3.5 h-3.5" /> IMPOSTOR</p>
+              <p className="text-white font-bold">{impostor.name}</p>
+            </div>
+          )}
+          <div>
+            <p className="text-slate-400 text-xs mb-2">Jogadores ({room.players.length})</p>
+            <div className="grid grid-cols-2 gap-2">
+              {room.players.map((p) => {
+                const isImpostor = p.uid === room.impostorId;
+                const isHost = p.uid === room.hostId;
+                return (
+                  <div key={p.uid} className={`p-3 rounded-lg flex items-center gap-2 ${isImpostor ? "bg-red-500/20 border border-red-500/30" : "bg-slate-700/50"}`}>
+                    <User className={`w-4 h-4 shrink-0 ${isImpostor ? "text-red-400" : "text-slate-400"}`} />
+                    <div className="min-w-0">
+                      <p className={`text-sm font-medium truncate ${isImpostor ? "text-red-300" : "text-white"}`}>{p.name}</p>
+                      <div className="flex gap-1 flex-wrap mt-0.5">
+                        {isHost && <Badge className="text-[10px] bg-yellow-600/80 px-1 py-0">Host</Badge>}
+                        {isImpostor && <Badge className="text-[10px] bg-red-600/80 px-1 py-0">Impostor</Badge>}
+                        {!p.connected && <Badge className="text-[10px] bg-orange-600/80 px-1 py-0">Offline</Badge>}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function DrawingInspectDialog({ room, onClose }: { room: DrawingRoom | null; onClose: () => void }) {
+  if (!room) return null;
+  return (
+    <Dialog open={!!room} onOpenChange={() => onClose()}>
+      <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-white flex items-center gap-2">
+            <Paintbrush className="w-5 h-5 text-purple-400" /> Desenho — Sala {room.code}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-slate-700/50 p-3 rounded-lg">
+              <p className="text-slate-400 text-xs mb-1">Status</p>
+              <Badge className={room.status === "drawing" ? "bg-purple-600" : room.status === "voting" ? "bg-amber-600" : "bg-slate-600"}>
+                {room.status}
+              </Badge>
+            </div>
+            <div className="bg-slate-700/50 p-3 rounded-lg">
+              <p className="text-slate-400 text-xs mb-1">Tempo/Turno</p>
+              <p className="text-white font-medium text-sm">{room.gameData?.turnTimeLimit || 30}s</p>
+            </div>
+          </div>
+          {room.gameData?.word && (
+            <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
+              <p className="text-blue-400 text-xs mb-1">Palavra Secreta</p>
+              <p className="text-white font-bold">{room.gameData.word}</p>
+            </div>
+          )}
+          {room.gameData?.impostorIds && (
+            <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-lg">
+              <p className="text-red-400 text-xs mb-1 flex items-center gap-1.5"><Skull className="w-3.5 h-3.5" /> Impostores</p>
+              <p className="text-white font-bold">
+                {room.gameData.impostorIds.map(id => room.players.find(p => p.uid === id)?.name || "?").join(", ")}
+              </p>
+            </div>
+          )}
+          <div>
+            <p className="text-slate-400 text-xs mb-2">Jogadores ({room.players.length})</p>
+            <div className="grid grid-cols-2 gap-2">
+              {room.players.map((p) => {
+                const isImpostor = room.gameData?.impostorIds?.includes(p.uid);
+                const isHost = p.uid === room.hostId;
+                return (
+                  <div key={p.uid} className={`p-3 rounded-lg flex items-center gap-2 ${isImpostor ? "bg-red-500/20 border border-red-500/30" : "bg-slate-700/50"}`}>
+                    <User className={`w-4 h-4 shrink-0 ${isImpostor ? "text-red-400" : "text-slate-400"}`} />
+                    <div className="min-w-0">
+                      <p className={`text-sm font-medium truncate ${isImpostor ? "text-red-300" : "text-white"}`}>{p.name}</p>
+                      <div className="flex gap-1 flex-wrap mt-0.5">
+                        {isHost && <Badge className="text-[10px] bg-yellow-600/80 px-1 py-0">Host</Badge>}
+                        {isImpostor && <Badge className="text-[10px] bg-red-600/80 px-1 py-0">Impostor</Badge>}
+                        {!p.connected && <Badge className="text-[10px] bg-orange-600/80 px-1 py-0">Offline</Badge>}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Theme management ─────────────────────────────────────────────────────────
+
+function TemasView({ token, themes, setThemes, onLogout }: {
+  token: string | null;
+  themes: Theme[];
+  setThemes: (t: Theme[]) => void;
+  onLogout: () => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<Theme | null>(null);
+
+  const filtered = themes.filter(t =>
+    t.titulo.toLowerCase().includes(search.toLowerCase()) ||
+    t.autor.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const doApprove = async (id: string) => {
+    const res = await fetch(`/api/admin/themes/${id}/approve`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) { setThemes(themes.map(t => t.id === id ? { ...t, approved: true } : t)); setSelected(null); }
+    else if (res.status === 401) onLogout();
+  };
+  const doReject = async (id: string) => {
+    const res = await fetch(`/api/admin/themes/${id}/reject`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) { setThemes(themes.map(t => t.id === id ? { ...t, approved: false } : t)); setSelected(null); }
+    else if (res.status === 401) onLogout();
+  };
+  const doDelete = async (id: string) => {
+    if (!confirm("Excluir este tema? Ação irreversível.")) return;
+    const res = await fetch(`/api/admin/themes/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) { setThemes(themes.filter(t => t.id !== id)); setSelected(null); }
+    else if (res.status === 401) onLogout();
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Input
+          value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Buscar tema ou autor..."
+          className="pl-9 bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+          data-testid="input-theme-search"
+        />
+      </div>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-slate-700 hover:bg-transparent">
+              <TableHead className="text-slate-400">Tema</TableHead>
+              <TableHead className="text-slate-400">Autor</TableHead>
+              <TableHead className="text-slate-400">Palavras</TableHead>
+              <TableHead className="text-slate-400">Status</TableHead>
+              <TableHead className="text-slate-400">Pagamento</TableHead>
+              <TableHead className="text-slate-400" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtered.map((theme) => (
+              <TableRow key={theme.id} className="border-slate-700/50 hover:bg-slate-700/30">
+                <TableCell className="text-white font-medium text-sm">{theme.titulo}</TableCell>
+                <TableCell className="text-slate-400 text-sm">{theme.autor}</TableCell>
+                <TableCell className="text-slate-400 text-sm">{theme.palavras.length}</TableCell>
+                <TableCell>
+                  <Badge className={theme.approved ? "bg-emerald-600/80 text-xs" : "bg-amber-600/80 text-xs"}>
+                    {theme.approved ? "Aprovado" : "Pendente"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge className={theme.paymentStatus === "approved" ? "bg-emerald-600/80 text-xs" : theme.paymentStatus === "pending" ? "bg-amber-600/80 text-xs" : "bg-slate-600/80 text-xs"}>
+                    {theme.paymentStatus}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Button size="sm" variant="ghost" onClick={() => setSelected(theme)} className="text-slate-400 hover:text-white h-7 px-2 text-xs">
+                    <FileText className="w-3.5 h-3.5 mr-1" /> Ver
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
+        <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <FileText className="w-5 h-5" /> {selected?.titulo}
+            </DialogTitle>
+          </DialogHeader>
+          {selected && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {[
+                  ["Autor", selected.autor],
+                  ["Público", selected.isPublic ? "Sim" : "Não"],
+                  ["Código Acesso", selected.accessCode || "—"],
+                  ["Pagamento", selected.paymentStatus],
+                ].map(([l, v]) => (
+                  <div key={l} className="bg-slate-700/50 p-3 rounded-lg">
+                    <p className="text-slate-400 text-xs mb-1">{l}</p>
+                    <p className="text-white font-medium">{v}</p>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <p className="text-slate-400 text-xs mb-2">Palavras ({selected.palavras.length})</p>
+                <div className="p-3 bg-slate-700/50 rounded-lg max-h-48 overflow-y-auto flex flex-wrap gap-1.5">
+                  {selected.palavras.map((w, i) => <Badge key={i} variant="secondary" className="bg-slate-600 text-xs">{w}</Badge>)}
+                </div>
+              </div>
+              <div className="flex gap-2 pt-2 border-t border-slate-700">
+                {!selected.approved && (
+                  <Button onClick={() => doApprove(selected.id)} className="bg-emerald-600 hover:bg-emerald-700 text-sm">
+                    <CheckCircle className="w-4 h-4 mr-1.5" /> Aprovar
+                  </Button>
+                )}
+                {selected.approved && (
+                  <Button onClick={() => doReject(selected.id)} variant="secondary" className="bg-amber-600 hover:bg-amber-700 text-sm">
+                    <XCircle className="w-4 h-4 mr-1.5" /> Rejeitar
+                  </Button>
+                )}
+                <Button onClick={() => doDelete(selected.id)} variant="destructive" className="text-sm ml-auto">
+                  <Trash2 className="w-4 h-4 mr-1.5" /> Excluir
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// ─── Overview (home) ─────────────────────────────────────────────────────────
+
+function OverviewView({
+  rooms, drawingRooms, sincStats, palavraStats, token,
+}: {
+  rooms: Room[]; drawingRooms: DrawingRoom[];
+  sincStats: SincStats | null; palavraStats: PalavraStats | null;
+  token: string | null;
+}) {
+  const totalOnline =
+    rooms.reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0) +
+    drawingRooms.reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0) +
+    (sincStats?.totalConnectedPlayers ?? 0) +
+    (palavraStats?.totalPlayers ?? 0);
+
+  const totalRooms = rooms.length + drawingRooms.length + (sincStats?.activeRooms ?? 0) + (palavraStats?.rooms.length ?? 0);
+  const playing = rooms.filter(r => r.status === "playing").length + drawingRooms.filter(r => r.status !== "waiting").length + (sincStats?.playingRooms ?? 0);
+  const waiting = rooms.filter(r => r.status === "waiting").length + drawingRooms.filter(r => r.status === "waiting").length + (sincStats?.waitingRooms ?? 0);
+
+  const { data: analytics } = useQuery<any>({
+    queryKey: ["/api/analytics/dashboard", token],
+    queryFn: async () => {
+      if (!token) return null;
+      const res = await fetch("/api/analytics/dashboard", { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return null;
+      return res.json();
+    },
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
+    enabled: !!token,
+  });
+
+  const roomsChart = analytics?.timeSeries?.rooms || [];
+  const formattedRoomsChart = roomsChart.map((d: any) => ({
+    ...d,
+    label: format(parseISO(d.date), "dd/MM", { locale: ptBR }),
+  }));
+
+  const gameCards = [
+    { label: "Impostor Clássico", rooms: rooms.length, players: rooms.reduce((s, r) => s + r.players.length, 0), accent: "#6366f1", icon: Skull },
+    { label: "Impostor Desenho", rooms: drawingRooms.length, players: drawingRooms.reduce((s, r) => s + r.players.length, 0), accent: "#a855f7", icon: Paintbrush },
+    { label: "Sincronia", rooms: sincStats?.activeRooms ?? 0, players: sincStats?.totalConnectedPlayers ?? 0, accent: "#10b981", icon: Sparkles },
+    { label: "Desafio da Palavra", rooms: palavraStats?.rooms.filter(r => r.playerCount > 0).length ?? 0, players: palavraStats?.totalPlayers ?? 0, accent: "#f59e0b", icon: Type },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* KPI row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard label="Salas Ativas" value={totalRooms} icon={Home} accent="#6366f1" />
+        <StatCard label="Jogadores Online" value={totalOnline} icon={Users} accent="#10b981" />
+        <StatCard label="Jogando agora" value={playing} icon={Activity} accent="#f59e0b" />
+        <StatCard label="Aguardando" value={waiting} icon={Clock} accent="#64748b" />
+      </div>
+
+      {/* Per-game mini cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {gameCards.map((g) => (
+          <Card key={g.label} className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors">
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-2 rounded-lg shrink-0" style={{ background: `${g.accent}22` }}>
+                  <g.icon className="w-4 h-4" style={{ color: g.accent }} />
+                </div>
+                <p className="text-xs text-slate-400 leading-tight">{g.label}</p>
+              </div>
+              <p className="text-xl font-bold text-white">{g.rooms} <span className="text-xs text-slate-500 font-normal">salas</span></p>
+              <p className="text-sm text-slate-400 mt-0.5">{g.players} jogadores</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Rooms chart */}
+      <Card className="bg-slate-800/70 border-slate-700">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm text-slate-300 font-medium flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-amber-400" />
+            Salas Criadas — Últimos 30 dias
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {formattedRoomsChart.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={formattedRoomsChart}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <XAxis dataKey="label" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} width={30} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", fontSize: "12px", color: "#fff" }} />
+                <Bar dataKey="count" fill="#f59e0b" radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[200px] flex items-center justify-center text-slate-500 text-sm">Carregando dados...</div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Analytics stats if available */}
+      {analytics && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatCard label="Pageviews (total)" value={analytics.overview?.totalPageviews?.toLocaleString("pt-BR") || "0"} icon={Eye} accent="#6366f1" />
+          <StatCard label="Visitantes Únicos" value={analytics.overview?.totalUniqueVisitors?.toLocaleString("pt-BR") || "0"} icon={Users} accent="#8b5cf6" />
+          <StatCard label="Jogadores Únicos" value={analytics.overview?.totalPlayers?.toLocaleString("pt-BR") || "0"} icon={Gamepad2} accent="#ec4899" />
+          <StatCard label="Sessão Média" value={(() => { const s = analytics.overview?.avgSessionDuration || 0; if (s < 60) return `${s}s`; return `${Math.floor(s/60)}m ${s%60}s`; })()} icon={Clock} accent="#f59e0b" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Per-game section wrapper ─────────────────────────────────────────────────
+
+function GameSection({
+  title, icon: Icon, accent, statsCards, children, lastUpdated,
+}: {
+  title: string; icon: any; accent: string; statsCards: React.ReactNode; children: React.ReactNode; lastUpdated?: Date;
+}) {
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl" style={{ background: `${accent}22` }}>
+            <Icon className="w-5 h-5" style={{ color: accent }} />
+          </div>
+          <h2 className="text-lg font-bold text-white">{title}</h2>
+        </div>
+        {lastUpdated && (
+          <span className="text-xs text-slate-500">
+            Atualizado às {lastUpdated.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">{statsCards}</div>
+      <Card className="bg-slate-800/70 border-slate-700">
+        <CardContent className="p-0 pt-1">{children}</CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -112,46 +694,34 @@ export default function AdminDashboard() {
   const [loginError, setLoginError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState<string | null>(null);
-  
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-  const [isSpectatorOpen, setIsSpectatorOpen] = useState(false);
-  
-  // Theme management states
-  const [themes, setThemes] = useState<Theme[]>([]);
-  const [isLoadingThemes, setIsLoadingThemes] = useState(false);
-  const [themeSearchQuery, setThemeSearchQuery] = useState("");
-  const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null);
-  const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
+  const [nav, setNav] = useState<NavItem>("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Drawing game (Impostor Desenho) states
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [drawingRooms, setDrawingRooms] = useState<DrawingRoom[]>([]);
-  const [selectedDrawingRoom, setSelectedDrawingRoom] = useState<DrawingRoom | null>(null);
-  const [isDrawingSpectatorOpen, setIsDrawingSpectatorOpen] = useState(false);
+  const [sincStats, setSincStats] = useState<SincStats | null>(null);
+  const [palavraStats, setPalavraStats] = useState<PalavraStats | null>(null);
+  const [themes, setThemes] = useState<Theme[]>([]);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+
+  const [inspectRoom, setInspectRoom] = useState<Room | null>(null);
+  const [inspectDrawing, setInspectDrawing] = useState<DrawingRoom | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setLoginError("");
-    
     try {
-      // Clear any existing token before attempting new login
       localStorage.removeItem("adminToken");
-      setToken(null);
-      
       const response = await apiRequest("POST", "/api/admin/login", { email, password });
       const data = await response.json();
-      
       if (data.success) {
-        const newToken = data.token;
-        setToken(newToken);
-        localStorage.setItem("adminToken", newToken);
+        setToken(data.token);
+        localStorage.setItem("adminToken", data.token);
         setIsAuthenticated(true);
       }
-    } catch (error: any) {
+    } catch {
       setLoginError("Credenciais inválidas");
-      // Ensure clean state on error
       setToken(null);
       setIsAuthenticated(false);
       localStorage.removeItem("adminToken");
@@ -160,310 +730,109 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
-      // Call server logout endpoint to clear session
-      await fetch("/api/admin/logout", {
-        method: "POST",
-        headers: {
-          "Authorization": token ? `Bearer ${token}` : ""
-        }
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
+      const t = localStorage.getItem("adminToken");
+      await fetch("/api/admin/logout", { method: "POST", headers: { Authorization: t ? `Bearer ${t}` : "" } });
     } finally {
-      // Clear all authentication state regardless of server response
       localStorage.removeItem("adminToken");
       setToken(null);
       setIsAuthenticated(false);
-      setRooms([]);
-      setThemes([]);
-      setEmail("");
-      setPassword("");
-      setLoginError("");
+      setRooms([]); setDrawingRooms([]); setSincStats(null); setPalavraStats(null); setThemes([]);
+      setEmail(""); setPassword(""); setLoginError("");
     }
-  };
+  }, []);
 
-  const fetchRooms = async () => {
-    if (!isAuthenticated || !token) return;
-    
-    setIsRefreshing(true);
-    try {
-      const response = await fetch("/api/admin/rooms", {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setRooms(data);
-      } else if (response.status === 401) {
-        // Unauthorized - clear auth and redirect
-        console.log('[Admin] Unauthorized, clearing auth');
-        handleLogout();
-      } else {
-        console.error(`[Admin] Error fetching rooms: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Error fetching rooms:", error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
+  const fetchAll = useCallback(async (t: string) => {
+    const headers = { Authorization: `Bearer ${t}` };
+    const [roomsRes, drawRes, sincRes, palavraRes] = await Promise.allSettled([
+      fetch("/api/admin/rooms", { headers }),
+      fetch("/api/admin/drawing-rooms", { headers }),
+      fetch("/api/admin/sincronia-rooms", { headers }),
+      fetch("/api/admin/palavra-rooms", { headers }),
+    ]);
 
-  const fetchThemes = async () => {
-    if (!isAuthenticated || !token) return;
-    
-    setIsLoadingThemes(true);
-    try {
-      const response = await fetch("/api/admin/themes", {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setThemes(data);
-      } else if (response.status === 401) {
-        // Unauthorized - clear auth and redirect
-        console.log('[Admin] Unauthorized, clearing auth');
-        handleLogout();
-      } else {
-        console.error(`[Admin] Error fetching themes: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Error fetching themes:", error);
-    } finally {
-      setIsLoadingThemes(false);
-    }
-  };
+    if (roomsRes.status === "fulfilled" && roomsRes.value.ok) setRooms(await roomsRes.value.json());
+    else if (roomsRes.status === "fulfilled" && roomsRes.value.status === 401) { handleLogout(); return; }
 
-  const fetchDrawingRooms = async () => {
-    if (!isAuthenticated || !token) return;
-    try {
-      const response = await fetch("/api/admin/drawing-rooms", {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setDrawingRooms(data);
-      } else if (response.status === 401) {
-        handleLogout();
-      }
-    } catch (error) {
-      console.error("Error fetching drawing rooms:", error);
-    }
+    if (drawRes.status === "fulfilled" && drawRes.value.ok) setDrawingRooms(await drawRes.value.json());
+    if (sincRes.status === "fulfilled" && sincRes.value.ok) setSincStats(await sincRes.value.json());
+    if (palavraRes.status === "fulfilled" && palavraRes.value.ok) setPalavraStats(await palavraRes.value.json());
+
+    setLastUpdated(new Date());
+  }, [handleLogout]);
+
+  const fetchThemes = useCallback(async (t: string) => {
+    const res = await fetch("/api/admin/themes", { headers: { Authorization: `Bearer ${t}` } });
+    if (res.ok) setThemes(await res.json());
+    else if (res.status === 401) handleLogout();
+  }, [handleLogout]);
+
+  const inspectImpostor = async (code: string) => {
+    if (!token) return;
+    const res = await fetch(`/api/admin/rooms/${code}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) setInspectRoom(await res.json());
+    else if (res.status === 401) handleLogout();
   };
 
   const inspectDrawingRoom = async (code: string) => {
     if (!token) return;
-    try {
-      const response = await fetch(`/api/admin/drawing-rooms/${code}`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSelectedDrawingRoom(data);
-        setIsDrawingSpectatorOpen(true);
-      } else if (response.status === 401) {
-        handleLogout();
-      }
-    } catch (error) {
-      console.error("Error fetching drawing room details:", error);
-    }
-  };
-
-  const deleteTheme = async (themeId: string) => {
-    if (!token || !confirm("Tem certeza que deseja excluir este tema? Esta ação não pode ser desfeita.")) {
-      return;
-    }
-    
-    try {
-      const response = await fetch(`/api/admin/themes/${themeId}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        setThemes(themes.filter(t => t.id !== themeId));
-        alert("Tema excluído com sucesso!");
-      } else if (response.status === 401) {
-        handleLogout();
-      } else {
-        alert("Erro ao excluir tema");
-      }
-    } catch (error) {
-      console.error("Error deleting theme:", error);
-      alert("Erro ao excluir tema");
-    }
-  };
-
-  const approveTheme = async (themeId: string) => {
-    if (!token) return;
-    
-    try {
-      const response = await fetch(`/api/admin/themes/${themeId}/approve`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        setThemes(themes.map(t => t.id === themeId ? { ...t, approved: true } : t));
-        alert("Tema aprovado com sucesso!");
-      } else if (response.status === 401) {
-        handleLogout();
-      } else {
-        alert("Erro ao aprovar tema");
-      }
-    } catch (error) {
-      console.error("Error approving theme:", error);
-      alert("Erro ao aprovar tema");
-    }
-  };
-
-  const rejectTheme = async (themeId: string) => {
-    if (!token) return;
-    
-    try {
-      const response = await fetch(`/api/admin/themes/${themeId}/reject`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        setThemes(themes.map(t => t.id === themeId ? { ...t, approved: false } : t));
-        alert("Tema rejeitado!");
-      } else if (response.status === 401) {
-        handleLogout();
-      } else {
-        alert("Erro ao rejeitar tema");
-      }
-    } catch (error) {
-      console.error("Error rejecting theme:", error);
-      alert("Erro ao rejeitar tema");
-    }
-  };
-
-  const inspectRoom = async (code: string) => {
-    if (!token) return;
-    
-    try {
-      const response = await fetch(`/api/admin/rooms/${code}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setSelectedRoom(data);
-        setIsSpectatorOpen(true);
-      } else if (response.status === 401) {
-        handleLogout();
-      }
-    } catch (error) {
-      console.error("Error fetching room details:", error);
-    }
+    const res = await fetch(`/api/admin/drawing-rooms/${code}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) setInspectDrawing(await res.json());
+    else if (res.status === 401) handleLogout();
   };
 
   useEffect(() => {
-    const savedToken = localStorage.getItem("adminToken");
-    if (savedToken) {
-      // Verify the token is still valid server-side before trusting it
-      fetch("/api/admin/verify", {
-        headers: { "Authorization": `Bearer ${savedToken}` }
-      }).then(res => {
-        if (res.ok) {
-          setToken(savedToken);
-          setIsAuthenticated(true);
-        } else {
-          // Token is invalid or expired - clear it
-          localStorage.removeItem("adminToken");
-        }
-      }).catch(() => {
-        localStorage.removeItem("adminToken");
-      });
-    }
+    const saved = localStorage.getItem("adminToken");
+    if (!saved) return;
+    fetch("/api/admin/verify", { headers: { Authorization: `Bearer ${saved}` } })
+      .then(res => {
+        if (res.ok) { setToken(saved); setIsAuthenticated(true); }
+        else localStorage.removeItem("adminToken");
+      })
+      .catch(() => localStorage.removeItem("adminToken"));
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && token) {
-      fetchRooms();
-      fetchThemes();
-      fetchDrawingRooms();
-      const interval = setInterval(() => { fetchRooms(); fetchDrawingRooms(); }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated, token]);
+    if (!isAuthenticated || !token) return;
+    fetchAll(token);
+    fetchThemes(token);
+    const interval = setInterval(() => fetchAll(token), 5000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, token, fetchAll, fetchThemes]);
 
-  const totalPlayers = rooms.reduce((sum, room) => sum + room.players.length, 0);
-  const activeRooms = rooms.filter(r => r.status === "playing").length;
-  const waitingRooms = rooms.filter(r => r.status === "waiting").length;
-
-  // Drawing game stats
-  const drawingTotalPlayers = drawingRooms.reduce((sum, room) => sum + room.players.length, 0);
-  const drawingActiveRooms = drawingRooms.filter(r => r.status !== "waiting").length;
-  const drawingWaitingRooms = drawingRooms.filter(r => r.status === "waiting").length;
-
+  // ── Login screen ──
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-slate-800 border-slate-700">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
-              <Lock className="w-6 h-6 text-blue-400" />
+          <CardHeader className="text-center pb-4">
+            <div className="mx-auto w-12 h-12 bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-4">
+              <Lock className="w-6 h-6 text-indigo-400" />
             </div>
             <CardTitle className="text-white text-xl">Admin Dashboard</CardTitle>
-            <p className="text-slate-400 text-sm">Acesso restrito ao administrador</p>
+            <p className="text-slate-400 text-sm mt-1">Acesso restrito ao administrador</p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-300">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
-                  className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
-                  required
-                  data-testid="input-admin-email"
-                />
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-slate-300 text-sm">Email</Label>
+                <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  placeholder="admin@tikjogos.com" className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
+                  required data-testid="input-admin-email" />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-300">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
-                  required
-                  data-testid="input-admin-password"
-                />
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-slate-300 text-sm">Senha</Label>
+                <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••" className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
+                  required data-testid="input-admin-password" />
               </div>
               {loginError && (
-                <div className="flex items-center gap-2 text-red-400 text-sm">
-                  <AlertTriangle className="w-4 h-4" />
-                  {loginError}
+                <div className="flex items-center gap-2 text-rose-400 text-sm bg-rose-500/10 border border-rose-500/20 rounded-lg p-3">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />{loginError}
                 </div>
               )}
-              <Button 
-                type="submit" 
-                className="w-full bg-blue-600 hover:bg-blue-700"
-                disabled={isLoading}
-                data-testid="button-admin-login"
-              >
+              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={isLoading} data-testid="button-admin-login">
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
@@ -473,778 +842,185 @@ export default function AdminDashboard() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-slate-900 text-white">
-      <header className="bg-slate-800 border-b border-slate-700 px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="text-xl font-bold text-white">Admin Dashboard</h1>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={fetchRooms}
-              disabled={isRefreshing}
-              className="text-slate-300"
-              data-testid="button-refresh-rooms"
-            >
-              <RefreshCw className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleLogout}
-              className="text-slate-300"
-              data-testid="button-admin-logout"
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
+  // ── Nav items ──
+  const navItems: { id: NavItem; label: string; icon: any; accent: string; badge?: number }[] = [
+    { id: "overview", label: "Visão Geral", icon: Home, accent: "#6366f1" },
+    { id: "impostor", label: "Impostor Clássico", icon: Skull, accent: "#6366f1", badge: rooms.length || undefined },
+    { id: "desenho", label: "Impostor Desenho", icon: Paintbrush, accent: "#a855f7", badge: drawingRooms.length || undefined },
+    { id: "sincronia", label: "Sincronia", icon: Sparkles, accent: "#10b981", badge: sincStats?.activeRooms || undefined },
+    { id: "palavra", label: "Desafio da Palavra", icon: Type, accent: "#f59e0b", badge: palavraStats?.rooms.filter(r => r.playerCount > 0).length || undefined },
+    { id: "temas", label: "Temas", icon: FileText, accent: "#ec4899", badge: themes.filter(t => !t.approved).length || undefined },
+    { id: "analytics", label: "Analytics", icon: BarChart3, accent: "#06b6d4" },
+  ];
+
+  const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
+    <nav className={`${mobile ? "w-full" : "w-56 shrink-0"} space-y-0.5`}>
+      {navItems.map(item => (
+        <button
+          key={item.id}
+          onClick={() => { setNav(item.id); setSidebarOpen(false); }}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${nav === item.id ? "bg-slate-700 text-white font-medium" : "text-slate-400 hover:text-white hover:bg-slate-800"}`}
+          data-testid={`nav-${item.id}`}
+        >
+          <div className="p-1.5 rounded-lg shrink-0" style={{ background: nav === item.id ? `${item.accent}33` : "transparent" }}>
+            <item.icon className="w-4 h-4" style={{ color: nav === item.id ? item.accent : "currentColor" }} />
           </div>
+          <span className="flex-1 text-left">{item.label}</span>
+          {item.badge !== undefined && item.badge > 0 && (
+            <Badge className="text-[10px] h-5 px-1.5 bg-slate-600">{item.badge}</Badge>
+          )}
+        </button>
+      ))}
+    </nav>
+  );
+
+  // ── Content by nav ──
+  const renderContent = () => {
+    switch (nav) {
+      case "overview":
+        return (
+          <OverviewView
+            rooms={rooms} drawingRooms={drawingRooms}
+            sincStats={sincStats} palavraStats={palavraStats}
+            token={token}
+          />
+        );
+
+      case "impostor":
+        return (
+          <GameSection
+            title="Impostor Clássico" icon={Skull} accent="#6366f1" lastUpdated={lastUpdated}
+            statsCards={<>
+              <StatCard label="Salas Ativas" value={rooms.length} icon={Home} accent="#6366f1" />
+              <StatCard label="Jogadores" value={rooms.reduce((s, r) => s + r.players.length, 0)} icon={Users} accent="#8b5cf6" />
+              <StatCard label="Jogando" value={rooms.filter(r => r.status === "playing").length} icon={Activity} accent="#10b981" />
+              <StatCard label="Aguardando" value={rooms.filter(r => r.status === "waiting").length} icon={Clock} accent="#64748b" />
+            </>}
+          >
+            <ImpostorRoomsTable rooms={rooms} onInspect={inspectImpostor} />
+          </GameSection>
+        );
+
+      case "desenho":
+        return (
+          <GameSection
+            title="Impostor Desenho" icon={Paintbrush} accent="#a855f7" lastUpdated={lastUpdated}
+            statsCards={<>
+              <StatCard label="Salas Ativas" value={drawingRooms.length} icon={Home} accent="#a855f7" />
+              <StatCard label="Jogadores" value={drawingRooms.reduce((s, r) => s + r.players.length, 0)} icon={Users} accent="#8b5cf6" />
+              <StatCard label="Jogando" value={drawingRooms.filter(r => r.status !== "waiting").length} icon={Activity} accent="#10b981" />
+              <StatCard label="Aguardando" value={drawingRooms.filter(r => r.status === "waiting").length} icon={Clock} accent="#64748b" />
+            </>}
+          >
+            <DrawingRoomsTable rooms={drawingRooms} onInspect={inspectDrawingRoom} />
+          </GameSection>
+        );
+
+      case "sincronia":
+        return (
+          <GameSection
+            title="Sincronia (Respostas em Comum)" icon={Sparkles} accent="#10b981" lastUpdated={lastUpdated}
+            statsCards={<>
+              <StatCard label="Salas Ativas" value={sincStats?.activeRooms ?? 0} icon={Home} accent="#10b981" />
+              <StatCard label="Jogadores Online" value={sincStats?.totalConnectedPlayers ?? 0} icon={Users} accent="#34d399" />
+              <StatCard label="Jogando" value={sincStats?.playingRooms ?? 0} icon={Activity} accent="#10b981" />
+              <StatCard label="Aguardando" value={sincStats?.waitingRooms ?? 0} icon={Clock} accent="#64748b" />
+            </>}
+          >
+            <SincroniaRoomsTable stats={sincStats} />
+          </GameSection>
+        );
+
+      case "palavra":
+        return (
+          <GameSection
+            title="Desafio da Palavra (Battle Royale)" icon={Type} accent="#f59e0b" lastUpdated={lastUpdated}
+            statsCards={<>
+              <StatCard label="Salas Públicas" value={palavraStats?.rooms.length ?? 0} icon={Home} accent="#f59e0b" />
+              <StatCard label="Jogadores Online" value={palavraStats?.totalPlayers ?? 0} icon={Users} accent="#fbbf24" />
+              <StatCard label="Salas com Jogadores" value={palavraStats?.rooms.filter(r => r.playerCount > 0).length ?? 0} icon={Activity} accent="#10b981" />
+              <StatCard label="Salas Vazias" value={palavraStats?.rooms.filter(r => r.playerCount === 0).length ?? 0} icon={Clock} accent="#64748b" />
+            </>}
+          >
+            <PalavraRoomsTable stats={palavraStats} />
+          </GameSection>
+        );
+
+      case "temas":
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="p-2.5 rounded-xl bg-pink-500/20">
+                <FileText className="w-5 h-5 text-pink-400" />
+              </div>
+              <h2 className="text-lg font-bold text-white">Moderação de Temas</h2>
+              <Badge className="bg-amber-600/80 ml-auto">{themes.filter(t => !t.approved).length} pendentes</Badge>
+            </div>
+            <TemasView token={token} themes={themes} setThemes={setThemes} onLogout={handleLogout} />
+          </div>
+        );
+
+      case "analytics":
+        return <AnalyticsDashboard token={token} />;
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col">
+      {/* Header */}
+      <header className="bg-slate-800/80 border-b border-slate-700 px-4 py-3 flex items-center gap-3 sticky top-0 z-20 backdrop-blur-sm">
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700">
+          {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+        <div className="flex items-center gap-2 font-bold text-white">
+          <Gamepad2 className="w-5 h-5 text-indigo-400" />
+          <span className="hidden sm:block">TikJogos Admin</span>
+        </div>
+        <div className="flex items-center gap-2 ml-auto">
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 mr-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
+            Ao vivo · atualiza a cada 5s
+          </div>
+          <Button variant="ghost" size="icon" onClick={() => token && fetchAll(token)} className="text-slate-400 hover:text-white h-8 w-8" data-testid="button-refresh-all">
+            <RefreshCw className="w-4 h-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={handleLogout} className="text-slate-400 hover:text-white h-8 w-8" data-testid="button-admin-logout">
+            <LogOut className="w-4 h-4" />
+          </Button>
         </div>
       </header>
 
-      <main className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="bg-slate-800 border-slate-700">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-500/20 rounded-lg">
-                  <Home className="w-6 h-6 text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-slate-400 text-sm">Salas Clássico</p>
-                  <p className="text-2xl font-bold text-white" data-testid="text-total-rooms">{rooms.length}</p>
-                </div>
+      <div className="flex flex-1 relative">
+        {/* Mobile sidebar overlay */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-30 lg:hidden" onClick={() => setSidebarOpen(false)}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <aside className="absolute left-0 top-0 bottom-0 w-64 bg-slate-900 border-r border-slate-700 p-4 overflow-y-auto z-40" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center gap-2 font-bold text-white mb-5 px-1">
+                <Gamepad2 className="w-5 h-5 text-indigo-400" /> TikJogos Admin
               </div>
-            </CardContent>
-          </Card>
+              <Sidebar mobile />
+            </aside>
+          </div>
+        )}
 
-          <Card className="bg-slate-800 border-slate-700">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-purple-500/20 rounded-lg">
-                  <Paintbrush className="w-6 h-6 text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-slate-400 text-sm">Salas Desenho</p>
-                  <p className="text-2xl font-bold text-white">{drawingRooms.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Desktop sidebar */}
+        <aside className="hidden lg:block w-56 shrink-0 bg-slate-800/40 border-r border-slate-700/50 p-3 h-[calc(100vh-57px)] sticky top-[57px] overflow-y-auto">
+          <Sidebar />
+        </aside>
 
-          <Card className="bg-slate-800 border-slate-700">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-500/20 rounded-lg">
-                  <Users className="w-6 h-6 text-green-400" />
-                </div>
-                <div>
-                  <p className="text-slate-400 text-sm">Jogadores Online</p>
-                  <p className="text-2xl font-bold text-white" data-testid="text-total-players">{totalPlayers + drawingTotalPlayers}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Main content */}
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+          {renderContent()}
+        </main>
+      </div>
 
-          <Card className="bg-slate-800 border-slate-700">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-yellow-500/20 rounded-lg">
-                  <Eye className="w-6 h-6 text-yellow-400" />
-                </div>
-                <div>
-                  <p className="text-slate-400 text-sm">Jogando / Aguardando</p>
-                  <p className="text-2xl font-bold text-white" data-testid="text-rooms-status">{activeRooms + drawingActiveRooms} / {waitingRooms + drawingWaitingRooms}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="bg-slate-800 border-slate-700">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Skull className="w-5 h-5" />
-              Impostor Clássico — Salas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {rooms.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
-                Nenhuma sala ativa no momento
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-slate-700">
-                      <TableHead className="text-slate-300">Código</TableHead>
-                      <TableHead className="text-slate-300">Status</TableHead>
-                      <TableHead className="text-slate-300">Jogadores</TableHead>
-                      <TableHead className="text-slate-300">Modo</TableHead>
-                      <TableHead className="text-slate-300">Criada em</TableHead>
-                      <TableHead className="text-slate-300">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {rooms.map((room) => (
-                      <TableRow key={room.code} className="border-slate-700" data-testid={`row-room-${room.code}`}>
-                        <TableCell className="font-mono font-bold text-white">{room.code}</TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={room.status === "playing" ? "default" : "secondary"}
-                            className={room.status === "playing" ? "bg-green-600" : "bg-slate-600"}
-                          >
-                            {room.status === "playing" ? "Jogando" : "Aguardando"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-slate-300">{room.players.length}/10</TableCell>
-                        <TableCell className="text-slate-300">{room.gameMode || "-"}</TableCell>
-                        <TableCell className="text-slate-400 text-sm">
-                          {new Date(room.createdAt).toLocaleTimeString("pt-BR")}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => inspectRoom(room.code)}
-                            className="border-slate-600 text-slate-300"
-                            data-testid={`button-inspect-${room.code}`}
-                          >
-                            <Eye className="w-4 h-4 mr-1" />
-                            Inspecionar
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Impostor Desenho Section */}
-        <Card className="bg-slate-800 border-slate-700">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-white flex items-center gap-2">
-                <Paintbrush className="w-5 h-5" />
-                Impostor Desenho — Salas
-              </CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={fetchDrawingRooms}
-                className="text-slate-300"
-              >
-                <RefreshCw className="w-5 h-5" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* Drawing game stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-              <div className="bg-slate-700/50 p-3 rounded-lg flex items-center gap-3">
-                <div className="p-2 bg-purple-500/20 rounded-lg">
-                  <Home className="w-5 h-5 text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-slate-400 text-xs">Salas</p>
-                  <p className="text-lg font-bold text-white">{drawingRooms.length}</p>
-                </div>
-              </div>
-              <div className="bg-slate-700/50 p-3 rounded-lg flex items-center gap-3">
-                <div className="p-2 bg-emerald-500/20 rounded-lg">
-                  <Users className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-slate-400 text-xs">Jogadores</p>
-                  <p className="text-lg font-bold text-white">{drawingTotalPlayers}</p>
-                </div>
-              </div>
-              <div className="bg-slate-700/50 p-3 rounded-lg flex items-center gap-3">
-                <div className="p-2 bg-amber-500/20 rounded-lg">
-                  <Eye className="w-5 h-5 text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-slate-400 text-xs">Jogando / Aguardando</p>
-                  <p className="text-lg font-bold text-white">{drawingActiveRooms} / {drawingWaitingRooms}</p>
-                </div>
-              </div>
-            </div>
-
-            {drawingRooms.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
-                Nenhuma sala de desenho ativa no momento
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-slate-700">
-                      <TableHead className="text-slate-300">Código</TableHead>
-                      <TableHead className="text-slate-300">Status</TableHead>
-                      <TableHead className="text-slate-300">Jogadores</TableHead>
-                      <TableHead className="text-slate-300">Palavra</TableHead>
-                      <TableHead className="text-slate-300">Criada em</TableHead>
-                      <TableHead className="text-slate-300">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {drawingRooms.map((dRoom) => {
-                      const statusLabels: Record<string, string> = {
-                        waiting: "Aguardando",
-                        sorting: "Sorteando",
-                        drawing: "Desenhando",
-                        roundEnd: "Fim da Rodada",
-                        discussion: "Discussão",
-                        voting: "Votação",
-                        result: "Resultado",
-                      };
-                      const statusColors: Record<string, string> = {
-                        waiting: "bg-slate-600",
-                        sorting: "bg-yellow-600",
-                        drawing: "bg-green-600",
-                        roundEnd: "bg-orange-600",
-                        discussion: "bg-blue-600",
-                        voting: "bg-purple-600",
-                        result: "bg-red-600",
-                      };
-                      return (
-                        <TableRow key={dRoom.code} className="border-slate-700">
-                          <TableCell className="font-mono font-bold text-white">{dRoom.code}</TableCell>
-                          <TableCell>
-                            <Badge className={statusColors[dRoom.status] || "bg-slate-600"}>
-                              {statusLabels[dRoom.status] || dRoom.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-slate-300">{dRoom.players.length}</TableCell>
-                          <TableCell className="text-slate-300">
-                            {dRoom.gameData?.word || "-"}
-                          </TableCell>
-                          <TableCell className="text-slate-400 text-sm">
-                            {new Date(dRoom.createdAt).toLocaleTimeString("pt-BR")}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => inspectDrawingRoom(dRoom.code)}
-                              className="border-slate-600 text-slate-300"
-                            >
-                              <Eye className="w-4 h-4 mr-1" />
-                              Inspecionar
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Theme Management Section */}
-        <Card className="bg-slate-800 border-slate-700">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-white flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Gerenciar Temas da Comunidade
-              </CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={fetchThemes}
-                disabled={isLoadingThemes}
-                className="text-slate-300"
-              >
-                <RefreshCw className={`w-5 h-5 ${isLoadingThemes ? "animate-spin" : ""}`} />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* Search Bar */}
-            <div className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input
-                  type="text"
-                  placeholder="Buscar por título ou autor..."
-                  value={themeSearchQuery}
-                  onChange={(e) => setThemeSearchQuery(e.target.value)}
-                  className="pl-10 bg-slate-700 border-slate-600 text-white placeholder-slate-400"
-                />
-              </div>
-            </div>
-
-            {isLoadingThemes ? (
-              <div className="text-center py-8 text-slate-400">
-                <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
-                Carregando temas...
-              </div>
-            ) : themes.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
-                Nenhum tema criado ainda
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-slate-700">
-                      <TableHead className="text-slate-300">Título</TableHead>
-                      <TableHead className="text-slate-300">Autor</TableHead>
-                      <TableHead className="text-slate-300">Palavras</TableHead>
-                      <TableHead className="text-slate-300">Status</TableHead>
-                      <TableHead className="text-slate-300">Pagamento</TableHead>
-                      <TableHead className="text-slate-300">Criado em</TableHead>
-                      <TableHead className="text-slate-300">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {themes
-                      .filter(theme => 
-                        theme.titulo.toLowerCase().includes(themeSearchQuery.toLowerCase()) ||
-                        theme.autor.toLowerCase().includes(themeSearchQuery.toLowerCase())
-                      )
-                      .map((theme) => (
-                        <TableRow key={theme.id} className="border-slate-700">
-                          <TableCell className="font-semibold text-white">{theme.titulo}</TableCell>
-                          <TableCell className="text-slate-300">{theme.autor}</TableCell>
-                          <TableCell className="text-slate-300">{theme.palavras.length}</TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={theme.approved ? "default" : "secondary"}
-                              className={theme.approved ? "bg-green-600" : "bg-yellow-600"}
-                            >
-                              {theme.approved ? "Aprovado" : "Pendente"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant="secondary"
-                              className={
-                                theme.paymentStatus === "approved" ? "bg-green-600" :
-                                theme.paymentStatus === "pending" ? "bg-yellow-600" :
-                                "bg-red-600"
-                              }
-                            >
-                              {theme.paymentStatus}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-slate-400 text-sm">
-                            {new Date(theme.createdAt).toLocaleDateString("pt-BR")}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setSelectedTheme(theme);
-                                  setIsThemeDialogOpen(true);
-                                }}
-                                className="text-blue-400 hover:text-blue-300"
-                                title="Ver detalhes"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </Button>
-                              {!theme.approved && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => approveTheme(theme.id)}
-                                  className="text-green-400 hover:text-green-300"
-                                  title="Aprovar tema"
-                                >
-                                  <CheckCircle className="w-4 h-4" />
-                                </Button>
-                              )}
-                              {theme.approved && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => rejectTheme(theme.id)}
-                                  className="text-yellow-400 hover:text-yellow-300"
-                                  title="Rejeitar tema"
-                                >
-                                  <XCircle className="w-4 h-4" />
-                                </Button>
-                              )}
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => deleteTheme(theme.id)}
-                                className="text-red-400 hover:text-red-300"
-                                title="Excluir tema"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Analytics Section */}
-        <Card className="bg-slate-800 border-slate-700">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
-              Analytics de Tráfego
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AnalyticsDashboard token={token} />
-          </CardContent>
-        </Card>
-      </main>
-
-      <Dialog open={isSpectatorOpen} onOpenChange={setIsSpectatorOpen}>
-        <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <Eye className="w-5 h-5" />
-              Modo Fantasma - Sala {selectedRoom?.code}
-            </DialogTitle>
-          </DialogHeader>
-          
-          {selectedRoom && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-700/50 p-4 rounded-lg">
-                  <p className="text-slate-400 text-sm mb-1">Status</p>
-                  <Badge className={selectedRoom.status === "playing" ? "bg-green-600" : "bg-slate-600"}>
-                    {selectedRoom.status === "playing" ? "Jogando" : "Aguardando"}
-                  </Badge>
-                </div>
-                <div className="bg-slate-700/50 p-4 rounded-lg">
-                  <p className="text-slate-400 text-sm mb-1">Modo de Jogo</p>
-                  <p className="text-white font-medium">{selectedRoom.gameMode || "Não definido"}</p>
-                </div>
-              </div>
-
-              {selectedRoom.status === "playing" && (
-                <div className="space-y-4">
-                  <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-lg">
-                    <p className="text-red-400 text-sm mb-1 flex items-center gap-2">
-                      <Skull className="w-4 h-4" />
-                      Impostor
-                    </p>
-                    <p className="text-white font-bold" data-testid="text-impostor-name">
-                      {selectedRoom.players.find(p => p.uid === selectedRoom.impostorId)?.name || "N/A"}
-                    </p>
-                  </div>
-
-                  {selectedRoom.currentWord && (
-                    <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
-                      <p className="text-blue-400 text-sm mb-1">Palavra Secreta</p>
-                      <p className="text-white font-bold text-lg" data-testid="text-secret-word">
-                        {selectedRoom.currentWord}
-                      </p>
-                      {selectedRoom.currentCategory && (
-                        <p className="text-slate-400 text-sm mt-1">
-                          Categoria: {selectedRoom.currentCategory}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div>
-                <p className="text-slate-400 text-sm mb-3">Jogadores ({selectedRoom.players.length})</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {selectedRoom.players.map((player) => {
-                    const isImpostor = player.uid === selectedRoom.impostorId;
-                    const isHost = player.uid === selectedRoom.hostId;
-                    const isEliminated = selectedRoom.gameData?.eliminatedPlayers?.includes(player.uid);
-                    
-                    return (
-                      <div 
-                        key={player.uid}
-                        className={`p-3 rounded-lg flex items-center gap-3 ${
-                          isEliminated 
-                            ? "bg-slate-700/30 opacity-50" 
-                            : isImpostor 
-                              ? "bg-red-500/20 border border-red-500/30" 
-                              : "bg-slate-700/50"
-                        }`}
-                        data-testid={`player-${player.uid}`}
-                      >
-                        <User className={`w-5 h-5 ${isImpostor ? "text-red-400" : "text-slate-400"}`} />
-                        <div className="flex-1">
-                          <p className={`font-medium ${isImpostor ? "text-red-400" : "text-white"}`}>
-                            {player.name}
-                          </p>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {isHost && <Badge variant="secondary" className="text-xs bg-yellow-600">Host</Badge>}
-                            {isImpostor && <Badge className="text-xs bg-red-600">Impostor</Badge>}
-                            {isEliminated && <Badge variant="secondary" className="text-xs bg-slate-600">Eliminado</Badge>}
-                            {!player.connected && <Badge variant="secondary" className="text-xs bg-orange-600">Desconectado</Badge>}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Drawing Room Spectator Dialog */}
-      <Dialog open={isDrawingSpectatorOpen} onOpenChange={setIsDrawingSpectatorOpen}>
-        <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <Paintbrush className="w-5 h-5" />
-              Impostor Desenho - Sala {selectedDrawingRoom?.code}
-            </DialogTitle>
-          </DialogHeader>
-
-          {selectedDrawingRoom && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-700/50 p-4 rounded-lg">
-                  <p className="text-slate-400 text-sm mb-1">Status</p>
-                  <Badge className={
-                    selectedDrawingRoom.status === "drawing" ? "bg-green-600" :
-                    selectedDrawingRoom.status === "voting" ? "bg-purple-600" :
-                    selectedDrawingRoom.status === "discussion" ? "bg-blue-600" :
-                    "bg-slate-600"
-                  }>
-                    {selectedDrawingRoom.status}
-                  </Badge>
-                </div>
-                <div className="bg-slate-700/50 p-4 rounded-lg">
-                  <p className="text-slate-400 text-sm mb-1">Tempo por Turno</p>
-                  <p className="text-white font-medium">{selectedDrawingRoom.gameData?.turnTimeLimit || 30}s</p>
-                </div>
-              </div>
-
-              {selectedDrawingRoom.gameData && (
-                <div className="space-y-4">
-                  {selectedDrawingRoom.gameData.word && (
-                    <div className="bg-blue-500/10 border border-blue-500/30 p-4 rounded-lg">
-                      <p className="text-blue-400 text-sm mb-1">Palavra Secreta</p>
-                      <p className="text-white font-bold text-lg">{selectedDrawingRoom.gameData.word}</p>
-                    </div>
-                  )}
-
-                  <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-lg">
-                    <p className="text-red-400 text-sm mb-1 flex items-center gap-2">
-                      <Skull className="w-4 h-4" />
-                      Impostor
-                    </p>
-                    <p className="text-white font-bold">
-                      {selectedDrawingRoom.gameData.impostorIds?.map(id =>
-                        selectedDrawingRoom.players.find(p => p.uid === id)?.name || "N/A"
-                      ).join(", ") || "N/A"}
-                    </p>
-                  </div>
-
-                  {selectedDrawingRoom.gameData.drawingOrder && (
-                    <div className="bg-slate-700/50 p-4 rounded-lg">
-                      <p className="text-slate-400 text-sm mb-2">Ordem de Desenho</p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedDrawingRoom.gameData.drawingOrder.map((uid, idx) => {
-                          const player = selectedDrawingRoom.players.find(p => p.uid === uid);
-                          const isCurrentDrawer = uid === selectedDrawingRoom.gameData?.currentDrawerId;
-                          const isImpostor = selectedDrawingRoom.gameData?.impostorIds?.includes(uid);
-                          return (
-                            <Badge
-                              key={uid}
-                              className={
-                                isCurrentDrawer ? "bg-emerald-600" :
-                                isImpostor ? "bg-red-600" :
-                                "bg-slate-600"
-                              }
-                            >
-                              {idx + 1}. {player?.name || "?"}
-                              {isCurrentDrawer && " (desenhando)"}
-                            </Badge>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedDrawingRoom.gameData.votes && selectedDrawingRoom.gameData.votes.length > 0 && (
-                    <div className="bg-purple-500/10 border border-purple-500/30 p-4 rounded-lg">
-                      <p className="text-purple-400 text-sm mb-2">Votos</p>
-                      <div className="space-y-1">
-                        {selectedDrawingRoom.gameData.votes.map((vote, idx) => (
-                          <p key={idx} className="text-slate-300 text-sm">
-                            <span className="text-white font-medium">{vote.playerName}</span>
-                            {" votou em "}
-                            <span className={
-                              selectedDrawingRoom.gameData?.impostorIds?.includes(vote.targetId)
-                                ? "text-emerald-400 font-medium"
-                                : "text-white font-medium"
-                            }>
-                              {vote.targetName}
-                            </span>
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div>
-                <p className="text-slate-400 text-sm mb-3">Jogadores ({selectedDrawingRoom.players.length})</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {selectedDrawingRoom.players.map((player) => {
-                    const isImpostor = selectedDrawingRoom.gameData?.impostorIds?.includes(player.uid);
-                    const isHost = player.uid === selectedDrawingRoom.hostId;
-                    return (
-                      <div
-                        key={player.uid}
-                        className={`p-3 rounded-lg flex items-center gap-3 ${
-                          isImpostor
-                            ? "bg-red-500/20 border border-red-500/30"
-                            : "bg-slate-700/50"
-                        }`}
-                      >
-                        <User className={`w-5 h-5 ${isImpostor ? "text-red-400" : "text-slate-400"}`} />
-                        <div className="flex-1">
-                          <p className={`font-medium ${isImpostor ? "text-red-400" : "text-white"}`}>
-                            {player.name}
-                          </p>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {isHost && <Badge variant="secondary" className="text-xs bg-yellow-600">Host</Badge>}
-                            {isImpostor && <Badge className="text-xs bg-red-600">Impostor</Badge>}
-                            {!player.connected && <Badge variant="secondary" className="text-xs bg-orange-600">Desconectado</Badge>}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Theme Details Dialog */}
-      <Dialog open={isThemeDialogOpen} onOpenChange={setIsThemeDialogOpen}>
-        <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Detalhes do Tema
-            </DialogTitle>
-          </DialogHeader>
-          {selectedTheme && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-slate-400">Título</Label>
-                  <p className="text-white font-semibold">{selectedTheme.titulo}</p>
-                </div>
-                <div>
-                  <Label className="text-slate-400">Autor</Label>
-                  <p className="text-white">{selectedTheme.autor}</p>
-                </div>
-                <div>
-                  <Label className="text-slate-400">Status</Label>
-                  <Badge 
-                    variant={selectedTheme.approved ? "default" : "secondary"}
-                    className={selectedTheme.approved ? "bg-green-600" : "bg-yellow-600"}
-                  >
-                    {selectedTheme.approved ? "Aprovado" : "Pendente"}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="text-slate-400">Pagamento</Label>
-                  <Badge 
-                    variant="secondary"
-                    className={
-                      selectedTheme.paymentStatus === "approved" ? "bg-green-600" :
-                      selectedTheme.paymentStatus === "pending" ? "bg-yellow-600" :
-                      "bg-red-600"
-                    }
-                  >
-                    {selectedTheme.paymentStatus}
-                  </Badge>
-                </div>
-                <div>
-                  <Label className="text-slate-400">Público</Label>
-                  <p className="text-white">{selectedTheme.isPublic ? "Sim" : "Não"}</p>
-                </div>
-                <div>
-                  <Label className="text-slate-400">Código de Acesso</Label>
-                  <p className="text-white font-mono">{selectedTheme.accessCode || "-"}</p>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-slate-400">Palavras ({selectedTheme.palavras.length})</Label>
-                <div className="mt-2 p-4 bg-slate-700 rounded-lg max-h-60 overflow-y-auto">
-                  <div className="flex flex-wrap gap-2">
-                    {selectedTheme.palavras.map((palavra, index) => (
-                      <Badge key={index} variant="secondary" className="bg-slate-600">
-                        {palavra}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-4 border-t border-slate-700">
-                {!selectedTheme.approved && (
-                  <Button
-                    onClick={() => {
-                      approveTheme(selectedTheme.id);
-                      setIsThemeDialogOpen(false);
-                    }}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Aprovar Tema
-                  </Button>
-                )}
-                {selectedTheme.approved && (
-                  <Button
-                    onClick={() => {
-                      rejectTheme(selectedTheme.id);
-                      setIsThemeDialogOpen(false);
-                    }}
-                    variant="secondary"
-                    className="bg-yellow-600 hover:bg-yellow-700"
-                  >
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Rejeitar Tema
-                  </Button>
-                )}
-                <Button
-                  onClick={() => {
-                    deleteTheme(selectedTheme.id);
-                    setIsThemeDialogOpen(false);
-                  }}
-                  variant="destructive"
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Excluir Tema
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Inspect dialogs */}
+      <ImpostorInspectDialog room={inspectRoom} onClose={() => setInspectRoom(null)} />
+      <DrawingInspectDialog room={inspectDrawing} onClose={() => setInspectDrawing(null)} />
     </div>
   );
 }

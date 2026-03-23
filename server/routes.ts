@@ -1250,8 +1250,8 @@ function setupGameMode(mode: GameModeType, players: Player[], impostorId: string
   }
 }
 
-import { setupRCGame } from './rcGame.js';
-import { setupSincBR } from './sincBrGame.js';
+import { setupRCGame, getRCRoomStats } from './rcGame.js';
+import { setupSincBR, getBRRoomStats } from './sincBrGame.js';
 
 export async function registerRoutes(
   httpServer: Server,
@@ -3500,6 +3500,26 @@ export async function registerRoutes(
     const room = drawingRooms.get(code);
     if (!room) return res.status(404).json({ error: "Sala não encontrada" });
     res.json(room);
+  });
+
+  // Admin: Sincronia (Respostas em Comum) rooms
+  app.get("/api/admin/sincronia-rooms", verifyAdmin, (_req, res) => {
+    try {
+      res.json(getRCRoomStats());
+    } catch (error) {
+      console.error('[Admin] Error fetching sincronia rooms:', error);
+      res.status(500).json({ error: "Erro ao buscar salas de sincronia" });
+    }
+  });
+
+  // Admin: Palavra (Sincronia Battle Royale) rooms
+  app.get("/api/admin/palavra-rooms", verifyAdmin, (_req, res) => {
+    try {
+      res.json(getBRRoomStats());
+    } catch (error) {
+      console.error('[Admin] Error fetching palavra rooms:', error);
+      res.status(500).json({ error: "Erro ao buscar salas de palavra" });
+    }
   });
 
   // WebSocket: Drawing game
