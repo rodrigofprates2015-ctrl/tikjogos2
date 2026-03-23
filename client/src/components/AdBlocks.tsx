@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { X } from "lucide-react";
+import stickerSrc from "@assets/stick_1774302902986.webp";
 
 declare global {
   interface Window {
@@ -170,9 +171,17 @@ function InterstitialOverlay({
     // atrasa o reflow e faz offsetWidth=0 no momento do push.
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/85">
 
+      {/* Sticker do mascote — atrás do popup, canto superior direito */}
+      <img
+        src={stickerSrc}
+        alt=""
+        className="absolute top-4 right-4 w-24 h-24 object-contain opacity-90 pointer-events-none select-none"
+        style={{ zIndex: 0 }}
+      />
+
       {/* Container com largura fixa em px — sem padding lateral para que
           o <ins> ocupe exatamente a largura que o AdSense vai medir */}
-      <div
+      <div style={{ position: 'relative', zIndex: 1 }}><div
         className="relative bg-[#1a1b2e] rounded-3xl shadow-2xl border border-white/10 overflow-hidden"
         style={{ width: w }}
       >
@@ -205,6 +214,7 @@ function InterstitialOverlay({
           data-ad-format="auto"
           data-full-width-responsive="true"
         />
+      </div>
       </div>
     </div>
   );
