@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useGameStore, type GameModeType, type PlayerVote, type PlayerAnswer, type GameConfig } from "@/lib/gameStore";
 import { useDrawingGameStore } from "@/lib/drawingGameStore";
 import { Link, useLocation } from "wouter";
@@ -1476,7 +1476,7 @@ const HomeScreen = () => {
     showInterstitial(() => createRoom());
   };
 
-  const handleJoin = async () => {
+  const handleJoin = () => {
     if (!name.trim()) {
       toast({ title: "Nome necessário", description: "Por favor, digite seu nome.", variant: "destructive" });
       return;
@@ -1490,10 +1490,12 @@ const HomeScreen = () => {
       saveNickname(name);
     }
     setUser(name);
-    const success = await joinRoom(code.toUpperCase());
-    if (!success) {
-      toast({ title: "Erro ao entrar", description: "Sala não encontrada ou código inválido.", variant: "destructive" });
-    }
+    showInterstitial(async () => {
+      const success = await joinRoom(code.toUpperCase());
+      if (!success) {
+        toast({ title: "Erro ao entrar", description: "Sala não encontrada ou código inválido.", variant: "destructive" });
+      }
+    });
   };
 
   const handleClearNickname = () => {
@@ -4937,8 +4939,21 @@ const VotingPlayerList = ({
 
 
 function ImpostorGameInner() {
-  const { status } = useGameStore();
+  const { status, user, room } = useGameStore();
   const [isDonationOpen, setIsDonationOpen] = useState(false);
+  const { show: showNewRoundAd, InterstitialAd: NewRoundInterstitialAd } = useInterstitialAd();
+  const prevStatusRef = useRef(status);
+
+  useEffect(() => {
+    const prevStatus = prevStatusRef.current;
+    prevStatusRef.current = status;
+    if (prevStatus === 'playing' && status === 'lobby') {
+      const isHost = room?.hostId === user?.uid;
+      if (!isHost) {
+        showNewRoundAd(() => {});
+      }
+    }
+  }, [status]);
 
   if (status === 'home') {
     return (
@@ -4965,6 +4980,7 @@ function ImpostorGameInner() {
       {status === 'modeSelect' && <ModeSelectScreen />}
       {status === 'submodeSelect' && <PalavraSuperSecretaSubmodeScreen />}
       {status === 'playing' && <GameScreen />}
+      {NewRoundInterstitialAd}
     </div>
   );
 }

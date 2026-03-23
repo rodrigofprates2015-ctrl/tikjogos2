@@ -178,7 +178,7 @@ function InterstitialOverlay({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-          <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Anúncio</span>
+          <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">TEMPO PRA BEBER ÁGUA - Anúncio</span>
           <button
             onClick={onDismiss}
             disabled={countdown > 0}
