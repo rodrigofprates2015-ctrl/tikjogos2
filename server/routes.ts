@@ -47,7 +47,8 @@ const drawingRooms = new Map<string, DrawingRoom>();
 
 /** Real-time stats for Impostor game rooms (in-memory) */
 export async function getImpostorRoomStats() {
-  const allRooms = await storage.getAllRooms();
+  const allRoomsRaw = await storage.getAllRooms();
+  const allRooms = allRoomsRaw.filter(r => r.gameMode !== 'desafioPalavra');
   const activeRooms = allRooms.filter(r => r.players.some(p => p.connected));
   const playingRooms = allRooms.filter(r => r.status === 'playing');
   const totalConnectedPlayers = allRooms.reduce((sum, r) => sum + r.players.filter(p => p.connected).length, 0);
@@ -3118,8 +3119,9 @@ export async function registerRoutes(
   app.get("/api/admin/rooms", verifyAdmin, async (req, res) => {
     try {
       const rooms = await storage.getAllRooms();
-      // Sort by creation date, newest first, limit to 50
+      // Sort by creation date, newest first, limit to 50 — exclude Desafio da Palavra rooms
       const sortedRooms = rooms
+        .filter(r => r.gameMode !== 'desafioPalavra')
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 50);
       
