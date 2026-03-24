@@ -7,6 +7,7 @@ import type { Express } from 'express';
 import type { Server } from 'http';
 import { z } from 'zod';
 import { randomBytes } from 'crypto';
+import { recordGameSession } from './db';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -876,6 +877,9 @@ export function setupRCGame(httpServer: Server, app: Express) {
           room.config = config;
           room.phase = 'playing';
           room.currentRound = 1;
+          if (room.players.length >= 3) {
+            recordGameSession('sincronia', room.code, room.players.length).catch(() => {});
+          }
           room.scores = {};
           room.players.forEach(p => { p.score = 0; room.scores[p.uid] = 0; });
           room.questions = pickQuestions(config.rounds, config.category);

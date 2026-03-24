@@ -35,3 +35,47 @@ if (process.env.DATABASE_URL) {
 }
 
 export { pool, db };
+
+export type GameType = 'impostor' | 'desenho' | 'sincronia' | 'desafio';
+
+export async function recordGameSession(gameType: GameType, roomCode: string, playerCount: number): Promise<void> {
+  if (!db) return;
+  try {
+    await db.insert(schema.gameSessions).values({ gameType, roomCode, playerCount });
+  } catch (err) {
+    console.error('[GameSessions] Failed to record session:', err);
+  }
+}
+
+export type DailyCount = { date: string; count: number };
+
+export async function getGameSessionStats(gameType: GameType, days = 30): Promise<DailyCount[]> {
+  if (!pool) return [];
+  try {
+    const res = await (pool as PgPool).query<{ date: string; count: string }>(`
+      SELECT
+        to_char(date_trunc('day', played_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS date,
+        COUNT(*)::int AS count
+      FROM game_sessions
+      WHERE game_type = $1
+        AND played_at >= NOW() - INTERVAL '${days} days'
+      GROUP BY 1
+      ORDER BY 1
+    `, [gameType]);
+    const rows = res.rows;
+
+    const result: DailyCount[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setUTCHours(0, 0, 0, 0);
+      d.setUTCDate(d.getUTCDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const found = rows.find(r => r.date === dateStr);
+      result.push({ date: dateStr, count: found ? Number(found.count) : 0 });
+    }
+    return result;
+  } catch (err) {
+    console.error('[GameSessions] Failed to get stats:', err);
+    return [];
+  }
+}

@@ -798,6 +798,65 @@ function GameSection({
   );
 }
 
+function GameSessionsChart({ gameType, token, accent }: { gameType: string; token: string | null; accent: string }) {
+  const { data, isLoading } = useQuery<{ date: string; count: number }[]>({
+    queryKey: ["/api/admin/game-sessions", gameType, token],
+    queryFn: async () => {
+      if (!token) return [];
+      const res = await fetch(`/api/admin/game-sessions/${gameType}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!token,
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+  });
+
+  const chartData = (data || []).map(d => ({
+    ...d,
+    label: format(parseISO(d.date), "dd/MM", { locale: ptBR }),
+  }));
+
+  const totalGames = (data || []).reduce((s, d) => s + d.count, 0);
+
+  return (
+    <Card className="bg-slate-800/70 border-slate-700">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm text-slate-300 font-medium flex items-center gap-2">
+          <BarChart3 className="w-4 h-4" style={{ color: accent }} />
+          Partidas Jogadas — Últimos 30 dias
+          <span className="ml-auto text-xs text-slate-400 font-normal">{totalGames} total</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="h-[180px] flex items-center justify-center text-slate-500 text-sm">Carregando...</div>
+        ) : chartData.length === 0 || totalGames === 0 ? (
+          <div className="h-[180px] flex flex-col items-center justify-center text-slate-500 text-sm gap-1">
+            <Activity className="w-6 h-6 mb-1 opacity-40" />
+            Nenhuma partida registrada ainda
+            <span className="text-xs text-slate-600">Inicia quando uma sala com 3+ jogadores começa</span>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={180}>
+            <BarChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} interval={4} />
+              <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} allowDecimals={false} />
+              <Tooltip
+                contentStyle={{ backgroundColor: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", fontSize: "12px", color: "#fff" }}
+                formatter={(v: number) => [v, "Partidas"]}
+                labelFormatter={(label) => `${label}`}
+              />
+              <Bar dataKey="count" fill={accent} radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
@@ -1009,62 +1068,74 @@ export default function AdminDashboard() {
 
       case "impostor":
         return (
-          <GameSection
-            title="Impostor Clássico" icon={Skull} accent="#6366f1" lastUpdated={lastUpdated}
-            statsCards={<>
-              <StatCard label="Salas Ativas" value={rooms.length} icon={Home} accent="#6366f1" />
-              <StatCard label="Jogadores" value={rooms.reduce((s, r) => s + r.players.length, 0)} icon={Users} accent="#8b5cf6" />
-              <StatCard label="Jogando" value={rooms.filter(r => r.status === "playing").length} icon={Activity} accent="#10b981" />
-              <StatCard label="Aguardando" value={rooms.filter(r => r.status === "waiting").length} icon={Clock} accent="#64748b" />
-            </>}
-          >
-            <ImpostorRoomsTable rooms={rooms} onInspect={inspectImpostor} />
-          </GameSection>
+          <div className="space-y-5">
+            <GameSection
+              title="Impostor Clássico" icon={Skull} accent="#6366f1" lastUpdated={lastUpdated}
+              statsCards={<>
+                <StatCard label="Salas Ativas" value={rooms.length} icon={Home} accent="#6366f1" />
+                <StatCard label="Jogadores" value={rooms.reduce((s, r) => s + r.players.length, 0)} icon={Users} accent="#8b5cf6" />
+                <StatCard label="Jogando" value={rooms.filter(r => r.status === "playing").length} icon={Activity} accent="#10b981" />
+                <StatCard label="Aguardando" value={rooms.filter(r => r.status === "waiting").length} icon={Clock} accent="#64748b" />
+              </>}
+            >
+              <ImpostorRoomsTable rooms={rooms} onInspect={inspectImpostor} />
+            </GameSection>
+            <GameSessionsChart gameType="impostor" token={token} accent="#6366f1" />
+          </div>
         );
 
       case "desenho":
         return (
-          <GameSection
-            title="Impostor Desenho" icon={Paintbrush} accent="#a855f7" lastUpdated={lastUpdated}
-            statsCards={<>
-              <StatCard label="Salas Ativas" value={drawingRooms.length} icon={Home} accent="#a855f7" />
-              <StatCard label="Jogadores" value={drawingRooms.reduce((s, r) => s + r.players.length, 0)} icon={Users} accent="#8b5cf6" />
-              <StatCard label="Jogando" value={drawingRooms.filter(r => r.status !== "waiting").length} icon={Activity} accent="#10b981" />
-              <StatCard label="Aguardando" value={drawingRooms.filter(r => r.status === "waiting").length} icon={Clock} accent="#64748b" />
-            </>}
-          >
-            <DrawingRoomsTable rooms={drawingRooms} onInspect={inspectDrawingRoom} />
-          </GameSection>
+          <div className="space-y-5">
+            <GameSection
+              title="Impostor Desenho" icon={Paintbrush} accent="#a855f7" lastUpdated={lastUpdated}
+              statsCards={<>
+                <StatCard label="Salas Ativas" value={drawingRooms.length} icon={Home} accent="#a855f7" />
+                <StatCard label="Jogadores" value={drawingRooms.reduce((s, r) => s + r.players.length, 0)} icon={Users} accent="#8b5cf6" />
+                <StatCard label="Jogando" value={drawingRooms.filter(r => r.status !== "waiting").length} icon={Activity} accent="#10b981" />
+                <StatCard label="Aguardando" value={drawingRooms.filter(r => r.status === "waiting").length} icon={Clock} accent="#64748b" />
+              </>}
+            >
+              <DrawingRoomsTable rooms={drawingRooms} onInspect={inspectDrawingRoom} />
+            </GameSection>
+            <GameSessionsChart gameType="desenho" token={token} accent="#a855f7" />
+          </div>
         );
 
       case "sincronia":
         return (
-          <GameSection
-            title="Sincronia (Respostas em Comum)" icon={Sparkles} accent="#10b981" lastUpdated={lastUpdated}
-            statsCards={<>
-              <StatCard label="Salas Ativas" value={sincStats?.activeRooms ?? 0} icon={Home} accent="#10b981" />
-              <StatCard label="Jogadores Online" value={sincStats?.totalConnectedPlayers ?? 0} icon={Users} accent="#34d399" />
-              <StatCard label="Jogando" value={sincStats?.playingRooms ?? 0} icon={Activity} accent="#10b981" />
-              <StatCard label="Aguardando" value={sincStats?.waitingRooms ?? 0} icon={Clock} accent="#64748b" />
-            </>}
-          >
-            <SincroniaRoomsTable stats={sincStats} />
-          </GameSection>
+          <div className="space-y-5">
+            <GameSection
+              title="Sincronia (Respostas em Comum)" icon={Sparkles} accent="#10b981" lastUpdated={lastUpdated}
+              statsCards={<>
+                <StatCard label="Salas Ativas" value={sincStats?.activeRooms ?? 0} icon={Home} accent="#10b981" />
+                <StatCard label="Jogadores Online" value={sincStats?.totalConnectedPlayers ?? 0} icon={Users} accent="#34d399" />
+                <StatCard label="Jogando" value={sincStats?.playingRooms ?? 0} icon={Activity} accent="#10b981" />
+                <StatCard label="Aguardando" value={sincStats?.waitingRooms ?? 0} icon={Clock} accent="#64748b" />
+              </>}
+            >
+              <SincroniaRoomsTable stats={sincStats} />
+            </GameSection>
+            <GameSessionsChart gameType="sincronia" token={token} accent="#10b981" />
+          </div>
         );
 
       case "palavra":
         return (
-          <GameSection
-            title="Desafio da Palavra" icon={Type} accent="#f59e0b" lastUpdated={lastUpdated}
-            statsCards={<>
-              <StatCard label="Salas Ativas" value={desafioRooms.length} icon={Home} accent="#f59e0b" />
-              <StatCard label="Jogadores" value={desafioRooms.reduce((s, r) => s + r.players.length, 0)} icon={Users} accent="#fbbf24" />
-              <StatCard label="Jogando" value={desafioRooms.filter(r => r.status === "playing").length} icon={Activity} accent="#10b981" />
-              <StatCard label="Aguardando" value={desafioRooms.filter(r => r.status !== "playing").length} icon={Clock} accent="#64748b" />
-            </>}
-          >
-            <DesafioRoomsTable rooms={desafioRooms} onInspect={inspectDesafioRoom} />
-          </GameSection>
+          <div className="space-y-5">
+            <GameSection
+              title="Desafio da Palavra" icon={Type} accent="#f59e0b" lastUpdated={lastUpdated}
+              statsCards={<>
+                <StatCard label="Salas Ativas" value={desafioRooms.length} icon={Home} accent="#f59e0b" />
+                <StatCard label="Jogadores" value={desafioRooms.reduce((s, r) => s + r.players.length, 0)} icon={Users} accent="#fbbf24" />
+                <StatCard label="Jogando" value={desafioRooms.filter(r => r.status === "playing").length} icon={Activity} accent="#10b981" />
+                <StatCard label="Aguardando" value={desafioRooms.filter(r => r.status !== "playing").length} icon={Clock} accent="#64748b" />
+              </>}
+            >
+              <DesafioRoomsTable rooms={desafioRooms} onInspect={inspectDesafioRoom} />
+            </GameSection>
+            <GameSessionsChart gameType="desafio" token={token} accent="#f59e0b" />
+          </div>
         );
 
       case "temas":

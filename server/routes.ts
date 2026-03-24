@@ -9,6 +9,7 @@ import { setupAuth, isAuthenticated } from "./githubAuth";
 import { createPayment, createDonationPayment, getPaymentStatus, type ThemeData, type DonationData } from "./paymentController";
 import { randomBytes as cryptoRandomBytes } from "crypto";
 import { createAnalyticsRouter } from "./analyticsRoutes";
+import { recordGameSession, getGameSessionStats } from "./db";
 import agoraToken from 'agora-token';
 const { RtcTokenBuilder, RtcRole } = agoraToken;
 
@@ -2289,6 +2290,7 @@ export async function registerRoutes(
 
       if (updatedRoom) {
         broadcastToRoom(code.toUpperCase(), { type: 'room-update', room: updatedRoom });
+        recordGameSession('impostor', code.toUpperCase(), connectedPlayers.length).catch(() => {});
         
         // Schedule bot actions if there are bots in the room
         const bots = updatedRoom.players.filter(p => p.name.startsWith('Bot '));
@@ -3370,6 +3372,7 @@ export async function registerRoutes(
     };
 
     broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
+    recordGameSession('desenho', code, activePlayers.length).catch(() => {});
     console.log(`[Drawing] Game started in room ${code}, word: ${word}, impostor: ${impostorId}`);
     res.json(room);
   });
@@ -3509,6 +3512,20 @@ export async function registerRoutes(
     } catch (error) {
       console.error('[Admin] Error fetching sincronia rooms:', error);
       res.status(500).json({ error: "Erro ao buscar salas de sincronia" });
+    }
+  });
+
+  // Admin: 30-day game session stats per game type
+  app.get("/api/admin/game-sessions/:gameType", verifyAdmin, async (req, res) => {
+    const { gameType } = req.params;
+    if (!['impostor', 'desenho', 'sincronia', 'desafio'].includes(gameType)) {
+      return res.status(400).json({ error: "Invalid game type" });
+    }
+    try {
+      const data = await getGameSessionStats(gameType as any, 30);
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to fetch game session stats" });
     }
   });
 
@@ -3989,6 +4006,9 @@ export async function registerRoutes(
       if (!updated) return res.status(500).json({ error: 'Failed to start game' });
 
       broadcastToRoom(roomCode, { type: 'room-update', room: updated });
+      if (activePlayers.length >= 3) {
+        recordGameSession('desafio', roomCode, activePlayers.length).catch(() => {});
+      }
       res.json(updated);
     } catch (error) {
       console.error('[Desafio] Start error:', error);

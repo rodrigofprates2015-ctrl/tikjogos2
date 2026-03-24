@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { pgTable, text, timestamp, jsonb, varchar, index, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, jsonb, varchar, index, boolean, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -193,3 +193,21 @@ export const analyticsEvents = pgTable(
 
 export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
 export type InsertAnalyticsEvent = typeof analyticsEvents.$inferInsert;
+
+export const gameSessions = pgTable(
+  "game_sessions",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    gameType: varchar("game_type", { length: 30 }).notNull(),
+    roomCode: varchar("room_code", { length: 20 }).notNull(),
+    playerCount: integer("player_count").notNull(),
+    playedAt: timestamp("played_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("idx_game_sessions_game_type").on(table.gameType),
+    index("idx_game_sessions_played_at").on(table.playedAt),
+  ]
+);
+
+export type GameSession = typeof gameSessions.$inferSelect;
+export type InsertGameSession = typeof gameSessions.$inferInsert;
