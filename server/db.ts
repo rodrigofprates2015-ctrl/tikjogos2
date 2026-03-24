@@ -39,9 +39,17 @@ export { pool, db };
 export type GameType = 'impostor' | 'desenho' | 'sincronia' | 'desafio';
 
 export async function recordGameSession(gameType: GameType, roomCode: string, playerCount: number): Promise<void> {
-  if (!db) return;
+  if (!pool) {
+    console.warn('[GameSessions] No DB pool available, skipping record');
+    return;
+  }
   try {
-    await db.insert(schema.gameSessions).values({ gameType, roomCode, playerCount });
+    await (pool as PgPool).query(
+      `INSERT INTO game_sessions (id, game_type, room_code, player_count, played_at)
+       VALUES (gen_random_uuid(), $1, $2, $3, NOW())`,
+      [gameType, roomCode, playerCount]
+    );
+    console.log(`[GameSessions] ✓ Recorded: ${gameType} | room ${roomCode} | ${playerCount} players`);
   } catch (err) {
     console.error('[GameSessions] Failed to record session:', err);
   }
