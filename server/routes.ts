@@ -3512,13 +3512,30 @@ export async function registerRoutes(
     }
   });
 
-  // Admin: Palavra (Sincronia Battle Royale) rooms
-  app.get("/api/admin/palavra-rooms", verifyAdmin, (_req, res) => {
+  // Admin: Desafio da Palavra rooms (filtered from shared room storage)
+  app.get("/api/admin/desafio-rooms", verifyAdmin, async (_req, res) => {
     try {
-      res.json(getBRRoomStats());
+      const allRooms = await storage.getAllRooms();
+      const desafioRooms = allRooms
+        .filter(r => r.gameMode === 'desafioPalavra')
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 50);
+      res.json(desafioRooms);
     } catch (error) {
-      console.error('[Admin] Error fetching palavra rooms:', error);
-      res.status(500).json({ error: "Erro ao buscar salas de palavra" });
+      console.error('[Admin] Error fetching desafio rooms:', error);
+      res.status(500).json({ error: "Erro ao buscar salas de desafio" });
+    }
+  });
+
+  // Admin: Inspect specific desafio room
+  app.get("/api/admin/desafio-rooms/:code", verifyAdmin, async (req, res) => {
+    try {
+      const code = req.params.code.toUpperCase();
+      const room = await storage.getRoom(code);
+      if (!room || room.gameMode !== 'desafioPalavra') return res.status(404).json({ error: "Sala não encontrada" });
+      res.json(room);
+    } catch (error) {
+      res.status(500).json({ error: "Erro ao buscar sala" });
     }
   });
 

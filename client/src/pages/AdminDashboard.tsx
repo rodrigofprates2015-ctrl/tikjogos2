@@ -85,8 +85,19 @@ type DrawingGameData = {
 type DrawingRoom = { code: string; hostId: string; status: string; gameData: DrawingGameData | null; players: DrawingPlayer[]; createdAt: string };
 type SincRoom = { code: string; hostId: string; phase: string; playerCount: number; connectedPlayers: number; category: string; currentRound: number; totalRounds: number };
 type SincStats = { totalRoomsCreated: number; activeRooms: number; playingRooms: number; waitingRooms: number; totalConnectedPlayers: number; rooms: SincRoom[] };
-type PalavraRoom = { id: string; label: string; playerCount: number; questionNumber: number };
-type PalavraStats = { rooms: PalavraRoom[]; totalPlayers: number };
+type DesafioGameData = {
+  currentWord?: string;
+  vidasMap?: Record<string, number>;
+  turnIndex?: number;
+  wordStatus?: 'aguardando' | 'jogando' | 'defendendo' | 'fim_de_jogo';
+  vencedorId?: string;
+  vencedorName?: string;
+  lastAction?: { type: string; desafianteId?: string; desafiadoId?: string; resultado?: boolean; letra?: string; playerName?: string };
+};
+type DesafioRoom = {
+  code: string; hostId: string; status: string; gameMode: string | null;
+  gameData: DesafioGameData | null; players: Player[]; createdAt: string;
+};
 
 type NavItem = "overview" | "impostor" | "desenho" | "sincronia" | "palavra" | "temas" | "analytics";
 
@@ -244,31 +255,65 @@ function SincroniaRoomsTable({ stats }: { stats: SincStats | null }) {
   );
 }
 
-function PalavraRoomsTable({ stats }: { stats: PalavraStats | null }) {
-  if (!stats || stats.rooms.length === 0) return <EmptyState />;
+function DesafioRoomsTable({ rooms, onInspect }: { rooms: DesafioRoom[]; onInspect: (code: string) => void }) {
+  if (rooms.length === 0) return <EmptyState />;
   return (
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow className="border-slate-700 hover:bg-transparent">
-            <TableHead className="text-slate-400 font-medium">Sala</TableHead>
-            <TableHead className="text-slate-400 font-medium">Jogadores Online</TableHead>
-            <TableHead className="text-slate-400 font-medium">Questão Atual</TableHead>
+            <TableHead className="text-slate-400 font-medium">Status</TableHead>
+            <TableHead className="text-slate-400 font-medium">Código</TableHead>
+            <TableHead className="text-slate-400 font-medium">Jogadores</TableHead>
+            <TableHead className="text-slate-400 font-medium">Palavra Atual</TableHead>
+            <TableHead className="text-slate-400 font-medium">Fase</TableHead>
+            <TableHead className="text-slate-400 font-medium">Criada</TableHead>
+            <TableHead className="text-slate-400 font-medium" />
           </TableRow>
         </TableHeader>
         <TableBody>
-          {stats.rooms.map((room) => (
-            <TableRow key={room.id} className="border-slate-700/50 hover:bg-slate-700/30">
-              <TableCell className="font-semibold text-white text-sm">{room.label}</TableCell>
-              <TableCell className="text-slate-300 text-sm">
-                <div className="flex items-center gap-2">
-                  <StatusDot active={room.playerCount > 0} />
-                  {room.playerCount}
-                </div>
-              </TableCell>
-              <TableCell className="text-slate-400 text-sm">#{room.questionNumber}</TableCell>
-            </TableRow>
-          ))}
+          {rooms.map((room) => {
+            const wordStatus = room.gameData?.wordStatus;
+            return (
+              <TableRow key={room.code} className="border-slate-700/50 hover:bg-slate-700/30">
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <StatusDot active={room.status === "playing"} />
+                    <Badge className={room.status === "playing" ? "bg-emerald-600/80 text-emerald-100 text-xs" : "bg-slate-600/80 text-slate-300 text-xs"}>
+                      {room.status === "playing" ? "Jogando" : "Aguardando"}
+                    </Badge>
+                  </div>
+                </TableCell>
+                <TableCell className="font-mono font-bold text-white text-sm">{room.code}</TableCell>
+                <TableCell className="text-slate-300 text-sm">{room.players.length}</TableCell>
+                <TableCell className="text-slate-400 text-sm font-mono">
+                  {room.gameData?.currentWord ? (
+                    <span className="text-violet-300 font-semibold tracking-widest">
+                      {room.gameData.currentWord.toUpperCase()}
+                    </span>
+                  ) : "—"}
+                </TableCell>
+                <TableCell>
+                  {wordStatus && (
+                    <Badge className={
+                      wordStatus === 'jogando' ? "bg-violet-600/80 text-xs" :
+                      wordStatus === 'defendendo' ? "bg-amber-600/80 text-xs" :
+                      wordStatus === 'fim_de_jogo' ? "bg-red-600/80 text-xs" :
+                      "bg-slate-600/80 text-xs"
+                    }>
+                      {wordStatus === 'jogando' ? 'Jogando' : wordStatus === 'defendendo' ? 'Defendendo' : wordStatus === 'fim_de_jogo' ? 'Fim' : 'Aguardando'}
+                    </Badge>
+                  )}
+                </TableCell>
+                <TableCell className="text-slate-500 text-xs">{new Date(room.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</TableCell>
+                <TableCell>
+                  <Button size="sm" variant="ghost" onClick={() => onInspect(room.code)} className="text-slate-400 hover:text-white hover:bg-slate-700 h-7 px-2 text-xs">
+                    <Eye className="w-3.5 h-3.5 mr-1" /> Ver
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
@@ -397,6 +442,74 @@ function DrawingInspectDialog({ room, onClose }: { room: DrawingRoom | null; onC
                         {isHost && <Badge className="text-[10px] bg-yellow-600/80 px-1 py-0">Host</Badge>}
                         {isImpostor && <Badge className="text-[10px] bg-red-600/80 px-1 py-0">Impostor</Badge>}
                         {!p.connected && <Badge className="text-[10px] bg-orange-600/80 px-1 py-0">Offline</Badge>}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function DesafioInspectDialog({ room, onClose }: { room: DesafioRoom | null; onClose: () => void }) {
+  if (!room) return null;
+  const gd = room.gameData;
+  return (
+    <Dialog open={!!room} onOpenChange={() => onClose()}>
+      <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-white flex items-center gap-2">
+            <Type className="w-5 h-5 text-violet-400" /> Desafio da Palavra — Sala {room.code}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-slate-700/50 p-3 rounded-lg">
+              <p className="text-slate-400 text-xs mb-1">Status</p>
+              <Badge className={room.status === "playing" ? "bg-emerald-600" : "bg-slate-600"}>
+                {room.status === "playing" ? "Jogando" : "Aguardando"}
+              </Badge>
+            </div>
+            <div className="bg-slate-700/50 p-3 rounded-lg">
+              <p className="text-slate-400 text-xs mb-1">Fase</p>
+              <p className="text-white font-medium text-sm capitalize">{gd?.wordStatus || "—"}</p>
+            </div>
+          </div>
+
+          {gd?.currentWord && (
+            <div className="bg-violet-500/10 border border-violet-500/30 p-4 rounded-lg">
+              <p className="text-violet-400 text-xs mb-1">Fragmento Atual</p>
+              <p className="text-white font-bold text-2xl tracking-widest font-mono">{gd.currentWord.toUpperCase()}</p>
+            </div>
+          )}
+
+          {gd?.vencedorName && (
+            <div className="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-lg">
+              <p className="text-emerald-400 text-xs mb-1">Vencedor</p>
+              <p className="text-white font-bold">{gd.vencedorName}</p>
+            </div>
+          )}
+
+          <div>
+            <p className="text-slate-400 text-xs mb-2">Jogadores ({room.players.length})</p>
+            <div className="grid grid-cols-2 gap-2">
+              {room.players.map((p) => {
+                const vidas = gd?.vidasMap?.[p.uid] ?? 3;
+                const isHost = p.uid === room.hostId;
+                const isEliminated = vidas === 0;
+                return (
+                  <div key={p.uid} className={`p-3 rounded-lg flex items-center gap-2 ${isEliminated ? "bg-red-500/10 border border-red-500/20 opacity-60" : "bg-slate-700/50"}`}>
+                    <User className={`w-4 h-4 shrink-0 ${isEliminated ? "text-red-400" : "text-slate-400"}`} />
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-sm font-medium truncate ${isEliminated ? "text-red-300 line-through" : "text-white"}`}>{p.name}</p>
+                      <div className="flex gap-1 flex-wrap mt-0.5 items-center">
+                        {isHost && <Badge className="text-[10px] bg-yellow-600/80 px-1 py-0">Host</Badge>}
+                        {!p.connected && <Badge className="text-[10px] bg-orange-600/80 px-1 py-0">Offline</Badge>}
+                        <span className="text-xs text-slate-400">{"❤️".repeat(Math.max(0, vidas))}</span>
                       </div>
                     </div>
                   </div>
@@ -547,21 +660,21 @@ function TemasView({ token, themes, setThemes, onLogout }: {
 // ─── Overview (home) ─────────────────────────────────────────────────────────
 
 function OverviewView({
-  rooms, drawingRooms, sincStats, palavraStats, token,
+  rooms, drawingRooms, sincStats, desafioRooms, token,
 }: {
   rooms: Room[]; drawingRooms: DrawingRoom[];
-  sincStats: SincStats | null; palavraStats: PalavraStats | null;
+  sincStats: SincStats | null; desafioRooms: DesafioRoom[];
   token: string | null;
 }) {
   const totalOnline =
-    rooms.reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0) +
+    rooms.filter(r => r.gameMode !== 'desafioPalavra').reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0) +
     drawingRooms.reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0) +
     (sincStats?.totalConnectedPlayers ?? 0) +
-    (palavraStats?.totalPlayers ?? 0);
+    desafioRooms.reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0);
 
-  const totalRooms = rooms.length + drawingRooms.length + (sincStats?.activeRooms ?? 0) + (palavraStats?.rooms.length ?? 0);
-  const playing = rooms.filter(r => r.status === "playing").length + drawingRooms.filter(r => r.status !== "waiting").length + (sincStats?.playingRooms ?? 0);
-  const waiting = rooms.filter(r => r.status === "waiting").length + drawingRooms.filter(r => r.status === "waiting").length + (sincStats?.waitingRooms ?? 0);
+  const totalRooms = rooms.filter(r => r.gameMode !== 'desafioPalavra').length + drawingRooms.length + (sincStats?.activeRooms ?? 0) + desafioRooms.length;
+  const playing = rooms.filter(r => r.status === "playing" && r.gameMode !== 'desafioPalavra').length + drawingRooms.filter(r => r.status !== "waiting").length + (sincStats?.playingRooms ?? 0) + desafioRooms.filter(r => r.status === "playing").length;
+  const waiting = rooms.filter(r => r.status === "waiting" && r.gameMode !== 'desafioPalavra').length + drawingRooms.filter(r => r.status === "waiting").length + (sincStats?.waitingRooms ?? 0) + desafioRooms.filter(r => r.status === "waiting").length;
 
   const { data: analytics } = useQuery<any>({
     queryKey: ["/api/analytics/dashboard", token],
@@ -586,7 +699,7 @@ function OverviewView({
     { label: "Impostor Clássico", rooms: rooms.length, players: rooms.reduce((s, r) => s + r.players.length, 0), accent: "#6366f1", icon: Skull },
     { label: "Impostor Desenho", rooms: drawingRooms.length, players: drawingRooms.reduce((s, r) => s + r.players.length, 0), accent: "#a855f7", icon: Paintbrush },
     { label: "Sincronia", rooms: sincStats?.activeRooms ?? 0, players: sincStats?.totalConnectedPlayers ?? 0, accent: "#10b981", icon: Sparkles },
-    { label: "Desafio da Palavra", rooms: palavraStats?.rooms.filter(r => r.playerCount > 0).length ?? 0, players: palavraStats?.totalPlayers ?? 0, accent: "#f59e0b", icon: Type },
+    { label: "Desafio da Palavra", rooms: desafioRooms.length, players: desafioRooms.reduce((s, r) => s + r.players.length, 0), accent: "#f59e0b", icon: Type },
   ];
 
   return (
@@ -700,12 +813,13 @@ export default function AdminDashboard() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [drawingRooms, setDrawingRooms] = useState<DrawingRoom[]>([]);
   const [sincStats, setSincStats] = useState<SincStats | null>(null);
-  const [palavraStats, setPalavraStats] = useState<PalavraStats | null>(null);
+  const [desafioRooms, setDesafioRooms] = useState<DesafioRoom[]>([]);
   const [themes, setThemes] = useState<Theme[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const [inspectRoom, setInspectRoom] = useState<Room | null>(null);
   const [inspectDrawing, setInspectDrawing] = useState<DrawingRoom | null>(null);
+  const [inspectDesafio, setInspectDesafio] = useState<DesafioRoom | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -738,18 +852,18 @@ export default function AdminDashboard() {
       localStorage.removeItem("adminToken");
       setToken(null);
       setIsAuthenticated(false);
-      setRooms([]); setDrawingRooms([]); setSincStats(null); setPalavraStats(null); setThemes([]);
+      setRooms([]); setDrawingRooms([]); setSincStats(null); setDesafioRooms([]); setThemes([]);
       setEmail(""); setPassword(""); setLoginError("");
     }
   }, []);
 
   const fetchAll = useCallback(async (t: string) => {
     const headers = { Authorization: `Bearer ${t}` };
-    const [roomsRes, drawRes, sincRes, palavraRes] = await Promise.allSettled([
+    const [roomsRes, drawRes, sincRes, desafioRes] = await Promise.allSettled([
       fetch("/api/admin/rooms", { headers }),
       fetch("/api/admin/drawing-rooms", { headers }),
       fetch("/api/admin/sincronia-rooms", { headers }),
-      fetch("/api/admin/palavra-rooms", { headers }),
+      fetch("/api/admin/desafio-rooms", { headers }),
     ]);
 
     if (roomsRes.status === "fulfilled" && roomsRes.value.ok) setRooms(await roomsRes.value.json());
@@ -757,7 +871,7 @@ export default function AdminDashboard() {
 
     if (drawRes.status === "fulfilled" && drawRes.value.ok) setDrawingRooms(await drawRes.value.json());
     if (sincRes.status === "fulfilled" && sincRes.value.ok) setSincStats(await sincRes.value.json());
-    if (palavraRes.status === "fulfilled" && palavraRes.value.ok) setPalavraStats(await palavraRes.value.json());
+    if (desafioRes.status === "fulfilled" && desafioRes.value.ok) setDesafioRooms(await desafioRes.value.json());
 
     setLastUpdated(new Date());
   }, [handleLogout]);
@@ -779,6 +893,13 @@ export default function AdminDashboard() {
     if (!token) return;
     const res = await fetch(`/api/admin/drawing-rooms/${code}`, { headers: { Authorization: `Bearer ${token}` } });
     if (res.ok) setInspectDrawing(await res.json());
+    else if (res.status === 401) handleLogout();
+  };
+
+  const inspectDesafioRoom = async (code: string) => {
+    if (!token) return;
+    const res = await fetch(`/api/admin/desafio-rooms/${code}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) setInspectDesafio(await res.json());
     else if (res.status === 401) handleLogout();
   };
 
@@ -848,7 +969,7 @@ export default function AdminDashboard() {
     { id: "impostor", label: "Impostor Clássico", icon: Skull, accent: "#6366f1", badge: rooms.length || undefined },
     { id: "desenho", label: "Impostor Desenho", icon: Paintbrush, accent: "#a855f7", badge: drawingRooms.length || undefined },
     { id: "sincronia", label: "Sincronia", icon: Sparkles, accent: "#10b981", badge: sincStats?.activeRooms || undefined },
-    { id: "palavra", label: "Desafio da Palavra", icon: Type, accent: "#f59e0b", badge: palavraStats?.rooms.filter(r => r.playerCount > 0).length || undefined },
+    { id: "palavra", label: "Desafio da Palavra", icon: Type, accent: "#f59e0b", badge: desafioRooms.filter(r => r.players.some(p => p.connected !== false)).length || undefined },
     { id: "temas", label: "Temas", icon: FileText, accent: "#ec4899", badge: themes.filter(t => !t.approved).length || undefined },
     { id: "analytics", label: "Analytics", icon: BarChart3, accent: "#06b6d4" },
   ];
@@ -881,7 +1002,7 @@ export default function AdminDashboard() {
         return (
           <OverviewView
             rooms={rooms} drawingRooms={drawingRooms}
-            sincStats={sincStats} palavraStats={palavraStats}
+            sincStats={sincStats} desafioRooms={desafioRooms}
             token={token}
           />
         );
@@ -934,15 +1055,15 @@ export default function AdminDashboard() {
       case "palavra":
         return (
           <GameSection
-            title="Desafio da Palavra (Battle Royale)" icon={Type} accent="#f59e0b" lastUpdated={lastUpdated}
+            title="Desafio da Palavra" icon={Type} accent="#f59e0b" lastUpdated={lastUpdated}
             statsCards={<>
-              <StatCard label="Salas Públicas" value={palavraStats?.rooms.length ?? 0} icon={Home} accent="#f59e0b" />
-              <StatCard label="Jogadores Online" value={palavraStats?.totalPlayers ?? 0} icon={Users} accent="#fbbf24" />
-              <StatCard label="Salas com Jogadores" value={palavraStats?.rooms.filter(r => r.playerCount > 0).length ?? 0} icon={Activity} accent="#10b981" />
-              <StatCard label="Salas Vazias" value={palavraStats?.rooms.filter(r => r.playerCount === 0).length ?? 0} icon={Clock} accent="#64748b" />
+              <StatCard label="Salas Ativas" value={desafioRooms.length} icon={Home} accent="#f59e0b" />
+              <StatCard label="Jogadores" value={desafioRooms.reduce((s, r) => s + r.players.length, 0)} icon={Users} accent="#fbbf24" />
+              <StatCard label="Jogando" value={desafioRooms.filter(r => r.status === "playing").length} icon={Activity} accent="#10b981" />
+              <StatCard label="Aguardando" value={desafioRooms.filter(r => r.status !== "playing").length} icon={Clock} accent="#64748b" />
             </>}
           >
-            <PalavraRoomsTable stats={palavraStats} />
+            <DesafioRoomsTable rooms={desafioRooms} onInspect={inspectDesafioRoom} />
           </GameSection>
         );
 
@@ -1021,6 +1142,7 @@ export default function AdminDashboard() {
       {/* Inspect dialogs */}
       <ImpostorInspectDialog room={inspectRoom} onClose={() => setInspectRoom(null)} />
       <DrawingInspectDialog room={inspectDrawing} onClose={() => setInspectDrawing(null)} />
+      <DesafioInspectDialog room={inspectDesafio} onClose={() => setInspectDesafio(null)} />
     </div>
   );
 }
