@@ -246,6 +246,19 @@ export const useDesafioStore = create<DesafioState>((set, get) => ({
     window.addEventListener('beforeunload', sendBeacon);
     window.addEventListener('pagehide', sendBeacon);
 
+    // Re-sync state when tab becomes visible or window regains focus
+    const sendSyncRequest = () => {
+      if (newWs.readyState === WebSocket.OPEN) {
+        newWs.send(JSON.stringify({ type: 'sync_request' }));
+      }
+    };
+    const visibilityHandler = () => {
+      if (document.visibilityState === 'visible') sendSyncRequest();
+    };
+    const focusHandler = () => sendSyncRequest();
+    document.addEventListener('visibilitychange', visibilityHandler);
+    window.addEventListener('focus', focusHandler);
+
     newWs.onopen = () => {
       reconnectAttempts = 0;
       get().setDisconnected(false);
@@ -290,6 +303,8 @@ export const useDesafioStore = create<DesafioState>((set, get) => ({
     newWs.onclose = (event) => {
       window.removeEventListener('beforeunload', sendBeacon);
       window.removeEventListener('pagehide', sendBeacon);
+      document.removeEventListener('visibilitychange', visibilityHandler);
+      window.removeEventListener('focus', focusHandler);
       const currentRoom = get().room;
       if (currentRoom && event.code !== 1000) attemptReconnect();
     };

@@ -185,8 +185,28 @@ export const useSincBRStore = create<SincBRState>((set, get) => ({
 
     set({ isConnecting: true });
 
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 10;
+    const reconnectDelays = [1500, 3000, 5000, 8000, 13000, 21000, 30000, 30000, 30000, 30000];
+
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const newWs = new WebSocket(`${protocol}//${window.location.host}/br-ws`);
+
+    const sendSyncRequest = () => {
+      const ws = get().ws;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'br-join', roomId, uid, name }));
+      }
+    };
+
+    // Re-sync state when tab becomes visible again
+    const visibilityHandler = () => {
+      if (document.visibilityState === 'visible') sendSyncRequest();
+    };
+    document.addEventListener('visibilitychange', visibilityHandler);
+
+    const focusHandler = () => sendSyncRequest();
+    window.addEventListener('focus', focusHandler);
 
     // Disconnect beacon on browser close
     const sendBeacon = () => {
@@ -209,6 +229,7 @@ export const useSincBRStore = create<SincBRState>((set, get) => ({
     window.addEventListener('beforeunload', beforeUnload);
 
     newWs.onopen = () => {
+      reconnectAttempts = 0;
       newWs.send(JSON.stringify({ type: 'br-join', roomId, uid, name }));
     };
 
@@ -326,12 +347,37 @@ export const useSincBRStore = create<SincBRState>((set, get) => ({
 
     newWs.onerror = () => { newWs.close(); };
 
-    newWs.onclose = () => {
+    newWs.onclose = (event) => {
+      document.removeEventListener('visibilitychange', visibilityHandler);
+      window.removeEventListener('focus', focusHandler);
       window.removeEventListener('beforeunload', beforeUnload);
       clearCountdown();
       clearMatchCountdown();
-      // If we were playing, go back to selection
-      if (get().phase === 'playing') {
+
+      // Attempt reconnect with backoff if we were playing and it wasn't intentional
+      if (get().phase === 'playing' && event.code !== 1000) {
+        if (reconnectAttempts < maxReconnectAttempts) {
+          const delay = reconnectDelays[Math.min(reconnectAttempts, reconnectDelays.length - 1)];
+          reconnectAttempts++;
+          console.log(`[BR] Reconnecting (${reconnectAttempts}/${maxReconnectAttempts}) in ${delay}ms...`);
+          setTimeout(() => get().joinRoom(roomId), delay);
+        } else {
+          set({
+            phase: 'selection',
+            currentRoomId: null,
+            currentRoomLabel: null,
+            ws: null,
+            question: null,
+            roundResult: null,
+            showingResult: false,
+            showingMatchEnd: false,
+            matchEndLeaderboard: [],
+            myScore: 0,
+            leaderboard: [],
+            isConnecting: false,
+          });
+        }
+      } else if (get().phase === 'playing') {
         set({
           phase: 'selection',
           currentRoomId: null,
