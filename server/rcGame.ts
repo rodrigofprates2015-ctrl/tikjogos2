@@ -8,6 +8,7 @@ import type { Server } from 'http';
 import { z } from 'zod';
 import { randomBytes } from 'crypto';
 import { recordGameSession } from './db';
+import { trackLobbyJoin } from './lobbyTracker';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -534,6 +535,7 @@ export function setupRCGame(httpServer: Server, app: Express) {
       rcRooms.set(code, room);
       rcTotalRoomsCreated++;
       console.log(`[RC] Room created: ${code} by ${hostName}`);
+      trackLobbyJoin(code, hostId, hostName, true, 'sincronia').catch(() => {});
       res.json({ code, hostId, players: room.players });
     } catch (error) {
       res.status(400).json({ error: 'Failed to create room' });
@@ -572,6 +574,7 @@ export function setupRCGame(httpServer: Server, app: Express) {
 
       sendRoomUpdate(room);
       console.log(`[RC] ${playerName} joined room ${roomCode}`);
+      if (!existing) trackLobbyJoin(roomCode, playerId, playerName, false, 'sincronia').catch(() => {});
       res.json({ code: room.code, hostId: room.hostId, players: room.players });
     } catch (error) {
       res.status(400).json({ error: 'Failed to join room' });

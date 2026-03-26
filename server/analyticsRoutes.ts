@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { db } from './db';
+import { db, pool } from './db';
+import { Pool } from 'pg';
 import { analyticsEvents, rooms } from '@shared/schema';
 import { sql, count, countDistinct, gte, avg, lt } from 'drizzle-orm';
 import { trackSessionEnd } from './analyticsMiddleware';
@@ -373,6 +374,78 @@ export function createAnalyticsRouter(verifyAdmin: any) {
       ]);
       res.json({ roomsToday: todayRes[0]?.count || 0, roomsMonth: monthRes[0]?.count || 0, roomsTotal: totalRes[0]?.count || 0, roomsLast30Days: fillMissingDates(tsRes, 30) });
     } catch (error: any) {
+      res.status(500).json({ error: error?.message });
+    }
+  });
+
+  // ─── GET /api/analytics/lobbies-report (admin only) ───
+  // Returns per-lobby stats: players, duration, games played, themes used.
+  router.get('/lobbies-report', verifyAdmin, async (req, res) => {
+    try {
+      if (!pool) return res.status(503).json({ error: 'Database not available' });
+
+      const pg = pool as Pool;
+
+      // Aggregate per room_code from lobby_sessions
+      const lobbyRows = await pg.query<{
+        room_code: string;
+        unique_players: string;
+        total_joins: string;
+        avg_duration: string | null;
+        max_duration: string | null;
+        first_join: string;
+        last_join: string;
+        game_mode: string | null;
+        themes: string | null;
+        is_host_present: boolean;
+      }>(`
+        SELECT
+          room_code,
+          COUNT(DISTINCT player_id)::int          AS unique_players,
+          COUNT(*)::int                           AS total_joins,
+          AVG(duration_seconds)::int              AS avg_duration,
+          MAX(duration_seconds)::int              AS max_duration,
+          MIN(joined_at)                          AS first_join,
+          MAX(joined_at)                          AS last_join,
+          MAX(game_mode)                          AS game_mode,
+          STRING_AGG(DISTINCT theme_name, ', ')   AS themes,
+          BOOL_OR(is_host)                        AS is_host_present
+        FROM lobby_sessions
+        GROUP BY room_code
+        ORDER BY first_join DESC
+        LIMIT 200
+      `);
+
+      // Count games played per room from game_sessions
+      const gameRows = await pg.query<{ room_code: string; games_played: string }>(`
+        SELECT room_code, COUNT(*)::int AS games_played
+        FROM game_sessions
+        GROUP BY room_code
+      `);
+      const gamesMap = new Map(gameRows.rows.map(r => [r.room_code, Number(r.games_played)]));
+
+      const lobbies = lobbyRows.rows.map(r => ({
+        roomCode: r.room_code,
+        uniquePlayers: Number(r.unique_players),
+        totalJoins: Number(r.total_joins),
+        avgDurationSeconds: r.avg_duration ? Number(r.avg_duration) : null,
+        maxDurationSeconds: r.max_duration ? Number(r.max_duration) : null,
+        firstJoin: r.first_join,
+        lastJoin: r.last_join,
+        gameMode: r.game_mode ?? null,
+        themes: r.themes ?? null,
+        gamesPlayed: gamesMap.get(r.room_code) ?? 0,
+      }));
+
+      res.json({ lobbies, total: lobbies.length });
+    } catch (error: any) {
+      console.error('[Analytics] lobbies-report error:', error);
+      if (error?.code === '42P01') {
+        return res.status(503).json({
+          error: 'lobby_sessions table not found',
+          message: 'Run migrations to create the lobby_sessions table.',
+        });
+      }
       res.status(500).json({ error: error?.message });
     }
   });

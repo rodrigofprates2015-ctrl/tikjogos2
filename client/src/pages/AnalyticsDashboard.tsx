@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import {
   BarChart3, Users, Eye, Gamepad2, TrendingUp, TrendingDown,
   Smartphone, Monitor, Globe, Clock, DoorOpen, Trophy, AlertTriangle,
-  Activity, MapPin, Timer, Flame, Target, CalendarDays, Hash, Sparkles
+  Activity, MapPin, Timer, Flame, Target, CalendarDays, Hash, Sparkles,
+  LayoutList, Search
 } from 'lucide-react';
 import {
   BarChart, Bar, PieChart, Pie, Cell,
@@ -78,6 +79,21 @@ type DashboardData = {
   topPages: NameValue[];
   referrers: NameValue[];
 };
+
+type LobbyEntry = {
+  roomCode: string;
+  uniquePlayers: number;
+  totalJoins: number;
+  avgDurationSeconds: number | null;
+  maxDurationSeconds: number | null;
+  firstJoin: string;
+  lastJoin: string;
+  gameMode: string | null;
+  themes: string | null;
+  gamesPlayed: number;
+};
+
+type LobbiesReport = { lobbies: LobbyEntry[]; total: number };
 
 type AnalyticsDashboardProps = { token: string | null };
 
@@ -309,6 +325,23 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
     enabled: !!token,
   });
 
+  const [lobbySearch, setLobbySearch] = useState('');
+  const { data: lobbiesData, isLoading: lobbiesLoading } = useQuery<LobbiesReport>({
+    queryKey: ['/api/analytics/lobbies-report', token],
+    queryFn: async () => {
+      if (!token) throw new Error('Token não disponível');
+      const res = await fetch('/api/analytics/lobbies-report', { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `${res.status}: ${res.statusText}`);
+      }
+      return res.json();
+    },
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
+    enabled: !!token,
+  });
+
   if (!token) {
     return (
       <div className="p-6">
@@ -385,6 +418,9 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
           </TabsTrigger>
           <TabsTrigger value="sincronia" className="gap-2 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 text-sm">
             <Sparkles className="h-4 w-4" />Sincronia
+          </TabsTrigger>
+          <TabsTrigger value="lobbies" className="gap-2 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 text-sm">
+            <LayoutList className="h-4 w-4" />Lobbies
           </TabsTrigger>
         </TabsList>
 
@@ -683,6 +719,146 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
                 </div>
               ) : (
                 <p className="text-white/30 text-center py-8">Nenhuma sala ativa no momento</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ═══ LOBBIES TAB ═══ */}
+        <TabsContent value="lobbies" className="space-y-6">
+          {/* Summary KPIs */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <KpiCard
+              title="Total de Lobbies"
+              value={String(lobbiesData?.total ?? 0)}
+              icon={LayoutList}
+              accent="#6366f1"
+              subtitle="Registrados no banco"
+            />
+            <KpiCard
+              title="Jogadores Únicos"
+              value={String(
+                lobbiesData?.lobbies.reduce((s, l) => s + l.uniquePlayers, 0) ?? 0
+              )}
+              icon={Users}
+              accent="#8b5cf6"
+              subtitle="Soma de todos os lobbies"
+            />
+            <KpiCard
+              title="Partidas Jogadas"
+              value={String(
+                lobbiesData?.lobbies.reduce((s, l) => s + l.gamesPlayed, 0) ?? 0
+              )}
+              icon={Gamepad2}
+              accent="#ec4899"
+              subtitle="Registradas no banco"
+            />
+            <KpiCard
+              title="Duração Média"
+              value={formatDuration(
+                Math.round(
+                  (lobbiesData?.lobbies
+                    .filter(l => l.avgDurationSeconds != null)
+                    .reduce((s, l) => s + (l.avgDurationSeconds ?? 0), 0) ?? 0) /
+                  Math.max(
+                    lobbiesData?.lobbies.filter(l => l.avgDurationSeconds != null).length ?? 1,
+                    1
+                  )
+                )
+              )}
+              icon={Clock}
+              accent="#f59e0b"
+              subtitle="Por sessão de jogador"
+            />
+          </div>
+
+          {/* Search + Table */}
+          <Card className="bg-[#1e293b]/60 border-white/[0.06]">
+            <CardHeader className="flex flex-row items-center justify-between gap-4 flex-wrap">
+              <CardTitle className="text-white text-lg">Relatório de Lobbies</CardTitle>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+                <input
+                  type="text"
+                  placeholder="Buscar sala..."
+                  value={lobbySearch}
+                  onChange={e => setLobbySearch(e.target.value)}
+                  className="pl-9 pr-4 py-2 rounded-lg bg-white/[0.06] border border-white/[0.08] text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-indigo-500/60 w-48"
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {lobbiesLoading ? (
+                <div className="space-y-2">
+                  {[1,2,3,4,5].map(i => (
+                    <div key={i} className="h-12 rounded-lg bg-white/[0.04] animate-pulse" />
+                  ))}
+                </div>
+              ) : !lobbiesData || lobbiesData.lobbies.length === 0 ? (
+                <p className="text-white/30 text-center py-12">
+                  Nenhum lobby registrado ainda. Os dados aparecerão conforme salas forem criadas.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/[0.06]">
+                        {['Sala', 'Modo', 'Jogadores', 'Entradas', 'Partidas', 'Duração Média', 'Duração Máx', 'Temas', 'Criado em'].map(h => (
+                          <th key={h} className="text-left text-white/40 font-medium py-3 px-3 whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lobbiesData.lobbies
+                        .filter(l =>
+                          lobbySearch === '' ||
+                          l.roomCode.toLowerCase().includes(lobbySearch.toLowerCase()) ||
+                          (l.gameMode ?? '').toLowerCase().includes(lobbySearch.toLowerCase()) ||
+                          (l.themes ?? '').toLowerCase().includes(lobbySearch.toLowerCase())
+                        )
+                        .map(lobby => (
+                          <tr
+                            key={lobby.roomCode}
+                            className="border-b border-white/[0.03] hover:bg-white/[0.03] transition-colors"
+                          >
+                            <td className="py-3 px-3">
+                              <span className="font-mono font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded">
+                                {lobby.roomCode}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 text-white/70 whitespace-nowrap">
+                              {GAME_MODE_LABELS[lobby.gameMode ?? ''] ?? lobby.gameMode ?? '—'}
+                            </td>
+                            <td className="py-3 px-3 text-white font-semibold text-center">
+                              {lobby.uniquePlayers}
+                            </td>
+                            <td className="py-3 px-3 text-white/60 text-center">
+                              {lobby.totalJoins}
+                            </td>
+                            <td className="py-3 px-3 text-center">
+                              <span className={`font-semibold ${lobby.gamesPlayed > 0 ? 'text-emerald-400' : 'text-white/30'}`}>
+                                {lobby.gamesPlayed}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3 text-white/60 text-center whitespace-nowrap">
+                              {lobby.avgDurationSeconds != null ? formatDuration(lobby.avgDurationSeconds) : '—'}
+                            </td>
+                            <td className="py-3 px-3 text-white/60 text-center whitespace-nowrap">
+                              {lobby.maxDurationSeconds != null ? formatDuration(lobby.maxDurationSeconds) : '—'}
+                            </td>
+                            <td className="py-3 px-3 text-white/50 max-w-[180px] truncate" title={lobby.themes ?? ''}>
+                              {lobby.themes ?? '—'}
+                            </td>
+                            <td className="py-3 px-3 text-white/40 whitespace-nowrap text-xs">
+                              {lobby.firstJoin
+                                ? format(new Date(lobby.firstJoin), 'dd/MM/yy HH:mm', { locale: ptBR })
+                                : '—'}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </CardContent>
           </Card>

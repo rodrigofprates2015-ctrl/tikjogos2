@@ -211,3 +211,28 @@ export const gameSessions = pgTable(
 
 export type GameSession = typeof gameSessions.$inferSelect;
 export type InsertGameSession = typeof gameSessions.$inferInsert;
+
+// Tracks each player's presence in a lobby (join/leave times, game mode, theme)
+export const lobbySessions = pgTable(
+  "lobby_sessions",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    roomCode: varchar("room_code", { length: 20 }).notNull(),
+    playerId: varchar("player_id", { length: 100 }).notNull(),
+    playerName: varchar("player_name", { length: 100 }).notNull(),
+    gameMode: varchar("game_mode", { length: 50 }),
+    themeName: varchar("theme_name", { length: 200 }),
+    joinedAt: timestamp("joined_at").notNull().defaultNow(),
+    leftAt: timestamp("left_at"),
+    durationSeconds: integer("duration_seconds"),
+    isHost: boolean("is_host").notNull().default(false),
+  },
+  (table) => [
+    index("idx_lobby_sessions_room").on(table.roomCode),
+    index("idx_lobby_sessions_player").on(table.playerId),
+    index("idx_lobby_sessions_joined").on(table.joinedAt),
+  ]
+);
+
+export type LobbySession = typeof lobbySessions.$inferSelect;
+export type InsertLobbySession = typeof lobbySessions.$inferInsert;

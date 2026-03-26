@@ -109,6 +109,48 @@ async function runMigrations() {
     `);
     console.log('[Migration] analytics_events new columns ensured');
 
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS game_sessions (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        game_type VARCHAR(30) NOT NULL,
+        room_code VARCHAR(20) NOT NULL,
+        player_count INTEGER NOT NULL,
+        played_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS idx_game_sessions_game_type ON game_sessions (game_type)
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS idx_game_sessions_played_at ON game_sessions (played_at)
+    `);
+    console.log('[Migration] game_sessions table ready');
+
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS lobby_sessions (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        room_code VARCHAR(20) NOT NULL,
+        player_id VARCHAR(100) NOT NULL,
+        player_name VARCHAR(100) NOT NULL,
+        game_mode VARCHAR(50),
+        theme_name VARCHAR(200),
+        joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        left_at TIMESTAMP,
+        duration_seconds INTEGER,
+        is_host BOOLEAN NOT NULL DEFAULT false
+      )
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS idx_lobby_sessions_room ON lobby_sessions (room_code)
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS idx_lobby_sessions_player ON lobby_sessions (player_id)
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS idx_lobby_sessions_joined ON lobby_sessions (joined_at)
+    `);
+    console.log('[Migration] lobby_sessions table ready');
+
     console.log('[Migration] All migrations completed successfully!');
   } catch (error) {
     console.error('[Migration] Error running migrations:', error);

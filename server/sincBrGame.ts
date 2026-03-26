@@ -5,6 +5,7 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import type { Express } from 'express';
 import type { Server } from 'http';
+import { trackLobbyJoin } from './lobbyTracker';
 
 // ── Types ──
 
@@ -504,6 +505,7 @@ export function setupSincBR(httpServer: Server, app: Express) {
           });
 
           console.log(`[BR] ${name} joined ${roomId} (${nowConnected} players)`);
+          if (!existing) trackLobbyJoin(roomId, uid, name, false, 'palavraBR').catch(() => {});
           return;
         }
 
