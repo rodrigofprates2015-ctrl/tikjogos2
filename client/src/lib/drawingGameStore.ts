@@ -76,6 +76,7 @@ export type DrawingGameState = {
   startDrawing: () => Promise<void>;
   completeTurn: () => Promise<void>;
   requestNewRound: () => Promise<void>;
+  requestNewRoundClear: () => Promise<void>;
   goToDiscussion: () => Promise<void>;
   submitVote: (targetId: string) => Promise<void>;
   revealVotes: () => Promise<void>;
@@ -285,6 +286,10 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
           }));
         }
 
+        if (data.type === 'drawing-canvas-clear') {
+          set({ strokes: [], currentTurnStrokes: [] });
+        }
+
         if (data.type === 'drawing-turn-start') {
           set({ currentTurnStrokes: [] });
         }
@@ -428,6 +433,19 @@ export const useDrawingGameStore = create<DrawingGameState>((set, get) => ({
       });
     } catch (error) {
       console.error('Error requesting new round:', error);
+    }
+  },
+
+  requestNewRoundClear: async () => {
+    const { room } = get();
+    if (!room) return;
+    try {
+      await fetch(`/api/drawing-rooms/${room.code}/new-round-clear`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      console.error('Error requesting new round (clear):', error);
     }
   },
 

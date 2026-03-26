@@ -529,7 +529,7 @@ const DrawingGameScreen = () => {
 // ─── DISCUSSION SCREEN ───
 // ─── ROUND END SCREEN ───
 const RoundEndScreen = () => {
-  const { room, user, strokes, requestNewRound, goToDiscussion } = useDrawingGameStore();
+  const { room, user, strokes, requestNewRound, requestNewRoundClear, goToDiscussion } = useDrawingGameStore();
 
   if (!room) return null;
   const isHost = room.hostId === user?.uid;
@@ -539,7 +539,7 @@ const RoundEndScreen = () => {
       <div className="bg-[#242642] rounded-[3rem] p-4 md:p-8 shadow-2xl border-4 border-[#2f3252] relative z-10">
         <div className="text-center mb-4">
           <h2 className="text-2xl font-black text-white mb-2">Rodada Completa!</h2>
-          <p className="text-slate-400 text-sm">Todos desenharam. Querem mais uma rodada?</p>
+          <p className="text-slate-400 text-sm">Todos desenharam. O que fazemos agora?</p>
         </div>
 
         {/* Canvas preview (read-only) */}
@@ -552,14 +552,21 @@ const RoundEndScreen = () => {
               className="w-full px-8 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-emerald-500 to-green-500 border-emerald-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
             >
               <RotateCcw size={24} />
-              MAIS UMA RODADA
+              CONTINUAR NO MESMO CANVAS
+            </button>
+            <button
+              onClick={requestNewRoundClear}
+              className="w-full px-8 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-sky-500 to-blue-500 border-sky-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
+            >
+              <RotateCcw size={24} />
+              NOVA RODADA, CANVAS LIMPO
             </button>
             <button
               onClick={goToDiscussion}
               className="w-full px-8 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-amber-500 to-orange-500 border-amber-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
             >
               <MessageSquare size={24} />
-              IR PARA DISCUSSÃO
+              CHEGA — QUEM É O IMPOSTOR?
             </button>
           </div>
         ) : (

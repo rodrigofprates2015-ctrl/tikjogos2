@@ -3403,7 +3403,7 @@ export async function registerRoutes(
     const room = drawingRooms.get(code);
     if (!room || !room.gameData) return res.status(404).json({ error: "Room not found" });
 
-    // Restart turns with the same drawing order
+    // Restart turns keeping the existing canvas
     room.gameData.currentDrawerIndex = 0;
     room.gameData.currentDrawerId = room.gameData.drawingOrder![0];
     room.status = 'drawing';
@@ -3414,7 +3414,29 @@ export async function registerRoutes(
       drawerId: room.gameData.currentDrawerId,
       turnIndex: 0,
     });
-    console.log(`[Drawing] New round started in room ${code}`);
+    console.log(`[Drawing] New round started in room ${code} (canvas kept)`);
+    res.json(room);
+  });
+
+  // New round with canvas cleared — all clients wipe their strokes
+  app.post("/api/drawing-rooms/:code/new-round-clear", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = drawingRooms.get(code);
+    if (!room || !room.gameData) return res.status(404).json({ error: "Room not found" });
+
+    room.gameData.currentDrawerIndex = 0;
+    room.gameData.currentDrawerId = room.gameData.drawingOrder![0];
+    room.gameData.canvasSnapshot = undefined;
+    room.status = 'drawing';
+
+    broadcastToDrawingRoom(code, { type: 'drawing-canvas-clear' });
+    broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
+    broadcastToDrawingRoom(code, {
+      type: 'drawing-turn-start',
+      drawerId: room.gameData.currentDrawerId,
+      turnIndex: 0,
+    });
+    console.log(`[Drawing] New round started in room ${code} (canvas cleared)`);
     res.json(room);
   });
 
