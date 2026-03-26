@@ -11,6 +11,17 @@ import cookieParser from "cookie-parser";
 import { analyticsMiddleware } from "./analyticsMiddleware";
 import { registerSitemapRoutes } from "./sitemap";
 
+// Run DB migrations on startup so all tables exist regardless of deploy platform.
+// migrate.ts self-executes on import; we just need to await the module load.
+async function runMigrationsOnStartup() {
+  if (!process.env.DATABASE_URL) return;
+  try {
+    await import('./migrate');
+  } catch (err) {
+    console.error('[Startup] Migration failed:', err);
+  }
+}
+
 const app = express();
 
 // Add cache-control headers to prevent stale assets
@@ -83,6 +94,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Ensure all DB tables exist before handling any requests
+  await runMigrationsOnStartup();
+
   // Sitemap and robots.txt — registered before routes/static so they take priority
   registerSitemapRoutes(app);
 

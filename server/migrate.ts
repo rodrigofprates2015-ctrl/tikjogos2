@@ -81,6 +81,36 @@ async function runMigrations() {
     `);
     console.log('[Migration] payment_id column ensured');
 
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS analytics_events (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        visitor_id VARCHAR(36) NOT NULL,
+        event_type VARCHAR(30) NOT NULL,
+        ip_address VARCHAR(45),
+        user_agent TEXT,
+        page_path VARCHAR(500),
+        referrer VARCHAR(500),
+        device_type VARCHAR(20),
+        browser VARCHAR(50),
+        country VARCHAR(100),
+        city VARCHAR(100),
+        session_duration VARCHAR(20),
+        room_code VARCHAR(20),
+        game_mode VARCHAR(50),
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS idx_analytics_visitor_id ON analytics_events (visitor_id)
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS idx_analytics_event_type ON analytics_events (event_type)
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS idx_analytics_created_at ON analytics_events (created_at)
+    `);
+    console.log('[Migration] analytics_events table ready');
+
     // Add new analytics columns for device/geo/session tracking
     await db.execute(sql`
       ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS device_type VARCHAR(20)

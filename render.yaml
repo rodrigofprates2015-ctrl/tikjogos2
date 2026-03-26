@@ -3,7 +3,7 @@ services:
     name: tikjogos2
     env: node
     buildCommand: npm install --legacy-peer-deps && npm run build
-    startCommand: npm run start
+    startCommand: npx tsx server/migrate.ts && npm run start
     envVars:
       - key: NODE_VERSION
         value: 20.11.0
