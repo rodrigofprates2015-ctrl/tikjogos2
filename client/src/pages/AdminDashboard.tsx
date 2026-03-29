@@ -43,6 +43,10 @@ import {
   Activity,
   Clock,
   Circle,
+  Star,
+  MessageSquare,
+  TrendingUp,
+  Trophy,
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
@@ -99,7 +103,7 @@ type DesafioRoom = {
   gameData: DesafioGameData | null; players: Player[]; createdAt: string;
 };
 
-type NavItem = "overview" | "impostor" | "desenho" | "sincronia" | "palavra" | "temas" | "analytics";
+type NavItem = "overview" | "impostor" | "desenho" | "sincronia" | "palavra" | "temas" | "analytics" | "feedback";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -325,6 +329,148 @@ function EmptyState() {
     <div className="text-center py-12 text-slate-500">
       <Circle className="w-8 h-8 mx-auto mb-3 opacity-30" />
       <p className="text-sm">Nenhuma sala ativa no momento</p>
+    </div>
+  );
+}
+
+// ─── Feedback View ────────────────────────────────────────────────────────────
+
+type FeedbackEntry = { id: string; rating: number; comment: string | null; gameMode: string | null; createdAt: string };
+type FeedbackData = { total: number; avgRating: number | null; distribution: Array<{ rating: number; count: number }>; responses: FeedbackEntry[] };
+
+function StarDisplay({ rating }: { rating: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map(s => (
+        <Star key={s} size={13} className={s <= rating ? "fill-amber-400 text-amber-400" : "fill-slate-600 text-slate-600"} />
+      ))}
+    </div>
+  );
+}
+
+function FeedbackView({ token }: { token: string }) {
+  const [data, setData] = useState<FeedbackData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState<number | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/analytics/feedback', { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) setData(await res.json());
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const filtered = filter ? data?.responses.filter(r => r.rating === filter) : data?.responses;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-amber-500/20">
+            <Star className="w-5 h-5 text-amber-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-white">Feedback dos Jogadores</h2>
+            <p className="text-slate-400 text-sm">{data?.total ?? 0} avaliações recebidas</p>
+          </div>
+        </div>
+        <button onClick={fetchData} disabled={loading} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-700/60 border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 transition-all text-xs">
+          <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Atualizar
+        </button>
+      </div>
+
+      {loading && !data ? (
+        <div className="space-y-3">
+          {[1,2,3].map(i => <div key={i} className="h-20 rounded-xl bg-slate-800 animate-pulse" />)}
+        </div>
+      ) : !data || data.total === 0 ? (
+        <div className="text-center py-20 text-slate-500">
+          <Star size={40} className="mx-auto mb-3 opacity-20" />
+          <p className="font-semibold">Nenhuma avaliação ainda</p>
+          <p className="text-sm mt-1">As respostas do popup aparecerão aqui.</p>
+        </div>
+      ) : (
+        <>
+          {/* KPI cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard label="Total" value={data.total} icon={Users} accent="#f59e0b" />
+            <StatCard label="Nota Média" value={data.avgRating != null ? `${data.avgRating} ★` : "—"} icon={Star} accent="#f59e0b" />
+            <StatCard label="Com Comentário" value={data.responses.filter(r => r.comment).length} icon={MessageSquare} accent="#a855f7" />
+            <StatCard label="Nota 5 ⭐" value={data.distribution.find(d => d.rating === 5)?.count ?? 0} icon={Trophy} accent="#10b981" />
+          </div>
+
+          {/* Distribution */}
+          <Card className="bg-slate-800/70 border-slate-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-base flex items-center gap-2">
+                <TrendingUp size={15} className="text-amber-400" /> Distribuição de Notas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {[5,4,3,2,1].map(star => {
+                const cnt = data.distribution.find(d => d.rating === star)?.count ?? 0;
+                const pct = data.total > 0 ? Math.round((cnt / data.total) * 100) : 0;
+                return (
+                  <div key={star} className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 w-12 shrink-0">
+                      <span className="text-slate-400 text-sm font-bold">{star}</span>
+                      <Star size={11} className="fill-amber-400 text-amber-400" />
+                    </div>
+                    <div className="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="text-slate-500 text-xs w-20 text-right tabular-nums">{cnt} ({pct}%)</span>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          {/* Responses */}
+          <Card className="bg-slate-800/70 border-slate-700">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <CardTitle className="text-white text-base flex items-center gap-2">
+                  <MessageSquare size={15} className="text-purple-400" /> Respostas
+                </CardTitle>
+                <div className="flex gap-1.5 flex-wrap">
+                  <button onClick={() => setFilter(null)} className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${filter === null ? "bg-slate-600 text-white" : "text-slate-500 hover:text-slate-300"}`}>Todas</button>
+                  {[5,4,3,2,1].map(s => (
+                    <button key={s} onClick={() => setFilter(filter === s ? null : s)} className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${filter === s ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "text-slate-500 hover:text-slate-300"}`}>{s}★</button>
+                  ))}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
+                {filtered && filtered.length === 0 ? (
+                  <p className="text-slate-500 text-sm text-center py-8">Nenhuma resposta com esse filtro.</p>
+                ) : filtered?.map(r => (
+                  <div key={r.id} className="p-3.5 rounded-xl bg-slate-700/40 border border-slate-700/60 space-y-1.5">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <StarDisplay rating={r.rating} />
+                      <span className="text-slate-500 text-xs">
+                        {r.createdAt ? format(parseISO(r.createdAt), "dd/MM/yy 'às' HH:mm", { locale: ptBR }) : ""}
+                      </span>
+                    </div>
+                    {r.comment ? (
+                      <p className="text-slate-300 text-sm leading-relaxed">{r.comment}</p>
+                    ) : (
+                      <p className="text-slate-600 text-xs italic">Sem comentário</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }
@@ -1031,6 +1177,7 @@ export default function AdminDashboard() {
     { id: "palavra", label: "Desafio da Palavra", icon: Type, accent: "#f59e0b", badge: desafioRooms.filter(r => r.players.some(p => p.connected !== false)).length || undefined },
     { id: "temas", label: "Temas", icon: FileText, accent: "#ec4899", badge: themes.filter(t => !t.approved).length || undefined },
     { id: "analytics", label: "Analytics", icon: BarChart3, accent: "#06b6d4" },
+    { id: "feedback", label: "Feedback", icon: Star, accent: "#f59e0b" },
   ];
 
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
@@ -1154,6 +1301,9 @@ export default function AdminDashboard() {
 
       case "analytics":
         return <AnalyticsDashboard token={token} />;
+
+      case "feedback":
+        return <FeedbackView token={token} />;
 
       default:
         return null;
