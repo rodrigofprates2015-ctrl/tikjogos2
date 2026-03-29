@@ -27,6 +27,7 @@ const Doacoes = lazy(() => import("@/pages/Doacoes"));
 const OutrosJogos = lazy(() => import("@/pages/OutrosJogos"));
 const Termo = lazy(() => import("@/pages/Termo"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const FeedbackPage = lazy(() => import("@/pages/FeedbackPage"));
 const Blog = lazy(() => import("@/pages/Blog"));
 const BlogPost = lazy(() => import("@/pages/BlogPost"));
 const PlayGame = lazy(() => import("@/pages/PlayGame"));
@@ -241,6 +242,7 @@ function AppRouter() {
       {i18nRoutes("/jugar/:id", PlayGame)}
 
       {i18nRoutes("/dashadmin", AdminDashboard)}
+      <Route path="/feedback" component={FeedbackPage} />
 
       {/* SEO Theme HUB */}
       <Route path="/jogo-do-impostor/temas" component={Temas} />
