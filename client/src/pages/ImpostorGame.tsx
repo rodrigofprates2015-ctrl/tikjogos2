@@ -3543,6 +3543,11 @@ const PerguntasDiferentesScreen = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedVote, setSelectedVote] = useState<string | null>(null);
 
+  // Notify feedback system once when result screen is shown
+  useEffect(() => {
+    if (phase === 'result') notifyGameEnded();
+  }, [phase]);
+
   if (!room || !room.gameData) return null;
 
   const isHost = room.hostId === user?.uid;
@@ -4135,7 +4140,6 @@ const PerguntasDiferentesScreen = () => {
   }
 
   if (phase === 'result') {
-    notifyGameEnded();
     // Support multiple impostors
     const impostorIds = gameData?.impostorIds || [];
     const allImpostorIds = impostorIds.length > 0 ? impostorIds : (room.impostorId ? [room.impostorId] : []);

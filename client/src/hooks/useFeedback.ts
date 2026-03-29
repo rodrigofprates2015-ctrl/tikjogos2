@@ -3,12 +3,14 @@ import { useState, useCallback } from 'react';
 const LOCAL_KEY = 'tikjogos_feedback_done';
 
 /**
- * Call checkAfterGame() whenever a game result screen is shown.
- * It queries the server to see if this visitor has played >= 5 games
- * and hasn't submitted feedback yet. If so, sets showFeedback=true.
+ * Call checkAfterGame() from a useEffect inside a game result screen.
+ * Queries the server to see if this visitor has played >= 5 games
+ * and hasn't submitted feedback yet.
  *
- * The check is debounced per session via sessionStorage so it only
- * fires once per browser session even if called multiple times.
+ * Unlike the previous version, this does NOT use sessionStorage to
+ * gate the check — it re-checks every time a result screen mounts,
+ * so the popup appears as soon as the 5th game is completed even
+ * within the same session.
  */
 export function useFeedback() {
   const [showFeedback, setShowFeedback] = useState(false);
@@ -16,10 +18,8 @@ export function useFeedback() {
   const checkAfterGame = useCallback(async () => {
     // Already submitted — never show again
     if (localStorage.getItem(LOCAL_KEY) === '1') return;
-    // Already checked this session — don't spam the server
-    if (sessionStorage.getItem('tikjogos_feedback_checked') === '1') return;
-
-    sessionStorage.setItem('tikjogos_feedback_checked', '1');
+    // Already showing — don't double-trigger
+    if (document.getElementById('feedback-popup-root')) return;
 
     try {
       const res = await fetch('/api/analytics/feedback/check');

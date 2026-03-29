@@ -380,30 +380,29 @@ export function createAnalyticsRouter(verifyAdmin: any) {
 
   // ─── GET /api/analytics/feedback/check (public) ───
   // Returns whether the current visitor should see the feedback popup.
-  // Conditions: >= 5 room_join events for this visitor AND no prior feedback submitted.
+  // Conditions: >= 5 lobby_sessions rows for this visitor_id AND no prior feedback.
   router.get('/feedback/check', async (req, res) => {
     try {
-      if (!db) return res.json({ shouldShow: false });
+      if (!pool) return res.json({ shouldShow: false });
 
+      const pg = pool as Pool;
       const visitorId = req.cookies?.['visitor_id'];
       if (!visitorId) return res.json({ shouldShow: false });
 
       // Already submitted feedback?
-      const existing = await db
-        .select({ id: feedbackResponses.id })
-        .from(feedbackResponses)
-        .where(eq(feedbackResponses.visitorId, visitorId))
-        .limit(1);
+      const existingRows = await pg.query(
+        'SELECT id FROM feedback_responses WHERE visitor_id = $1 LIMIT 1',
+        [visitorId]
+      );
+      if (existingRows.rows.length > 0) return res.json({ shouldShow: false });
 
-      if (existing.length > 0) return res.json({ shouldShow: false });
+      // Count distinct rooms this visitor joined (= games played)
+      const countRows = await pg.query<{ cnt: string }>(
+        `SELECT COUNT(DISTINCT room_code) AS cnt FROM lobby_sessions WHERE visitor_id = $1`,
+        [visitorId]
+      );
+      const total = Number(countRows.rows[0]?.cnt ?? 0);
 
-      // Count room_join events for this visitor
-      const joinCount = await db
-        .select({ count: count() })
-        .from(analyticsEvents)
-        .where(sql`${analyticsEvents.visitorId} = ${visitorId} AND ${analyticsEvents.eventType} = 'room_join'`);
-
-      const total = joinCount[0]?.count ?? 0;
       res.json({ shouldShow: total >= 5 });
     } catch (error: any) {
       console.error('[Feedback] check error:', error);

@@ -2076,7 +2076,7 @@ export async function registerRoutes(
 
       impostorTotalRoomsCreated++;
       console.log(`[Room Created] Code: ${code}, Host: ${hostName} (${hostId})`);
-      trackLobbyJoin(code, hostId, hostName, true).catch(() => {});
+      trackLobbyJoin(code, hostId, hostName, true, null, null, req).catch(() => {});
 
       // Auto-add bots for admin testing
       if (hostName === "testeadm26") {
@@ -2143,7 +2143,7 @@ export async function registerRoutes(
       if (updatedRoom) {
         console.log(`[Room Join] Player ${playerName} successfully joined room ${roomCode}`);
         broadcastToRoom(roomCode, { type: 'room-update', room: updatedRoom });
-        trackLobbyJoin(roomCode, playerId, playerName, false, updatedRoom.gameMode).catch(() => {});
+        trackLobbyJoin(roomCode, playerId, playerName, false, updatedRoom.gameMode, null, req).catch(() => {});
       }
 
       res.json(updatedRoom);
@@ -3321,7 +3321,7 @@ export async function registerRoutes(
     drawingRooms.set(code, room);
     drawingTotalRoomsCreated++;
     console.log(`[Drawing] Room ${code} created by ${playerName}`);
-    trackLobbyJoin(code, hostId, playerName, true, 'desenho').catch(() => {});
+    trackLobbyJoin(code, hostId, playerName, true, 'desenho', null, req).catch(() => {});
     res.json(room);
   });
 
@@ -3343,7 +3343,7 @@ export async function registerRoutes(
     broadcastToDrawingRoom(code, { type: 'drawing-room-update', room });
     broadcastToDrawingRoom(code, { type: 'player-joined', playerName });
     console.log(`[Drawing] ${playerName} joined room ${code}`);
-    if (!existing) trackLobbyJoin(code, playerId, playerName, false, 'desenho').catch(() => {});
+    if (!existing) trackLobbyJoin(code, playerId, playerName, false, 'desenho', null, req).catch(() => {});
     res.json(room);
   });
 
@@ -3958,7 +3958,7 @@ export async function registerRoutes(
         players: [host],
       });
 
-      trackLobbyJoin(code, hostId, hostName, true, 'desafioPalavra').catch(() => {});
+      trackLobbyJoin(code, hostId, hostName, true, 'desafioPalavra', null, req).catch(() => {});
       res.json(room);
     } catch (error) {
       console.error('[Desafio] Create room error:', error);
@@ -3991,7 +3991,7 @@ export async function registerRoutes(
       const updated = await storage.addPlayerToRoom(roomCode, player);
       if (!updated) return res.status(500).json({ error: 'Failed to join room' });
 
-      trackLobbyJoin(roomCode, playerId, playerName, false, 'desafioPalavra').catch(() => {});
+      trackLobbyJoin(roomCode, playerId, playerName, false, 'desafioPalavra', null, req).catch(() => {});
       broadcastToRoom(roomCode, { type: 'room-update', room: updated });
       res.json(updated);
     } catch (error) {

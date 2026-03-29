@@ -220,6 +220,7 @@ export const lobbySessions = pgTable(
     roomCode: varchar("room_code", { length: 20 }).notNull(),
     playerId: varchar("player_id", { length: 100 }).notNull(),
     playerName: varchar("player_name", { length: 100 }).notNull(),
+    visitorId: varchar("visitor_id", { length: 36 }),
     gameMode: varchar("game_mode", { length: 50 }),
     themeName: varchar("theme_name", { length: 200 }),
     joinedAt: timestamp("joined_at").notNull().defaultNow(),

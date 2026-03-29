@@ -317,8 +317,11 @@ function GameScreen() {
   };
 
   // ── Game Over ──
+  useEffect(() => {
+    if (isGameOver) notifyGameEnded();
+  }, [isGameOver]);
+
   if (isGameOver) {
-    notifyGameEnded();
     const winner = room.players.find(p => p.uid === gd.vencedorId);
     const iWon = gd.vencedorId === user.uid;
     return (

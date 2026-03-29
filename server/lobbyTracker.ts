@@ -1,5 +1,6 @@
 import { pool } from './db';
 import { Pool } from 'pg';
+import type { Request } from 'express';
 
 // Records a player joining a lobby. Called on room create and room join.
 export async function trackLobbyJoin(
@@ -9,13 +10,15 @@ export async function trackLobbyJoin(
   isHost: boolean,
   gameMode?: string | null,
   themeName?: string | null,
+  req?: Request,
 ): Promise<void> {
   if (!pool) return;
+  const visitorId = req?.cookies?.['visitor_id'] ?? null;
   try {
     await (pool as Pool).query(
-      `INSERT INTO lobby_sessions (room_code, player_id, player_name, game_mode, theme_name, joined_at, is_host)
-       VALUES ($1, $2, $3, $4, $5, NOW(), $6)`,
-      [roomCode, playerId, playerName, gameMode ?? null, themeName ?? null, isHost],
+      `INSERT INTO lobby_sessions (room_code, player_id, player_name, visitor_id, game_mode, theme_name, joined_at, is_host)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7)`,
+      [roomCode, playerId, playerName, visitorId, gameMode ?? null, themeName ?? null, isHost],
     );
   } catch (err) {
     console.error('[LobbyTracker] trackLobbyJoin failed:', err);

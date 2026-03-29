@@ -162,6 +162,7 @@ async function runMigrations() {
         room_code VARCHAR(20) NOT NULL,
         player_id VARCHAR(100) NOT NULL,
         player_name VARCHAR(100) NOT NULL,
+        visitor_id VARCHAR(36),
         game_mode VARCHAR(50),
         theme_name VARCHAR(200),
         joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -169,6 +170,9 @@ async function runMigrations() {
         duration_seconds INTEGER,
         is_host BOOLEAN NOT NULL DEFAULT false
       )
+    `);
+    await db.execute(sql`
+      ALTER TABLE lobby_sessions ADD COLUMN IF NOT EXISTS visitor_id VARCHAR(36)
     `);
     await db.execute(sql`
       CREATE INDEX IF NOT EXISTS idx_lobby_sessions_room ON lobby_sessions (room_code)
