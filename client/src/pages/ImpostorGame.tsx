@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useGameStore, type GameModeType, type PlayerVote, type PlayerAnswer, type GameConfig } from "@/lib/gameStore";
 import { useDrawingGameStore } from "@/lib/drawingGameStore";
+import { notifyGameEnded } from "@/hooks/useFeedback";
 import { Link, useLocation } from "wouter";
 import PalavraSuperSecretaSubmodeScreen from "@/pages/PalavraSuperSecretaSubmodeScreen";
 import { NotificationCenter } from "@/components/NotificationCenter";
@@ -4134,6 +4135,7 @@ const PerguntasDiferentesScreen = () => {
   }
 
   if (phase === 'result') {
+    notifyGameEnded();
     // Support multiple impostors
     const impostorIds = gameData?.impostorIds || [];
     const allImpostorIds = impostorIds.length > 0 ? impostorIds : (room.impostorId ? [room.impostorId] : []);

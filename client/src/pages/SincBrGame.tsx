@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSincBRStore } from '@/lib/sincBrStore';
+import { notifyGameEnded } from '@/hooks/useFeedback';
 import type { BRAnswerGroup, BRLeaderboardEntry } from '@/lib/sincBrStore';
 import { useLocation } from 'wouter';
 import { Users, Trophy, Send, Clock, LogOut, ArrowLeft, Zap, Crown, ChevronRight } from 'lucide-react';
@@ -243,6 +244,8 @@ function MatchEndOverlay({ leaderboard, myUid }: { leaderboard: BRLeaderboardEnt
   const top5 = leaderboard.slice(0, 5);
   const myEntry = leaderboard.find(e => e.uid === myUid);
   const myRank = myEntry?.rank || 0;
+
+  useEffect(() => { notifyGameEnded(); }, []);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 animate-fade-in">

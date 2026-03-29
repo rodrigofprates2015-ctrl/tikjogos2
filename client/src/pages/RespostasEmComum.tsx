@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRCGameStore } from '@/lib/rcGameStore';
+import { notifyGameEnded } from '@/hooks/useFeedback';
 
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
@@ -564,6 +565,11 @@ const RCRoundResultScreen = () => {
 
   const isHost = room.hostId === user.uid;
   const isLastRound = currentRound >= totalRounds;
+
+  // Notify feedback system when the final round result is shown
+  useEffect(() => {
+    if (isLastRound) notifyGameEnded();
+  }, [isLastRound]);
 
   // Sort players by score descending
   const sortedPlayers = [...room.players].sort((a, b) => (scores[b.uid] || 0) - (scores[a.uid] || 0));

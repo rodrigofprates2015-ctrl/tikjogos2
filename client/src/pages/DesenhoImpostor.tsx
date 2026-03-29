@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDrawingGameStore } from "@/lib/drawingGameStore";
+import { notifyGameEnded } from "@/hooks/useFeedback";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -713,6 +714,8 @@ const VotingScreen = () => {
 const ResultScreen = () => {
   const { room, user, returnToLobby } = useDrawingGameStore();
   const handleLeave = useLeaveAndGoHome();
+
+  useEffect(() => { notifyGameEnded(); }, []);
 
   if (!room || !room.gameData) return null;
 

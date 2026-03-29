@@ -1,42 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 
 const LOCAL_KEY = 'tikjogos_feedback_done';
-const SESSION_KEY = 'tikjogos_feedback_skipped';
 
 /**
- * Controls when to show the feedback popup.
- * - Never shows if localStorage marks it as done or sessionStorage marks it skipped.
- * - Calls /api/analytics/feedback/check (which counts room_join events server-side).
- * - Returns showFeedback=true only when the server says the visitor qualifies.
+ * Call checkAfterGame() whenever a game result screen is shown.
+ * It queries the server to see if this visitor has played >= 5 games
+ * and hasn't submitted feedback yet. If so, sets showFeedback=true.
+ *
+ * The check is debounced per session via sessionStorage so it only
+ * fires once per browser session even if called multiple times.
  */
 export function useFeedback() {
   const [showFeedback, setShowFeedback] = useState(false);
 
-  useEffect(() => {
-    // Already submitted or skipped this session — bail immediately
-    if (
-      localStorage.getItem(LOCAL_KEY) === '1' ||
-      sessionStorage.getItem(SESSION_KEY) === '1'
-    ) {
-      return;
+  const checkAfterGame = useCallback(async () => {
+    // Already submitted — never show again
+    if (localStorage.getItem(LOCAL_KEY) === '1') return;
+    // Already checked this session — don't spam the server
+    if (sessionStorage.getItem('tikjogos_feedback_checked') === '1') return;
+
+    sessionStorage.setItem('tikjogos_feedback_checked', '1');
+
+    try {
+      const res = await fetch('/api/analytics/feedback/check');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.shouldShow) setShowFeedback(true);
+    } catch {
+      // Network error — silently ignore
     }
-
-    // Delay check slightly so it doesn't fire on initial page load
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch('/api/analytics/feedback/check');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.shouldShow) setShowFeedback(true);
-      } catch {
-        // Network error — silently ignore
-      }
-    }, 3000);
-
-    return () => clearTimeout(timer);
   }, []);
 
-  const dismiss = () => setShowFeedback(false);
+  const dismiss = useCallback(() => setShowFeedback(false), []);
 
-  return { showFeedback, dismiss };
+  return { showFeedback, dismiss, checkAfterGame };
+}
+
+/** Dispatch from any game result screen to trigger the feedback check. */
+export function notifyGameEnded() {
+  window.dispatchEvent(new CustomEvent('tikjogos:game-ended'));
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useDesafioStore } from '@/lib/desafioStore';
+import { notifyGameEnded } from '@/hooks/useFeedback';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import {
@@ -317,6 +318,7 @@ function GameScreen() {
 
   // ── Game Over ──
   if (isGameOver) {
+    notifyGameEnded();
     const winner = room.players.find(p => p.uid === gd.vencedorId);
     const iWon = gd.vencedorId === user.uid;
     return (
