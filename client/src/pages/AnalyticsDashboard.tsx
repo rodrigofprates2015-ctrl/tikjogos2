@@ -9,7 +9,7 @@ import {
   BarChart3, Users, Eye, Gamepad2, TrendingUp, TrendingDown,
   Smartphone, Monitor, Globe, Clock, DoorOpen, Trophy, AlertTriangle,
   Activity, MapPin, Timer, Flame, Target, CalendarDays, Hash, Sparkles,
-  LayoutList, Search
+  LayoutList, Search, Star, MessageSquare
 } from 'lucide-react';
 import {
   BarChart, Bar, PieChart, Pie, Cell,
@@ -94,6 +94,21 @@ type LobbyEntry = {
 };
 
 type LobbiesReport = { lobbies: LobbyEntry[]; total: number };
+
+type FeedbackEntry = {
+  id: string;
+  rating: number;
+  comment: string | null;
+  gameMode: string | null;
+  createdAt: string;
+};
+
+type FeedbackData = {
+  total: number;
+  avgRating: number | null;
+  distribution: Array<{ rating: number; count: number }>;
+  responses: FeedbackEntry[];
+};
 
 type AnalyticsDashboardProps = { token: string | null };
 
@@ -326,6 +341,18 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
   });
 
   const [lobbySearch, setLobbySearch] = useState('');
+  const { data: feedbackData, isLoading: feedbackLoading } = useQuery<FeedbackData>({
+    queryKey: ['/api/analytics/feedback', token],
+    queryFn: async () => {
+      if (!token) throw new Error('Token não disponível');
+      const res = await fetch('/api/analytics/feedback', { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(`${res.status}`);
+      return res.json();
+    },
+    staleTime: 60 * 1000,
+    enabled: !!token,
+  });
+
   const { data: lobbiesData, isLoading: lobbiesLoading } = useQuery<LobbiesReport>({
     queryKey: ['/api/analytics/lobbies-report', token],
     queryFn: async () => {
@@ -421,6 +448,9 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
           </TabsTrigger>
           <TabsTrigger value="lobbies" className="gap-2 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 text-sm">
             <LayoutList className="h-4 w-4" />Lobbies
+          </TabsTrigger>
+          <TabsTrigger value="feedback" className="gap-2 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 text-sm">
+            <Star className="h-4 w-4" />Feedback
           </TabsTrigger>
         </TabsList>
 
@@ -858,6 +888,118 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
                         ))}
                     </tbody>
                   </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ═══ FEEDBACK TAB ═══ */}
+        <TabsContent value="feedback" className="space-y-6">
+          {/* KPI row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <KpiCard
+              title="Total de Avaliações"
+              value={String(feedbackData?.total ?? 0)}
+              icon={Star}
+              accent="#f59e0b"
+            />
+            <KpiCard
+              title="Nota Média"
+              value={feedbackData?.avgRating != null ? `${feedbackData.avgRating} / 5` : '—'}
+              icon={Trophy}
+              accent="#10b981"
+              subtitle="Baseado em todas as respostas"
+            />
+            <KpiCard
+              title="Com Comentário"
+              value={String(feedbackData?.responses.filter(r => r.comment).length ?? 0)}
+              icon={MessageSquare}
+              accent="#8b5cf6"
+            />
+            <KpiCard
+              title="Nota 5 ⭐"
+              value={String(feedbackData?.distribution.find(d => d.rating === 5)?.count ?? 0)}
+              icon={Sparkles}
+              accent="#ec4899"
+            />
+          </div>
+
+          {/* Distribution bar */}
+          <Card className="bg-[#1e293b]/60 border-white/[0.06]">
+            <CardHeader>
+              <CardTitle className="text-white text-lg">Distribuição de Notas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {feedbackLoading ? (
+                <div className="space-y-2">{[5,4,3,2,1].map(i => <div key={i} className="h-8 rounded bg-white/[0.04] animate-pulse" />)}</div>
+              ) : !feedbackData || feedbackData.total === 0 ? (
+                <p className="text-white/30 text-center py-8">Nenhuma avaliação ainda.</p>
+              ) : (
+                <div className="space-y-3">
+                  {[5, 4, 3, 2, 1].map(star => {
+                    const entry = feedbackData.distribution.find(d => d.rating === star);
+                    const cnt = entry?.count ?? 0;
+                    const pct = feedbackData.total > 0 ? Math.round((cnt / feedbackData.total) * 100) : 0;
+                    return (
+                      <div key={star} className="flex items-center gap-3">
+                        <div className="flex items-center gap-1 w-16 flex-shrink-0">
+                          <span className="text-white/60 text-sm font-semibold">{star}</span>
+                          <Star size={14} className="fill-amber-400 text-amber-400" />
+                        </div>
+                        <div className="flex-1 bg-white/[0.06] rounded-full h-3 overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="text-white/40 text-xs w-12 text-right">{cnt} ({pct}%)</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Comments list */}
+          <Card className="bg-[#1e293b]/60 border-white/[0.06]">
+            <CardHeader>
+              <CardTitle className="text-white text-lg">Comentários dos Jogadores</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {feedbackLoading ? (
+                <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 rounded-xl bg-white/[0.04] animate-pulse" />)}</div>
+              ) : !feedbackData || feedbackData.responses.filter(r => r.comment).length === 0 ? (
+                <p className="text-white/30 text-center py-8">Nenhum comentário ainda.</p>
+              ) : (
+                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                  {feedbackData.responses
+                    .filter(r => r.comment)
+                    .map(r => (
+                      <div key={r.id} className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex gap-0.5">
+                            {[1,2,3,4,5].map(s => (
+                              <Star
+                                key={s}
+                                size={14}
+                                className={s <= r.rating ? 'fill-amber-400 text-amber-400' : 'fill-white/10 text-white/10'}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-white/30 text-xs">
+                            {r.createdAt ? format(new Date(r.createdAt), 'dd/MM/yy HH:mm', { locale: ptBR }) : ''}
+                          </span>
+                        </div>
+                        <p className="text-white/70 text-sm leading-relaxed">{r.comment}</p>
+                        {r.gameMode && (
+                          <span className="inline-block mt-2 text-[10px] text-white/30 bg-white/[0.04] px-2 py-0.5 rounded-full">
+                            {GAME_MODE_LABELS[r.gameMode] ?? r.gameMode}
+                          </span>
+                        )}
+                      </div>
+                    ))}
                 </div>
               )}
             </CardContent>

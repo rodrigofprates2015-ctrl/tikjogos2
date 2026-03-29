@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { db, pool } from './db';
 import { Pool } from 'pg';
-import { analyticsEvents, rooms } from '@shared/schema';
-import { sql, count, countDistinct, gte, avg, lt } from 'drizzle-orm';
-import { trackSessionEnd } from './analyticsMiddleware';
+import { analyticsEvents, rooms, feedbackResponses } from '@shared/schema';
+import { sql, count, countDistinct, gte, avg, lt, eq } from 'drizzle-orm';
+import { trackSessionEnd, extractRealIP } from './analyticsMiddleware';
 import { getRCRoomStats } from './rcGame';
 import { getBRRoomStats } from './sincBrGame';
 import { getImpostorRoomStats, getDrawingRoomStats } from './routes';
@@ -374,6 +374,115 @@ export function createAnalyticsRouter(verifyAdmin: any) {
       ]);
       res.json({ roomsToday: todayRes[0]?.count || 0, roomsMonth: monthRes[0]?.count || 0, roomsTotal: totalRes[0]?.count || 0, roomsLast30Days: fillMissingDates(tsRes, 30) });
     } catch (error: any) {
+      res.status(500).json({ error: error?.message });
+    }
+  });
+
+  // ─── GET /api/analytics/feedback/check (public) ───
+  // Returns whether the current visitor should see the feedback popup.
+  // Conditions: >= 5 room_join events for this visitor AND no prior feedback submitted.
+  router.get('/feedback/check', async (req, res) => {
+    try {
+      if (!db) return res.json({ shouldShow: false });
+
+      const visitorId = req.cookies?.['visitor_id'];
+      if (!visitorId) return res.json({ shouldShow: false });
+
+      // Already submitted feedback?
+      const existing = await db
+        .select({ id: feedbackResponses.id })
+        .from(feedbackResponses)
+        .where(eq(feedbackResponses.visitorId, visitorId))
+        .limit(1);
+
+      if (existing.length > 0) return res.json({ shouldShow: false });
+
+      // Count room_join events for this visitor
+      const joinCount = await db
+        .select({ count: count() })
+        .from(analyticsEvents)
+        .where(sql`${analyticsEvents.visitorId} = ${visitorId} AND ${analyticsEvents.eventType} = 'room_join'`);
+
+      const total = joinCount[0]?.count ?? 0;
+      res.json({ shouldShow: total >= 5 });
+    } catch (error: any) {
+      console.error('[Feedback] check error:', error);
+      res.json({ shouldShow: false });
+    }
+  });
+
+  // ─── POST /api/analytics/feedback/submit (public) ───
+  router.post('/feedback/submit', async (req, res) => {
+    try {
+      if (!db) return res.status(503).json({ error: 'Database not available' });
+
+      const visitorId = req.cookies?.['visitor_id'];
+      if (!visitorId) return res.status(400).json({ error: 'No visitor ID' });
+
+      const { rating, comment, gameMode } = req.body;
+      if (!rating || typeof rating !== 'number' || rating < 1 || rating > 5) {
+        return res.status(400).json({ error: 'Rating must be 1–5' });
+      }
+
+      // Idempotent: ignore if already submitted
+      const existing = await db
+        .select({ id: feedbackResponses.id })
+        .from(feedbackResponses)
+        .where(eq(feedbackResponses.visitorId, visitorId))
+        .limit(1);
+
+      if (existing.length > 0) return res.json({ ok: true, duplicate: true });
+
+      await db.insert(feedbackResponses).values({
+        visitorId,
+        ipAddress: extractRealIP(req),
+        rating,
+        comment: typeof comment === 'string' ? comment.slice(0, 1000) : null,
+        gameMode: typeof gameMode === 'string' ? gameMode : null,
+      });
+
+      res.json({ ok: true });
+    } catch (error: any) {
+      console.error('[Feedback] submit error:', error);
+      res.status(500).json({ error: error?.message });
+    }
+  });
+
+  // ─── GET /api/analytics/feedback (admin only) ───
+  router.get('/feedback', verifyAdmin, async (req, res) => {
+    try {
+      if (!db) return res.status(503).json({ error: 'Database not available' });
+
+      const [responses, avgRating, distribution] = await Promise.all([
+        db
+          .select()
+          .from(feedbackResponses)
+          .orderBy(sql`${feedbackResponses.createdAt} DESC`)
+          .limit(200),
+        db
+          .select({ avg: avg(sql`CAST(${feedbackResponses.rating} AS FLOAT)`) })
+          .from(feedbackResponses),
+        db
+          .select({ rating: feedbackResponses.rating, count: count() })
+          .from(feedbackResponses)
+          .groupBy(feedbackResponses.rating)
+          .orderBy(feedbackResponses.rating),
+      ]);
+
+      res.json({
+        total: responses.length,
+        avgRating: avgRating[0]?.avg ? Number(Number(avgRating[0].avg).toFixed(2)) : null,
+        distribution: distribution.map(d => ({ rating: d.rating, count: d.count })),
+        responses: responses.map(r => ({
+          id: r.id,
+          rating: r.rating,
+          comment: r.comment,
+          gameMode: r.gameMode,
+          createdAt: r.createdAt,
+        })),
+      });
+    } catch (error: any) {
+      console.error('[Feedback] list error:', error);
       res.status(500).json({ error: error?.message });
     }
   });

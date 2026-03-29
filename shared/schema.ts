@@ -236,3 +236,24 @@ export const lobbySessions = pgTable(
 
 export type LobbySession = typeof lobbySessions.$inferSelect;
 export type InsertLobbySession = typeof lobbySessions.$inferInsert;
+
+// Player feedback: rating + optional comment, shown once after 5 games
+export const feedbackResponses = pgTable(
+  "feedback_responses",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    visitorId: varchar("visitor_id", { length: 36 }).notNull(),
+    ipAddress: varchar("ip_address", { length: 45 }),
+    rating: integer("rating").notNull(),
+    comment: text("comment"),
+    gameMode: varchar("game_mode", { length: 50 }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("idx_feedback_visitor").on(table.visitorId),
+    index("idx_feedback_created").on(table.createdAt),
+  ]
+);
+
+export type FeedbackResponse = typeof feedbackResponses.$inferSelect;
+export type InsertFeedbackResponse = typeof feedbackResponses.$inferInsert;

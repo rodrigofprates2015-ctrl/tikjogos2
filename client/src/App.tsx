@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { useEffect, lazy, Suspense } from "react";
 import NotFound from "@/pages/not-found";
+import FeedbackPopup from "@/components/FeedbackPopup";
+import { useFeedback } from "@/hooks/useFeedback";
 // ImpostorGame is the home page — keep it eager so there's no lazy waterfall on /
 import ImpostorGame from "@/pages/ImpostorGame";
 import RoomRedirect from "@/pages/RoomRedirect";
@@ -368,6 +370,12 @@ function AppRouter() {
   );
 }
 
+function FeedbackController() {
+  const { showFeedback, dismiss } = useFeedback();
+  if (!showFeedback) return null;
+  return <FeedbackPopup onClose={dismiss} />;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -376,6 +384,7 @@ function App() {
           <VersionManager />
           <SessionTracker />
           <AppRouter />
+          <FeedbackController />
           <Toaster />
         </LanguageProvider>
       </TooltipProvider>

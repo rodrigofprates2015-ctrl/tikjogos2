@@ -181,6 +181,25 @@ async function runMigrations() {
     `);
     console.log('[Migration] lobby_sessions table ready');
 
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS feedback_responses (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        visitor_id VARCHAR(36) NOT NULL,
+        ip_address VARCHAR(45),
+        rating INTEGER NOT NULL,
+        comment TEXT,
+        game_mode VARCHAR(50),
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS idx_feedback_visitor ON feedback_responses (visitor_id)
+    `);
+    await db.execute(sql`
+      CREATE INDEX IF NOT EXISTS idx_feedback_created ON feedback_responses (created_at)
+    `);
+    console.log('[Migration] feedback_responses table ready');
+
     console.log('[Migration] All migrations completed successfully!');
   } catch (error) {
     console.error('[Migration] Error running migrations:', error);
