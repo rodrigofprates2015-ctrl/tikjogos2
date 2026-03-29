@@ -430,7 +430,7 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="bg-[#1e293b]/60 border border-white/[0.06] p-1 rounded-xl">
+        <TabsList className="bg-[#1e293b]/60 border border-white/[0.06] p-1 rounded-xl flex-wrap h-auto gap-1">
           <TabsTrigger value="overview" className="gap-2 rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50 text-sm">
             <Activity className="h-4 w-4" />Visão Geral
           </TabsTrigger>
