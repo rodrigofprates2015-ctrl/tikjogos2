@@ -373,17 +373,10 @@ function AppRouter() {
 }
 
 function FeedbackController() {
-  const { showFeedback, dismiss, checkAfterGame } = useFeedback();
-
-  // Listen for a custom event dispatched by game result screens
-  useEffect(() => {
-    const handler = () => checkAfterGame();
-    window.addEventListener('tikjogos:game-ended', handler);
-    return () => window.removeEventListener('tikjogos:game-ended', handler);
-  }, [checkAfterGame]);
+  const { showFeedback, dismiss, markDone } = useFeedback();
 
   if (!showFeedback) return null;
-  return <FeedbackPopup onClose={dismiss} />;
+  return <FeedbackPopup onDismiss={dismiss} onDone={markDone} />;
 }
 
 function App() {

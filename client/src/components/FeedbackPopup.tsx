@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { X, Star, Send } from 'lucide-react';
 
 interface FeedbackPopupProps {
-  onClose: () => void;
+  onDismiss: () => void;
+  onDone: () => void;
 }
 
-export default function FeedbackPopup({ onClose }: FeedbackPopupProps) {
+export default function FeedbackPopup({ onDismiss, onDone }: FeedbackPopupProps) {
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [comment, setComment] = useState('');
@@ -13,9 +14,9 @@ export default function FeedbackPopup({ onClose }: FeedbackPopupProps) {
   const [done, setDone] = useState(false);
   const [visible, setVisible] = useState(true);
 
-  const dismiss = () => {
+  const animateOut = (cb: () => void) => {
     setVisible(false);
-    setTimeout(onClose, 300);
+    setTimeout(cb, 300);
   };
 
   const submit = async () => {
@@ -27,19 +28,14 @@ export default function FeedbackPopup({ onClose }: FeedbackPopupProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating, comment: comment.trim() || null }),
       });
-      localStorage.setItem('tikjogos_feedback_done', '1');
       setDone(true);
-      setTimeout(dismiss, 2000);
+      setTimeout(() => animateOut(onDone), 2000);
     } catch {
       setSubmitting(false);
     }
   };
 
-  const skip = () => {
-    // Mark as done locally so we don't ask again this session
-    sessionStorage.setItem('tikjogos_feedback_skipped', '1');
-    dismiss();
-  };
+  const dismiss = () => animateOut(onDismiss);
 
   const activeRating = hovered || rating;
 
@@ -56,7 +52,7 @@ export default function FeedbackPopup({ onClose }: FeedbackPopupProps) {
       className={`fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 transition-all duration-300 ${
         visible ? 'opacity-100 bg-black/70 backdrop-blur-sm' : 'opacity-0 pointer-events-none'
       }`}
-      onClick={skip}
+      onClick={dismiss}
     >
       <div
         className={`w-full max-w-sm bg-[#1e2340] border border-white/10 rounded-3xl shadow-2xl p-6 transition-all duration-300 ${
@@ -65,7 +61,6 @@ export default function FeedbackPopup({ onClose }: FeedbackPopupProps) {
         onClick={e => e.stopPropagation()}
       >
         {done ? (
-          /* ── Thank you state ── */
           <div className="text-center py-4">
             <div className="text-4xl mb-3">🎉</div>
             <p className="text-white font-black text-xl">Obrigado!</p>
@@ -73,25 +68,23 @@ export default function FeedbackPopup({ onClose }: FeedbackPopupProps) {
           </div>
         ) : (
           <>
-            {/* Header */}
             <div className="flex items-start justify-between mb-5">
               <div>
                 <p className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-1">
-                  Você jogou bastante!
+                  Rápida pergunta
                 </p>
                 <h2 className="text-white font-black text-xl leading-tight">
                   O que você acha do TikJogos?
                 </h2>
               </div>
               <button
-                onClick={skip}
+                onClick={dismiss}
                 className="text-white/30 hover:text-white/60 transition-colors ml-3 mt-0.5 flex-shrink-0"
               >
                 <X size={20} />
               </button>
             </div>
 
-            {/* Stars */}
             <div className="flex justify-center gap-2 mb-2">
               {[1, 2, 3, 4, 5].map(star => (
                 <button
@@ -113,14 +106,12 @@ export default function FeedbackPopup({ onClose }: FeedbackPopupProps) {
               ))}
             </div>
 
-            {/* Rating label */}
             <p className={`text-center text-sm font-bold mb-4 h-5 transition-all duration-150 ${
               activeRating > 0 ? 'text-amber-400' : 'text-transparent'
             }`}>
               {ratingLabel[activeRating] ?? ''}
             </p>
 
-            {/* Comment */}
             <textarea
               value={comment}
               onChange={e => setComment(e.target.value)}
@@ -130,13 +121,12 @@ export default function FeedbackPopup({ onClose }: FeedbackPopupProps) {
               className="w-full bg-white/[0.06] border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/30 resize-none focus:outline-none focus:border-indigo-500/60 transition-colors"
             />
 
-            {/* Actions */}
             <div className="flex gap-3 mt-4">
               <button
-                onClick={skip}
+                onClick={dismiss}
                 className="flex-1 py-3 rounded-2xl text-white/40 text-sm font-semibold hover:text-white/60 hover:bg-white/[0.04] transition-all"
               >
-                Pular
+                Agora não
               </button>
               <button
                 onClick={submit}

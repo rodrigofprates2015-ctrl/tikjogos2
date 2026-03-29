@@ -1,42 +1,44 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
-const LOCAL_KEY = 'tikjogos_feedback_done';
+const KEY_DONE = 'tikjogos_feedback_done';
+const KEY_DISMISSED_AT = 'tikjogos_feedback_dismissed_at';
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const SHOW_DELAY_MS = 4000;
 
 /**
- * Call checkAfterGame() from a useEffect inside a game result screen.
- * Queries the server to see if this visitor has played >= 5 games
- * and hasn't submitted feedback yet.
- *
- * Unlike the previous version, this does NOT use sessionStorage to
- * gate the check — it re-checks every time a result screen mounts,
- * so the popup appears as soon as the 5th game is completed even
- * within the same session.
+ * Shows the feedback popup on site entry.
+ * - If the user submitted feedback: never shows again (localStorage KEY_DONE).
+ * - If the user dismissed/skipped: shows again after 24 hours.
+ * - Otherwise: shows after a short delay on first visit.
  */
 export function useFeedback() {
   const [showFeedback, setShowFeedback] = useState(false);
 
-  const checkAfterGame = useCallback(async () => {
-    // Already submitted — never show again
-    if (localStorage.getItem(LOCAL_KEY) === '1') return;
-    // Already showing — don't double-trigger
-    if (document.getElementById('feedback-popup-root')) return;
+  useEffect(() => {
+    if (localStorage.getItem(KEY_DONE) === '1') return;
 
-    try {
-      const res = await fetch('/api/analytics/feedback/check');
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.shouldShow) setShowFeedback(true);
-    } catch {
-      // Network error — silently ignore
+    const dismissedAt = localStorage.getItem(KEY_DISMISSED_AT);
+    if (dismissedAt) {
+      const elapsed = Date.now() - parseInt(dismissedAt, 10);
+      if (elapsed < ONE_DAY_MS) return;
     }
+
+    const timer = setTimeout(() => setShowFeedback(true), SHOW_DELAY_MS);
+    return () => clearTimeout(timer);
   }, []);
 
-  const dismiss = useCallback(() => setShowFeedback(false), []);
+  const dismiss = () => {
+    localStorage.setItem(KEY_DISMISSED_AT, String(Date.now()));
+    setShowFeedback(false);
+  };
 
-  return { showFeedback, dismiss, checkAfterGame };
+  const markDone = () => {
+    localStorage.setItem(KEY_DONE, '1');
+    setShowFeedback(false);
+  };
+
+  return { showFeedback, dismiss, markDone };
 }
 
-/** Dispatch from any game result screen to trigger the feedback check. */
-export function notifyGameEnded() {
-  window.dispatchEvent(new CustomEvent('tikjogos:game-ended'));
-}
+/** @deprecated No longer used — popup is triggered on site entry, not per game. */
+export function notifyGameEnded() {}
