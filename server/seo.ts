@@ -484,22 +484,34 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
     ].join('\n    ');
 
     return {
-      title: 'TikJogos - Jogo do Impostor Online Grátis Com Amigos | Impostor Game',
-      description: 'Jogue Impostor online grátis! Encontre amigos, estratégias e desafie outros jogadores no TikJogos. Sem downloads.',
+      title: 'Jogo do Impostor Online Grátis | Palavras, Dedução Social e Diversão | TikJogos',
+      description: 'Jogue o Jogo do Impostor online grátis com amigos! Jogo do impostor palavras, modos exclusivos e salas multiplayer. Sem download, direto no PC ou celular.',
       canonical: `${BASE_URL}${path === '/' ? '/' : path}`,
       hreflangTags: hreflang,
       bodyHtml: `<main style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
-      <h1>TikJogos - Jogo do Impostor Online Grátis</h1>
-      <p>Jogue o Jogo do Impostor online grátis com amigos! Dedução social, estratégia e diversão sem downloads. Crie uma sala, convide amigos e descubra quem é o impostor.</p>
+      <h1>Jogo do Impostor Online Grátis – TikJogos</h1>
+      <p>Bem-vindo ao TikJogos, a melhor plataforma para jogar o <strong>jogo do impostor online</strong> grátis com seus amigos. Sem baixar nada, sem cadastro obrigatório — basta criar uma sala e começar a jogar.</p>
+      <h2>O que é o Jogo do Impostor?</h2>
+      <p>O <strong>jogo do impostor</strong> é um jogo multiplayer de dedução social onde todos os jogadores recebem uma palavra secreta, exceto o impostor. A missão dos jogadores honestos é descobrir quem é o impostor antes que ele adivinhe a palavra e vença. É pura estratégia, blefe e diversão.</p>
+      <h2>Jogo do Impostor Palavras Online</h2>
+      <p>No modo clássico de <strong>jogo do impostor palavras</strong>, cada rodada tem um tema diferente. Os jogadores recebem uma palavra (ex: "âncora", "futebol", "vampiro") e precisam dar dicas sem revelar a palavra para o impostor. O <strong>jogo do impostor palavras online</strong> no TikJogos conta com dezenas de temas, de animes a esportes.</p>
+      <h2>Jogo do Impostor no PC e Celular</h2>
+      <p>O TikJogos funciona diretamente no navegador, tornando o <strong>jogo do impostor pc</strong> acessível sem instalação. Jogue no computador, tablet ou smartphone — a experiência é a mesma em qualquer dispositivo.</p>
+      <h2>Diferença entre Among Us e Jogo do Impostor</h2>
+      <p>Muita gente compara o <strong>among us jogo do impostor</strong> com o TikJogos. Enquanto o Among Us é um videogame com movimentação em mapa, o <strong>jogo do impostor</strong> do TikJogos é um jogo de palavras e dedução social, jogado em roda, sem gráficos complexos. É o equivalente digital de jogar o impostor com cartinhas, mas muito mais prático.</p>
+      <h2>Como Jogar o Jogo do Impostor para Jogar Agora</h2>
+      <p>Para o <strong>jogo do impostor para jogar</strong> agora mesmo: (1) acesse o TikJogos, (2) escolha um apelido, (3) crie uma sala ou entre com um código, (4) compartilhe o código com seus amigos. Em segundos vocês já estão jogando. Simples assim!</p>
+      <h2>Jogos do Impostor – Todos os Modos</h2>
+      <p>Os <strong>jogos do impostor</strong> no TikJogos incluem: Jogo do Impostor clássico (palavras), Desenho do Impostor (todos desenham a mesma palavra menos o impostor), Sincronia (respostas em comum), Desafio da Palavra e Modo Local (sem internet). Há sempre um novo modo para descobrir.</p>
       <h2>Modos de Jogo</h2>
       <ul>
-        <li><a href="${BASE_URL}/como-jogar/jogo-do-impostor">Como Jogar Impostor</a></li>
-        <li><a href="${BASE_URL}/como-jogar/jogo-do-impostor-desenho">Como Jogar Desenho</a></li>
+        <li><a href="${BASE_URL}/como-jogar/jogo-do-impostor">Como Jogar Impostor – Modo Palavras</a></li>
+        <li><a href="${BASE_URL}/como-jogar/jogo-do-impostor-desenho">Como Jogar Desenho do Impostor</a></li>
         <li><a href="${BASE_URL}/como-jogar/sincronia">Como Jogar Sincronia</a></li>
-        <li><a href="${BASE_URL}/modo-local">Modo Local</a></li>
-        <li><a href="${BASE_URL}/temas">Temas</a></li>
-        <li><a href="${BASE_URL}/blog">Blog</a></li>
-        <li><a href="${BASE_URL}/outros-jogos">Outros Jogos</a></li>
+        <li><a href="${BASE_URL}/modo-local">Modo Local – Sem Internet</a></li>
+        <li><a href="${BASE_URL}/temas">Temas do Jogo do Impostor</a></li>
+        <li><a href="${BASE_URL}/blog">Blog – Dicas e Estratégias</a></li>
+        <li><a href="${BASE_URL}/outros-jogos">Outros Jogos Online Grátis</a></li>
       </ul>
       <h2>Posts Recentes</h2>
       <ul>

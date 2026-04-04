@@ -27,6 +27,335 @@ export interface BlogPostFull {
 
 export const BLOG_POSTS_FULL: BlogPostFull[] = [
   {
+    slug: 'jogo-do-impostor-palavras-como-funciona',
+    slugEn: 'impostor-game-words-how-it-works',
+    slugEs: 'juego-del-impostor-palabras-como-funciona',
+    title: 'Jogo do Impostor Palavras: Como Funciona e Por que é Tão Divertido',
+    titleEn: 'Impostor Game Words: How It Works and Why It\'s So Fun',
+    titleEs: 'Juego del Impostor Palabras: Cómo Funciona y Por Qué Es Tan Divertido',
+    excerpt: 'Entenda como funciona o jogo do impostor palavras online, os temas disponíveis e por que esse modo é o favorito de milhões de jogadores.',
+    excerptEn: 'Understand how the impostor game words online works, available themes and why this mode is the favorite of millions of players.',
+    excerptEs: 'Entiende cómo funciona el juego del impostor palabras online, los temas disponibles y por qué este modo es el favorito de millones de jugadores.',
+    image: 'https://images.unsplash.com/photo-1551817958-d9d86fb29431?auto=format&fit=crop&q=80&w=1200',
+    date: '28 Mar 2026',
+    authorName: 'Equipe TikJogos',
+    readTime: '6 min',
+    category: 'Guia',
+    content: `O **jogo do impostor palavras** é o modo mais jogado do TikJogos e não é difícil entender o motivo. Com uma mecânica simples, mas profundamente envolvente, ele transforma qualquer reunião de amigos em uma batalha de dedução e blefe.
+
+### Como Funciona o Jogo do Impostor Palavras
+
+Em cada rodada do **jogo do impostor palavras online**, acontece o seguinte:
+
+1. **Sorteio Secreto**: O sistema escolhe aleatoriamente quem será o impostor
+2. **Distribuição de Palavras**: Todos os jogadores honestos recebem a mesma palavra secreta (ex: "tsunami", "pirâmide", "hambúrguer")
+3. **O Impostor**: Recebe apenas o tema da rodada, sem a palavra
+4. **Rodada de Pistas**: Cada jogador dá uma pista sobre a palavra sem revelá-la diretamente
+5. **Discussão e Votação**: Todos debatem e votam em quem acham que é o impostor
+6. **Revelação**: O impostor pode tentar adivinhar a palavra para vencer mesmo sendo descoberto
+
+### Temas Disponíveis no Jogo do Impostor Palavras Online
+
+O **jogo do impostor palavras online** no TikJogos conta com dezenas de temas cuidadosamente selecionados:
+
+- **Clássico**: Palavras do cotidiano para partidas equilibradas
+- **Futebol**: Jogadores, times e terminologia esportiva
+- **Animes**: Personagens e universos de Dragon Ball, Naruto, One Piece e mais
+- **Games**: Fortnite, Free Fire, Minecraft, Valorant e outros
+- **Séries**: Stranger Things, La Casa de Papel, Game of Thrones
+- **K-POP**: BTS, BLACKPINK, TWICE e grupos populares
+- **Disney**: Personagens e filmes do universo mágico
+- **Halloween**: Palavras temáticas para a época mais assustadora do ano
+
+### Por que o Jogo do Impostor Palavras é Tão Viciante?
+
+A genialidade do **jogo do impostor palavras** está na tensão criada pela assimetria de informação. O impostor precisa parecer que sabe a palavra sem nunca tê-la visto. Isso gera situações hilárias:
+
+- O impostor dá uma pista tão genérica que todos percebem
+- Ou tão específica que os honestos suspeitam que ele estava "espionando"
+- Jogadores honestos também entram em colapso ao dar pistas que parecem suspeitas
+
+### Dica: Como Dar Pistas Perfeitas
+
+Se você é honesto, a pista ideal é **específica o suficiente para que outros honestos entendam, mas vaga o suficiente para que o impostor não adivinhe**. Evite a palavra em si, sinônimos óbvios ou categoria direta.
+
+Se você é o impostor, ouça com atenção as pistas dos outros antes de dar a sua. Com sorte e atenção, você consegue montar a palavra na cabeça e dar uma pista convincente.
+
+### Jogue Agora
+
+O **jogo do impostor palavras online** está disponível gratuitamente no TikJogos. Crie uma sala, escolha um tema e descubra quem entre os seus amigos tem mais jogo!`,
+  },
+  {
+    slug: 'jogo-do-impostor-pc-como-jogar-no-computador',
+    slugEn: 'impostor-game-pc-how-to-play-on-computer',
+    slugEs: 'juego-del-impostor-pc-como-jugar-en-computadora',
+    title: 'Jogo do Impostor no PC: Como Jogar pelo Computador sem Download',
+    titleEn: 'Impostor Game on PC: How to Play on Computer Without Download',
+    titleEs: 'Juego del Impostor en PC: Cómo Jugar en Computadora sin Descarga',
+    excerpt: 'Saiba como jogar o jogo do impostor no PC sem precisar baixar nada. Funciona em qualquer navegador, no Windows, Mac ou Linux.',
+    excerptEn: 'Learn how to play the impostor game on PC without downloading anything. Works in any browser on Windows, Mac or Linux.',
+    excerptEs: 'Aprende a jugar el juego del impostor en PC sin descargar nada. Funciona en cualquier navegador en Windows, Mac o Linux.',
+    image: 'https://images.unsplash.com/photo-1593640408182-31c228bbd3c2?auto=format&fit=crop&q=80&w=1200',
+    date: '25 Mar 2026',
+    authorName: 'Equipe TikJogos',
+    readTime: '5 min',
+    category: 'Guia',
+    content: `Jogar o **jogo do impostor no PC** nunca foi tão simples. Enquanto muitos jogos exigem instalação pesada e configuração complexa, o TikJogos funciona diretamente no seu navegador — sem download, sem conta, sem complicação.
+
+### Como Acessar o Jogo do Impostor no PC
+
+Para jogar o **jogo do impostor pc**, basta seguir três passos:
+
+1. **Abra seu navegador** (Chrome, Firefox, Edge, Safari — qualquer um funciona)
+2. **Acesse tikjogos.com.br** diretamente na barra de endereço
+3. **Crie uma sala** ou entre com o código de um amigo
+
+Pronto. Em menos de 30 segundos você já está dentro da partida.
+
+### Compatibilidade com Sistemas Operacionais
+
+O **jogo do impostor pc** no TikJogos é compatível com:
+
+- **Windows 10 e 11**: Funciona perfeitamente no Chrome, Edge e Firefox
+- **macOS**: Safari, Chrome e Firefox sem qualquer problema
+- **Linux**: Chrome e Firefox rodam o jogo sem nenhuma limitação
+- **Chromebook**: Suporte completo pelo Google Chrome
+
+### Vantagens de Jogar no PC
+
+Jogar o **jogo do impostor pc** em vez do celular tem algumas vantagens práticas:
+
+- **Tela maior**: Mais fácil de acompanhar o chat e as votações
+- **Teclado físico**: Escrever pistas é muito mais rápido
+- **Sem bateria acabando**: Especialmente em sessões longas com amigos
+- **Discord no segundo monitor**: Você pode manter a call aberta do lado enquanto joga
+
+### Jogar com Amigos à Distância
+
+O TikJogos foi projetado para o cenário onde seus amigos estão em lugares diferentes. Para uma sessão perfeita de **jogo do impostor online** pelo PC:
+
+1. Abra o TikJogos no navegador
+2. Crie uma sala e copie o código gerado
+3. Compartilhe o código pelo WhatsApp, Discord ou qualquer app de mensagens
+4. Todos entram com o código e a partida começa automaticamente quando o host iniciar
+
+### Modo de Tela Cheia
+
+Para uma imersão ainda maior no **jogo do impostor pc**, pressione **F11** no seu navegador para entrar no modo de tela cheia. A interface do TikJogos foi desenhada para aproveitar ao máximo o espaço disponível.
+
+### Jogar Agora
+
+Acesse tikjogos.com.br pelo seu computador e experimente o **jogo do impostor pc** gratuitamente. Convide seus amigos e veja quem é o impostor mais convincente do grupo!`,
+  },
+  {
+    slug: 'among-us-vs-jogo-do-impostor-qual-a-diferenca',
+    slugEn: 'among-us-vs-impostor-game-what-is-the-difference',
+    slugEs: 'among-us-vs-juego-del-impostor-cual-es-la-diferencia',
+    title: 'Among Us vs Jogo do Impostor: Qual a Diferença?',
+    titleEn: 'Among Us vs Impostor Game: What\'s the Difference?',
+    titleEs: 'Among Us vs Juego del Impostor: ¿Cuál es la Diferencia?',
+    excerpt: 'Descubra as diferenças entre o Among Us e o jogo do impostor do TikJogos. Dois jogos com a mesma premissa, mas experiências completamente distintas.',
+    excerptEn: 'Discover the differences between Among Us and the TikJogos impostor game. Two games with the same premise but completely different experiences.',
+    excerptEs: 'Descubre las diferencias entre Among Us y el juego del impostor de TikJogos. Dos juegos con la misma premisa pero experiencias completamente distintas.',
+    image: 'https://images.unsplash.com/photo-1580234811497-9df7fd2f357e?auto=format&fit=crop&q=80&w=1200',
+    date: '22 Mar 2026',
+    authorName: 'Capitão Miller',
+    readTime: '7 min',
+    category: 'Comparativo',
+    content: `A pergunta é recorrente: o **among us jogo do impostor** é a mesma coisa? A resposta é: mesma inspiração, experiências completamente diferentes. Vamos entender as distinções.
+
+### O que é o Among Us?
+
+O **Among Us** é um videogame desenvolvido pela InnerSloth, lançado em 2018 e que explodiu em popularidade em 2020. Nele, jogadores controlam tripulantes em uma nave espacial. Um ou mais deles são impostores que devem eliminar os outros sem serem descobertos. O jogo tem:
+
+- Movimentação em mapas 2D
+- Tarefas que os tripulantes devem completar
+- Sabotagens que os impostores podem realizar
+- Reuniões de emergência para discussão e votação
+
+### O que é o Jogo do Impostor do TikJogos?
+
+O **jogo do impostor** do TikJogos é um jogo de palavras e dedução social inspirado no mesmo conceito de "há um traidor entre nós". Aqui:
+
+- Não há movimentação em mapa — é inteiramente baseado em linguagem
+- Todos recebem uma palavra secreta, exceto o impostor
+- A detecção é feita através de pistas verbais e lógica dedutiva
+- Funciona no navegador, sem download, como um jogo de tabuleiro digital
+
+### Tabela Comparativa: Among Us vs Jogo do Impostor
+
+| Característica | Among Us | Jogo do Impostor (TikJogos) |
+|---|---|---|
+| Tipo | Videogame | Jogo de palavras/dedução |
+| Plataformas | PC, Mobile, Console | Qualquer navegador |
+| Download necessário | Sim | Não |
+| Preço | Gratuito (mobile) / Pago (PC) | Totalmente grátis |
+| Jogadores | 4–15 | 3–10 |
+| Foco | Ação + Dedução | Pura dedução social |
+| Ideal para | Gamers | Qualquer grupo de amigos |
+
+### Quando Jogar Cada Um?
+
+**Escolha o Among Us se:**
+- Você e seus amigos são gamers
+- Querem uma experiência mais visual e dinâmica
+- Têm o jogo instalado e querem jogar por mais tempo
+
+**Escolha o Jogo do Impostor do TikJogos se:**
+- Querem jogar instantaneamente, sem instalar nada
+- O grupo mistura gamers e não-gamers
+- Preferem um jogo baseado em conversa e estratégia verbal
+- Estão em reunião, festa ou viagem sem acesso a consoles
+
+### O que Eles Têm em Comum?
+
+Tanto o **among us** quanto o **jogo do impostor** compartilham a essência que faz esses jogos tão populares: a desconfiança coletiva, a necessidade de observar comportamentos e a tensão de não saber em quem confiar. Os dois são experiências sociais antes de qualquer coisa.
+
+### Conclusão
+
+O **among us jogo do impostor** no TikJogos são primos distantes — mesma família, estilos diferentes. Se você quer rapidez, acessibilidade e uma experiência baseada em palavras, o TikJogos é a escolha certa. Acesse agora e jogue gratuitamente!`,
+  },
+  {
+    slug: 'jogo-do-impostor-360-modo-completo',
+    slugEn: 'impostor-game-360-complete-mode',
+    slugEs: 'juego-del-impostor-360-modo-completo',
+    title: 'Jogo do Impostor 360: Guia Completo do Modo Multiplayer',
+    titleEn: 'Impostor Game 360: Complete Guide to Multiplayer Mode',
+    titleEs: 'Juego del Impostor 360: Guía Completa del Modo Multijugador',
+    excerpt: 'Guia completo do jogo do impostor 360 — todos os modos, regras, temas e estratégias para dominar cada rodada com seus amigos.',
+    excerptEn: 'Complete guide to the 360 impostor game — all modes, rules, themes and strategies to dominate every round with your friends.',
+    excerptEs: 'Guía completa del juego del impostor 360 — todos los modos, reglas, temas y estrategias para dominar cada ronda con tus amigos.',
+    image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=1200',
+    date: '19 Mar 2026',
+    authorName: 'Estrategista Chefe',
+    readTime: '8 min',
+    category: 'Guia',
+    content: `O **jogo do impostor 360** é a experiência completa de dedução social: todos os modos, todos os temas, todas as estratégias em um único guia. Se você quer dominar cada aspecto do jogo, você está no lugar certo.
+
+### O que é o Jogo do Impostor 360?
+
+Quando falamos em **jogo do impostor 360**, estamos nos referindo à visão completa da plataforma TikJogos — todos os modos de jogo disponíveis, abrangendo cada ângulo da experiência multiplayer. É o guia definitivo para jogadores que querem ir além do básico.
+
+### Modo 1: Impostor Palavras (Clássico)
+
+O modo mais popular. Todos recebem uma palavra secreta, exceto o impostor que recebe apenas o tema. A rodada consiste em dar pistas, debater e votar.
+
+**Estratégia avançada**: Observe quem faz perguntas em vez de afirmações. Impostores tendem a perguntar mais porque coletam informações para montar a palavra na cabeça.
+
+### Modo 2: Desenho do Impostor
+
+Todos desenham a mesma palavra em sequência, passando o desenho adiante. O impostor não sabe a palavra e tenta imitar sem saber o que está fazendo.
+
+**Estratégia avançada**: Como impostor, observe os primeiros traços antes de adicionar os seus. Adicione elementos neutros que possam pertencer a qualquer objeto.
+
+### Modo 3: Sincronia
+
+Cada pergunta tem uma resposta que o grupo precisa tentar acertar em conjunto. Pontos são dados quando dois ou mais jogadores respondem igual.
+
+**Estratégia avançada**: Pense em termos de "resposta mais óbvia possível". O objetivo não é ser criativo, mas ser previsível da forma certa.
+
+### Modo 4: Desafio da Palavra
+
+Cada jogador adiciona uma letra a um fragmento, sempre devendo ter uma palavra real em mente. Quem blefar e for desafiado perde uma vida.
+
+**Estratégia avançada**: Adicione letras que criem fragmentos difíceis mas não impossíveis. Isso força os adversários a ou aceitar o desafio ou arriscar um blefe.
+
+### Modo 5: Modo Local
+
+Ideal para jogar pessoalmente, passando o celular entre os participantes. Cada jogador vê sua função e palavra por alguns segundos antes de passar adiante.
+
+### Temas para Dominar no Jogo do Impostor 360
+
+Para uma experiência **jogo do impostor 360** completa, experimente todos os temas:
+
+- **Populares**: Clássico, Futebol, Animes, Minecraft, Fortnite
+- **Séries**: Stranger Things, La Casa de Papel, Round 6, Game of Thrones
+- **Animes específicos**: Naruto, Dragon Ball, One Piece, Attack on Titan, Demon Slayer
+- **K-POP**: BTS, K-POP geral
+- **Halloween e Natal**: Temas sazonais imperdíveis
+
+### Como Organizar uma Sessão Completa
+
+Para uma noite de **jogo do impostor** com o grupo todo:
+
+1. Comece com o modo Clássico para quem não conhece
+2. Avance para o Desenho do Impostor para garantir as risadas
+3. Intercale com Sincronia para variar o ritmo
+4. Termine com o Modo Local se estiverem todos juntos fisicamente
+
+### Acesse Agora
+
+O **jogo do impostor 360** está disponível no TikJogos gratuitamente. Explore todos os modos e descubra qual é o favorito do seu grupo!`,
+  },
+  {
+    slug: 'jogos-do-impostor-guia-para-jogar-agora',
+    slugEn: 'impostor-games-guide-to-play-now',
+    slugEs: 'juegos-del-impostor-guia-para-jugar-ahora',
+    title: 'Jogos do Impostor: Guia Completo para Jogar Online Agora',
+    titleEn: 'Impostor Games: Complete Guide to Play Online Now',
+    titleEs: 'Juegos del Impostor: Guía Completa para Jugar Online Ahora',
+    excerpt: 'Tudo sobre os jogos do impostor disponíveis online: modos, regras, como criar uma sala e jogar com amigos gratuitamente agora mesmo.',
+    excerptEn: 'Everything about the impostor games available online: modes, rules, how to create a room and play with friends for free right now.',
+    excerptEs: 'Todo sobre los juegos del impostor disponibles online: modos, reglas, cómo crear una sala y jugar con amigos gratis ahora mismo.',
+    image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&q=80&w=1200',
+    date: '15 Mar 2026',
+    authorName: 'Time TikJogos',
+    readTime: '6 min',
+    category: 'Guia',
+    content: `Os **jogos do impostor** online explodiram em popularidade nos últimos anos, e por um bom motivo: eles combinam dedução social, blefe e interação entre amigos de uma forma que nenhum outro gênero consegue replicar. Este guia cobre tudo o que você precisa saber para começar a jogar agora.
+
+### O que são os Jogos do Impostor?
+
+Os **jogos do impostor** são uma categoria de jogos de dedução social onde um ou mais jogadores assume o papel de "impostor" — alguém que está escondido entre o grupo e precisa passar despercebido. Os outros jogadores, chamados de honestos ou tripulantes, precisam identificar o impostor antes que seja tarde.
+
+### Por que os Jogos do Impostor Fazem Tanto Sucesso?
+
+A popularidade dos **jogos do impostor** se deve a alguns fatores:
+
+1. **Acessibilidade**: Qualquer pessoa pode jogar, independente de experiência com games
+2. **Interação real**: Diferente de jogos individuais, exige comunicação constante
+3. **Tensão natural**: A incerteza sobre quem confiar cria suspense genuíno
+4. **Partidas rápidas**: Uma rodada dura entre 5 e 15 minutos
+5. **Alta rejogabilidade**: Cada sessão é única porque depende dos jogadores
+
+### Jogo do Impostor Para Jogar Agora no TikJogos
+
+Para o **jogo do impostor para jogar** imediatamente:
+
+**Passo 1**: Acesse tikjogos.com.br no navegador do seu PC ou celular
+
+**Passo 2**: Digite seu apelido no campo indicado
+
+**Passo 3**: Clique em "Criar Sala" e escolha o modo e o tema
+
+**Passo 4**: Compartilhe o código da sala com seus amigos (WhatsApp, Discord, etc.)
+
+**Passo 5**: Quando todos entrarem, o host clica em "Iniciar" e a partida começa
+
+### Quantos Jogadores Precisam?
+
+Os **jogos do impostor** funcionam melhor com grupos específicos:
+
+- **3–4 jogadores**: Partidas rápidas e intensas (impostor tem menos onde se esconder)
+- **5–7 jogadores**: O ponto ideal — equilíbrio entre diversidade de suspeitos e tempo de discussão
+- **8–10 jogadores**: Partidas mais longas e complexas, com mais informação para processar
+
+### Regras Básicas do Jogo do Impostor Online
+
+1. **Não revele sua função** para outros jogadores antes ou durante a rodada
+2. **Dê pistas** que ajudem os honestos a identificar a palavra sem entregá-la diretamente
+3. **Vote com base em evidências**, não apenas por instinto
+4. **O impostor pode mentir** — isso faz parte do jogo
+
+### Dica Extra: Use o TikJogos em Chamadas de Voz
+
+A melhor experiência dos **jogos do impostor** acontece quando o grupo está em uma call simultânea pelo Discord, WhatsApp ou Google Meet. Ouvir a voz trêmula do impostor tentando dar uma pista coerente é impagável.
+
+### Comece Agora
+
+Acesse tikjogos.com.br e experimente todos os **jogos do impostor** disponíveis. É gratuito, sem download e perfeito para qualquer ocasião!`,
+  },
+  {
     slug: 'desafio-da-palavra-novo-jogo-tikjogos',
     slugEn: 'word-challenge-new-game-tikjogos',
     slugEs: 'desafio-de-la-palabra-nuevo-juego-tikjogos',

@@ -2,6 +2,91 @@ import { BlogPost } from '@/components/BlogCard';
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    id: '16',
+    slug: 'jogos-do-impostor-guia-para-jogar-agora',
+    title: 'Jogos do Impostor: Guia Completo para Jogar Online Agora',
+    excerpt: 'Tudo sobre os jogos do impostor disponíveis online: modos, regras, como criar uma sala e jogar com amigos gratuitamente agora mesmo.',
+    content: `Os **jogos do impostor** online explodiram em popularidade nos últimos anos, e por um bom motivo: eles combinam dedução social, blefe e interação entre amigos de uma forma que nenhum outro gênero consegue replicar.`,
+    author: {
+      name: 'Time TikJogos',
+      role: 'Guia',
+      avatar: 'https://picsum.photos/seed/jogos-impostor/100/100',
+    },
+    date: '15 Mar 2026',
+    category: 'Guia',
+    image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&q=80&w=1200',
+    readTime: '6 min',
+    featured: false,
+  },
+  {
+    id: '15',
+    slug: 'jogo-do-impostor-360-modo-completo',
+    title: 'Jogo do Impostor 360: Guia Completo do Modo Multiplayer',
+    excerpt: 'Guia completo do jogo do impostor 360 — todos os modos, regras, temas e estratégias para dominar cada rodada com seus amigos.',
+    content: `O **jogo do impostor 360** é a experiência completa de dedução social: todos os modos, todos os temas, todas as estratégias em um único guia.`,
+    author: {
+      name: 'Estrategista Chefe',
+      role: 'Analista',
+      avatar: 'https://picsum.photos/seed/360/100/100',
+    },
+    date: '19 Mar 2026',
+    category: 'Guia',
+    image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=1200',
+    readTime: '8 min',
+    featured: false,
+  },
+  {
+    id: '14',
+    slug: 'among-us-vs-jogo-do-impostor-qual-a-diferenca',
+    title: 'Among Us vs Jogo do Impostor: Qual a Diferença?',
+    excerpt: 'Descubra as diferenças entre o Among Us e o jogo do impostor do TikJogos. Dois jogos com a mesma premissa, mas experiências completamente distintas.',
+    content: `A pergunta é recorrente: o **among us jogo do impostor** é a mesma coisa? A resposta é: mesma inspiração, experiências completamente diferentes.`,
+    author: {
+      name: 'Capitão Miller',
+      role: 'Comparativo',
+      avatar: 'https://picsum.photos/seed/among-us/100/100',
+    },
+    date: '22 Mar 2026',
+    category: 'Comparativo',
+    image: 'https://images.unsplash.com/photo-1580234811497-9df7fd2f357e?auto=format&fit=crop&q=80&w=1200',
+    readTime: '7 min',
+    featured: false,
+  },
+  {
+    id: '13',
+    slug: 'jogo-do-impostor-pc-como-jogar-no-computador',
+    title: 'Jogo do Impostor no PC: Como Jogar pelo Computador sem Download',
+    excerpt: 'Saiba como jogar o jogo do impostor no PC sem precisar baixar nada. Funciona em qualquer navegador, no Windows, Mac ou Linux.',
+    content: `Jogar o **jogo do impostor no PC** nunca foi tão simples. O TikJogos funciona diretamente no seu navegador — sem download, sem conta, sem complicação.`,
+    author: {
+      name: 'Equipe TikJogos',
+      role: 'Guia',
+      avatar: 'https://picsum.photos/seed/pc-game/100/100',
+    },
+    date: '25 Mar 2026',
+    category: 'Guia',
+    image: 'https://images.unsplash.com/photo-1593640408182-31c228bbd3c2?auto=format&fit=crop&q=80&w=1200',
+    readTime: '5 min',
+    featured: false,
+  },
+  {
+    id: '12',
+    slug: 'jogo-do-impostor-palavras-como-funciona',
+    title: 'Jogo do Impostor Palavras: Como Funciona e Por que é Tão Divertido',
+    excerpt: 'Entenda como funciona o jogo do impostor palavras online, os temas disponíveis e por que esse modo é o favorito de milhões de jogadores.',
+    content: `O **jogo do impostor palavras** é o modo mais jogado do TikJogos e não é difícil entender o motivo. Com uma mecânica simples, mas profundamente envolvente, ele transforma qualquer reunião de amigos em uma batalha de dedução e blefe.`,
+    author: {
+      name: 'Equipe TikJogos',
+      role: 'Guia',
+      avatar: 'https://picsum.photos/seed/palavras/100/100',
+    },
+    date: '28 Mar 2026',
+    category: 'Guia',
+    image: 'https://images.unsplash.com/photo-1551817958-d9d86fb29431?auto=format&fit=crop&q=80&w=1200',
+    readTime: '6 min',
+    featured: false,
+  },
+  {
     id: '11',
     slug: 'desafio-da-palavra-novo-jogo-tikjogos',
     title: 'Desafio da Palavra: o novo jogo de letras do TikJogos',
@@ -368,6 +453,26 @@ export function getBlogPostBySlug(slug: string): BlogPost | undefined {
  * PT slugs are the default (stored in the post object).
  */
 export const BLOG_SLUGS: Record<string, { en: string; es: string }> = {
+  '16': {
+    en: 'impostor-games-guide-to-play-now',
+    es: 'juegos-del-impostor-guia-para-jugar-ahora',
+  },
+  '15': {
+    en: 'impostor-game-360-complete-mode',
+    es: 'juego-del-impostor-360-modo-completo',
+  },
+  '14': {
+    en: 'among-us-vs-impostor-game-what-is-the-difference',
+    es: 'among-us-vs-juego-del-impostor-cual-es-la-diferencia',
+  },
+  '13': {
+    en: 'impostor-game-pc-how-to-play-on-computer',
+    es: 'juego-del-impostor-pc-como-jugar-en-computadora',
+  },
+  '12': {
+    en: 'impostor-game-words-how-it-works',
+    es: 'juego-del-impostor-palabras-como-funciona',
+  },
   '11': {
     en: 'word-challenge-new-game-tikjogos',
     es: 'desafio-de-la-palabra-nuevo-juego-tikjogos',
