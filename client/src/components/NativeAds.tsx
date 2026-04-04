@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Sparkles, Zap, BookOpen, ExternalLink } from "lucide-react";
+import { Sparkles, BookOpen, ExternalLink } from "lucide-react";
 
 declare global {
   interface Window {
@@ -76,38 +76,34 @@ export const NativeThemeAd = () => {
   );
 };
 
-// Card patrocinado horizontal que aparece abaixo do seletor de jogo em ImpostorGame
-// Imita o estilo visual do card principal do jogo
+// Bloco de anúncio simples acima do formulário do jogo
 export const NativeGameModeAd = () => {
-  const insRef = useRef<HTMLModElement>(null);
-  const filled = useAdFilled(insRef, 200);
+  const pushed = useRef(false);
 
-  if (filled === false) return null;
+  useEffect(() => {
+    if (pushed.current) return;
+    const timer = setTimeout(() => {
+      try {
+        window.adsbygoogle = window.adsbygoogle || [];
+        window.adsbygoogle.push({});
+        pushed.current = true;
+      } catch (e) {
+        console.error("NativeGameModeAd push error:", e);
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className="w-[90%] max-w-md mb-4">
-      <div className="bg-gradient-to-br from-[#1e1545]/80 to-[#1a2a40]/80 rounded-3xl border-2 border-purple-500/30 shadow-xl overflow-hidden">
-        <div className="flex items-center gap-2 px-5 pt-4 pb-1">
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-purple-600/20 border border-purple-500/40 rounded-full">
-            <Zap className="w-3 h-3 text-purple-400" />
-            <span className="text-purple-400 font-black text-[9px] uppercase tracking-widest">
-              Patrocinado
-            </span>
-          </div>
-        </div>
-
-        <div className="px-2 pb-3">
-          <ins
-            ref={insRef}
-            className="adsbygoogle"
-            style={{ display: "block", width: "100%" }}
-            data-ad-client="ca-pub-9927561573478881"
-            data-ad-slot="9215812637"
-            data-ad-format="fluid"
-            data-ad-layout="in-article"
-          />
-        </div>
-      </div>
+    <div className="w-[90%] max-w-md">
+      <ins
+        className="adsbygoogle"
+        style={{ display: "block" }}
+        data-ad-client="ca-pub-9927561573478881"
+        data-ad-slot="9215812637"
+        data-ad-format="fluid"
+        data-ad-layout="in-article"
+      />
     </div>
   );
 };

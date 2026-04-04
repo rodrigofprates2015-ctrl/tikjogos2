@@ -234,15 +234,12 @@ export const TopBannerAd = () => {
 };
 
 // Retângulo in-article (300x250) — alto RPM, ideal dentro do conteúdo
-// Oculta o container se o anúncio não for preenchido.
 export const InArticleAd = () => {
   const pushed = useRef(false);
-  const insRef = useRef<HTMLModElement>(null);
-  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     if (pushed.current) return;
-    const pushTimer = setTimeout(() => {
+    const timer = setTimeout(() => {
       try {
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
@@ -250,30 +247,15 @@ export const InArticleAd = () => {
       } catch (e) {
         console.error("InArticleAd error:", e);
       }
-
-      const checkTimer = setTimeout(() => {
-        const el = insRef.current;
-        if (!el) return;
-        const status = el.getAttribute("data-ad-status");
-        const height = el.offsetHeight;
-        if (status === "unfilled" || height === 0) {
-          setHidden(true);
-        }
-      }, 2500);
-
-      return () => clearTimeout(checkTimer);
     }, 100);
-    return () => clearTimeout(pushTimer);
+    return () => clearTimeout(timer);
   }, []);
 
-  if (hidden) return null;
-
   return (
-    <div className="flex justify-center my-6 adsense-container">
+    <div className="flex justify-center my-6 overflow-hidden adsense-container">
       <ins
-        ref={insRef}
         className="adsbygoogle"
-        style={{ display: "block", width: "100%" }}
+        style={{ display: "block" }}
         data-ad-client="ca-pub-9927561573478881"
         data-ad-slot="2913946988"
         data-ad-format="fluid"

@@ -94,11 +94,9 @@ export function AdBlockInContent() {
 // <ins> existe no DOM por vez, evitando push em elemento com width=0.
 // Mobile (<768px): auto responsivo 1:1
 // Desktop (>=768px): leaderboard 728×90
-// Oculta o container completamente se o anúncio não for preenchido.
 export function AdBlockBetweenFormAndFooter() {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const insRef = useRef<HTMLModElement>(null);
-  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     const el = insRef.current;
@@ -106,19 +104,7 @@ export function AdBlockBetweenFormAndFooter() {
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch {}
-
-    const checkTimer = setTimeout(() => {
-      const status = el.getAttribute('data-ad-status');
-      const height = el.offsetHeight;
-      if (status === 'unfilled' || height === 0) {
-        setHidden(true);
-      }
-    }, 3000);
-
-    return () => clearTimeout(checkTimer);
   }, []);
-
-  if (hidden) return null;
 
   if (isMobile) {
     return (

@@ -1614,6 +1614,9 @@ const HomeScreen = () => {
         {/* Top banner ad - above game card */}
         <TopBannerAd />
 
+        {/* Ad block between navbar and game form */}
+        <NativeGameModeAd />
+
         {/* Game selector card */}
         <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24 mt-4 md:mt-12">
           <h1 className="sr-only">Jogo do Impostor Online Grátis - TikJogos</h1>
@@ -1839,9 +1842,6 @@ const HomeScreen = () => {
             </div>
           )}
         </div>
-
-        {/* Native sponsored card — mimics game mode visual style */}
-        <NativeGameModeAd />
 
       </div>
 
