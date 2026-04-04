@@ -201,13 +201,12 @@ export const BottomAd = () => {
   );
 };
 
-// Anúncio de vídeo flutuante — canto inferior direito, pequeno e descartável
+// Anúncio de vídeo flutuante — canto inferior direito
 export const BottomRightVideoAd = () => {
-  const [visible, setVisible] = useState(true);
   const pushed = useRef(false);
 
   useEffect(() => {
-    if (!visible || pushed.current) return;
+    if (pushed.current) return;
     const timer = setTimeout(() => {
       try {
         window.adsbygoogle = window.adsbygoogle || [];
@@ -218,28 +217,17 @@ export const BottomRightVideoAd = () => {
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [visible]);
-
-  if (!visible) return null;
+  }, []);
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 shadow-2xl rounded-2xl overflow-hidden border border-white/10">
-      <button
-        onClick={() => setVisible(false)}
-        className="absolute top-1.5 right-1.5 z-10 bg-black/60 hover:bg-black/80 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold leading-none"
-        aria-label="Fechar anúncio"
-      >
-        ✕
-      </button>
-      <ins
-        className="adsbygoogle"
-        style={{ display: "inline-block", width: "300px", height: "250px" }}
-        data-ad-client="ca-pub-9927561573478881"
-        data-ad-slot="7536067322"
-        data-ad-format="rectangle"
-        data-full-width-responsive="false"
-      />
-    </div>
+    <ins
+      className="adsbygoogle"
+      style={{ display: "inline-block", width: "300px", height: "250px", position: "fixed", bottom: "16px", right: "16px", zIndex: 50 }}
+      data-ad-client="ca-pub-9927561573478881"
+      data-ad-slot="7536067322"
+      data-ad-format="rectangle"
+      data-full-width-responsive="false"
+    />
   );
 };
 
