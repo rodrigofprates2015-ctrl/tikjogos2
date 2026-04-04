@@ -99,6 +99,7 @@ import { useRCGameStore } from "@/lib/rcGameStore";
 import { useDesafioStore } from "@/lib/desafioStore";
 import { SideAds, TopBannerAd, InArticleAd } from "@/components/AdSense";
 import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
+import { NativeGameModeAd } from "@/components/NativeAds";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
 
@@ -1838,6 +1839,9 @@ const HomeScreen = () => {
             </div>
           )}
         </div>
+
+        {/* Native sponsored card — mimics game mode visual style */}
+        <NativeGameModeAd />
 
       </div>
 

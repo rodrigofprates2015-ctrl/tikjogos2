@@ -5,6 +5,7 @@ import BlogCard from "@/components/BlogCard";
 import { BLOG_POSTS, getPostSlug } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
 import { BlogFluidAd, SideAds, BottomAd, TopBannerAd, InArticleAd } from "@/components/AdSense";
+import { ContextualLinksAd } from "@/components/NativeAds";
 import { useLanguage } from "@/hooks/useLanguage";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
@@ -130,6 +131,9 @@ export default function Blog() {
 
           {/* In-article ad mid-grid */}
           <InArticleAd />
+
+          {/* Contextual "Leia também" native ad */}
+          <ContextualLinksAd />
 
           {/* AdSense after articles */}
           <BlogFluidAd className="mt-12" />

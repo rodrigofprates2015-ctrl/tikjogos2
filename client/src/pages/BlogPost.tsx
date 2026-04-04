@@ -4,6 +4,7 @@ import { ArrowLeft, Clock, Calendar, Share2, MessageSquare, ThumbsUp, Youtube, I
 import { getBlogPostByAnySlug, getPostSlug, BLOG_POSTS } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
 import { SideAds, BottomAd, InArticleAd, TopBannerAd } from "@/components/AdSense";
+import { ContextualLinksAd } from "@/components/NativeAds";
 import { useLanguage } from "@/hooks/useLanguage";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
@@ -326,6 +327,9 @@ export default function BlogPost() {
 
             {/* In-article ad after content */}
             <InArticleAd />
+
+            {/* Contextual "Leia também" native ad */}
+            <ContextualLinksAd />
           </div>
         </div>
       </main>

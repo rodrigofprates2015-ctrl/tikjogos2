@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, Fragment } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Play, ArrowRight, Sparkles, ChevronRight, Palette, Youtube, Instagram, MessageCircle } from 'lucide-react';
 import { THEMES } from '@/data/themes';
 import { MobileNav } from '@/components/MobileNav';
 import { SideAds, BottomAd, TopBannerAd, InArticleAd } from '@/components/AdSense';
+import { NativeThemeAd } from '@/components/NativeAds';
 import { useLanguage } from '@/hooks/useLanguage';
 import logoTikjogos from '@assets/logo_nova_tikjogos (1).png';
 
@@ -223,68 +224,72 @@ export default function Temas() {
         {/* Themes Grid */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {THEMES.map((theme) => {
+            {THEMES.map((theme, index) => {
               const themeSeo = theme.seo[lang] || theme.seo.pt;
               return (
-                <article
-                  key={theme.slug}
-                  className="group bg-[#242642] rounded-[2.5rem] border-4 border-[#2f3252] overflow-hidden shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-2 hover:border-purple-500/50"
-                >
-                  <div className="p-6 sm:p-8">
-                    {/* Icon + Name */}
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center text-3xl border-2 border-purple-500/20 shrink-0">
-                        {theme.icon}
+                <Fragment key={theme.slug}>
+                  <article
+                    className="group bg-[#242642] rounded-[2.5rem] border-4 border-[#2f3252] overflow-hidden shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-2 hover:border-purple-500/50"
+                  >
+                    <div className="p-6 sm:p-8">
+                      {/* Icon + Name */}
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center text-3xl border-2 border-purple-500/20 shrink-0">
+                          {theme.icon}
+                        </div>
+                        <div className="min-w-0">
+                          <h2 className="text-xl font-black text-white group-hover:text-purple-400 transition-colors truncate">
+                            {theme.name}
+                          </h2>
+                          <p className="text-slate-400 text-sm font-bold">
+                            {theme.wordCount} {seo.words}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <h2 className="text-xl font-black text-white group-hover:text-purple-400 transition-colors truncate">
-                          {theme.name}
-                        </h2>
-                        <p className="text-slate-400 text-sm font-bold">
-                          {theme.wordCount} {seo.words}
-                        </p>
-                      </div>
-                    </div>
 
-                    {/* SEO Description */}
-                    <p className="text-slate-400 text-sm font-medium leading-relaxed mb-4">
-                      {themeSeo.description}
-                    </p>
+                      {/* SEO Description */}
+                      <p className="text-slate-400 text-sm font-medium leading-relaxed mb-4">
+                        {themeSeo.description}
+                      </p>
 
-                    {/* Example words */}
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {theme.examples.slice(0, 4).map((ex) => (
-                        <span
-                          key={ex}
-                          className="px-3 py-1 bg-slate-800/80 rounded-full text-xs font-bold text-slate-300 border border-slate-700"
-                        >
-                          {ex}
+                      {/* Example words */}
+                      <div className="flex flex-wrap gap-2 mb-6">
+                        {theme.examples.slice(0, 4).map((ex) => (
+                          <span
+                            key={ex}
+                            className="px-3 py-1 bg-slate-800/80 rounded-full text-xs font-bold text-slate-300 border border-slate-700"
+                          >
+                            {ex}
+                          </span>
+                        ))}
+                        <span className="px-3 py-1 text-xs font-bold text-slate-500">
+                          +{theme.wordCount - 4}
                         </span>
-                      ))}
-                      <span className="px-3 py-1 text-xs font-bold text-slate-500">
-                        +{theme.wordCount - 4}
-                      </span>
-                    </div>
+                      </div>
 
-                    {/* Buttons */}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handlePlay(theme.categoryId)}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 border-b-4 border-green-800 text-white font-black text-sm rounded-2xl hover:brightness-110 transition-all active:border-b-0 active:translate-y-1 group/btn"
-                      >
-                        <Play className="w-4 h-4 fill-current" />
-                        {seo.playNow}
-                      </button>
-                      <Link
-                        href={`/jogo-do-impostor/temas/${theme.slug}`}
-                        className="flex items-center justify-center gap-1 px-4 py-3 bg-[#1a1b2e] border-2 border-purple-500/30 text-purple-400 font-bold text-sm rounded-2xl hover:border-purple-500 hover:text-white transition-all"
-                      >
-                        {seo.seeTheme}
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
+                      {/* Buttons */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handlePlay(theme.categoryId)}
+                          className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 border-b-4 border-green-800 text-white font-black text-sm rounded-2xl hover:brightness-110 transition-all active:border-b-0 active:translate-y-1 group/btn"
+                        >
+                          <Play className="w-4 h-4 fill-current" />
+                          {seo.playNow}
+                        </button>
+                        <Link
+                          href={`/jogo-do-impostor/temas/${theme.slug}`}
+                          className="flex items-center justify-center gap-1 px-4 py-3 bg-[#1a1b2e] border-2 border-purple-500/30 text-purple-400 font-bold text-sm rounded-2xl hover:border-purple-500 hover:text-white transition-all"
+                        >
+                          {seo.seeTheme}
+                          <ArrowRight className="w-4 h-4" />
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                </article>
+                  </article>
+
+                  {/* Native ad card after the 5th theme (index 4) — sits inside the grid */}
+                  {index === 4 && <NativeThemeAd />}
+                </Fragment>
               );
             })}
           </div>
