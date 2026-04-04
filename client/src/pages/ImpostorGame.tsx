@@ -99,7 +99,6 @@ import { useRCGameStore } from "@/lib/rcGameStore";
 import { useDesafioStore } from "@/lib/desafioStore";
 import { SideAds, TopBannerAd, InArticleAd } from "@/components/AdSense";
 import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
-import { NativeGameModeAd } from "@/components/NativeAds";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
 
@@ -1613,9 +1612,6 @@ const HomeScreen = () => {
 
         {/* Top banner ad - above game card */}
         <TopBannerAd />
-
-        {/* Ad block between navbar and game form */}
-        <NativeGameModeAd />
 
         {/* Game selector card */}
         <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24 mt-4 md:mt-12">
