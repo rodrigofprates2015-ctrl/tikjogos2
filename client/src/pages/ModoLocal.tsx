@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { SideAds, BottomAd } from "@/components/AdSense";
+import { SideAds, BottomAd, TopBannerAd, InArticleAd } from "@/components/AdSense";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
 type GameMode = "palavraSecreta" | "palavras" | "duasFaccoes";
@@ -168,6 +168,9 @@ export default function ModoLocal() {
         </div>
       </div>
 
+      {/* Top banner after header */}
+      <TopBannerAd />
+
       {/* Content */}
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-2xl bg-[#16213e]/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border-2 border-[#3d4a5c]">
@@ -296,6 +299,9 @@ export default function ModoLocal() {
             </Button>
           </div>
         </div>
+
+        {/* In-article ad between player config and theme selection */}
+        <InArticleAd />
 
         {/* Seleção de Tema */}
         <div className="mb-8">

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { ArrowLeft, Clock, Calendar, Share2, MessageSquare, ThumbsUp, Youtube, Instagram, MessageCircle, ChevronRight } from "lucide-react";
 import { getBlogPostByAnySlug, getPostSlug, BLOG_POSTS } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
-import { SideAds, BottomAd } from "@/components/AdSense";
+import { SideAds, BottomAd, InArticleAd, TopBannerAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
@@ -233,6 +233,9 @@ export default function BlogPost() {
           </div>
         </div>
 
+        {/* Top banner below hero image */}
+        <TopBannerAd />
+
         {/* Main Content */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
           <div className="flex flex-col gap-12">
@@ -320,6 +323,9 @@ export default function BlogPost() {
                 </div>
               </div>
             </article>
+
+            {/* In-article ad after content */}
+            <InArticleAd />
           </div>
         </div>
       </main>

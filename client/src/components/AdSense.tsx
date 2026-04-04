@@ -201,6 +201,70 @@ export const BottomAd = () => {
   );
 };
 
+// Banner horizontal compacto (320x50) — ideal para topo de página em mobile
+export const TopBannerAd = () => {
+  const pushed = useRef(false);
+
+  useEffect(() => {
+    if (pushed.current) return;
+    const timer = setTimeout(() => {
+      try {
+        window.adsbygoogle = window.adsbygoogle || [];
+        window.adsbygoogle.push({});
+        pushed.current = true;
+      } catch (e) {
+        console.error("TopBannerAd error:", e);
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="flex justify-center my-3 overflow-hidden adsense-container">
+      <ins
+        className="adsbygoogle"
+        style={{ display: "block", width: "320px", height: "50px" }}
+        data-ad-client="ca-pub-9927561573478881"
+        data-ad-slot="7536067322"
+        data-ad-format="horizontal"
+        data-full-width-responsive="false"
+      />
+    </div>
+  );
+};
+
+// Retângulo in-article (300x250) — alto RPM, ideal dentro do conteúdo
+export const InArticleAd = () => {
+  const pushed = useRef(false);
+
+  useEffect(() => {
+    if (pushed.current) return;
+    const timer = setTimeout(() => {
+      try {
+        window.adsbygoogle = window.adsbygoogle || [];
+        window.adsbygoogle.push({});
+        pushed.current = true;
+      } catch (e) {
+        console.error("InArticleAd error:", e);
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="flex justify-center my-6 overflow-hidden adsense-container">
+      <ins
+        className="adsbygoogle"
+        style={{ display: "block" }}
+        data-ad-client="ca-pub-9927561573478881"
+        data-ad-slot="2913946988"
+        data-ad-format="fluid"
+        data-ad-layout="in-article"
+      />
+    </div>
+  );
+};
+
 // Anúncio fluido para o Blog
 export const BlogFluidAd = ({ className }: { className?: string }) => {
   const pushed = useRef(false);

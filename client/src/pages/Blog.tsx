@@ -4,7 +4,7 @@ import { Sparkles, TrendingUp, Zap, Youtube, Instagram, MessageCircle } from "lu
 import BlogCard from "@/components/BlogCard";
 import { BLOG_POSTS, getPostSlug } from "@/data/blogPosts";
 import { MobileNav } from "@/components/MobileNav";
-import { BlogFluidAd, SideAds, BottomAd } from "@/components/AdSense";
+import { BlogFluidAd, SideAds, BottomAd, TopBannerAd, InArticleAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
@@ -107,6 +107,9 @@ export default function Blog() {
           </div>
         </section>
 
+        {/* Top banner between hero and grid */}
+        <TopBannerAd />
+
         {/* Grid Section */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
           <div className="flex items-center gap-4 mb-8">
@@ -124,6 +127,9 @@ export default function Blog() {
               <BlogCard key={post.id} post={post} onClick={() => handleSelectPost(post.id)} />
             ))}
           </div>
+
+          {/* In-article ad mid-grid */}
+          <InArticleAd />
 
           {/* AdSense after articles */}
           <BlogFluidAd className="mt-12" />

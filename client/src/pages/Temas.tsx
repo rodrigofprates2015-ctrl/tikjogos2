@@ -3,7 +3,7 @@ import { Link, useLocation } from 'wouter';
 import { Play, ArrowRight, Sparkles, ChevronRight, Palette, Youtube, Instagram, MessageCircle } from 'lucide-react';
 import { THEMES } from '@/data/themes';
 import { MobileNav } from '@/components/MobileNav';
-import { SideAds, BottomAd } from '@/components/AdSense';
+import { SideAds, BottomAd, TopBannerAd, InArticleAd } from '@/components/AdSense';
 import { useLanguage } from '@/hooks/useLanguage';
 import logoTikjogos from '@assets/logo_nova_tikjogos (1).png';
 
@@ -217,6 +217,9 @@ export default function Temas() {
           </div>
         </section>
 
+        {/* Top banner ad after hero */}
+        <TopBannerAd />
+
         {/* Themes Grid */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -286,6 +289,9 @@ export default function Temas() {
             })}
           </div>
         </section>
+
+        {/* In-article ad after themes grid */}
+        <InArticleAd />
 
         {/* How It Works */}
         <section className="py-16 px-4 bg-[#16213e]/50">

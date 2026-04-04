@@ -97,7 +97,7 @@ import personagemEsquerdo from "@assets/personagem esquerdo.png";
 import personagemDireito from "@assets/personagem direito.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
 import { useDesafioStore } from "@/lib/desafioStore";
-import { SideAds } from "@/components/AdSense";
+import { SideAds, TopBannerAd, InArticleAd } from "@/components/AdSense";
 import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
@@ -1610,6 +1610,9 @@ const HomeScreen = () => {
         {/* Mobile action buttons - above the card */}
         <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
 
+        {/* Top banner ad - above game card */}
+        <TopBannerAd />
+
         {/* Game selector card */}
         <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24 mt-4 md:mt-12">
           <h1 className="sr-only">Jogo do Impostor Online Grátis - TikJogos</h1>
@@ -1837,6 +1840,9 @@ const HomeScreen = () => {
         </div>
 
       </div>
+
+      {/* In-article ad before footer */}
+      <InArticleAd />
 
       {/* Ad block between form and footer */}
       <AdBlockBetweenFormAndFooter />
