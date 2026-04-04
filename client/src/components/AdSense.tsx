@@ -201,8 +201,14 @@ export const BottomAd = () => {
   );
 };
 
-// Anúncio de vídeo flutuante — canto inferior direito
+// Anúncio de vídeo flutuante — canto inferior direito, somente desktop
 export const BottomRightVideoAd = () => {
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
+  if (!isDesktop) return null;
+  return <BottomRightVideoAdInner />;
+};
+
+function BottomRightVideoAdInner() {
   const pushed = useRef(false);
 
   useEffect(() => {
@@ -229,7 +235,7 @@ export const BottomRightVideoAd = () => {
       data-full-width-responsive="false"
     />
   );
-};
+}
 
 // Banner horizontal compacto (320x50) — ideal para topo de página em mobile
 export const TopBannerAd = () => {

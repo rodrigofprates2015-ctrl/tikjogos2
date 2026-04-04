@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { SideAds } from "@/components/AdSense";
 import { useDrawingGameStore } from "@/lib/drawingGameStore";
 import { notifyGameEnded } from "@/hooks/useFeedback";
 import { useLocation } from "wouter";
@@ -828,6 +829,8 @@ export default function DesenhoImpostor() {
       className="min-h-screen w-full flex items-center justify-center font-poppins text-white overflow-hidden relative"
       style={{ backgroundColor: '#1C202C' }}
     >
+      <SideAds />
+
       {/* Decorative bg */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-emerald-600/15 rounded-full blur-[100px] animate-pulse"></div>

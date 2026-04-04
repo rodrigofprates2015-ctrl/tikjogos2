@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSincBRStore } from '@/lib/sincBrStore';
+import { SideAds } from '@/components/AdSense';
 import { notifyGameEnded } from '@/hooks/useFeedback';
 import type { BRAnswerGroup, BRLeaderboardEntry } from '@/lib/sincBrStore';
 import { useLocation } from 'wouter';
@@ -457,6 +458,10 @@ function GameScreen() {
 export default function SincBrGame() {
   const { phase } = useSincBRStore();
 
-  if (phase === 'playing') return <GameScreen />;
-  return <RoomSelection />;
+  return (
+    <>
+      <SideAds />
+      {phase === 'playing' ? <GameScreen /> : <RoomSelection />}
+    </>
+  );
 }
