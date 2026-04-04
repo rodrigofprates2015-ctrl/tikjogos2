@@ -216,8 +216,7 @@ function BottomRightVideoAdInner() {
     if (pushed.current) return;
     const timer = setTimeout(() => {
       try {
-        const el = insRef.current;
-        if (!el || el.dataset.adsbygoogleStatus) return;
+        if (!insRef.current) return;
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
         pushed.current = true;
@@ -250,8 +249,7 @@ export const TopBannerAd = () => {
     if (pushed.current) return;
     const timer = setTimeout(() => {
       try {
-        const el = insRef.current;
-        if (!el || el.dataset.adsbygoogleStatus) return;
+        if (!insRef.current) return;
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
         pushed.current = true;
@@ -286,8 +284,7 @@ export const InArticleAd = () => {
     if (pushed.current) return;
     const timer = setTimeout(() => {
       try {
-        const el = insRef.current;
-        if (!el || el.dataset.adsbygoogleStatus) return;
+        if (!insRef.current) return;
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
         pushed.current = true;
