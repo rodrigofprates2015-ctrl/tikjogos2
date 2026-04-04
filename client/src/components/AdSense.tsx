@@ -209,12 +209,15 @@ export const BottomRightVideoAd = () => {
 };
 
 function BottomRightVideoAdInner() {
+  const insRef = useRef<HTMLModElement>(null);
   const pushed = useRef(false);
 
   useEffect(() => {
     if (pushed.current) return;
     const timer = setTimeout(() => {
       try {
+        const el = insRef.current;
+        if (!el || el.dataset.adsbygoogleStatus) return;
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
         pushed.current = true;
@@ -227,6 +230,7 @@ function BottomRightVideoAdInner() {
 
   return (
     <ins
+      ref={insRef}
       className="adsbygoogle"
       style={{ display: "inline-block", width: "300px", height: "250px", position: "fixed", bottom: "16px", right: "16px", zIndex: 50 }}
       data-ad-client="ca-pub-9927561573478881"
@@ -239,12 +243,15 @@ function BottomRightVideoAdInner() {
 
 // Banner horizontal compacto (320x50) — ideal para topo de página em mobile
 export const TopBannerAd = () => {
+  const insRef = useRef<HTMLModElement>(null);
   const pushed = useRef(false);
 
   useEffect(() => {
     if (pushed.current) return;
     const timer = setTimeout(() => {
       try {
+        const el = insRef.current;
+        if (!el || el.dataset.adsbygoogleStatus) return;
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
         pushed.current = true;
@@ -258,6 +265,7 @@ export const TopBannerAd = () => {
   return (
     <div className="flex justify-center my-3 overflow-hidden adsense-container">
       <ins
+        ref={insRef}
         className="adsbygoogle"
         style={{ display: "block", width: "320px", height: "50px" }}
         data-ad-client="ca-pub-9927561573478881"
@@ -271,12 +279,15 @@ export const TopBannerAd = () => {
 
 // Retângulo in-article (300x250) — alto RPM, ideal dentro do conteúdo
 export const InArticleAd = () => {
+  const insRef = useRef<HTMLModElement>(null);
   const pushed = useRef(false);
 
   useEffect(() => {
     if (pushed.current) return;
     const timer = setTimeout(() => {
       try {
+        const el = insRef.current;
+        if (!el || el.dataset.adsbygoogleStatus) return;
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
         pushed.current = true;
@@ -288,8 +299,9 @@ export const InArticleAd = () => {
   }, []);
 
   return (
-    <div className="flex justify-center my-6 overflow-hidden adsense-container">
+    <div className="w-full my-6 overflow-hidden adsense-container">
       <ins
+        ref={insRef}
         className="adsbygoogle"
         style={{ display: "block" }}
         data-ad-client="ca-pub-9927561573478881"

@@ -97,13 +97,19 @@ export function AdBlockInContent() {
 export function AdBlockBetweenFormAndFooter() {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const insRef = useRef<HTMLModElement>(null);
+  const pushed = useRef(false);
 
   useEffect(() => {
-    const el = insRef.current;
-    if (!el) return;
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch {}
+    if (pushed.current) return;
+    const timer = setTimeout(() => {
+      try {
+        const el = insRef.current;
+        if (!el || el.dataset.adsbygoogleStatus) return;
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        pushed.current = true;
+      } catch {}
+    }, 400);
+    return () => clearTimeout(timer);
   }, []);
 
   if (isMobile) {
