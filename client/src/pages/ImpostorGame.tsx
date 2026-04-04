@@ -97,7 +97,7 @@ import personagemEsquerdo from "@assets/personagem esquerdo.png";
 import personagemDireito from "@assets/personagem direito.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
 import { useDesafioStore } from "@/lib/desafioStore";
-import { SideAds, TopBannerAd, InArticleAd } from "@/components/AdSense";
+import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd } from "@/components/AdSense";
 import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
@@ -1513,6 +1513,9 @@ const HomeScreen = () => {
 
       {/* Side Ads - Desktop only */}
       <SideAds />
+
+      {/* Video ad - bottom right corner */}
+      <BottomRightVideoAd />
 
       {/* Bottom Ad removed from home page */}
 
