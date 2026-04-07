@@ -4506,6 +4506,51 @@ export async function registerRoutes(
     return APROXIMACAO_QUESTIONS[idx];
   }
 
+  // Bot system: schedule random guesses for bots in a round
+  function scheduleAproximacaoBotGuesses(roomCode: string) {
+    const room = aproximacaoRooms.get(roomCode);
+    if (!room || !room.gameData) return;
+    const bots = room.players.filter(p => p.name.startsWith('Bot ') && !p.eliminated);
+    if (bots.length === 0) return;
+
+    for (const bot of bots) {
+      // Random delay between 2 and 9 seconds so bots feel natural
+      const delay = 2000 + Math.floor(Math.random() * 7000);
+      setTimeout(() => {
+        const currentRoom = aproximacaoRooms.get(roomCode);
+        if (!currentRoom || !currentRoom.gameData || currentRoom.gameData.phase !== 'guessing') return;
+        if (currentRoom.players.find(p => p.uid === bot.uid)?.eliminated) return;
+
+        const answer = currentRoom.gameData.question.answer;
+        // Log-space variation: ±1 order of magnitude for large numbers, ±60% for small
+        let botGuess: number;
+        if (answer <= 0) {
+          botGuess = Math.random() * 10;
+        } else if (answer < 20) {
+          // Small integers: vary ±60% and round to nearest integer
+          const variation = 0.4 + Math.random() * 1.2; // 0.4x to 1.6x
+          botGuess = Math.round(answer * variation);
+          if (botGuess < 1) botGuess = 1;
+        } else {
+          // Log-space: vary by ±0.7 log10 units (~factor of 5 up or down)
+          const logAnswer = Math.log10(answer);
+          const logVariation = (Math.random() - 0.5) * 1.4;
+          botGuess = Math.round(Math.pow(10, logAnswer + logVariation));
+        }
+
+        const existingIdx = currentRoom.gameData.guesses.findIndex(g => g.playerId === bot.uid);
+        const guess: AproximacaoGuess = { playerId: bot.uid, playerName: bot.name, value: botGuess };
+        if (existingIdx >= 0) {
+          currentRoom.gameData.guesses[existingIdx] = guess;
+        } else {
+          currentRoom.gameData.guesses.push(guess);
+        }
+        broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room: currentRoom });
+        console.log(`[Bot Aprox] ${bot.name} guessed ${botGuess} (answer: ${answer})`);
+      }, delay);
+    }
+  }
+
   // REST: Create aproximacao room
   app.post("/api/aproximacao-rooms", (req, res) => {
     const { hostId, playerName } = req.body;
@@ -4524,6 +4569,18 @@ export async function registerRoutes(
     };
     aproximacaoRooms.set(code, room);
     console.log(`[Aproximação] Room ${code} created by ${playerName}`);
+
+    // Auto-add bots for admin testing
+    if (playerName === "testeadm26") {
+      console.log(`[Aproximação Bot] Admin detected — adding 4 bots to room ${code}`);
+      const botNames = ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"];
+      for (const botName of botNames) {
+        const botId = `aprox-bot-${Math.random().toString(36).substr(2, 8)}`;
+        room.players.push({ uid: botId, name: botName, connected: true, hearts: 3 });
+        console.log(`[Aproximação Bot] Added ${botName} (${botId})`);
+      }
+    }
+
     res.json(room);
   });
 
@@ -4591,6 +4648,8 @@ export async function registerRoutes(
           };
           aproximacaoRooms.set(roomCode, room);
           broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+          // Schedule bot guesses if there are bots
+          scheduleAproximacaoBotGuesses(roomCode);
         }
 
         // ── aproximacao-submit-guess ───────────────────────────────────────
@@ -4699,6 +4758,8 @@ export async function registerRoutes(
             roundNumber: (room.gameData.roundNumber || 1) + 1,
           };
           broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+          // Schedule bot guesses for the new round
+          scheduleAproximacaoBotGuesses(roomCode);
         }
 
         // ── aproximacao-return-to-lobby ────────────────────────────────────
