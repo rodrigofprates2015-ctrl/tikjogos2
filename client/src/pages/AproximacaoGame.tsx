@@ -456,13 +456,19 @@ function PlayingScreen() {
           {/* Host reveal button */}
           {isHost && (
             <div className="w-full max-w-md">
-              <button
-                onClick={revealResults}
-                className="w-full py-3 rounded-2xl font-bold text-sm text-slate-400 border-2 border-[#2f3252] hover:border-cyan-500/50 hover:text-cyan-400 transition-all"
-                data-testid="button-reveal"
-              >
-                Revelar Resultados ({guessCount} palpites)
-              </button>
+              {guessCount < totalActivePlayers ? (
+                <div className="w-full py-3 rounded-2xl text-sm text-slate-500 border-2 border-[#2f3252] text-center cursor-not-allowed select-none">
+                  Aguardando palpites... ({guessCount}/{totalActivePlayers})
+                </div>
+              ) : (
+                <button
+                  onClick={revealResults}
+                  className="w-full py-3 rounded-2xl font-black text-sm bg-gradient-to-r from-cyan-500 to-teal-500 text-white border-b-4 border-cyan-800 hover:brightness-110 active:border-b-0 active:translate-y-1 shadow-lg shadow-cyan-500/25 transition-all"
+                  data-testid="button-reveal"
+                >
+                  Revelar Resultados ✓ ({guessCount}/{totalActivePlayers})
+                </button>
+              )}
             </div>
           )}
         </div>

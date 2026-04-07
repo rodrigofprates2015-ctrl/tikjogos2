@@ -4506,6 +4506,52 @@ export async function registerRoutes(
     return APROXIMACAO_QUESTIONS[idx];
   }
 
+  // Helper: process the reveal logic for a given room
+  function doAproximacaoReveal(roomCode: string) {
+    const room = aproximacaoRooms.get(roomCode);
+    if (!room || !room.gameData || room.gameData.phase !== 'guessing') return;
+
+    const { question, guesses } = room.gameData;
+    if (guesses.length === 0) return;
+
+    const sorted = [...guesses].sort((a, b) =>
+      Math.abs(a.value - question.answer) - Math.abs(b.value - question.answer)
+    );
+
+    const closestId = sorted[0].playerId;
+    const farthestId = sorted[sorted.length - 1].playerId;
+
+    const closestPlayer = room.players.find(p => p.uid === closestId);
+    if (closestPlayer) closestPlayer.hearts = Math.min(closestPlayer.hearts + 1, 5);
+
+    if (farthestId !== closestId) {
+      const farthestPlayer = room.players.find(p => p.uid === farthestId);
+      if (farthestPlayer) {
+        farthestPlayer.hearts = Math.max(farthestPlayer.hearts - 1, 0);
+        if (farthestPlayer.hearts === 0) farthestPlayer.eliminated = true;
+      }
+    }
+
+    const alivePlayers = room.players.filter(p => !p.eliminated);
+    let winnerId: string | undefined;
+    let winnerName: string | undefined;
+    if (alivePlayers.length === 1) {
+      winnerId = alivePlayers[0].uid;
+      winnerName = alivePlayers[0].name;
+    }
+
+    room.gameData.phase = winnerId ? 'gameover' : 'revealing';
+    room.gameData.lastRoundClosest = closestId;
+    room.gameData.lastRoundFarthest = farthestId;
+    room.gameData.lastRoundResult = { closestId, farthestId, allGuesses: sorted };
+    if (winnerId) {
+      room.gameData.winnerId = winnerId;
+      room.gameData.winnerName = winnerName;
+    }
+
+    broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+  }
+
   // Bot system: schedule random guesses for bots in a round
   function scheduleAproximacaoBotGuesses(roomCode: string) {
     const room = aproximacaoRooms.get(roomCode);
@@ -4674,6 +4720,13 @@ export async function registerRoutes(
             room.gameData.guesses.push(guess);
           }
           broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+
+          // Auto-reveal when every active player has guessed
+          const activePlayers = room.players.filter(p => !p.eliminated && p.connected !== false);
+          const allGuessed = activePlayers.every(p => room.gameData!.guesses.some(g => g.playerId === p.uid));
+          if (allGuessed) {
+            doAproximacaoReveal(roomCode);
+          }
         }
 
         // ── aproximacao-reveal ─────────────────────────────────────────────
@@ -4683,64 +4736,11 @@ export async function registerRoutes(
           if (!room || !room.gameData || room.gameData.phase !== 'guessing') return;
           if (room.hostId !== data.playerId) return;
 
-          const { question, guesses } = room.gameData;
           const activePlayers = room.players.filter(p => !p.eliminated && p.connected !== false);
+          const allGuessed = activePlayers.every(p => room.gameData!.guesses.some(g => g.playerId === p.uid));
+          if (!allGuessed) return;
 
-          if (guesses.length === 0) {
-            // No guesses yet, just move to revealing with no changes
-            room.gameData.phase = 'revealing';
-            broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
-            return;
-          }
-
-          // Sort guesses by closeness to answer
-          const sorted = [...guesses].sort((a, b) => {
-            const distA = Math.abs(a.value - question.answer);
-            const distB = Math.abs(b.value - question.answer);
-            return distA - distB;
-          });
-
-          const closestGuess = sorted[0];
-          const farthestGuess = sorted[sorted.length - 1];
-
-          // Only award/deduct if closest and farthest are different players
-          let closestId = closestGuess.playerId;
-          let farthestId = farthestGuess.playerId;
-
-          // Award heart to closest
-          const closestPlayer = room.players.find(p => p.uid === closestId);
-          if (closestPlayer) closestPlayer.hearts = Math.min(closestPlayer.hearts + 1, 5);
-
-          // Deduct heart from farthest (only if not the same player)
-          if (farthestId !== closestId) {
-            const farthestPlayer = room.players.find(p => p.uid === farthestId);
-            if (farthestPlayer) {
-              farthestPlayer.hearts = Math.max(farthestPlayer.hearts - 1, 0);
-              if (farthestPlayer.hearts === 0) {
-                farthestPlayer.eliminated = true;
-              }
-            }
-          }
-
-          // Check for winner
-          const alivePlayers = room.players.filter(p => !p.eliminated);
-          let winnerId: string | undefined;
-          let winnerName: string | undefined;
-          if (alivePlayers.length === 1) {
-            winnerId = alivePlayers[0].uid;
-            winnerName = alivePlayers[0].name;
-          }
-
-          room.gameData.phase = winnerId ? 'gameover' : 'revealing';
-          room.gameData.lastRoundClosest = closestId;
-          room.gameData.lastRoundFarthest = farthestId;
-          room.gameData.lastRoundResult = { closestId, farthestId, allGuesses: sorted };
-          if (winnerId) {
-            room.gameData.winnerId = winnerId;
-            room.gameData.winnerName = winnerName;
-          }
-
-          broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+          doAproximacaoReveal(roomCode);
         }
 
         // ── aproximacao-next-round ─────────────────────────────────────────
