@@ -97,6 +97,7 @@ import personagemEsquerdo from "@assets/personagem esquerdo.png";
 import personagemDireito from "@assets/personagem direito.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
 import { useDesafioStore } from "@/lib/desafioStore";
+import { useAproximacaoStore } from "@/lib/aproximacaoStore";
 import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd } from "@/components/AdSense";
 import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
 
@@ -1358,6 +1359,131 @@ const DesafioGameCard = () => {
   );
 };
 
+const AproximacaoGameCard = () => {
+  const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname } = useAproximacaoStore();
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const [apxName, setApxName] = useState(() => loadSavedNickname() || localStorage.getItem('tikjogos_saved_nickname') || '');
+  const [apxCode, setApxCode] = useState('');
+  const [saveChecked, setSaveChecked] = useState(() => !!localStorage.getItem('tikjogos_saved_nickname'));
+
+  const handleCreate = async () => {
+    if (!apxName.trim()) {
+      toast({ title: 'Nome necessário', variant: 'destructive' });
+      return;
+    }
+    if (saveChecked) saveNickname(apxName.trim());
+    setUser(apxName.trim());
+    await createRoom();
+    navigate('/aproximacao');
+  };
+
+  const handleJoin = async () => {
+    if (!apxName.trim()) {
+      toast({ title: 'Nome necessário', variant: 'destructive' });
+      return;
+    }
+    if (!apxCode.trim()) {
+      toast({ title: 'Código inválido', variant: 'destructive' });
+      return;
+    }
+    if (saveChecked) saveNickname(apxName.trim());
+    setUser(apxName.trim());
+    const ok = await joinRoom(apxCode.trim().toUpperCase());
+    if (ok) {
+      navigate('/aproximacao');
+    } else {
+      toast({ title: 'Sala não encontrada', variant: 'destructive' });
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-center mb-1">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
+            <span className="text-3xl">🎯</span>
+          </div>
+          <div className="text-center">
+            <p className="text-white font-black text-xl tracking-tight">Jogo da Aproximação</p>
+            <p className="text-cyan-400 text-[10px] font-bold uppercase tracking-widest">Quem chega mais perto vence</p>
+          </div>
+        </div>
+      </div>
+
+      <input
+        type="text"
+        placeholder="Seu nickname"
+        value={apxName}
+        maxLength={20}
+        onChange={(e) => setApxName(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+        className="input-dark"
+        data-testid="input-apx-nickname"
+      />
+
+      <button
+        onClick={handleCreate}
+        disabled={isLoading}
+        className={cn(
+          'w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl',
+          !isLoading
+            ? 'bg-gradient-to-r from-cyan-500 to-teal-500 border-cyan-900 text-white hover:brightness-110 active:border-b-0 active:translate-y-2'
+            : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+        )}
+        data-testid="button-apx-criar-sala"
+      >
+        {isLoading ? <Loader2 size={28} className="animate-spin" /> : <Zap size={28} className="animate-bounce" />}
+        CRIAR SALA
+      </button>
+
+      <div className="flex items-center px-1">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={saveChecked}
+            onChange={(e) => setSaveChecked(e.target.checked)}
+            className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-cyan-500"
+          />
+          <span className="text-sm text-[#8aa0b0]">Guardar nickname</span>
+        </label>
+      </div>
+
+      <div className="flex items-center gap-4 py-1">
+        <div className="flex-1 h-px bg-[#4a6a8a]" />
+        <span className="text-[#8aa0b0] text-sm font-bold">OU</span>
+        <div className="flex-1 h-px bg-[#4a6a8a]" />
+      </div>
+
+      <div className="flex gap-3">
+        <input
+          type="text"
+          placeholder="CÓDIGO"
+          value={apxCode}
+          onChange={(e) => setApxCode(e.target.value.toUpperCase())}
+          onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+          maxLength={3}
+          className="input-code flex-1"
+          data-testid="input-apx-code"
+        />
+        <button
+          onClick={handleJoin}
+          disabled={isLoading}
+          className={cn(
+            'px-6 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-2 transition-all duration-300 border-b-[6px] shadow-2xl whitespace-nowrap',
+            !isLoading
+              ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2'
+              : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+          )}
+          data-testid="button-apx-entrar"
+        >
+          ENTRAR
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const HomeScreen = () => {
   const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname, clearSavedNickname, savedNickname } = useGameStore();
   const [name, setNameInput] = useState("");
@@ -1861,34 +1987,8 @@ const HomeScreen = () => {
 
           {/* Jogo da Aproximação */}
           {selectedGame === 'aproximacao' && (
-            <div className="animate-fade-in space-y-4">
-              <div className="flex flex-col items-center gap-2 mb-2">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
-                  <span className="text-3xl">🎯</span>
-                </div>
-                <h2 className="text-xl font-black text-white tracking-tight text-center">Jogo da Aproximação</h2>
-                <p className="text-cyan-400 text-xs font-semibold uppercase tracking-widest">Quem chega mais perto vence</p>
-                <p className="text-slate-400 text-xs text-center max-w-xs">
-                  Adivinhe números, ganhe corações sendo o mais próximo, perca sendo o mais distante. Último vivo vence!
-                </p>
-              </div>
-              <a
-                href="/aproximacao"
-                className="block w-full py-4 rounded-2xl font-black text-lg tracking-wide text-center transition-all border-b-4 bg-gradient-to-r from-cyan-500 to-teal-500 border-cyan-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-1 shadow-lg shadow-cyan-500/25"
-                data-testid="link-jogar-aproximacao"
-              >
-                🎯 JOGAR AGORA
-              </a>
-              <div className="bg-[#1a1c2e] rounded-2xl p-4 border border-slate-700/50">
-                <p className="text-cyan-400 text-xs font-bold uppercase tracking-wider mb-2">Como Jogar</p>
-                <ul className="text-slate-400 text-xs space-y-1.5">
-                  <li>❤️ Cada jogador começa com 3 corações</li>
-                  <li>🏆 O mais próximo ganha +1 coração (máx. 5)</li>
-                  <li>💔 O mais distante perde -1 coração</li>
-                  <li>☠️ Chegou a 0 corações? Eliminado!</li>
-                  <li>🎯 Último sobrevivente é o campeão!</li>
-                </ul>
-              </div>
+            <div className="animate-fade-in">
+              <AproximacaoGameCard />
             </div>
           )}
         </div>
