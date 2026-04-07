@@ -1365,7 +1365,7 @@ const HomeScreen = () => {
   const [saveNicknameChecked, setSaveNicknameChecked] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isThemeWorkshopOpen, setIsThemeWorkshopOpen] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia' | 'desafio'>('impostor');
+  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia' | 'desafio' | 'aproximacao'>('impostor');
   const { toast } = useToast();
   const { t, langPath, lang } = useLanguage();
   const { show: showInterstitial, InterstitialAd } = useInterstitialAd();
@@ -1692,8 +1692,25 @@ const HomeScreen = () => {
                 alt="Desafio da Palavra"
                 className="h-12 md:h-16 object-contain mx-auto"
               />
+            </button>
+
+            {/* Jogo da Aproximação tab */}
+            <button
+              onClick={() => setSelectedGame('aproximacao')}
+              className={cn(
+                "flex-1 rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer relative",
+                selectedGame === 'aproximacao'
+                  ? "border-cyan-500 bg-[#2f3252] shadow-lg shadow-cyan-500/20 scale-105"
+                  : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
+              )}
+              data-testid="tab-aproximacao"
+            >
+              <div className="h-12 md:h-16 flex flex-col items-center justify-center gap-1">
+                <span className="text-xl md:text-2xl">🎯</span>
+                <span className="text-[8px] md:text-[9px] font-black text-cyan-300 leading-tight text-center uppercase tracking-tight">Aproximação</span>
+              </div>
               {/* Badge NOVO */}
-              <span className="absolute -top-2 -right-1 bg-violet-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shadow-md shadow-violet-900/50 animate-pulse">
+              <span className="absolute -top-2 -right-1 bg-cyan-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shadow-md shadow-cyan-900/50 animate-pulse">
                 NOVO
               </span>
             </button>
@@ -1703,11 +1720,12 @@ const HomeScreen = () => {
           <div className="relative h-1 bg-[#1a1c2e] rounded-full mb-5 mx-2">
             <div 
               className={cn(
-                "absolute top-0 h-full w-1/4 rounded-full transition-all duration-300",
+                "absolute top-0 h-full w-1/5 rounded-full transition-all duration-300",
                 selectedGame === 'impostor' && "left-0 bg-gradient-to-r from-orange-500 to-amber-500",
-                selectedGame === 'desenho' && "left-1/4 bg-gradient-to-r from-[#46cfa5] to-[#2ea87e]",
-                selectedGame === 'sincronia' && "left-2/4 bg-gradient-to-r from-[#43065c] to-[#6b21a8]",
-                selectedGame === 'desafio' && "left-3/4 bg-gradient-to-r from-violet-500 to-purple-600"
+                selectedGame === 'desenho' && "left-[20%] bg-gradient-to-r from-[#46cfa5] to-[#2ea87e]",
+                selectedGame === 'sincronia' && "left-[40%] bg-gradient-to-r from-[#43065c] to-[#6b21a8]",
+                selectedGame === 'desafio' && "left-[60%] bg-gradient-to-r from-violet-500 to-purple-600",
+                selectedGame === 'aproximacao' && "left-[80%] bg-gradient-to-r from-cyan-500 to-teal-500"
               )}
             />
           </div>
@@ -1838,6 +1856,39 @@ const HomeScreen = () => {
           {selectedGame === 'desafio' && (
             <div className="animate-fade-in">
               <DesafioGameCard />
+            </div>
+          )}
+
+          {/* Jogo da Aproximação */}
+          {selectedGame === 'aproximacao' && (
+            <div className="animate-fade-in space-y-4">
+              <div className="flex flex-col items-center gap-2 mb-2">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
+                  <span className="text-3xl">🎯</span>
+                </div>
+                <h2 className="text-xl font-black text-white tracking-tight text-center">Jogo da Aproximação</h2>
+                <p className="text-cyan-400 text-xs font-semibold uppercase tracking-widest">Quem chega mais perto vence</p>
+                <p className="text-slate-400 text-xs text-center max-w-xs">
+                  Adivinhe números, ganhe corações sendo o mais próximo, perca sendo o mais distante. Último vivo vence!
+                </p>
+              </div>
+              <a
+                href="/aproximacao"
+                className="block w-full py-4 rounded-2xl font-black text-lg tracking-wide text-center transition-all border-b-4 bg-gradient-to-r from-cyan-500 to-teal-500 border-cyan-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-1 shadow-lg shadow-cyan-500/25"
+                data-testid="link-jogar-aproximacao"
+              >
+                🎯 JOGAR AGORA
+              </a>
+              <div className="bg-[#1a1c2e] rounded-2xl p-4 border border-slate-700/50">
+                <p className="text-cyan-400 text-xs font-bold uppercase tracking-wider mb-2">Como Jogar</p>
+                <ul className="text-slate-400 text-xs space-y-1.5">
+                  <li>❤️ Cada jogador começa com 3 corações</li>
+                  <li>🏆 O mais próximo ganha +1 coração (máx. 5)</li>
+                  <li>💔 O mais distante perde -1 coração</li>
+                  <li>☠️ Chegou a 0 corações? Eliminado!</li>
+                  <li>🎯 Último sobrevivente é o campeão!</li>
+                </ul>
+              </div>
             </div>
           )}
         </div>

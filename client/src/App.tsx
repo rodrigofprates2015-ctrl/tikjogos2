@@ -12,6 +12,7 @@ import { useFeedback } from "@/hooks/useFeedback";
 import ImpostorGame from "@/pages/ImpostorGame";
 import RoomRedirect from "@/pages/RoomRedirect";
 import DesafioDaPalavra from "@/pages/DesafioDaPalavra";
+import AproximacaoGame from "@/pages/AproximacaoGame";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 
@@ -144,6 +145,10 @@ function AppRouter() {
       <Route path="/desafio/:codigo">
         {(params) => <DesafioDaPalavra initialCode={params.codigo} />}
       </Route>
+
+      {/* Jogo da Aproximação */}
+      <Route path="/aproximacao" component={AproximacaoGame} />
+      <Route path="/approximation" component={AproximacaoGame} />
 
       {/* Criar tema */}
       {i18nRoutes("/criar-tema", CriarTema)}

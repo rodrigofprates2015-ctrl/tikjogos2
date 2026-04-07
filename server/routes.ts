@@ -4316,5 +4316,386 @@ export async function registerRoutes(
     });
   });
 
+  // ═══════════════════════════════════════════════════════════════
+  // JOGO DA APROXIMAÇÃO — Estimation Game (separate in-memory state)
+  // ═══════════════════════════════════════════════════════════════
+
+  type AproximacaoPlayer = {
+    uid: string;
+    name: string;
+    connected?: boolean;
+    hearts: number;
+    eliminated?: boolean;
+  };
+
+  type AproximacaoGuess = {
+    playerId: string;
+    playerName: string;
+    value: number;
+  };
+
+  type AproximacaoQuestion = {
+    text: string;
+    answer: number;
+    unit: string;
+  };
+
+  type AproximacaoGameData = {
+    phase: 'guessing' | 'revealing' | 'gameover';
+    question: AproximacaoQuestion;
+    guesses: AproximacaoGuess[];
+    roundNumber: number;
+    winnerId?: string;
+    winnerName?: string;
+    lastRoundClosest?: string;
+    lastRoundFarthest?: string;
+    lastRoundResult?: { closestId: string; farthestId: string; allGuesses: AproximacaoGuess[] };
+  };
+
+  type AproximacaoRoom = {
+    code: string;
+    hostId: string;
+    status: 'waiting' | 'playing';
+    players: AproximacaoPlayer[];
+    gameData: AproximacaoGameData | null;
+    createdAt: string;
+  };
+
+  const APROXIMACAO_QUESTIONS: AproximacaoQuestion[] = [
+    { text: "Qual é a altura da Torre Eiffel em metros?", answer: 330, unit: "metros" },
+    { text: "Quantas edições do BBB já aconteceram até 2025?", answer: 25, unit: "edições" },
+    { text: "Quantos participantes já passaram pelo BBB somando todas as edições?", answer: 408, unit: "participantes" },
+    { text: "Qual é a distância entre São Paulo e Rio de Janeiro em km (em linha reta)?", answer: 358, unit: "km" },
+    { text: "Quantos países existem no mundo?", answer: 195, unit: "países" },
+    { text: "Qual é a população do Brasil em milhões de habitantes (2024)?", answer: 215, unit: "milhões" },
+    { text: "Quantos metros tem o Cristo Redentor do Rio de Janeiro?", answer: 38, unit: "metros" },
+    { text: "Qual é a extensão da Muralha da China em km?", answer: 21196, unit: "km" },
+    { text: "Quantos anos tem a cidade de Roma (fundada em 753 a.C.)?", answer: 2777, unit: "anos" },
+    { text: "Quantas músicas o Spotify tem disponíveis (em milhões, 2024)?", answer: 100, unit: "milhões de músicas" },
+    { text: "Qual é a velocidade máxima de um guepardo em km/h?", answer: 120, unit: "km/h" },
+    { text: "Quantos ossos tem o corpo humano adulto?", answer: 206, unit: "ossos" },
+    { text: "Quantos metros tem a Estátua da Liberdade (incluindo o pedestal)?", answer: 93, unit: "metros" },
+    { text: "Qual é a profundidade máxima do oceano em metros (Fossa das Marianas)?", answer: 11034, unit: "metros" },
+    { text: "Quantos quilômetros a Lua está da Terra em média?", answer: 384400, unit: "km" },
+    { text: "Quantos gramas tem um Big Mac do McDonald's?", answer: 198, unit: "gramas" },
+    { text: "Quantas temporadas tem a série Grey's Anatomy?", answer: 20, unit: "temporadas" },
+    { text: "Quantos filmes tem o universo cinematográfico da Marvel (MCU) até 2024?", answer: 33, unit: "filmes" },
+    { text: "Qual é a quantidade de calorias em uma lata de Coca-Cola (350ml)?", answer: 151, unit: "calorias" },
+    { text: "Quantas letras tem o alfabeto português?", answer: 26, unit: "letras" },
+    { text: "Quantos jogadores tem um time de futebol em campo?", answer: 11, unit: "jogadores" },
+    { text: "Quantos estados tem o Brasil?", answer: 26, unit: "estados" },
+    { text: "Qual é a temperatura de ebulição da água em graus Celsius?", answer: 100, unit: "°C" },
+    { text: "Quantos centímetros tem um metro?", answer: 100, unit: "centímetros" },
+    { text: "Quantas horas tem uma semana?", answer: 168, unit: "horas" },
+    { text: "Quantas edições da Copa do Mundo FIFA já foram realizadas até 2022?", answer: 22, unit: "edições" },
+    { text: "Quantos gols Pelé marcou oficialmente em toda sua carreira?", answer: 1283, unit: "gols" },
+    { text: "Quantos minutos tem um jogo de futebol regular (sem prorrogação)?", answer: 90, unit: "minutos" },
+    { text: "Quantos quilômetros tem a fronteira do Brasil com a Argentina?", answer: 1261, unit: "km" },
+    { text: "Qual é a velocidade do som no ar em m/s?", answer: 343, unit: "m/s" },
+    { text: "Quantos anos viveu Leonardo da Vinci?", answer: 67, unit: "anos" },
+    { text: "Quantas músicas tem o álbum Thriller do Michael Jackson?", answer: 9, unit: "músicas" },
+    { text: "Quantos seguidores tinha o Instagram da Selena Gomez no pico (em milhões)?", answer: 400, unit: "milhões" },
+    { text: "Quantas pessoas assistiram a final da Copa do Mundo 2022 (em bilhões)?", answer: 1.5, unit: "bilhões" },
+    { text: "Quantas letras tem a palavra mais longa do dicionário inglês — pneumonoultramicroscopicsilicovolcanoconiosis?", answer: 45, unit: "letras" },
+    { text: "Quantas nadadeiras tem um tubarão?", answer: 5, unit: "nadadeiras" },
+    { text: "Quantos segundos tem uma hora?", answer: 3600, unit: "segundos" },
+    { text: "Qual é a distância do Brasil ao Japão em km (em linha reta)?", answer: 18520, unit: "km" },
+    { text: "Quantos capítulos tem a Bíblia?", answer: 1189, unit: "capítulos" },
+    { text: "Quantos metros mede o pé mais longo já registrado no Guinness?", answer: 38, unit: "cm" },
+    { text: "Quantas estrelas tem a bandeira do Brasil?", answer: 27, unit: "estrelas" },
+    { text: "Quantos anos tem a Pirâmide de Gizé (construída aproximadamente 2560 a.C.)?", answer: 4584, unit: "anos" },
+    { text: "Em quantos metros de altitude fica o Monte Everest?", answer: 8849, unit: "metros" },
+    { text: "Quantas ilhas tem a Grécia?", answer: 6000, unit: "ilhas" },
+    { text: "Qual é a duração em minutos do filme Vingadores: Ultimato?", answer: 181, unit: "minutos" },
+    { text: "Quantas músicas tem o Spotify no Brasil (estimativa em milhões)?", answer: 80, unit: "milhões" },
+    { text: "Quantos dentes tem um ser humano adulto com os sisos?", answer: 32, unit: "dentes" },
+    { text: "Quantas espécies de dinossauros foram descobertas até hoje?", answer: 1000, unit: "espécies" },
+    { text: "Qual é o peso médio de um elefante africano adulto em kg?", answer: 5000, unit: "kg" },
+    { text: "Quantos idiomas são falados no mundo?", answer: 7000, unit: "idiomas" },
+    { text: "Quantos litros de sangue um adulto tem no corpo?", answer: 5, unit: "litros" },
+    { text: "Quantos watts de energia o sol produz por segundo (em yottawatts)?", answer: 384, unit: "yottawatts" },
+    { text: "Quantas calories uma maçã média tem?", answer: 95, unit: "calorias" },
+    { text: "Quantos anos levou para construir a Sagrada Família em Barcelona (iniciada em 1882)?", answer: 143, unit: "anos" },
+    { text: "Quantas estações de metrô existem em São Paulo?", answer: 91, unit: "estações" },
+    { text: "Quantos quilômetros tem a Amazônia (área em km²)?", answer: 5500000, unit: "km²" },
+    { text: "Quantos personagens jogáveis tem Super Smash Bros. Ultimate?", answer: 89, unit: "personagens" },
+    { text: "Quantas canções gravou Roberto Carlos ao longo da carreira?", answer: 500, unit: "canções" },
+    { text: "Quantas temporadas tem 'The Simpsons'?", answer: 35, unit: "temporadas" },
+    { text: "Em quantos países o Mc Donald's está presente?", answer: 100, unit: "países" },
+    { text: "Quantos sócios tem o Flamengo (o maior clube do Brasil em número)?", answer: 100000, unit: "sócios" },
+    { text: "Quantos episódios tem a série Friends?", answer: 236, unit: "episódios" },
+  ];
+
+  const aproximacaoRooms = new Map<string, AproximacaoRoom>();
+  const aproximacaoQuestionPools = new Map<string, number[]>();
+
+  function generateAproximacaoCode(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 3; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
+
+  function broadcastToAproximacaoRoom(roomCode: string, data: unknown) {
+    const message = JSON.stringify(data);
+    playerConnections.forEach((info, ws) => {
+      if (info.roomCode === roomCode && ws.readyState === WebSocket.OPEN) {
+        ws.send(message);
+      }
+    });
+  }
+
+  function getNextAproximacaoQuestion(roomCode: string): AproximacaoQuestion {
+    let pool = aproximacaoQuestionPools.get(roomCode);
+    if (!pool || pool.length === 0) {
+      const indices = APROXIMACAO_QUESTIONS.map((_, i) => i);
+      for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+      pool = indices;
+      aproximacaoQuestionPools.set(roomCode, pool);
+    }
+    const idx = pool.pop()!;
+    aproximacaoQuestionPools.set(roomCode, pool);
+    return APROXIMACAO_QUESTIONS[idx];
+  }
+
+  // REST: Create aproximacao room
+  app.post("/api/aproximacao-rooms", (req, res) => {
+    const { hostId, playerName } = req.body;
+    if (!hostId || !playerName) return res.status(400).json({ error: "Missing hostId or playerName" });
+
+    let code = generateAproximacaoCode();
+    while (aproximacaoRooms.has(code)) code = generateAproximacaoCode();
+
+    const room: AproximacaoRoom = {
+      code,
+      hostId,
+      status: 'waiting',
+      gameData: null,
+      players: [{ uid: hostId, name: playerName, connected: true, hearts: 3 }],
+      createdAt: new Date().toISOString(),
+    };
+    aproximacaoRooms.set(code, room);
+    console.log(`[Aproximação] Room ${code} created by ${playerName}`);
+    res.json(room);
+  });
+
+  // REST: Join aproximacao room
+  app.post("/api/aproximacao-rooms/:code/join", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const { playerId, playerName } = req.body;
+    const room = aproximacaoRooms.get(code);
+    if (!room) return res.status(404).json({ error: "Sala não encontrada" });
+    if (room.status !== 'waiting') return res.status(400).json({ error: "Jogo já em andamento" });
+
+    const existing = room.players.find(p => p.uid === playerId);
+    if (existing) {
+      existing.connected = true;
+      existing.name = playerName;
+    } else {
+      room.players.push({ uid: playerId, name: playerName, connected: true, hearts: 3 });
+    }
+
+    broadcastToAproximacaoRoom(code, { type: 'aproximacao-room-update', room });
+    console.log(`[Aproximação] ${playerName} joined room ${code}`);
+    res.json(room);
+  });
+
+  // REST: Get aproximacao room
+  app.get("/api/aproximacao-rooms/:code", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = aproximacaoRooms.get(code);
+    if (!room) return res.status(404).json({ error: "Sala não encontrada" });
+    res.json(room);
+  });
+
+  // ── Aproximação: WebSocket handlers ──
+  wss.on('connection', (ws) => {
+    ws.on('message', async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+
+        // ── aproximacao-join ──────────────────────────────────────────────
+        if (data.type === 'aproximacao-join' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = aproximacaoRooms.get(roomCode);
+          if (!room) return;
+          // Mark player connected
+          const player = room.players.find(p => p.uid === data.playerId);
+          if (player) player.connected = true;
+          broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+        }
+
+        // ── aproximacao-start ───────────────────────────────────────────────
+        if (data.type === 'aproximacao-start' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = aproximacaoRooms.get(roomCode);
+          if (!room || room.hostId !== data.playerId) return;
+
+          const question = getNextAproximacaoQuestion(roomCode);
+          // Reset hearts for all active players
+          room.players.forEach(p => { p.hearts = 3; p.eliminated = false; });
+          room.status = 'playing';
+          room.gameData = {
+            phase: 'guessing',
+            question,
+            guesses: [],
+            roundNumber: 1,
+          };
+          aproximacaoRooms.set(roomCode, room);
+          broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+        }
+
+        // ── aproximacao-submit-guess ───────────────────────────────────────
+        if (data.type === 'aproximacao-submit-guess' && data.roomCode && data.playerId && data.value !== undefined) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = aproximacaoRooms.get(roomCode);
+          if (!room || !room.gameData || room.gameData.phase !== 'guessing') return;
+
+          const player = room.players.find(p => p.uid === data.playerId);
+          if (!player || player.eliminated) return;
+
+          // Replace or add guess
+          const existingIdx = room.gameData.guesses.findIndex(g => g.playerId === data.playerId);
+          const guess: AproximacaoGuess = {
+            playerId: data.playerId,
+            playerName: player.name,
+            value: Number(data.value),
+          };
+          if (existingIdx >= 0) {
+            room.gameData.guesses[existingIdx] = guess;
+          } else {
+            room.gameData.guesses.push(guess);
+          }
+          broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+        }
+
+        // ── aproximacao-reveal ─────────────────────────────────────────────
+        if (data.type === 'aproximacao-reveal' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = aproximacaoRooms.get(roomCode);
+          if (!room || !room.gameData || room.gameData.phase !== 'guessing') return;
+          if (room.hostId !== data.playerId) return;
+
+          const { question, guesses } = room.gameData;
+          const activePlayers = room.players.filter(p => !p.eliminated && p.connected !== false);
+
+          if (guesses.length === 0) {
+            // No guesses yet, just move to revealing with no changes
+            room.gameData.phase = 'revealing';
+            broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+            return;
+          }
+
+          // Sort guesses by closeness to answer
+          const sorted = [...guesses].sort((a, b) => {
+            const distA = Math.abs(a.value - question.answer);
+            const distB = Math.abs(b.value - question.answer);
+            return distA - distB;
+          });
+
+          const closestGuess = sorted[0];
+          const farthestGuess = sorted[sorted.length - 1];
+
+          // Only award/deduct if closest and farthest are different players
+          let closestId = closestGuess.playerId;
+          let farthestId = farthestGuess.playerId;
+
+          // Award heart to closest
+          const closestPlayer = room.players.find(p => p.uid === closestId);
+          if (closestPlayer) closestPlayer.hearts = Math.min(closestPlayer.hearts + 1, 5);
+
+          // Deduct heart from farthest (only if not the same player)
+          if (farthestId !== closestId) {
+            const farthestPlayer = room.players.find(p => p.uid === farthestId);
+            if (farthestPlayer) {
+              farthestPlayer.hearts = Math.max(farthestPlayer.hearts - 1, 0);
+              if (farthestPlayer.hearts === 0) {
+                farthestPlayer.eliminated = true;
+              }
+            }
+          }
+
+          // Check for winner
+          const alivePlayers = room.players.filter(p => !p.eliminated);
+          let winnerId: string | undefined;
+          let winnerName: string | undefined;
+          if (alivePlayers.length === 1) {
+            winnerId = alivePlayers[0].uid;
+            winnerName = alivePlayers[0].name;
+          }
+
+          room.gameData.phase = winnerId ? 'gameover' : 'revealing';
+          room.gameData.lastRoundClosest = closestId;
+          room.gameData.lastRoundFarthest = farthestId;
+          room.gameData.lastRoundResult = { closestId, farthestId, allGuesses: sorted };
+          if (winnerId) {
+            room.gameData.winnerId = winnerId;
+            room.gameData.winnerName = winnerName;
+          }
+
+          broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+        }
+
+        // ── aproximacao-next-round ─────────────────────────────────────────
+        if (data.type === 'aproximacao-next-round' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = aproximacaoRooms.get(roomCode);
+          if (!room || !room.gameData || room.gameData.phase !== 'revealing') return;
+          if (room.hostId !== data.playerId) return;
+
+          const question = getNextAproximacaoQuestion(roomCode);
+          room.gameData = {
+            phase: 'guessing',
+            question,
+            guesses: [],
+            roundNumber: (room.gameData.roundNumber || 1) + 1,
+          };
+          broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+        }
+
+        // ── aproximacao-return-to-lobby ────────────────────────────────────
+        if (data.type === 'aproximacao-return-to-lobby' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = aproximacaoRooms.get(roomCode);
+          if (!room) return;
+          if (room.hostId !== data.playerId) return;
+
+          room.status = 'waiting';
+          room.gameData = null;
+          room.players.forEach(p => { p.hearts = 3; p.eliminated = false; });
+          // Clear question pool to get fresh questions
+          aproximacaoQuestionPools.delete(roomCode);
+          broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+        }
+
+        // ── aproximacao-disconnect ─────────────────────────────────────────
+        if (data.type === 'aproximacao-disconnect' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = aproximacaoRooms.get(roomCode);
+          if (!room) return;
+
+          const player = room.players.find(p => p.uid === data.playerId);
+          if (player) player.connected = false;
+
+          // If host left and others remain, transfer host
+          if (room.hostId === data.playerId) {
+            const connected = room.players.filter(p => p.uid !== data.playerId && p.connected !== false);
+            if (connected.length > 0) {
+              room.hostId = connected[0].uid;
+              broadcastToAproximacaoRoom(roomCode, { type: 'host-changed', newHostId: room.hostId, newHostName: connected[0].name });
+            }
+          }
+          broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+        }
+
+      } catch {
+        // Ignore parse errors from other game types
+      }
+    });
+  });
+
   return httpServer;
 }

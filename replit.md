@@ -1,14 +1,15 @@
 # Overview
 
-**TikJogos** is a multiplayer social party game platform with 4 distinct game modes, real-time WebSocket gameplay, an admin dashboard, and analytics.
+**TikJogos** is a multiplayer social party game platform with 5 distinct game modes, real-time WebSocket gameplay, an admin dashboard, and analytics.
 
 **Platform URL:** `/` (main app) | **Admin:** `/dashadmin`
 
-The platform features 4 games:
+The platform features 5 games:
 1. **Impostor Clássico** — Social deduction game; one player is the impostor
 2. **Impostor Desenho** — Same concept but players draw instead of talk
 3. **Sincronia** — "Respostas em Comum"; players sync their answers across rounds
 4. **Desafio da Palavra** — Public Battle Royale word-matching rooms
+5. **Jogo da Aproximação** — Estimation game; guess numeric answers, closest gets +1 heart, farthest loses 1 heart, last survivor wins. Route: `/aproximacao`. Files: `client/src/pages/AproximacaoGame.tsx`, `client/src/lib/aproximacaoStore.ts`. Server handlers in `server/routes.ts` (search `JOGO DA APROXIMAÇÃO`). Uses `aproximacaoRooms` in-memory Map, reuses `/game-ws` with `aproximacao-` message prefix.
 
 ## Admin Dashboard (`/dashadmin`)
 
