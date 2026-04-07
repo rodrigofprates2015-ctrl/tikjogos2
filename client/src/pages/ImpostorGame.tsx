@@ -98,6 +98,7 @@ import personagemDireito from "@assets/personagem direito.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
 import { useDesafioStore } from "@/lib/desafioStore";
 import { useAproximacaoStore } from "@/lib/aproximacaoStore";
+import logoAprox from "@assets/Texto__APROX_1775568617320.webp";
 import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd } from "@/components/AdSense";
 import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
 
@@ -1400,15 +1401,11 @@ const AproximacaoGameCard = () => {
   return (
     <div className="space-y-3">
       <div className="flex justify-center mb-1">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
-            <span className="text-3xl">🎯</span>
-          </div>
-          <div className="text-center">
-            <p className="text-white font-black text-xl tracking-tight">Jogo da Aproximação</p>
-            <p className="text-cyan-400 text-[10px] font-bold uppercase tracking-widest">Quem chega mais perto vence</p>
-          </div>
-        </div>
+        <img
+          src={logoAprox}
+          alt="Jogo da Aproximação"
+          className="h-24 md:h-32 object-contain"
+        />
       </div>
 
       <input
@@ -1831,10 +1828,11 @@ const HomeScreen = () => {
               )}
               data-testid="tab-aproximacao"
             >
-              <div className="h-12 md:h-16 flex flex-col items-center justify-center gap-1">
-                <span className="text-xl md:text-2xl">🎯</span>
-                <span className="text-[8px] md:text-[9px] font-black text-cyan-300 leading-tight text-center uppercase tracking-tight">Aproximação</span>
-              </div>
+              <img
+                src={logoAprox}
+                alt="Jogo da Aproximação"
+                className="h-12 md:h-16 object-contain mx-auto"
+              />
               {/* Badge NOVO */}
               <span className="absolute -top-2 -right-1 bg-cyan-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shadow-md shadow-cyan-900/50 animate-pulse">
                 NOVO

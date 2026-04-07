@@ -9,6 +9,7 @@ import {
   CheckCircle, Clock, TrendingUp, TrendingDown, Minus,
   Flame, Send
 } from "lucide-react";
+import logoAprox from "@assets/Texto__APROX_1775568617320.webp";
 
 function NotificationCenter() {
   const { notifications, removeNotification } = useAproximacaoStore();
@@ -102,15 +103,11 @@ function HomeScreen() {
 
       {/* Logo */}
       <div className="mb-8 text-center relative z-10">
-        <div className="inline-flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
-            <Target className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-white tracking-tight">Jogo da Aproximação</h1>
-            <p className="text-cyan-400 text-xs font-semibold uppercase tracking-widest">Quem chega mais perto vence</p>
-          </div>
-        </div>
+        <img
+          src={logoAprox}
+          alt="Jogo da Aproximação"
+          className="h-24 md:h-32 object-contain mx-auto mb-2"
+        />
         <p className="text-slate-400 text-sm max-w-xs mx-auto">
           Adivinhe números, colete corações, seja o último sobrevivente!
         </p>
@@ -217,10 +214,7 @@ function LobbyScreen() {
       <div className="w-full max-w-sm mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center">
-              <Target className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-white font-black text-lg">Jogo da Aproximação</span>
+            <img src={logoAprox} alt="Jogo da Aproximação" className="h-8 object-contain" />
           </div>
           <button onClick={leaveGame} className="text-slate-400 hover:text-red-400 transition-colors p-2">
             <LogOut className="w-5 h-5" />
