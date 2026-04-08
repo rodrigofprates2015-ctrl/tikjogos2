@@ -1489,9 +1489,25 @@ const HomeScreen = () => {
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isThemeWorkshopOpen, setIsThemeWorkshopOpen] = useState(false);
   const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia' | 'desafio' | 'aproximacao'>('impostor');
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const carouselDrag = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
+  const [carouselAtStart, setCarouselAtStart] = useState(true);
+  const [carouselAtEnd, setCarouselAtEnd] = useState(false);
+
+  const updateCarouselEdges = () => {
+    const el = carouselRef.current;
+    if (!el) return;
+    setCarouselAtStart(el.scrollLeft <= 2);
+    setCarouselAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 2);
+  };
   const { toast } = useToast();
   const { t, langPath, lang } = useLanguage();
   const { show: showInterstitial, InterstitialAd } = useInterstitialAd();
+
+  // Detect carousel scroll limits on mount
+  useEffect(() => {
+    updateCarouselEdges();
+  }, []);
 
   // Set page title and meta description per language
   useEffect(() => {
@@ -1743,85 +1759,130 @@ const HomeScreen = () => {
         <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24 mt-4 md:mt-12">
           <h1 className="sr-only">Jogo do Impostor Online Grátis - TikJogos</h1>
 
-          {/* Game logo tabs */}
-          <div className="flex items-center justify-center gap-3 mb-4">
-            {/* Impostor logo tab */}
+          {/* Game logo carousel */}
+          {/* Arrow row — sits above the scroll track, outside overflow-hidden */}
+          <div className="flex items-center justify-between px-1 mb-1">
             <button
-              onClick={() => setSelectedGame('impostor')}
+              onClick={() => { const el = carouselRef.current; if (el) { el.scrollBy({ left: -120, behavior: 'smooth' }); } }}
+              className="transition-opacity duration-300 p-1"
+              style={{ opacity: carouselAtStart ? 0 : 0.45, pointerEvents: carouselAtStart ? 'none' : 'auto' }}
+              aria-label="Anterior"
+              tabIndex={-1}
+            >
+              <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
+                <path d="M8 2L2 9L8 16" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            <button
+              onClick={() => { const el = carouselRef.current; if (el) { el.scrollBy({ left: 120, behavior: 'smooth' }); } }}
+              className="transition-opacity duration-300 p-1"
+              style={{ opacity: carouselAtEnd ? 0 : 0.45, pointerEvents: carouselAtEnd ? 'none' : 'auto' }}
+              aria-label="Próximo"
+              tabIndex={-1}
+            >
+              <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
+                <path d="M2 2L8 9L2 16" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
+
+          {/* Scroll track — overflow-hidden clips scrollbar, py-3 gives room for scale-105 and badge */}
+          <div className="overflow-hidden mb-4">
+          <div
+            ref={carouselRef}
+            className="flex gap-2 overflow-x-auto snap-x snap-mandatory py-3 px-1 select-none"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', cursor: 'grab' }}
+            onScroll={updateCarouselEdges}
+            onMouseDown={(e) => {
+              const el = carouselRef.current;
+              if (!el) return;
+              carouselDrag.current = { active: true, startX: e.pageX - el.offsetLeft, scrollLeft: el.scrollLeft, moved: false };
+              el.style.cursor = 'grabbing';
+            }}
+            onMouseMove={(e) => {
+              const d = carouselDrag.current;
+              const el = carouselRef.current;
+              if (!d.active || !el) return;
+              e.preventDefault();
+              const x = e.pageX - el.offsetLeft;
+              const walk = x - d.startX;
+              if (Math.abs(walk) > 4) d.moved = true;
+              el.scrollLeft = d.scrollLeft - walk;
+            }}
+            onMouseUp={() => {
+              carouselDrag.current.active = false;
+              if (carouselRef.current) carouselRef.current.style.cursor = 'grab';
+            }}
+            onMouseLeave={() => {
+              carouselDrag.current.active = false;
+              if (carouselRef.current) carouselRef.current.style.cursor = 'grab';
+            }}
+          >
+            {/* Impostor */}
+            <button
+              onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('impostor'); carouselDrag.current.moved = false; }}
               className={cn(
-                "flex-1 rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer",
+                "flex-none w-[23%] rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer snap-start",
                 selectedGame === 'impostor'
                   ? "border-orange-500 bg-[#2f3252] shadow-lg shadow-orange-500/20 scale-105"
                   : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
               )}
               data-testid="tab-impostor"
             >
-              <img 
-                src={logoImpostor} 
-                alt="Jogo do Impostor" 
-                className="h-12 md:h-16 object-contain mx-auto"
+              <img
+                src={logoImpostor}
+                alt="Jogo do Impostor"
+                className="h-12 md:h-16 w-full object-contain"
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
               />
             </button>
 
-            {/* Desenho logo tab */}
+            {/* Desenho */}
             <button
-              onClick={() => setSelectedGame('desenho')}
+              onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('desenho'); carouselDrag.current.moved = false; }}
               className={cn(
-                "flex-1 rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer",
+                "flex-none w-[23%] rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer snap-start",
                 selectedGame === 'desenho'
                   ? "border-[#46cfa5] bg-[#2f3252] shadow-lg shadow-[#46cfa5]/20 scale-105"
                   : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
               )}
               data-testid="tab-desenho"
             >
-              <img 
-                src={logoImpostorArt} 
-                alt="Desenho do Impostor" 
-                className="h-12 md:h-16 object-contain mx-auto"
+              <img
+                src={logoImpostorArt}
+                alt="Desenho do Impostor"
+                className="h-12 md:h-16 w-full object-contain"
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
               />
             </button>
 
-            {/* Sincronia logo tab */}
+            {/* Sincronia */}
             <button
-              onClick={() => setSelectedGame('sincronia')}
+              onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('sincronia'); carouselDrag.current.moved = false; }}
               className={cn(
-                "flex-1 rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer",
+                "flex-none w-[23%] rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer snap-start",
                 selectedGame === 'sincronia'
                   ? "border-[#43065c] bg-[#2f3252] shadow-lg shadow-[#43065c]/20 scale-105"
                   : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
               )}
               data-testid="tab-sincronia"
             >
-              <img 
-                src={sincroniaLogo} 
-                alt="Sincronia" 
-                className="h-12 md:h-16 object-contain mx-auto"
-              />
-            </button>
-
-            {/* Desafio da Palavra logo tab */}
-            <button
-              onClick={() => setSelectedGame('desafio')}
-              className={cn(
-                "flex-1 rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer relative",
-                selectedGame === 'desafio'
-                  ? "border-violet-500 bg-[#2f3252] shadow-lg shadow-violet-500/20 scale-105"
-                  : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
-              )}
-              data-testid="tab-desafio"
-            >
               <img
-                src={logoDesafioPalavraSmall}
-                alt="Desafio da Palavra"
-                className="h-12 md:h-16 object-contain mx-auto"
+                src={sincroniaLogo}
+                alt="Sincronia"
+                className="h-12 md:h-16 w-full object-contain"
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
               />
             </button>
 
-            {/* Jogo da Aproximação tab */}
+            {/* Aproximação */}
             <button
-              onClick={() => setSelectedGame('aproximacao')}
+              onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('aproximacao'); carouselDrag.current.moved = false; }}
               className={cn(
-                "flex-1 rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer relative",
+                "flex-none w-[23%] rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer snap-start relative",
                 selectedGame === 'aproximacao'
                   ? "border-cyan-500 bg-[#2f3252] shadow-lg shadow-cyan-500/20 scale-105"
                   : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
@@ -1831,25 +1892,47 @@ const HomeScreen = () => {
               <img
                 src={logoAprox}
                 alt="Jogo da Aproximação"
-                className="h-12 md:h-16 object-contain mx-auto"
+                className="h-12 md:h-16 w-full object-contain"
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
               />
-              {/* Badge NOVO */}
               <span className="absolute -top-2 -right-1 bg-cyan-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shadow-md shadow-cyan-900/50 animate-pulse">
                 NOVO
               </span>
             </button>
-          </div>
+
+            {/* Desafio da Palavra — last, revealed by scrolling */}
+            <button
+              onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('desafio'); carouselDrag.current.moved = false; }}
+              className={cn(
+                "flex-none w-[23%] rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer snap-start",
+                selectedGame === 'desafio'
+                  ? "border-violet-500 bg-[#2f3252] shadow-lg shadow-violet-500/20 scale-105"
+                  : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
+              )}
+              data-testid="tab-desafio"
+            >
+              <img
+                src={logoDesafioPalavraSmall}
+                alt="Desafio da Palavra"
+                className="h-12 md:h-16 w-full object-contain"
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+              />
+            </button>
+          </div>{/* end scroll track */}
+          </div>{/* end overflow-hidden wrapper */}
 
           {/* Animated indicator line */}
           <div className="relative h-1 bg-[#1a1c2e] rounded-full mb-5 mx-2">
-            <div 
+            <div
               className={cn(
                 "absolute top-0 h-full w-1/5 rounded-full transition-all duration-300",
                 selectedGame === 'impostor' && "left-0 bg-gradient-to-r from-orange-500 to-amber-500",
                 selectedGame === 'desenho' && "left-[20%] bg-gradient-to-r from-[#46cfa5] to-[#2ea87e]",
                 selectedGame === 'sincronia' && "left-[40%] bg-gradient-to-r from-[#43065c] to-[#6b21a8]",
-                selectedGame === 'desafio' && "left-[60%] bg-gradient-to-r from-violet-500 to-purple-600",
-                selectedGame === 'aproximacao' && "left-[80%] bg-gradient-to-r from-cyan-500 to-teal-500"
+                selectedGame === 'aproximacao' && "left-[60%] bg-gradient-to-r from-cyan-500 to-teal-500",
+                selectedGame === 'desafio' && "left-[80%] bg-gradient-to-r from-violet-500 to-purple-600"
               )}
             />
           </div>
