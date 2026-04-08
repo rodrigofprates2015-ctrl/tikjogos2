@@ -9,7 +9,7 @@ import {
   CheckCircle, Clock, TrendingDown, Minus,
   Flame, Send
 } from "lucide-react";
-import logoAprox from "@assets/Texto__APROX_1775568617320.webp";
+import logoAprox from "@assets/Texto__APROX_1775672673721.webp";
 
 function NotificationCenter() {
   const { notifications, removeNotification } = useAproximacaoStore();

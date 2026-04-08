@@ -98,7 +98,7 @@ import personagemDireito from "@assets/personagem direito.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
 import { useDesafioStore } from "@/lib/desafioStore";
 import { useAproximacaoStore } from "@/lib/aproximacaoStore";
-import logoAprox from "@assets/Texto__APROX_1775568617320.webp";
+import logoAprox from "@assets/Texto__APROX_1775672673721.webp";
 import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd } from "@/components/AdSense";
 import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
 
