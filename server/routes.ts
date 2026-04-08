@@ -4540,11 +4540,7 @@ export async function registerRoutes(
       return;
     }
 
-    // Award +1 heart only to the unique closest (no tie for first place)
-    if (closestGroup.length === 1) {
-      const winner = room.players.find(p => p.uid === closestIds[0]);
-      if (winner) winner.hearts = Math.min(winner.hearts + 1, 5);
-    }
+    // No heart award for closest — only the farthest loses a heart
 
     // Deduct -1 heart from ALL players in the farthest group (even if tied)
     for (const farthestId of farthestIds) {

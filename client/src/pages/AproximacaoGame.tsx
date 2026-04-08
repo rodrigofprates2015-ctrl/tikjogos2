@@ -6,7 +6,7 @@ import { MobileNav } from "@/components/MobileNav";
 import {
   Copy, LogOut, Play, Crown, Loader2, Users, Zap,
   Heart, HeartOff, Trophy, Target, ArrowLeft, ChevronRight,
-  CheckCircle, Clock, TrendingUp, TrendingDown, Minus,
+  CheckCircle, Clock, TrendingDown, Minus,
   Flame, Send
 } from "lucide-react";
 import logoAprox from "@assets/Texto__APROX_1775568617320.webp";
@@ -510,22 +510,17 @@ function PlayingScreen() {
                     const pct = correctAnswer !== 0 ? Math.round((diff / correctAnswer) * 100) : 0;
                     const isClosest = result.closestIds.includes(g.playerId);
                     const isFarthest = result.farthestIds.includes(g.playerId) && result.closestIds[0] !== result.farthestIds[0];
-                    // Closest only gets +1 if unique; farthest always loses
-                    const wonPoint = isClosest && result.closestIds.length === 1;
-                    const lostPoint = isFarthest;
                     return (
                       <div key={g.playerId} className={cn(
                         "flex items-center gap-3 p-3 rounded-xl border",
-                        wonPoint ? "bg-green-900/20 border-green-500/40" :
-                        lostPoint ? "bg-red-900/20 border-red-500/40" :
                         isClosest ? "bg-cyan-900/20 border-cyan-500/30" :
+                        isFarthest ? "bg-red-900/20 border-red-500/40" :
                         "bg-[#1a1c2e] border-[#2f3252]"
                       )}>
                         <div className={cn(
                           "w-7 h-7 rounded-full flex items-center justify-center text-sm font-black",
-                          wonPoint ? "bg-green-500 text-white" :
-                          lostPoint ? "bg-red-500 text-white" :
-                          isClosest ? "bg-cyan-700 text-white" :
+                          isClosest ? "bg-cyan-600 text-white" :
+                          isFarthest ? "bg-red-500 text-white" :
                           "bg-[#2f3252] text-slate-300"
                         )}>
                           {idx + 1}
@@ -538,10 +533,9 @@ function PlayingScreen() {
                           </p>
                         </div>
                         <div className="flex-shrink-0">
-                          {wonPoint && <TrendingUp className="w-5 h-5 text-green-400" />}
-                          {lostPoint && <TrendingDown className="w-5 h-5 text-red-400" />}
-                          {isClosest && !wonPoint && <span className="text-cyan-400 text-xs font-bold">EMPATE</span>}
-                          {!wonPoint && !lostPoint && !isClosest && <Minus className="w-5 h-5 text-slate-600" />}
+                          {isClosest && !isFarthest && <span className="text-cyan-400 text-xs font-bold">MELHOR</span>}
+                          {isFarthest && <TrendingDown className="w-5 h-5 text-red-400" />}
+                          {!isClosest && !isFarthest && <Minus className="w-5 h-5 text-slate-600" />}
                         </div>
                       </div>
                     );
@@ -565,7 +559,7 @@ function PlayingScreen() {
                       <div className={cn(
                         "w-7 h-7 rounded-full flex items-center justify-center text-sm font-black",
                         p.eliminated ? "bg-red-900 text-red-400" :
-                        (result.closestIds.length === 1 && result.closestIds.includes(p.uid)) ? "bg-green-500 text-white" :
+                        result.closestIds.includes(p.uid) ? "bg-cyan-700 text-white" :
                         "bg-[#2f3252] text-slate-300"
                       )}>
                         {p.name.charAt(0).toUpperCase()}
