@@ -4514,21 +4514,42 @@ export async function registerRoutes(
     const { question, guesses } = room.gameData;
     if (guesses.length === 0) return;
 
+    // Sort by closeness for display
     const sorted = [...guesses].sort((a, b) =>
       Math.abs(a.value - question.answer) - Math.abs(b.value - question.answer)
     );
 
-    const closestId = sorted[0].playerId;
-    const farthestId = sorted[sorted.length - 1].playerId;
+    const distOf = (g: { value: number }) => Math.abs(g.value - question.answer);
+    const minDist = distOf(sorted[0]);
+    const maxDist = distOf(sorted[sorted.length - 1]);
 
-    const closestPlayer = room.players.find(p => p.uid === closestId);
-    if (closestPlayer) closestPlayer.hearts = Math.min(closestPlayer.hearts + 1, 5);
+    // Identify groups — players that share the exact same distance
+    const closestGroup = sorted.filter(g => distOf(g) === minDist);
+    const farthestGroup = sorted.filter(g => distOf(g) === maxDist);
 
-    if (farthestId !== closestId) {
-      const farthestPlayer = room.players.find(p => p.uid === farthestId);
-      if (farthestPlayer) {
-        farthestPlayer.hearts = Math.max(farthestPlayer.hearts - 1, 0);
-        if (farthestPlayer.hearts === 0) farthestPlayer.eliminated = true;
+    const closestIds = closestGroup.map(g => g.playerId);
+    const farthestIds = farthestGroup.map(g => g.playerId);
+
+    // If all players have the exact same distance, no one wins or loses
+    if (minDist === maxDist) {
+      room.gameData.phase = 'revealing';
+      room.gameData.lastRoundResult = { closestIds, farthestIds, allGuesses: sorted };
+      broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+      return;
+    }
+
+    // Award +1 heart only to the unique closest (no tie for first place)
+    if (closestGroup.length === 1) {
+      const winner = room.players.find(p => p.uid === closestIds[0]);
+      if (winner) winner.hearts = Math.min(winner.hearts + 1, 5);
+    }
+
+    // Deduct -1 heart from ALL players in the farthest group (even if tied)
+    for (const farthestId of farthestIds) {
+      const loser = room.players.find(p => p.uid === farthestId);
+      if (loser) {
+        loser.hearts = Math.max(loser.hearts - 1, 0);
+        if (loser.hearts === 0) loser.eliminated = true;
       }
     }
 
@@ -4541,9 +4562,7 @@ export async function registerRoutes(
     }
 
     room.gameData.phase = winnerId ? 'gameover' : 'revealing';
-    room.gameData.lastRoundClosest = closestId;
-    room.gameData.lastRoundFarthest = farthestId;
-    room.gameData.lastRoundResult = { closestId, farthestId, allGuesses: sorted };
+    room.gameData.lastRoundResult = { closestIds, farthestIds, allGuesses: sorted };
     if (winnerId) {
       room.gameData.winnerId = winnerId;
       room.gameData.winnerName = winnerName;

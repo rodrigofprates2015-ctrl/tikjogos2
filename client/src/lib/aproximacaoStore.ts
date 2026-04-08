@@ -29,7 +29,7 @@ export type AproximacaoGameData = {
   winnerName?: string;
   lastRoundClosest?: string;
   lastRoundFarthest?: string;
-  lastRoundResult?: { closestId: string; farthestId: string; allGuesses: AproximacaoGuess[] };
+  lastRoundResult?: { closestIds: string[]; farthestIds: string[]; allGuesses: AproximacaoGuess[] };
 };
 
 export type AproximacaoRoom = {
