@@ -4347,9 +4347,11 @@ export async function registerRoutes(
     roundNumber: number;
     winnerId?: string;
     winnerName?: string;
+    pendingWinnerId?: string;
+    pendingWinnerName?: string;
     lastRoundClosest?: string;
     lastRoundFarthest?: string;
-    lastRoundResult?: { closestId: string; farthestId: string; allGuesses: AproximacaoGuess[] };
+    lastRoundResult?: { closestIds: string[]; farthestIds: string[]; allGuesses: AproximacaoGuess[] };
   };
 
   type AproximacaoRoom = {
@@ -4561,11 +4563,12 @@ export async function registerRoutes(
       winnerName = alivePlayers[0].name;
     }
 
-    room.gameData.phase = winnerId ? 'gameover' : 'revealing';
+    // Always go through 'revealing' so players see the last answer before winner screen
+    room.gameData.phase = 'revealing';
     room.gameData.lastRoundResult = { closestIds, farthestIds, allGuesses: sorted };
     if (winnerId) {
-      room.gameData.winnerId = winnerId;
-      room.gameData.winnerName = winnerName;
+      room.gameData.pendingWinnerId = winnerId;
+      room.gameData.pendingWinnerName = winnerName;
     }
 
     broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
@@ -4615,6 +4618,80 @@ export async function registerRoutes(
       }, delay);
     }
   }
+
+  // ── Aproximação: Connection tracking (ping-pong + hard exit) ──────────────
+  const aproximacaoConnections = new Map<WebSocket, { roomCode: string; playerId: string; lastPong: number }>();
+  const aproximacaoHardExitTimers = new Map<string, NodeJS.Timeout>();
+  const APROX_PONG_TIMEOUT = 15000;
+  const APROX_HARD_EXIT_GRACE = 15000;
+
+  function markAproximacaoDisconnected(roomCode: string, playerId: string) {
+    const room = aproximacaoRooms.get(roomCode);
+    if (!room) return;
+    const player = room.players.find(p => p.uid === playerId);
+    if (player && player.connected !== false) {
+      player.connected = false;
+      broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+    }
+  }
+
+  function handleAproximacaoHardExit(roomCode: string, playerId: string) {
+    const room = aproximacaoRooms.get(roomCode);
+    if (!room) return;
+    const player = room.players.find(p => p.uid === playerId);
+    if (!player) return;
+
+    // Remove player from room
+    room.players = room.players.filter(p => p.uid !== playerId);
+
+    // Transfer host if needed
+    if (room.hostId === playerId && room.players.length > 0) {
+      const next = room.players.find(p => p.connected !== false) ?? room.players[0];
+      room.hostId = next.uid;
+      broadcastToAproximacaoRoom(roomCode, { type: 'host-changed', newHostId: next.uid, newHostName: next.name });
+    }
+
+    broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+
+    // If room is empty, delete it
+    if (room.players.length === 0) {
+      aproximacaoRooms.delete(roomCode);
+    }
+  }
+
+  function scheduleAproximacaoHardExit(roomCode: string, playerId: string) {
+    const key = `${roomCode}:${playerId}`;
+    const existing = aproximacaoHardExitTimers.get(key);
+    if (existing) clearTimeout(existing);
+    const timer = setTimeout(() => {
+      aproximacaoHardExitTimers.delete(key);
+      handleAproximacaoHardExit(roomCode, playerId);
+    }, APROX_HARD_EXIT_GRACE);
+    aproximacaoHardExitTimers.set(key, timer);
+  }
+
+  function cancelAproximacaoHardExit(roomCode: string, playerId: string) {
+    const key = `${roomCode}:${playerId}`;
+    const existing = aproximacaoHardExitTimers.get(key);
+    if (existing) {
+      clearTimeout(existing);
+      aproximacaoHardExitTimers.delete(key);
+    }
+  }
+
+  // Heartbeat: ping Aproximação clients, detect timeouts
+  setInterval(() => {
+    const now = Date.now();
+    aproximacaoConnections.forEach((info, ws) => {
+      if (now - info.lastPong > APROX_PONG_TIMEOUT) {
+        markAproximacaoDisconnected(info.roomCode, info.playerId);
+        scheduleAproximacaoHardExit(info.roomCode, info.playerId);
+        aproximacaoConnections.delete(ws);
+      } else if (ws.readyState === WebSocket.OPEN) {
+        try { ws.send(JSON.stringify({ type: 'ping' })); } catch {}
+      }
+    });
+  }, 5000);
 
   // REST: Create aproximacao room
   app.post("/api/aproximacao-rooms", (req, res) => {
@@ -4678,17 +4755,58 @@ export async function registerRoutes(
     res.json(room);
   });
 
+  // REST: Beacon fallback for browser hard-exit
+  app.post("/api/aproximacao-rooms/:code/disconnect-notice", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const { playerId } = req.body;
+    if (!playerId) return res.status(400).json({ error: 'Missing playerId' });
+    markAproximacaoDisconnected(code, playerId);
+    scheduleAproximacaoHardExit(code, playerId);
+    res.json({ ok: true });
+  });
+
   // ── Aproximação: WebSocket handlers ──
   wss.on('connection', (ws) => {
     ws.on('message', async (message) => {
       try {
         const data = JSON.parse(message.toString());
 
+        // ── pong (Aproximação context) ────────────────────────────────────
+        if (data.type === 'pong') {
+          const info = aproximacaoConnections.get(ws);
+          if (info) info.lastPong = Date.now();
+          // (ImpostorGame handler also processes pong for its own map)
+          return;
+        }
+
+        // ── aproximacao-leave (intentional exit) ──────────────────────────
+        if (data.type === 'aproximacao-leave' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          aproximacaoConnections.delete(ws);
+          cancelAproximacaoHardExit(roomCode, data.playerId);
+          handleAproximacaoHardExit(roomCode, data.playerId);
+          return;
+        }
+
+        // ── aproximacao-disconnect-notice (beacon fallback) ───────────────
+        if (data.type === 'aproximacao-disconnect-notice' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          markAproximacaoDisconnected(roomCode, data.playerId);
+          scheduleAproximacaoHardExit(roomCode, data.playerId);
+          return;
+        }
+
         // ── aproximacao-join ──────────────────────────────────────────────
         if (data.type === 'aproximacao-join' && data.roomCode && data.playerId) {
           const roomCode = (data.roomCode as string).toUpperCase();
           const room = aproximacaoRooms.get(roomCode);
           if (!room) return;
+
+          // Register / update connection tracking
+          aproximacaoConnections.set(ws, { roomCode, playerId: data.playerId, lastPong: Date.now() });
+          // Cancel any pending hard exit (reconnect)
+          cancelAproximacaoHardExit(roomCode, data.playerId);
+
           // Mark player connected
           const player = room.players.find(p => p.uid === data.playerId);
           if (player) player.connected = true;
@@ -4769,6 +4887,15 @@ export async function registerRoutes(
           if (!room || !room.gameData || room.gameData.phase !== 'revealing') return;
           if (room.hostId !== data.playerId) return;
 
+          // If a winner was determined in the last round, transition to gameover now
+          if (room.gameData.pendingWinnerId) {
+            room.gameData.phase = 'gameover';
+            room.gameData.winnerId = room.gameData.pendingWinnerId;
+            room.gameData.winnerName = room.gameData.pendingWinnerName;
+            broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+            return;
+          }
+
           const question = getNextAproximacaoQuestion(roomCode);
           room.gameData = {
             phase: 'guessing',
@@ -4796,28 +4923,17 @@ export async function registerRoutes(
           broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
         }
 
-        // ── aproximacao-disconnect ─────────────────────────────────────────
-        if (data.type === 'aproximacao-disconnect' && data.roomCode && data.playerId) {
-          const roomCode = (data.roomCode as string).toUpperCase();
-          const room = aproximacaoRooms.get(roomCode);
-          if (!room) return;
-
-          const player = room.players.find(p => p.uid === data.playerId);
-          if (player) player.connected = false;
-
-          // If host left and others remain, transfer host
-          if (room.hostId === data.playerId) {
-            const connected = room.players.filter(p => p.uid !== data.playerId && p.connected !== false);
-            if (connected.length > 0) {
-              room.hostId = connected[0].uid;
-              broadcastToAproximacaoRoom(roomCode, { type: 'host-changed', newHostId: room.hostId, newHostName: connected[0].name });
-            }
-          }
-          broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
-        }
-
       } catch {
         // Ignore parse errors from other game types
+      }
+    });
+
+    ws.on('close', () => {
+      const info = aproximacaoConnections.get(ws);
+      if (info) {
+        aproximacaoConnections.delete(ws);
+        markAproximacaoDisconnected(info.roomCode, info.playerId);
+        scheduleAproximacaoHardExit(info.roomCode, info.playerId);
       }
     });
   });

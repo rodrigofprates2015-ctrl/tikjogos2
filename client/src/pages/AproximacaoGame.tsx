@@ -584,28 +584,41 @@ function PlayingScreen() {
 
             {/* Host controls */}
             {isHost ? (
-              <div className="flex gap-2">
-                <button
-                  onClick={returnToLobby}
-                  className="flex-1 py-3 rounded-2xl font-bold text-sm text-slate-400 border-2 border-[#2f3252] hover:border-slate-500 transition-all"
-                  data-testid="button-return-lobby"
-                >
-                  <ArrowLeft className="w-4 h-4 inline mr-1" />
-                  Lobby
-                </button>
+              gameData.pendingWinnerId ? (
+                // Last round — show winner reveal button (no lobby button)
                 <button
                   onClick={nextRound}
-                  className="flex-1 py-3 rounded-2xl font-black text-sm bg-gradient-to-r from-cyan-500 to-teal-500 text-white border-b-4 border-cyan-800 hover:brightness-110 active:border-b-0 active:translate-y-1 shadow-lg shadow-cyan-500/25 transition-all"
-                  data-testid="button-next-round"
+                  className="w-full py-4 rounded-2xl font-black text-base bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-b-4 border-yellow-700 hover:brightness-110 active:border-b-0 active:translate-y-1 shadow-lg shadow-yellow-500/30 transition-all"
+                  data-testid="button-see-winner"
                 >
-                  Próxima <ChevronRight className="w-4 h-4 inline" />
+                  🏆 Ver Vencedor
                 </button>
-              </div>
+              ) : (
+                <div className="flex gap-2">
+                  <button
+                    onClick={returnToLobby}
+                    className="flex-1 py-3 rounded-2xl font-bold text-sm text-slate-400 border-2 border-[#2f3252] hover:border-slate-500 transition-all"
+                    data-testid="button-return-lobby"
+                  >
+                    <ArrowLeft className="w-4 h-4 inline mr-1" />
+                    Lobby
+                  </button>
+                  <button
+                    onClick={nextRound}
+                    className="flex-1 py-3 rounded-2xl font-black text-sm bg-gradient-to-r from-cyan-500 to-teal-500 text-white border-b-4 border-cyan-800 hover:brightness-110 active:border-b-0 active:translate-y-1 shadow-lg shadow-cyan-500/25 transition-all"
+                    data-testid="button-next-round"
+                  >
+                    Próxima <ChevronRight className="w-4 h-4 inline" />
+                  </button>
+                </div>
+              )
             ) : (
               <div className="bg-[#242642] rounded-2xl p-4 border-2 border-[#2f3252] text-center">
                 <div className="flex items-center justify-center gap-2 text-slate-400">
                   <Clock className="w-4 h-4 animate-pulse" />
-                  <span className="text-sm">Aguardando o host continuar...</span>
+                  <span className="text-sm">
+                    {gameData.pendingWinnerId ? 'Aguardando revelação do vencedor...' : 'Aguardando o host continuar...'}
+                  </span>
                 </div>
               </div>
             )}

@@ -27,6 +27,8 @@ export type AproximacaoGameData = {
   roundNumber: number;
   winnerId?: string;
   winnerName?: string;
+  pendingWinnerId?: string;
+  pendingWinnerName?: string;
   lastRoundClosest?: string;
   lastRoundFarthest?: string;
   lastRoundResult?: { closestIds: string[]; farthestIds: string[]; allGuesses: AproximacaoGuess[] };
@@ -175,6 +177,15 @@ export const useAproximacaoStore = create<AproximacaoState>((set, get) => ({
       newWs.send(JSON.stringify({ type: 'aproximacao-join', roomCode: code, playerId: user?.uid }));
     };
 
+    // Browser hard-exit beacon (tab close / navigate away)
+    const handleBeforeUnload = () => {
+      const { room: currentRoom, user: currentUser } = get();
+      if (!currentRoom || !currentUser) return;
+      const url = `/api/aproximacao-rooms/${currentRoom.code}/disconnect-notice`;
+      navigator.sendBeacon(url, JSON.stringify({ playerId: currentUser.uid }));
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     newWs.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -213,7 +224,9 @@ export const useAproximacaoStore = create<AproximacaoState>((set, get) => ({
 
     newWs.onerror = () => newWs.close();
     newWs.onclose = (event) => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       const room = get().room;
+      // Don't reconnect on intentional close (code 1000)
       if (room && event.code !== 1000) attemptReconnect();
     };
 
@@ -256,8 +269,9 @@ export const useAproximacaoStore = create<AproximacaoState>((set, get) => ({
   leaveGame: () => {
     const { ws, room, user } = get();
     if (ws && room && user) {
-      ws.send(JSON.stringify({ type: 'aproximacao-disconnect', roomCode: room.code, playerId: user.uid }));
-      ws.close();
+      // Intentional leave — server removes player immediately
+      ws.send(JSON.stringify({ type: 'aproximacao-leave', roomCode: room.code, playerId: user.uid }));
+      ws.close(1000, 'leave');
     }
     set({ user: null, room: null, phase: 'home', ws: null, myGuess: null });
   },
