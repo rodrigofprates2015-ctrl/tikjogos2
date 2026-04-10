@@ -47,6 +47,8 @@ import {
   MessageSquare,
   TrendingUp,
   Trophy,
+  Target,
+  Heart,
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
@@ -103,7 +105,18 @@ type DesafioRoom = {
   gameData: DesafioGameData | null; players: Player[]; createdAt: string;
 };
 
-type NavItem = "overview" | "impostor" | "desenho" | "sincronia" | "palavra" | "temas" | "analytics" | "feedback";
+type AproximacaoAdminPlayer = { uid: string; name: string; hearts: number; eliminated: boolean; connected: boolean };
+type AproximacaoAdminRoom = {
+  code: string; hostId: string; status: 'waiting' | 'playing';
+  players: AproximacaoAdminPlayer[];
+  currentQuestion: string | null; currentQuestionAnswer: number | null; currentQuestionUnit: string | null;
+  phase: 'guessing' | 'revealing' | 'gameover' | null;
+  roundNumber: number; guessCount: number;
+  winnerId: string | null; winnerName: string | null;
+  createdAt: string;
+};
+
+type NavItem = "overview" | "impostor" | "desenho" | "sincronia" | "palavra" | "aproximacao" | "temas" | "analytics" | "feedback";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -318,6 +331,91 @@ function DesafioRoomsTable({ rooms, onInspect }: { rooms: DesafioRoom[]; onInspe
               </TableRow>
             );
           })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function AproximacaoRoomsTable({ rooms }: { rooms: AproximacaoAdminRoom[] }) {
+  if (rooms.length === 0) return <EmptyState />;
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow className="border-slate-700 hover:bg-transparent">
+            <TableHead className="text-slate-400 font-medium">Status</TableHead>
+            <TableHead className="text-slate-400 font-medium">Código</TableHead>
+            <TableHead className="text-slate-400 font-medium">Jogadores</TableHead>
+            <TableHead className="text-slate-400 font-medium">Fase</TableHead>
+            <TableHead className="text-slate-400 font-medium">Rodada</TableHead>
+            <TableHead className="text-slate-400 font-medium">Pergunta Atual</TableHead>
+            <TableHead className="text-slate-400 font-medium">Criada</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rooms.map((room) => (
+            <TableRow key={room.code} className="border-slate-700/50 hover:bg-slate-700/30">
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <StatusDot active={room.status === "playing"} />
+                  <Badge className={room.status === "playing" ? "bg-emerald-600/80 text-emerald-100 text-xs" : "bg-slate-600/80 text-slate-300 text-xs"}>
+                    {room.status === "playing" ? "Jogando" : "Aguardando"}
+                  </Badge>
+                </div>
+              </TableCell>
+              <TableCell className="font-mono font-bold text-white text-sm">{room.code}</TableCell>
+              <TableCell>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-slate-300 text-sm">{room.players.length} jogadores</span>
+                  <div className="flex gap-1 flex-wrap">
+                    {room.players.map(p => (
+                      <span key={p.uid} className={`text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-0.5 ${p.eliminated ? "bg-red-900/50 text-red-400" : p.connected ? "bg-slate-700 text-slate-300" : "bg-slate-800 text-slate-500"}`}>
+                        {p.name}
+                        {!p.eliminated && (
+                          <span className="flex gap-0.5 ml-0.5">
+                            {Array.from({ length: p.hearts }).map((_, i) => (
+                              <Heart key={i} className="w-2 h-2 fill-red-400 text-red-400" />
+                            ))}
+                          </span>
+                        )}
+                        {p.eliminated && <span className="ml-0.5 text-red-500">✕</span>}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                {room.phase && (
+                  <Badge className={
+                    room.phase === 'guessing' ? "bg-cyan-600/80 text-xs" :
+                    room.phase === 'revealing' ? "bg-amber-600/80 text-xs" :
+                    room.phase === 'gameover' ? "bg-red-600/80 text-xs" :
+                    "bg-slate-600/80 text-xs"
+                  }>
+                    {room.phase === 'guessing' ? 'Chutando' : room.phase === 'revealing' ? 'Revelando' : room.phase === 'gameover' ? 'Fim' : '—'}
+                  </Badge>
+                )}
+                {room.winnerName && (
+                  <p className="text-xs text-amber-400 mt-1 flex items-center gap-1"><Trophy className="w-3 h-3" />{room.winnerName}</p>
+                )}
+              </TableCell>
+              <TableCell className="text-slate-400 text-sm">
+                {room.roundNumber > 0 ? `Rodada ${room.roundNumber}` : "—"}
+              </TableCell>
+              <TableCell className="text-slate-400 text-xs max-w-[200px] truncate">
+                {room.currentQuestion ? (
+                  <span title={room.currentQuestion}>
+                    {room.currentQuestion.length > 60 ? room.currentQuestion.slice(0, 60) + "…" : room.currentQuestion}
+                    {room.currentQuestionAnswer != null && (
+                      <span className="ml-1 text-cyan-400 font-mono">({room.currentQuestionAnswer} {room.currentQuestionUnit})</span>
+                    )}
+                  </span>
+                ) : "—"}
+              </TableCell>
+              <TableCell className="text-slate-500 text-xs">{new Date(room.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>
@@ -806,21 +904,23 @@ function TemasView({ token, themes, setThemes, onLogout }: {
 // ─── Overview (home) ─────────────────────────────────────────────────────────
 
 function OverviewView({
-  rooms, drawingRooms, sincStats, desafioRooms, token,
+  rooms, drawingRooms, sincStats, desafioRooms, aproximacaoRooms, token,
 }: {
   rooms: Room[]; drawingRooms: DrawingRoom[];
   sincStats: SincStats | null; desafioRooms: DesafioRoom[];
+  aproximacaoRooms: AproximacaoAdminRoom[];
   token: string | null;
 }) {
   const totalOnline =
     rooms.filter(r => r.gameMode !== 'desafioPalavra').reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0) +
     drawingRooms.reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0) +
     (sincStats?.totalConnectedPlayers ?? 0) +
-    desafioRooms.reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0);
+    desafioRooms.reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0) +
+    aproximacaoRooms.reduce((s, r) => s + r.players.filter(p => p.connected).length, 0);
 
-  const totalRooms = rooms.filter(r => r.gameMode !== 'desafioPalavra').length + drawingRooms.length + (sincStats?.activeRooms ?? 0) + desafioRooms.length;
-  const playing = rooms.filter(r => r.status === "playing" && r.gameMode !== 'desafioPalavra').length + drawingRooms.filter(r => r.status !== "waiting").length + (sincStats?.playingRooms ?? 0) + desafioRooms.filter(r => r.status === "playing").length;
-  const waiting = rooms.filter(r => r.status === "waiting" && r.gameMode !== 'desafioPalavra').length + drawingRooms.filter(r => r.status === "waiting").length + (sincStats?.waitingRooms ?? 0) + desafioRooms.filter(r => r.status === "waiting").length;
+  const totalRooms = rooms.filter(r => r.gameMode !== 'desafioPalavra').length + drawingRooms.length + (sincStats?.activeRooms ?? 0) + desafioRooms.length + aproximacaoRooms.length;
+  const playing = rooms.filter(r => r.status === "playing" && r.gameMode !== 'desafioPalavra').length + drawingRooms.filter(r => r.status !== "waiting").length + (sincStats?.playingRooms ?? 0) + desafioRooms.filter(r => r.status === "playing").length + aproximacaoRooms.filter(r => r.status === "playing").length;
+  const waiting = rooms.filter(r => r.status === "waiting" && r.gameMode !== 'desafioPalavra').length + drawingRooms.filter(r => r.status === "waiting").length + (sincStats?.waitingRooms ?? 0) + desafioRooms.filter(r => r.status === "waiting").length + aproximacaoRooms.filter(r => r.status === "waiting").length;
 
   const { data: analytics } = useQuery<any>({
     queryKey: ["/api/analytics/dashboard", token],
@@ -846,6 +946,7 @@ function OverviewView({
     { label: "Impostor Desenho", rooms: drawingRooms.length, players: drawingRooms.reduce((s, r) => s + r.players.length, 0), accent: "#a855f7", icon: Paintbrush },
     { label: "Sincronia", rooms: sincStats?.activeRooms ?? 0, players: sincStats?.totalConnectedPlayers ?? 0, accent: "#10b981", icon: Sparkles },
     { label: "Desafio da Palavra", rooms: desafioRooms.length, players: desafioRooms.reduce((s, r) => s + r.players.length, 0), accent: "#f59e0b", icon: Type },
+    { label: "Aproximação", rooms: aproximacaoRooms.length, players: aproximacaoRooms.reduce((s, r) => s + r.players.length, 0), accent: "#06b6d4", icon: Target },
   ];
 
   return (
@@ -1019,6 +1120,7 @@ export default function AdminDashboard() {
   const [drawingRooms, setDrawingRooms] = useState<DrawingRoom[]>([]);
   const [sincStats, setSincStats] = useState<SincStats | null>(null);
   const [desafioRooms, setDesafioRooms] = useState<DesafioRoom[]>([]);
+  const [aproximacaoRooms, setAproximacaoRooms] = useState<AproximacaoAdminRoom[]>([]);
   const [themes, setThemes] = useState<Theme[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
@@ -1057,18 +1159,19 @@ export default function AdminDashboard() {
       localStorage.removeItem("adminToken");
       setToken(null);
       setIsAuthenticated(false);
-      setRooms([]); setDrawingRooms([]); setSincStats(null); setDesafioRooms([]); setThemes([]);
+      setRooms([]); setDrawingRooms([]); setSincStats(null); setDesafioRooms([]); setAproximacaoRooms([]); setThemes([]);
       setEmail(""); setPassword(""); setLoginError("");
     }
   }, []);
 
   const fetchAll = useCallback(async (t: string) => {
     const headers = { Authorization: `Bearer ${t}` };
-    const [roomsRes, drawRes, sincRes, desafioRes] = await Promise.allSettled([
+    const [roomsRes, drawRes, sincRes, desafioRes, aproximacaoRes] = await Promise.allSettled([
       fetch("/api/admin/rooms", { headers }),
       fetch("/api/admin/drawing-rooms", { headers }),
       fetch("/api/admin/sincronia-rooms", { headers }),
       fetch("/api/admin/desafio-rooms", { headers }),
+      fetch("/api/admin/aproximacao-rooms", { headers }),
     ]);
 
     if (roomsRes.status === "fulfilled" && roomsRes.value.ok) setRooms(await roomsRes.value.json());
@@ -1077,6 +1180,7 @@ export default function AdminDashboard() {
     if (drawRes.status === "fulfilled" && drawRes.value.ok) setDrawingRooms(await drawRes.value.json());
     if (sincRes.status === "fulfilled" && sincRes.value.ok) setSincStats(await sincRes.value.json());
     if (desafioRes.status === "fulfilled" && desafioRes.value.ok) setDesafioRooms(await desafioRes.value.json());
+    if (aproximacaoRes.status === "fulfilled" && aproximacaoRes.value.ok) setAproximacaoRooms(await aproximacaoRes.value.json());
 
     setLastUpdated(new Date());
   }, [handleLogout]);
@@ -1175,6 +1279,7 @@ export default function AdminDashboard() {
     { id: "desenho", label: "Impostor Desenho", icon: Paintbrush, accent: "#a855f7", badge: drawingRooms.length || undefined },
     { id: "sincronia", label: "Sincronia", icon: Sparkles, accent: "#10b981", badge: sincStats?.activeRooms || undefined },
     { id: "palavra", label: "Desafio da Palavra", icon: Type, accent: "#f59e0b", badge: desafioRooms.filter(r => r.players.some(p => p.connected !== false)).length || undefined },
+    { id: "aproximacao", label: "Aproximação", icon: Target, accent: "#06b6d4", badge: aproximacaoRooms.length || undefined },
     { id: "temas", label: "Temas", icon: FileText, accent: "#ec4899", badge: themes.filter(t => !t.approved).length || undefined },
     { id: "analytics", label: "Analytics", icon: BarChart3, accent: "#06b6d4" },
     { id: "feedback", label: "Feedback", icon: Star, accent: "#f59e0b" },
@@ -1209,6 +1314,7 @@ export default function AdminDashboard() {
           <OverviewView
             rooms={rooms} drawingRooms={drawingRooms}
             sincStats={sincStats} desafioRooms={desafioRooms}
+            aproximacaoRooms={aproximacaoRooms}
             token={token}
           />
         );
@@ -1282,6 +1388,24 @@ export default function AdminDashboard() {
               <DesafioRoomsTable rooms={desafioRooms} onInspect={inspectDesafioRoom} />
             </GameSection>
             <GameSessionsChart gameType="desafio" token={token} accent="#f59e0b" />
+          </div>
+        );
+
+      case "aproximacao":
+        return (
+          <div className="space-y-5">
+            <GameSection
+              title="Jogo da Aproximação" icon={Target} accent="#06b6d4" lastUpdated={lastUpdated}
+              statsCards={<>
+                <StatCard label="Salas Ativas" value={aproximacaoRooms.length} icon={Home} accent="#06b6d4" />
+                <StatCard label="Jogadores" value={aproximacaoRooms.reduce((s, r) => s + r.players.length, 0)} icon={Users} accent="#22d3ee" />
+                <StatCard label="Jogando" value={aproximacaoRooms.filter(r => r.status === "playing").length} icon={Activity} accent="#10b981" />
+                <StatCard label="Aguardando" value={aproximacaoRooms.filter(r => r.status === "waiting").length} icon={Clock} accent="#64748b" />
+              </>}
+            >
+              <AproximacaoRoomsTable rooms={aproximacaoRooms} />
+            </GameSection>
+            <GameSessionsChart gameType="aproximacao" token={token} accent="#06b6d4" />
           </div>
         );
 

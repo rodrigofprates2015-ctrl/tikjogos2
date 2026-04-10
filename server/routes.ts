@@ -3549,7 +3549,7 @@ export async function registerRoutes(
   // Admin: 30-day game session stats per game type
   app.get("/api/admin/game-sessions/:gameType", verifyAdmin, async (req, res) => {
     const { gameType } = req.params;
-    if (!['impostor', 'desenho', 'sincronia', 'desafio'].includes(gameType)) {
+    if (!['impostor', 'desenho', 'sincronia', 'desafio', 'aproximacao'].includes(gameType)) {
       return res.status(400).json({ error: "Invalid game type" });
     }
     try {
@@ -4539,6 +4539,31 @@ export async function registerRoutes(
 
   const aproximacaoRooms = new Map<string, AproximacaoRoom>();
   const aproximacaoQuestionPools = new Map<string, number[]>();
+
+  // Admin: Aproximação rooms (in-memory Map)
+  app.get("/api/admin/aproximacao-rooms", verifyAdmin, (_req, res) => {
+    try {
+      const rooms = Array.from(aproximacaoRooms.values()).map(r => ({
+        code: r.code,
+        hostId: r.hostId,
+        status: r.status,
+        players: r.players.map(p => ({ uid: p.uid, name: p.name, hearts: p.hearts, eliminated: p.eliminated ?? false, connected: p.connected ?? true })),
+        currentQuestion: r.gameData?.question?.text ?? null,
+        currentQuestionAnswer: r.gameData?.question?.answer ?? null,
+        currentQuestionUnit: r.gameData?.question?.unit ?? null,
+        phase: r.gameData?.phase ?? null,
+        roundNumber: r.gameData?.roundNumber ?? 0,
+        guessCount: r.gameData?.guesses?.length ?? 0,
+        winnerId: r.gameData?.winnerId ?? null,
+        winnerName: r.gameData?.winnerName ?? null,
+        createdAt: r.createdAt,
+      }));
+      res.json(rooms);
+    } catch (error) {
+      console.error('[Admin] Error fetching aproximacao rooms:', error);
+      res.status(500).json({ error: "Erro ao buscar salas de aproximação" });
+    }
+  });
 
   function generateAproximacaoCode(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
