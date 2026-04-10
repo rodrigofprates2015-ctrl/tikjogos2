@@ -35,9 +35,7 @@ export function createAnalyticsRouter(verifyAdmin: any) {
   router.post('/reset', verifyAdmin, async (req, res) => {
     try {
       if (!db) return res.status(503).json({ error: 'Database not available' });
-      // Delete all analytics events
       await db.delete(analyticsEvents);
-      // Delete all room records from DB
       await db.delete(rooms);
       console.log('[Analytics] All analytics data and room records reset by admin');
       res.json({ ok: true, message: 'All analytics data reset' });
@@ -47,9 +45,33 @@ export function createAnalyticsRouter(verifyAdmin: any) {
     }
   });
 
+  // ─── POST /api/analytics/reset-traffic (admin only — zeroes only pageviews and unique_visitor) ───
+  router.post('/reset-traffic', verifyAdmin, async (req, res) => {
+    try {
+      if (!db || !pool) return res.status(503).json({ error: 'Database not available' });
+      await (pool as Pool).query(
+        `DELETE FROM analytics_events WHERE event_type IN ('pageview', 'unique_visitor')`
+      );
+      console.log('[Analytics] Traffic data (pageviews + unique_visitor) reset by admin');
+      res.json({ ok: true, message: 'Traffic data reset. Counters start from now.' });
+    } catch (error: any) {
+      console.error('[Analytics] Reset-traffic error:', error);
+      res.status(500).json({ error: error?.message });
+    }
+  });
+
   // ─── GET /api/analytics/dashboard (main endpoint) ───
+  // Accepts ?period=24h|7d|30d — controls the window for Pageviews and Unique Visitors KPIs
   router.get('/dashboard', verifyAdmin, async (req, res) => {
     try {
+      // Resolve period window
+      const periodParam = (req.query.period as string) || '30d';
+      const periodMs: Record<string, number> = { '24h': 24 * 60 * 60 * 1000, '7d': 7 * 24 * 60 * 60 * 1000, '30d': 30 * 24 * 60 * 60 * 1000 };
+      const windowMs = periodMs[periodParam] ?? periodMs['30d'];
+      const periodStart = new Date(Date.now() - windowMs);
+      // Previous window (same length, immediately before) — used for change %
+      const prevPeriodStart = new Date(Date.now() - windowMs * 2);
+
       if (!db) {
         // Return in-memory game stats when DB is unavailable
         const emptyDays = Array.from({ length: 30 }, (_, i) => {
@@ -57,6 +79,7 @@ export function createAnalyticsRouter(verifyAdmin: any) {
           return { date: d.toISOString().split('T')[0], count: 0 };
         });
         return res.json({
+          period: periodParam,
           overview: {
             totalPageviews: 0, totalUniqueVisitors: 0, totalPlayers: 0,
             avgSessionDuration: 0,
@@ -85,11 +108,15 @@ export function createAnalyticsRouter(verifyAdmin: any) {
       const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       const fourteenDaysAgo = new Date(); fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
-      // ── Overview KPIs (no session_duration) ──
+      // ── Overview KPIs — filtered by selected period ──
       const [
         totalPageviewsRes,
         totalUniqueVisitorsRes,
         totalPlayersRes,
+        prevPageviewsRes,
+        prevVisitorsRes,
+        prevPlayersRes,
+        // Legacy week queries kept for session change calc
         weekPageviewsRes,
         weekVisitorsRes,
         weekPlayersRes,
@@ -97,9 +124,15 @@ export function createAnalyticsRouter(verifyAdmin: any) {
         prevWeekVisitorsRes,
         prevWeekPlayersRes,
       ] = await Promise.all([
-        db.select({ count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview'`),
-        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'unique_visitor'`),
-        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join'`),
+        // Current period
+        db.select({ count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${periodStart}`),
+        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.createdAt} >= ${periodStart}`),
+        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.createdAt} >= ${periodStart}`),
+        // Previous period (for change %)
+        db.select({ count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${prevPeriodStart} AND ${analyticsEvents.createdAt} < ${periodStart}`),
+        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.createdAt} >= ${prevPeriodStart} AND ${analyticsEvents.createdAt} < ${periodStart}`),
+        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.createdAt} >= ${prevPeriodStart} AND ${analyticsEvents.createdAt} < ${periodStart}`),
+        // Week queries (kept for session change calc compatibility)
         db.select({ count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${sevenDaysAgo}`),
         db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.createdAt} >= ${sevenDaysAgo}`),
         db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.createdAt} >= ${sevenDaysAgo}`),
@@ -273,25 +306,26 @@ export function createAnalyticsRouter(verifyAdmin: any) {
         return Math.round(((current - previous) / previous) * 100);
       };
 
-      const weekPV = weekPageviewsRes[0]?.count || 0;
-      const prevPV = prevWeekPageviewsRes[0]?.count || 0;
-      const weekUV = weekVisitorsRes[0]?.count || 0;
-      const prevUV = prevWeekVisitorsRes[0]?.count || 0;
-      const weekPL = weekPlayersRes[0]?.count || 0;
-      const prevPL = prevWeekPlayersRes[0]?.count || 0;
+      const curPV = totalPageviewsRes[0]?.count || 0;
+      const prePV = prevPageviewsRes[0]?.count || 0;
+      const curUV = totalUniqueVisitorsRes[0]?.count || 0;
+      const preUV = prevVisitorsRes[0]?.count || 0;
+      const curPL = totalPlayersRes[0]?.count || 0;
+      const prePL = prevPlayersRes[0]?.count || 0;
       const weekSess = Number(weekSessionRes[0]?.avg) || 0;
       const prevSess = Number(prevWeekSessionRes[0]?.avg) || 0;
 
       res.json({
+        period: periodParam,
         overview: {
-          totalPageviews: totalPageviewsRes[0]?.count || 0,
-          totalUniqueVisitors: totalUniqueVisitorsRes[0]?.count || 0,
-          totalPlayers: totalPlayersRes[0]?.count || 0,
+          totalPageviews: curPV,
+          totalUniqueVisitors: curUV,
+          totalPlayers: curPL,
           avgSessionDuration: Math.round(Number(avgSessionRes[0]?.avg) || 0),
           changes: {
-            pageviews: calcChange(weekPV, prevPV),
-            visitors: calcChange(weekUV, prevUV),
-            players: calcChange(weekPL, prevPL),
+            pageviews: calcChange(curPV, prePV),
+            visitors: calcChange(curUV, preUV),
+            players: calcChange(curPL, prePL),
             session: calcChange(weekSess, prevSess),
           },
         },

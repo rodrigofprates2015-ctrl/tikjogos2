@@ -299,6 +299,31 @@ function SectionTitle({ icon: Icon, title, subtitle }: { icon: any; title: strin
 export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
   const queryClient = useQueryClient();
   const [resetting, setResetting] = useState(false);
+  const [resettingTraffic, setResettingTraffic] = useState(false);
+  const [period, setPeriod] = useState<'24h' | '7d' | '30d'>('30d');
+
+  async function handleResetTraffic() {
+    if (!token) return;
+    if (!confirm('Isso vai zerar os contadores de Pageviews e Visitantes Únicos a partir de agora (10/04/2026). Os dados de jogadores e salas são mantidos. Confirmar?')) return;
+    setResettingTraffic(true);
+    try {
+      const res = await fetch('/api/analytics/reset-traffic', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/analytics/dashboard'] });
+        alert('Contadores de tráfego zerados! Os gráficos começam do zero a partir de hoje.');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert('Erro: ' + (err.error || res.statusText));
+      }
+    } catch (e: any) {
+      alert('Erro: ' + e.message);
+    } finally {
+      setResettingTraffic(false);
+    }
+  }
 
   async function handleReset() {
     if (!token) return;
@@ -324,10 +349,10 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
   }
 
   const { data, isLoading, error } = useQuery<DashboardData>({
-    queryKey: ['/api/analytics/dashboard', token],
+    queryKey: ['/api/analytics/dashboard', token, period],
     queryFn: async () => {
       if (!token) throw new Error('Token não disponível');
-      const res = await fetch('/api/analytics/dashboard', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`/api/analytics/dashboard?period=${period}`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.message || `${res.status}: ${res.statusText}`);
@@ -415,13 +440,33 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
             <p className="text-sm text-white/40">Visão completa do TikJogos</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* Period selector */}
+          <div className="flex items-center bg-white/5 border border-white/10 rounded-lg p-0.5 gap-0.5">
+            {(['24h', '7d', '30d'] as const).map(p => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${period === p ? 'bg-indigo-500 text-white shadow' : 'text-white/40 hover:text-white/70'}`}
+              >
+                {p === '24h' ? '24h' : p === '7d' ? '7 dias' : '30 dias'}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={handleResetTraffic}
+            disabled={resettingTraffic}
+            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/30 transition-colors disabled:opacity-50"
+            title="Zera apenas Pageviews e Visitantes Únicos — mantém dados de jogadores e salas"
+          >
+            {resettingTraffic ? 'Zerando...' : 'Zerar Tráfego'}
+          </button>
           <button
             onClick={handleReset}
             disabled={resetting}
             className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 transition-colors disabled:opacity-50"
           >
-            {resetting ? 'Resetando...' : 'Zerar Dados'}
+            {resetting ? 'Resetando...' : 'Zerar Tudo'}
           </button>
           <Badge variant="outline" className="border-white/10 text-white/40 text-[11px]">
             Atualizado agora
@@ -458,9 +503,9 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
         <TabsContent value="overview" className="space-y-6">
           {/* KPI Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KpiCard title="Pageviews" value={formatNum(overview.totalPageviews)} icon={Eye} change={overview.changes.pageviews} accent="#6366f1" />
-            <KpiCard title="Visitantes Únicos (IPs)" value={formatNum(overview.totalUniqueVisitors)} icon={Users} change={overview.changes.visitors} accent="#8b5cf6" />
-            <KpiCard title="Jogadores Únicos" value={formatNum(overview.totalPlayers)} icon={Gamepad2} change={overview.changes.players} accent="#ec4899" subtitle="Entraram em pelo menos 1 sala" />
+            <KpiCard title={`Pageviews (${period === '24h' ? '24h' : period === '7d' ? '7 dias' : '30 dias'})`} value={formatNum(overview.totalPageviews)} icon={Eye} change={overview.changes.pageviews} accent="#6366f1" />
+            <KpiCard title={`Visitantes Únicos (${period === '24h' ? '24h' : period === '7d' ? '7 dias' : '30 dias'})`} value={formatNum(overview.totalUniqueVisitors)} icon={Users} change={overview.changes.visitors} accent="#8b5cf6" subtitle="IPs distintos" />
+            <KpiCard title={`Jogadores Únicos (${period === '24h' ? '24h' : period === '7d' ? '7 dias' : '30 dias'})`} value={formatNum(overview.totalPlayers)} icon={Gamepad2} change={overview.changes.players} accent="#ec4899" subtitle="Entraram em pelo menos 1 sala" />
             <KpiCard title="Sessão Média" value={formatDuration(overview.avgSessionDuration)} icon={Clock} change={overview.changes.session} accent="#f59e0b" />
           </div>
 
