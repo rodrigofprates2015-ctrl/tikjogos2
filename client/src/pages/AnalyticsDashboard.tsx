@@ -441,18 +441,6 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          {/* Period selector */}
-          <div className="flex items-center bg-white/5 border border-white/10 rounded-lg p-0.5 gap-0.5">
-            {(['24h', '7d', '30d'] as const).map(p => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${period === p ? 'bg-indigo-500 text-white shadow' : 'text-white/40 hover:text-white/70'}`}
-              >
-                {p === '24h' ? '24h' : p === '7d' ? '7 dias' : '30 dias'}
-              </button>
-            ))}
-          </div>
           <button
             onClick={handleResetTraffic}
             disabled={resettingTraffic}
@@ -501,11 +489,32 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
 
         {/* ═══ OVERVIEW TAB ═══ */}
         <TabsContent value="overview" className="space-y-6">
+
+          {/* Period selector — controla os 3 primeiros KPI cards */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-white/40 font-medium">Período:</span>
+            <div className="flex items-center bg-white/5 border border-white/10 rounded-xl p-1 gap-1">
+              {(['24h', '7d', '30d'] as const).map(p => (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                    period === p
+                      ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
+                      : 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                  }`}
+                >
+                  {p === '24h' ? '24 horas' : p === '7d' ? '7 dias' : '1 mês'}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* KPI Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <KpiCard title={`Pageviews (${period === '24h' ? '24h' : period === '7d' ? '7 dias' : '30 dias'})`} value={formatNum(overview.totalPageviews)} icon={Eye} change={overview.changes.pageviews} accent="#6366f1" />
-            <KpiCard title={`Visitantes Únicos (${period === '24h' ? '24h' : period === '7d' ? '7 dias' : '30 dias'})`} value={formatNum(overview.totalUniqueVisitors)} icon={Users} change={overview.changes.visitors} accent="#8b5cf6" subtitle="IPs distintos" />
-            <KpiCard title={`Jogadores Únicos (${period === '24h' ? '24h' : period === '7d' ? '7 dias' : '30 dias'})`} value={formatNum(overview.totalPlayers)} icon={Gamepad2} change={overview.changes.players} accent="#ec4899" subtitle="Entraram em pelo menos 1 sala" />
+            <KpiCard title="Pageviews" value={formatNum(overview.totalPageviews)} icon={Eye} change={overview.changes.pageviews} accent="#6366f1" subtitle={period === '24h' ? 'Últimas 24h' : period === '7d' ? 'Últimos 7 dias' : 'Último mês'} />
+            <KpiCard title="Visitantes Únicos" value={formatNum(overview.totalUniqueVisitors)} icon={Users} change={overview.changes.visitors} accent="#8b5cf6" subtitle={period === '24h' ? 'IPs distintos — 24h' : period === '7d' ? 'IPs distintos — 7 dias' : 'IPs distintos — 1 mês'} />
+            <KpiCard title="Jogadores Únicos" value={formatNum(overview.totalPlayers)} icon={Gamepad2} change={overview.changes.players} accent="#ec4899" subtitle={period === '24h' ? 'Entraram em sala — 24h' : period === '7d' ? 'Entraram em sala — 7 dias' : 'Entraram em sala — 1 mês'} />
             <KpiCard title="Sessão Média" value={formatDuration(overview.avgSessionDuration)} icon={Clock} change={overview.changes.session} accent="#f59e0b" />
           </div>
 
