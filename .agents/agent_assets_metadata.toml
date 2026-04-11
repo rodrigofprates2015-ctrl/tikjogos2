@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "xpIVyoXGRsCIEyREARa9M"
+uri = "file://perguntasrank.txt"
+type = "text"
+title = "Lista de Perguntas do RankMaster"

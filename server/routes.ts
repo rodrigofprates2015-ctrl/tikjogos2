@@ -5289,22 +5289,6 @@ export async function registerRoutes(
       ],
     },
     {
-      id: "moedas-valorizadas",
-      category: "Moedas mais Valorizadas frente ao Dólar (USD)",
-      items: [
-        { id: "dinar-kw", label: "Dinar do Kuwait", trueRank: 1 },
-        { id: "dinar-bh", label: "Dinar do Bahrein", trueRank: 2 },
-        { id: "rial-om", label: "Rial de Omã", trueRank: 3 },
-        { id: "dinar-jo", label: "Dinar da Jordânia", trueRank: 4 },
-        { id: "libra", label: "Libra Esterlina", trueRank: 5 },
-        { id: "dolar-cayman", label: "Dólar das Ilhas Cayman", trueRank: 6 },
-        { id: "euro", label: "Euro", trueRank: 7 },
-        { id: "franco", label: "Franco Suíço", trueRank: 8 },
-        { id: "dolar-us", label: "Dólar Americano", trueRank: 9 },
-        { id: "dolar-ca", label: "Dólar Canadense", trueRank: 10 },
-      ],
-    },
-    {
       id: "atletas-pagos",
       category: "Atletas mais Bem Pagos do Mundo (Salário + Patrocínio)",
       items: [
@@ -5478,22 +5462,6 @@ export async function registerRoutes(
         { id: "larissa", label: "Larissa Manoela", trueRank: 8 },
         { id: "maisa", label: "Maisa Silva", trueRank: 9 },
         { id: "juliette", label: "Juliette", trueRank: 10 },
-      ],
-    },
-    {
-      id: "loterias-premios",
-      category: "Maiores Prêmios de Loteria já Pagos no Mundo",
-      items: [
-        { id: "pb-2022", label: "US$ 2.04 Bilhões (Powerball - EUA)", trueRank: 1 },
-        { id: "pb-2023", label: "US$ 1.76 Bilhão (Powerball - EUA)", trueRank: 2 },
-        { id: "mm-2023", label: "US$ 1.60 Bilhão (Mega Millions - EUA)", trueRank: 3 },
-        { id: "pb-2016", label: "US$ 1.58 Bilhão (Powerball - EUA)", trueRank: 4 },
-        { id: "mm-2018", label: "US$ 1.53 Bilhão (Mega Millions - EUA)", trueRank: 5 },
-        { id: "mm-2023b", label: "US$ 1.35 Bilhão (Mega Millions - EUA)", trueRank: 6 },
-        { id: "mm-2024", label: "US$ 1.33 Bilhão (Mega Millions - EUA)", trueRank: 7 },
-        { id: "pb-2021", label: "US$ 1.08 Bilhão (Powerball - EUA)", trueRank: 8 },
-        { id: "mm-2021", label: "US$ 1.05 Bilhão (Mega Millions - EUA)", trueRank: 9 },
-        { id: "pb-2019", label: "US$ 768 Milhões (Powerball - EUA)", trueRank: 10 },
       ],
     },
     {
@@ -5824,7 +5792,6 @@ export async function registerRoutes(
     'montanhas-altas': 'geografia',
     'cidades-caras': 'geografia',
     'economias-pib': 'geografia',
-    'moedas-valorizadas': 'geografia',
 
     'bancos-brasil': 'brasil',
     'influenciadores-br': 'brasil',
@@ -5836,7 +5803,6 @@ export async function registerRoutes(
     'marcas-luxo': 'dinheiro',
     'fastfood-marcas': 'dinheiro',
     'carros-leilao': 'dinheiro',
-    'loterias-premios': 'dinheiro',
     'pinturas-caras': 'dinheiro',
   };
 

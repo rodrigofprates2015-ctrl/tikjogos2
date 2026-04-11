@@ -1,0 +1,53 @@
+====================================================
+TODAS AS PERGUNTAS DO RANKMASTER
+====================================================
+
+01. Atores mais Ricos de Vingadores
+02. Maiores Bilheterias da História do Cinema
+03. Países Mais Populosos do Mundo
+04. Maiores Países do Mundo por Território
+05. Redes Sociais com Mais Usuários Ativos
+06. Esportes com Mais Atletas nos Jogos Olímpicos
+07. Empresas Mais Valiosas do Mundo
+08. Montanhas Mais Altas do Mundo
+09. Jogos Mais Vendidos de Todos os Tempos
+10. Artistas com Mais Streams no Spotify (histórico)
+11. Atores mais Ricos da Franquia Vingadores (Patrimônio)
+12. Marcas de Luxo mais Valiosas do Mundo
+13. Maiores Bilionários da Tecnologia (Forbes 2025/26)
+14. Franquias de Cinema com Maior Bilheteria Total
+15. Atletas mais Bem Pagos do Mundo (Salário + Patrocínio)
+16. Cidades com o Custo de Vida mais Caro (Global)
+17. Transferências mais Caras da História do Futebol
+18. YouTubers com Maior Faturamento Anual
+19. Carros mais Caros já Vendidos em Leilão
+20. Maiores Economias do Mundo (PIB Nominal)
+21. Artistas Musicais com Turnês mais Lucrativas (Histórico)
+22. Seleções de Futebol mais Valiosas (2025/26)
+23. Pinturas mais Caras Vendidas (Leilão/Privado)
+24. Maiores Bancos do Brasil (Ativos Totais)
+25. Influenciadores Brasileiros com Maior Engajamento
+26. Consoles de Videogame mais Vendidos da História
+27. Pessoas mais Seguidas no Instagram (2026)
+28. Personagens de Naruto mais Fortes (Nível de Poder no Auge)
+29. Marcas de Fast Food mais Valiosas (2026)
+30. Aplicativos mais Baixados do Mundo
+31. Reality Shows mais Famosos no Brasil
+32. Novelas da Globo com Maior Impacto Cultural
+33. Jogadores com mais Gols pela Seleção Brasileira
+34. Maiores Estádios do Brasil (Capacidade)
+35. Marcas Brasileiras mais Valiosas (2025/2026)
+36. Refrigerantes mais Consumidos no Brasil (Market Share)
+37. Sabores de Pizza mais Pedidos no Brasil
+38. Clubes com mais Títulos da Champions League
+39. Maiores Campeões da Copa do Mundo (Masculino)
+40. Maiores Campeões do Brasileirão (Série A)
+41. Carros mais Vendidos na História do Brasil
+42. Filmes da Marvel mais Bem Avaliados (Crítica/Público)
+43. Maiores Bilheterias do Cinema Brasileiro (Público)
+
+====================================================
+REMOVIDAS:
+- Moedas mais Valorizadas frente ao Dólar (USD)
+- Maiores Prêmios de Loteria já Pagos no Mundo
+====================================================
