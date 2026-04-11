@@ -1403,9 +1403,8 @@ const RankMasterGameCard = () => {
     <div className="space-y-3">
       <div className="flex justify-center mb-1">
         <div className="text-center">
-          <div className="inline-flex items-center gap-1 mb-2">
-            <span className="text-4xl font-black text-amber-400 tracking-tight">RANK</span>
-            <span className="text-4xl font-black text-white tracking-tight">MASTER</span>
+          <div className="flex justify-center mb-2">
+            <img src="/rankify-logo.png" alt="Rankify" className="h-14 drop-shadow-lg" />
           </div>
           <p className="text-slate-400 text-xs">Ordene os itens e conquiste pontos!</p>
         </div>
@@ -2039,10 +2038,13 @@ const HomeScreen = () => {
               <div className={cn(
                 "h-12 md:h-16 w-full flex items-center justify-center",
               )}>
-                <div className="text-center leading-none">
-                  <span className="font-black text-amber-400 text-sm block">RANK</span>
-                  <span className="font-black text-white text-sm block">MASTER</span>
-                </div>
+                <img
+                  src="/rankify-logo.png"
+                  alt="Rankify"
+                  className="h-10 md:h-12 w-full object-contain"
+                  draggable={false}
+                  onDragStart={(e) => e.preventDefault()}
+                />
               </div>
               <span className="absolute -top-2 -right-1 bg-amber-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shadow-md shadow-amber-900/50">
                 NOVO
