@@ -33,6 +33,7 @@ export type RankMasterGameData = {
   orders: RankMasterPlayerOrder[];
   roundNumber: number;
   totalRounds: number;
+  topCount: number;
   roundWinnerIds: string[];
   preparingEndsAt?: number;
 };
@@ -64,7 +65,7 @@ export type RankMasterState = {
   createRoom: () => Promise<void>;
   joinRoom: (code: string) => Promise<boolean>;
   connectWebSocket: (code: string) => void;
-  startGame: (totalRounds: number) => void;
+  startGame: (totalRounds: number, topCount: number) => void;
   submitOrder: (orderedIds: string[]) => void;
   revealResults: () => void;
   nextRound: () => void;
@@ -239,10 +240,10 @@ export const useRankMasterStore = create<RankMasterState>((set, get) => ({
     set({ ws: newWs });
   },
 
-  startGame: (totalRounds: number) => {
+  startGame: (totalRounds: number, topCount: number) => {
     const { ws, room, user } = get();
     if (!ws || !room || !user) return;
-    ws.send(JSON.stringify({ type: 'rankmaster-start', roomCode: room.code, playerId: user.uid, totalRounds }));
+    ws.send(JSON.stringify({ type: 'rankmaster-start', roomCode: room.code, playerId: user.uid, totalRounds, topCount }));
   },
 
   submitOrder: (orderedIds: string[]) => {

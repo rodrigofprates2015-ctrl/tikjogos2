@@ -106,6 +106,7 @@ function LobbyScreen() {
   const { room, user, leaveGame, startGame } = useRankMasterStore();
   const { toast } = useToast();
   const [totalRounds, setTotalRounds] = useState(3);
+  const [topCount, setTopCount] = useState<5 | 10>(10);
 
   if (!room || !user) return null;
   const isHost = room.hostId === user.uid;
@@ -188,6 +189,39 @@ function LobbyScreen() {
               <>
                 <div className="h-px bg-[#2f3252]" />
                 <div>
+                  <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Modo de Jogo</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setTopCount(5)}
+                      className={cn(
+                        "flex-1 py-3 rounded-xl font-black text-sm border-2 transition-all",
+                        topCount === 5
+                          ? "bg-amber-500 border-amber-500 text-black"
+                          : "bg-[#1a1c2e] border-[#2f3252] text-slate-400 hover:border-amber-500/40"
+                      )}
+                      data-testid="button-top5"
+                    >
+                      TOP 5
+                    </button>
+                    <button
+                      onClick={() => setTopCount(10)}
+                      className={cn(
+                        "flex-1 py-3 rounded-xl font-black text-sm border-2 transition-all",
+                        topCount === 10
+                          ? "bg-amber-500 border-amber-500 text-black"
+                          : "bg-[#1a1c2e] border-[#2f3252] text-slate-400 hover:border-amber-500/40"
+                      )}
+                      data-testid="button-top10"
+                    >
+                      TOP 10
+                    </button>
+                  </div>
+                  <p className="text-slate-600 text-xs mt-1.5">
+                    {topCount === 5 ? "Ordene os 5 primeiros colocados" : "Ordene os 10 primeiros colocados"}
+                  </p>
+                </div>
+                <div className="h-px bg-[#2f3252]" />
+                <div>
                   <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Número de Rodadas</p>
                   <div className="flex items-center gap-3">
                     <button
@@ -213,7 +247,7 @@ function LobbyScreen() {
 
           {isHost && (
             <button
-              onClick={() => startGame(totalRounds)}
+              onClick={() => startGame(totalRounds, topCount)}
               disabled={!canStart}
               className={cn(
                 "w-full py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
@@ -281,7 +315,7 @@ function PreparingScreen() {
           <p className="text-amber-400 font-black text-sm uppercase tracking-widest mb-3">
             Rodada {gameData.roundNumber} de {gameData.totalRounds}
           </p>
-          <p className="text-slate-400 text-base font-semibold">A categoria é...</p>
+          <p className="text-slate-400 text-base font-semibold">Ordene o Top {gameData.topCount}...</p>
         </div>
 
         <div className="bg-[#242642] border-4 border-amber-500/40 rounded-3xl p-8 shadow-2xl shadow-amber-500/10">
@@ -370,7 +404,7 @@ function OrderingScreen() {
             </div>
           </div>
           <h2 className="text-white font-black text-xl leading-tight">{gameData.challenge.category}</h2>
-          <p className="text-slate-500 text-sm mt-0.5">Ordene do 1º ao 10º lugar</p>
+          <p className="text-slate-500 text-sm mt-0.5">Ordene do 1º ao {gameData.topCount}º lugar</p>
         </div>
 
         <div className="flex-1 overflow-y-auto pb-4">
