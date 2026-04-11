@@ -109,6 +109,19 @@ function generateMainSitemap(): string {
     }
   }
 
+  // Include blog posts directly so /sitemap.xml alone is complete
+  for (const post of BLOG_POSTS_FULL) {
+    const lastmod = parseDate(post.date || today());
+    const hreflangs: [string, string, string] = [
+      `${BASE_URL}/blog/${post.slug}`,
+      `${BASE_URL}/en/blog/${post.slugEn || post.slug}`,
+      `${BASE_URL}/es/blog/${post.slugEs || post.slug}`,
+    ];
+    for (const loc of hreflangs) {
+      entries.push(urlEntry(loc, { priority: '0.7', changefreq: 'monthly', lastmod, hreflangs }));
+    }
+  }
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
