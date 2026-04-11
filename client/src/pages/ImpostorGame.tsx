@@ -83,23 +83,23 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
-import logoImpostor from "@assets/logo site impostor.png";
-import logoImpostorArt from "@assets/logo_impostor_art.png";
+const logoImpostor = "/impostor-logo.webp";
+const logoImpostorArt = "/art-impostor-logo.webp";
 import tripulanteImg from "@assets/tripulante_natal_1765071995242.webp";
 import impostorImg from "@assets/impostor_natal_1765071992843.webp";
 import tripulantePincelImg from "@assets/TripulantePincel.webp";
 import impostorPincelImg from "@assets/Impostor_pincel.webp";
 
-import sincroniaLogo from "@assets/Sincronia.png";
-import logoDesafioPalavraSmall from "@assets/logo_desafio_palavra_small.webp";
-import logoDesafioPalavraForms from "@assets/logo_desafio_palavra_forms.webp";
+const sincroniaLogo = "/sincronia-logo.webp";
+const logoDesafioPalavraSmall = "/palavra-logo.webp";
+const logoDesafioPalavraForms = "/palavra-logo.webp";
 import personagemEsquerdo from "@assets/personagem esquerdo.png";
 import personagemDireito from "@assets/personagem direito.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
 import { useDesafioStore } from "@/lib/desafioStore";
 import { useAproximacaoStore } from "@/lib/aproximacaoStore";
 import { useRankMasterStore } from "@/lib/rankMasterStore";
-import logoAprox from "@assets/Texto__APROX_1775672673721.webp";
+const logoAprox = "/aproximacao-logo.webp";
 import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd } from "@/components/AdSense";
 import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
 

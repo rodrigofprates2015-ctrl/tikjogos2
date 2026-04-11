@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { DrawingCanvas } from "@/components/DrawingCanvas";
 import { OrderWheelIcon } from "@/components/OrderWheelIcon";
 import { PALAVRA_SECRETA_SUBMODES, type PalavraSuperSecretaSubmode } from "@/lib/palavra-secreta-submodes";
-import logoImpostorArt from "@assets/logo_impostor_art.png";
+const logoImpostorArt = "/art-impostor-logo.webp";
 
 /** Leave game and navigate back to home */
 function useLeaveAndGoHome() {

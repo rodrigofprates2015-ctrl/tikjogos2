@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
 import { Loader2, Copy, Users, Crown, LogOut, Play, Send, Clock, Trophy, X, Settings, Sparkles, Star, ArrowLeft, Home, UserX, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import sincroniaLogo from '@/assets/Sincronia.png';
+const sincroniaLogo = "/sincronia-logo.webp";
 import jogosCover from '@/assets/jogos_cover.png';
 import animesCover from '@/assets/submode-animes.png';
 import marvelCover from '@/assets/submode-marvel.png';
