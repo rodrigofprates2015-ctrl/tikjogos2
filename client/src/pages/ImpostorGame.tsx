@@ -980,7 +980,7 @@ const DrawingGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void) 
             className="h-14 object-contain drop-shadow-lg"
           />
         </div>
-        <p className="text-slate-400 text-xs">Desenhe, adivinhe e descubra quem é o impostor artista!</p>
+        <p className="text-slate-400 text-xs">Desenhe e descubra quem é o impostor</p>
       </div>
 
       {/* Nickname input */}
@@ -1138,7 +1138,7 @@ const SincroniaGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void
             className="h-14 object-contain drop-shadow-lg"
           />
         </div>
-        <p className="text-slate-400 text-xs">Pense igual e encontre respostas em comum com seus amigos!</p>
+        <p className="text-slate-400 text-xs">Respondeu igual? Pontuou!</p>
       </div>
 
       {/* Nickname input */}
@@ -1291,7 +1291,7 @@ const DesafioGameCard = () => {
             className="h-14 object-contain drop-shadow-lg"
           />
         </div>
-        <p className="text-slate-400 text-xs">Adivinhe a palavra secreta antes que o tempo acabe!</p>
+        <p className="text-slate-400 text-xs">Não forme a palavra ou desafie!</p>
       </div>
 
       <input
@@ -1540,7 +1540,7 @@ const AproximacaoGameCard = () => {
             className="h-14 object-contain drop-shadow-lg"
           />
         </div>
-        <p className="text-slate-400 text-xs">Chute o número e veja quem chega mais perto da resposta!</p>
+        <p className="text-slate-400 text-xs">Quem chega mais perto ganha!</p>
       </div>
 
       <input
