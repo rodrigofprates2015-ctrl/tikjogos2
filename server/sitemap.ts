@@ -43,6 +43,8 @@ const I18N_PAGES: Array<{ paths: [string, string, string]; priority: string; cha
   { paths: ['/', '/en', '/es'], priority: '1.0', changefreq: 'daily' },
   { paths: ['/desenho-impostor', '/en/desenho-impostor', '/es/desenho-impostor'], priority: '0.9', changefreq: 'weekly' },
   { paths: ['/respostas-em-comum', '/en/common-answers', '/es/respuestas-en-comun'], priority: '0.9', changefreq: 'weekly' },
+  { paths: ['/aproximacao', '/approximation', '/aproximacao'], priority: '0.9', changefreq: 'weekly' },
+  { paths: ['/sincronia-br', '/en/sincronia-br', '/es/sincronia-br'], priority: '0.8', changefreq: 'weekly' },
   { paths: ['/modo-local', '/en/local-mode', '/es/modo-local'], priority: '0.7', changefreq: 'weekly' },
   // How-to-play
   { paths: ['/como-jogar/jogo-do-impostor', '/en/how-to-play/impostor-game', '/es/como-jugar/juego-del-impostor'], priority: '0.9', changefreq: 'weekly' },
