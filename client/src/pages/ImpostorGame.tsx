@@ -976,7 +976,7 @@ const DrawingGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void) 
           src={logoImpostorArt}
           alt="Logo Desenho do Impostor - TikJogos"
           width={550} height={192}
-          className="h-24 md:h-32 object-contain"
+          className="h-14 object-contain drop-shadow-lg"
         />
       </div>
 
@@ -1131,7 +1131,7 @@ const SincroniaGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void
           src={sincroniaLogo}
           alt="Logo Sincronia - Respostas em Comum - TikJogos"
           width={575} height={133}
-          className="h-24 md:h-32 object-contain"
+          className="h-14 object-contain drop-shadow-lg"
         />
       </div>
 
@@ -1281,7 +1281,7 @@ const DesafioGameCard = () => {
         <img
           src={logoDesafioPalavraForms}
           alt="Desafio da Palavra"
-          className="h-24 md:h-32 object-contain"
+          className="h-14 object-contain drop-shadow-lg"
         />
       </div>
 
@@ -1527,7 +1527,7 @@ const AproximacaoGameCard = () => {
         <img
           src={logoAprox}
           alt="Jogo da Aproximação"
-          className="h-24 md:h-32 object-contain"
+          className="h-14 object-contain drop-shadow-lg"
         />
       </div>
 
@@ -2096,7 +2096,7 @@ const HomeScreen = () => {
                   src={logoImpostor} 
                   alt="Logo Jogo do Impostor Online - TikJogos" 
                   width={575} height={133}
-                  className="h-24 md:h-32 object-contain" 
+                  className="h-14 object-contain drop-shadow-lg" 
                 />
               </div>
 
