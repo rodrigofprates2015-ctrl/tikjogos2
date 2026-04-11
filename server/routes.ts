@@ -5049,6 +5049,7 @@ export async function registerRoutes(
     orders: RankMasterPlayerOrder[];
     roundNumber: number;
     totalRounds: number;
+    topCount: number;
     roundWinnerIds: string[];
     preparingEndsAt: number;
   };
@@ -6031,19 +6032,22 @@ export async function registerRoutes(
           if (!room || room.hostId !== data.playerId) return;
 
           const totalRounds = Math.min(10, Math.max(1, Number(data.totalRounds) || 3));
+          const topCount = data.topCount === 5 ? 5 : 10;
           const challenge = getNextRankMasterChallenge(roomCode);
-          const shuffledItems = shuffleArray(challenge.items);
+          const slicedChallenge = { ...challenge, items: challenge.items.slice(0, topCount) };
+          const shuffledItems = shuffleArray(slicedChallenge.items);
           const preparingEndsAt = Date.now() + 5500;
 
           room.players.forEach(p => { p.score = 0; });
           room.status = 'playing';
           room.gameData = {
             phase: 'preparing',
-            challenge,
+            challenge: slicedChallenge,
             shuffledItems,
             orders: [],
             roundNumber: 1,
             totalRounds,
+            topCount,
             roundWinnerIds: [],
             preparingEndsAt,
           };
@@ -6116,17 +6120,20 @@ export async function registerRoutes(
               return;
             }
 
+            const topCount = room.gameData.topCount ?? 10;
             const challenge = getNextRankMasterChallenge(roomCode);
-            const shuffledItems = shuffleArray(challenge.items);
+            const slicedChallenge = { ...challenge, items: challenge.items.slice(0, topCount) };
+            const shuffledItems = shuffleArray(slicedChallenge.items);
             const preparingEndsAt = Date.now() + 5500;
 
             room.gameData = {
               phase: 'preparing',
-              challenge,
+              challenge: slicedChallenge,
               shuffledItems,
               orders: [],
               roundNumber: room.gameData.roundNumber + 1,
               totalRounds: room.gameData.totalRounds,
+              topCount,
               roundWinnerIds: [],
               preparingEndsAt,
             };
