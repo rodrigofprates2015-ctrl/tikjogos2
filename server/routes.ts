@@ -5177,22 +5177,6 @@ export async function registerRoutes(
       ],
     },
     {
-      id: "montanhas-altas",
-      category: "Montanhas Mais Altas do Mundo",
-      items: [
-        { id: "everest", label: "Monte Everest", trueRank: 1 },
-        { id: "k2", label: "K2", trueRank: 2 },
-        { id: "kangchenjunga", label: "Kangchenjunga", trueRank: 3 },
-        { id: "lhotse", label: "Lhotse", trueRank: 4 },
-        { id: "makalu", label: "Makalu", trueRank: 5 },
-        { id: "cho-oyu", label: "Cho Oyu", trueRank: 6 },
-        { id: "dhaulagiri", label: "Dhaulagiri", trueRank: 7 },
-        { id: "manaslu", label: "Manaslu", trueRank: 8 },
-        { id: "nanga-parbat", label: "Nanga Parbat", trueRank: 9 },
-        { id: "annapurna", label: "Annapurna", trueRank: 10 },
-      ],
-    },
-    {
       id: "jogos-vendidos",
       category: "Jogos Mais Vendidos de Todos os Tempos",
       items: [
@@ -5337,22 +5321,6 @@ export async function registerRoutes(
       ],
     },
     {
-      id: "youtubers-faturamento",
-      category: "YouTubers com Maior Faturamento Anual",
-      items: [
-        { id: "mrbeast", label: "MrBeast", trueRank: 1 },
-        { id: "jakepaul", label: "Jake Paul", trueRank: 2 },
-        { id: "markiplier", label: "Markiplier", trueRank: 3 },
-        { id: "rhettlink", label: "Rhett and Link", trueRank: 4 },
-        { id: "unspeakable", label: "Unspeakable", trueRank: 5 },
-        { id: "likenastya", label: "Like Nastya", trueRank: 6 },
-        { id: "ryankaji", label: "Ryan Kaji", trueRank: 7 },
-        { id: "dudeperfect", label: "Dude Perfect", trueRank: 8 },
-        { id: "loganpaul", label: "Logan Paul", trueRank: 9 },
-        { id: "prestonplayz", label: "PrestonPlayz", trueRank: 10 },
-      ],
-    },
-    {
       id: "carros-leilao",
       category: "Carros mais Caros já Vendidos em Leilão",
       items: [
@@ -5382,22 +5350,6 @@ export async function registerRoutes(
         { id: "brasil-pib", label: "Brasil", trueRank: 8 },
         { id: "italia-pib", label: "Itália", trueRank: 9 },
         { id: "canada-pib", label: "Canadá", trueRank: 10 },
-      ],
-    },
-    {
-      id: "turnees-lucrativas",
-      category: "Artistas Musicais com Turnês mais Lucrativas (Histórico)",
-      items: [
-        { id: "taylorswift-tour", label: "Taylor Swift (The Eras Tour)", trueRank: 1 },
-        { id: "eltonjohn-tour", label: "Elton John (Farewell Yellow Brick Road)", trueRank: 2 },
-        { id: "edsheeran-tour", label: "Ed Sheeran (Divide Tour)", trueRank: 3 },
-        { id: "u2-tour", label: "U2 (360° Tour)", trueRank: 4 },
-        { id: "coldplay-tour", label: "Coldplay (Music of the Spheres)", trueRank: 5 },
-        { id: "harrystyles-tour", label: "Harry Styles (Love on Tour)", trueRank: 6 },
-        { id: "gnr-tour", label: "Guns N' Roses (Not in This Lifetime)", trueRank: 7 },
-        { id: "beyonce-tour", label: "Beyoncé (Renaissance World Tour)", trueRank: 8 },
-        { id: "stones-tour", label: "The Rolling Stones (A Bigger Bang)", trueRank: 9 },
-        { id: "waters-tour", label: "Roger Waters (The Wall Live)", trueRank: 10 },
       ],
     },
     {
@@ -5766,7 +5718,6 @@ export async function registerRoutes(
     'naruto-personagens': 'cinema-tv',
 
     'artistas-streams': 'musica',
-    'turnees-lucrativas': 'musica',
 
     'esportes-olimpicos': 'esportes',
     'atletas-pagos': 'esportes',
@@ -5782,14 +5733,12 @@ export async function registerRoutes(
     'bilionarios-tech': 'tecnologia',
     'redes-sociais': 'tecnologia',
     'apps-baixados': 'tecnologia',
-    'youtubers-faturamento': 'tecnologia',
     'instagram-seguidos': 'tecnologia',
     'consoles-vendidos': 'tecnologia',
     'jogos-vendidos': 'tecnologia',
 
     'paises-populosos': 'geografia',
     'paises-maiores': 'geografia',
-    'montanhas-altas': 'geografia',
     'cidades-caras': 'geografia',
     'economias-pib': 'geografia',
 

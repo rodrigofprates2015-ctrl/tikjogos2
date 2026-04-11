@@ -142,9 +142,9 @@ function LobbyScreen() {
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 relative z-10 max-w-md mx-auto w-full">
         <div className="w-full space-y-4">
           <div className="text-center mb-2">
-            <h1 className="text-4xl font-black text-white tracking-tight">
-              <span className="text-amber-400">RANK</span>MASTER
-            </h1>
+            <div className="flex justify-center">
+              <img src="/rankify-logo.png" alt="Rankify" className="h-16 drop-shadow-lg" />
+            </div>
             <p className="text-slate-400 text-sm mt-1">Sala de Espera</p>
           </div>
 
