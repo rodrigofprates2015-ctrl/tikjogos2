@@ -1,0 +1,103 @@
+Criar um novo modo de jogo competitivo de ordenação de itens (Top 10), utilizando a infraestrutura existente de salas, sockets e o design visual do "Jogo do Impostor".
+
+🛠 Contexto para o GitHub Copilot (Prompt de Início)
+
+"Analise meu repositório atual, especificamente a estrutura de salas do Jogo do Impostor (React + Firebase/Node). Com base nessa arquitetura, crie um novo componente de jogo chamado RankMaster. Reaproveite os estilos de botões, cards de jogadores e o layout de 'Ready/Lobby'.
+
+Lógica do Jogo:
+
+O sistema fornece uma categoria e 10 itens desordenados.
+
+O jogador usa Drag-and-Drop para ordenar de 1 a 10.
+
+O servidor calcula quem chegou 'mais perto' da ordem real usando Distância Absoluta: $\sum | \text{Posição Real} - \text{Posição Jogador} |$.
+
+O vencedor da rodada (menor distância) ganha 100 pontos fixos no Placar Geral."
+
+📋 Regras e Dinâmica
+
+1. Sistema de Pontuação Ponderada (Backend/Logic)
+
+A pontuação não é visível durante o cálculo. O algoritmo deve:
+
+Comparar o array enviado pelo jogador com o array correct_order.
+
+Calcular a penalidade total. Exemplo: Item "A" era 1º, jogador pôs em 3º (penalidade 2).
+
+O jogador com a menor penalidade é declarado vencedor da rodada.
+
+Empate: Se dois jogadores tiverem a mesma penalidade (ou gabaritarem), ambos recebem 100 pontos.
+
+2. O Fluxo de Telas (UI/UX)
+
+Reaproveitando o Key Visual do Impostor:
+
+Tela 1: Lobby (Waiting Room): Mesma interface de espera, mostrando jogadores conectados.
+
+Tela 2: Preparação: Exibe a Categoria (ex: "Top 10 Maiores Bilheterias") por 5 segundos.
+
+Tela 3: Gameplay (Drag-and-Drop): * Coluna fixa de 1 a 10.
+
+Botões de itens que podem ser arrastados.
+
+Botão "Confirmar" no rodapé.
+
+Tela 4: Revelação (A "Verdade"): Animação subindo a lista correta.
+
+Tela 5: Placar da Rodada/Geral: Mostra quem ganhou os 100 pontos e o acumulado da partida.
+
+🏗 Estrutura de Dados Sugerida (JSON)
+
+Para o Copilot entender como os dados devem chegar do seu banco PostgreSQL:
+
+JSON
+
+
+
+{
+
+  "challenge_id": "vng-001",
+
+  "category": "Atores mais Ricos de Vingadores",
+
+  "data": [
+
+    {"id": "rdj", "label": "Robert Downey Jr.", "true_rank": 1},
+
+    {"id": "sj", "label": "Scarlett Johansson", "true_rank": 2},
+
+    {"id": "ce", "label": "Chris Evans", "true_rank": 3},
+
+    {"id": "rh", "label": "Chris Hemsworth", "true_rank": 4},
+
+    {"id": "mr", "label": "Mark Ruffalo", "true_rank": 5},
+
+    {"id": "jr", "label": "Jeremy Renner", "true_rank": 6},
+
+    {"id": "slj", "label": "Samuel L. Jackson", "true_rank": 7},
+
+    {"id": "bc", "label": "Benedict Cumberbatch", "true_rank": 8},
+
+    {"id": "th", "label": "Tom Holland", "true_rank": 9},
+
+    {"id": "cb", "label": "Chadwick Boseman", "true_rank": 10}
+
+  ]
+
+}
+
+🚀 Recomendações para o Desenvolvedor (Mayá)
+
+Componente de Arrastar: Utilize a biblioteca dnd-kit ou react-beautiful-dnd, que são leves e funcionam bem em mobile (essencial para o TikJogos).
+
+Sincronização: Use o Firebase Realtime Database ou Cloud Firestore para dar o trigger de "Fim de Tempo" para todos os jogadores simultaneamente.
+
+Animações: Use framer-motion para as transições de troca de posição dos cards, mantendo o estilo premium que você já tem no site.
+
+Feedback Visual: Quando o jogador arrastar o 1º lugar para o slot 1, dê um leve brilho no card (estilo os efeitos que você já usa no Impostor).
+
+ localize no meu código do Jogo do Impostor onde é feita a gestão de turnos e replique a lógica para o RankMaster
+
+
+
+Reutilize o design atual do jogo do impostor
