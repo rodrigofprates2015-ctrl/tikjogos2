@@ -69,6 +69,7 @@ export type RankMasterState = {
   submitOrder: (orderedIds: string[]) => void;
   revealResults: () => void;
   nextRound: () => void;
+  skipChallenge: () => void;
   returnToLobby: () => void;
   leaveGame: () => void;
   setMyOrder: (order: string[] | null) => void;
@@ -263,6 +264,13 @@ export const useRankMasterStore = create<RankMasterState>((set, get) => ({
     const { ws, room, user } = get();
     if (!ws || !room || !user) return;
     ws.send(JSON.stringify({ type: 'rankmaster-next-round', roomCode: room.code, playerId: user.uid }));
+  },
+
+  skipChallenge: () => {
+    const { ws, room, user } = get();
+    if (!ws || !room || !user) return;
+    set({ myOrder: null });
+    ws.send(JSON.stringify({ type: 'rankmaster-skip-challenge', roomCode: room.code, playerId: user.uid }));
   },
 
   returnToLobby: () => {

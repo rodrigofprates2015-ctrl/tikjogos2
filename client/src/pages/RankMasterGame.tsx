@@ -8,7 +8,7 @@ import {
   Copy, LogOut, Play, Crown, Loader2, Users, Zap,
   Trophy, ArrowLeft, CheckCircle, Clock,
   GripVertical, Star, ChevronUp, ChevronDown,
-  Medal, RotateCcw
+  Medal, RotateCcw, RefreshCw
 } from "lucide-react";
 import {
   DndContext,
@@ -339,7 +339,7 @@ function PreparingScreen() {
 }
 
 function OrderingScreen() {
-  const { room, user, submitOrder, myOrder, revealResults } = useRankMasterStore();
+  const { room, user, submitOrder, myOrder, revealResults, skipChallenge } = useRankMasterStore();
   const gameData = room?.gameData;
   const [items, setItems] = useState<RankMasterItem[]>([]);
   const initialized = useRef(false);
@@ -441,6 +441,17 @@ function OrderingScreen() {
               <CheckCircle size={20} className="text-green-400" />
               <span className="text-green-400 font-bold">Ordem enviada! Aguardando...</span>
             </div>
+          )}
+
+          {isHost && !submitted && (
+            <button
+              onClick={skipChallenge}
+              className="w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-[#1a1c2e] border-2 border-[#2f3252] text-slate-400 hover:border-slate-500 hover:text-slate-300 transition-all duration-200"
+              data-testid="button-skip-challenge"
+            >
+              <RefreshCw size={16} />
+              Sortear novo desafio
+            </button>
           )}
 
           {isHost && submitted && allSubmitted && (

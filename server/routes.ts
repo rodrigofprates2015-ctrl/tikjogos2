@@ -6106,6 +6106,40 @@ export async function registerRoutes(
           return;
         }
 
+        if (data.type === 'rankmaster-skip-challenge' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = rankMasterRooms.get(roomCode);
+          if (!room || !room.gameData || room.gameData.phase !== 'ordering') return;
+          if (room.hostId !== data.playerId) return;
+
+          const topCount = room.gameData.topCount ?? 10;
+          const challenge = getNextRankMasterChallenge(roomCode);
+          const slicedChallenge = { ...challenge, items: challenge.items.slice(0, topCount) };
+          const shuffledItems = shuffleArray(slicedChallenge.items);
+          const preparingEndsAt = Date.now() + 5500;
+
+          room.gameData = {
+            ...room.gameData,
+            phase: 'preparing',
+            challenge: slicedChallenge,
+            shuffledItems,
+            orders: [],
+            roundWinnerIds: [],
+            preparingEndsAt,
+          };
+          rankMasterRooms.set(roomCode, room);
+          broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room });
+
+          setTimeout(() => {
+            const current = rankMasterRooms.get(roomCode);
+            if (current?.gameData?.phase === 'preparing') {
+              current.gameData.phase = 'ordering';
+              broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room: current });
+            }
+          }, 5500);
+          return;
+        }
+
         if (data.type === 'rankmaster-next-round' && data.roomCode && data.playerId) {
           const roomCode = (data.roomCode as string).toUpperCase();
           const room = rankMasterRooms.get(roomCode);
