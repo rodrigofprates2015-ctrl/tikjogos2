@@ -977,7 +977,7 @@ const DrawingGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void) 
             src={logoImpostorArt}
             alt="Logo Desenho do Impostor - TikJogos"
             width={550} height={192}
-            className="h-[67px] object-contain drop-shadow-lg"
+            className="h-[82px] object-contain drop-shadow-lg"
           />
         </div>
         <p className="text-slate-400 text-xs">Desenhe e descubra quem é o impostor</p>
