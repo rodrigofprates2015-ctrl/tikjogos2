@@ -5034,5 +5034,583 @@ export async function registerRoutes(
     });
   });
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // RANKMASTER GAME
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  type RankMasterItem = { id: string; label: string; trueRank: number };
+  type RankMasterChallenge = { id: string; category: string; items: RankMasterItem[] };
+  type RankMasterPlayer = { uid: string; name: string; connected?: boolean; score: number };
+  type RankMasterPlayerOrder = { playerId: string; playerName: string; orderedIds: string[]; penalty: number };
+  type RankMasterGameData = {
+    phase: 'preparing' | 'ordering' | 'revealing' | 'gameover';
+    challenge: RankMasterChallenge;
+    shuffledItems: RankMasterItem[];
+    orders: RankMasterPlayerOrder[];
+    roundNumber: number;
+    totalRounds: number;
+    roundWinnerIds: string[];
+    preparingEndsAt: number;
+  };
+  type RankMasterRoom = {
+    code: string;
+    hostId: string;
+    status: 'waiting' | 'playing';
+    players: RankMasterPlayer[];
+    gameData: RankMasterGameData | null;
+    createdAt: string;
+  };
+
+  const RANKMASTER_CHALLENGES: RankMasterChallenge[] = [
+    {
+      id: "atores-vingadores",
+      category: "Atores mais Ricos de Vingadores",
+      items: [
+        { id: "rdj", label: "Robert Downey Jr.", trueRank: 1 },
+        { id: "sj", label: "Scarlett Johansson", trueRank: 2 },
+        { id: "ce", label: "Chris Evans", trueRank: 3 },
+        { id: "rh", label: "Chris Hemsworth", trueRank: 4 },
+        { id: "mr", label: "Mark Ruffalo", trueRank: 5 },
+        { id: "jr", label: "Jeremy Renner", trueRank: 6 },
+        { id: "slj", label: "Samuel L. Jackson", trueRank: 7 },
+        { id: "bc", label: "Benedict Cumberbatch", trueRank: 8 },
+        { id: "th", label: "Tom Holland", trueRank: 9 },
+        { id: "cb", label: "Chadwick Boseman", trueRank: 10 },
+      ],
+    },
+    {
+      id: "bilheterias-filmes",
+      category: "Maiores Bilheterias da História do Cinema",
+      items: [
+        { id: "avatar", label: "Avatar", trueRank: 1 },
+        { id: "avengers-eg", label: "Vingadores: Ultimato", trueRank: 2 },
+        { id: "avatar2", label: "Avatar: O Caminho da Água", trueRank: 3 },
+        { id: "titanic", label: "Titanic", trueRank: 4 },
+        { id: "starwars7", label: "Star Wars: O Despertar da Força", trueRank: 5 },
+        { id: "avengers-iw", label: "Vingadores: Guerra Infinita", trueRank: 6 },
+        { id: "spiderman-nwh", label: "Homem-Aranha: Sem Volta Para Casa", trueRank: 7 },
+        { id: "lion-king", label: "O Rei Leão (2019)", trueRank: 8 },
+        { id: "furious7", label: "Velozes e Furiosos 7", trueRank: 9 },
+        { id: "frozen2", label: "Frozen 2", trueRank: 10 },
+      ],
+    },
+    {
+      id: "paises-populosos",
+      category: "Países Mais Populosos do Mundo",
+      items: [
+        { id: "india", label: "Índia", trueRank: 1 },
+        { id: "china", label: "China", trueRank: 2 },
+        { id: "usa", label: "Estados Unidos", trueRank: 3 },
+        { id: "indonesia", label: "Indonésia", trueRank: 4 },
+        { id: "pakistan", label: "Paquistão", trueRank: 5 },
+        { id: "brasil", label: "Brasil", trueRank: 6 },
+        { id: "nigeria", label: "Nigéria", trueRank: 7 },
+        { id: "bangladesh", label: "Bangladesh", trueRank: 8 },
+        { id: "russia", label: "Rússia", trueRank: 9 },
+        { id: "etiopia", label: "Etiópia", trueRank: 10 },
+      ],
+    },
+    {
+      id: "paises-maiores",
+      category: "Maiores Países do Mundo por Território",
+      items: [
+        { id: "russia-t", label: "Rússia", trueRank: 1 },
+        { id: "canada-t", label: "Canadá", trueRank: 2 },
+        { id: "usa-t", label: "Estados Unidos", trueRank: 3 },
+        { id: "china-t", label: "China", trueRank: 4 },
+        { id: "brasil-t", label: "Brasil", trueRank: 5 },
+        { id: "australia-t", label: "Austrália", trueRank: 6 },
+        { id: "india-t", label: "Índia", trueRank: 7 },
+        { id: "argentina-t", label: "Argentina", trueRank: 8 },
+        { id: "cazaquistao-t", label: "Cazaquistão", trueRank: 9 },
+        { id: "argelia-t", label: "Argélia", trueRank: 10 },
+      ],
+    },
+    {
+      id: "redes-sociais",
+      category: "Redes Sociais com Mais Usuários Ativos",
+      items: [
+        { id: "facebook", label: "Facebook", trueRank: 1 },
+        { id: "youtube", label: "YouTube", trueRank: 2 },
+        { id: "whatsapp", label: "WhatsApp", trueRank: 3 },
+        { id: "instagram", label: "Instagram", trueRank: 4 },
+        { id: "wechat", label: "WeChat", trueRank: 5 },
+        { id: "tiktok", label: "TikTok", trueRank: 6 },
+        { id: "telegram", label: "Telegram", trueRank: 7 },
+        { id: "snapchat", label: "Snapchat", trueRank: 8 },
+        { id: "pinterest", label: "Pinterest", trueRank: 9 },
+        { id: "twitter", label: "X (Twitter)", trueRank: 10 },
+      ],
+    },
+    {
+      id: "esportes-olimpicos",
+      category: "Esportes com Mais Atletas nos Jogos Olímpicos",
+      items: [
+        { id: "atletismo", label: "Atletismo", trueRank: 1 },
+        { id: "natacao", label: "Natação", trueRank: 2 },
+        { id: "ginastica", label: "Ginástica Artística", trueRank: 3 },
+        { id: "ciclismo", label: "Ciclismo", trueRank: 4 },
+        { id: "judô", label: "Judô", trueRank: 5 },
+        { id: "remo", label: "Remo", trueRank: 6 },
+        { id: "vela", label: "Vela", trueRank: 7 },
+        { id: "tiro", label: "Tiro Esportivo", trueRank: 8 },
+        { id: "luta", label: "Luta Olímpica", trueRank: 9 },
+        { id: "canoagem", label: "Canoagem", trueRank: 10 },
+      ],
+    },
+    {
+      id: "empresas-valiosas",
+      category: "Empresas Mais Valiosas do Mundo",
+      items: [
+        { id: "apple", label: "Apple", trueRank: 1 },
+        { id: "microsoft", label: "Microsoft", trueRank: 2 },
+        { id: "nvidia", label: "NVIDIA", trueRank: 3 },
+        { id: "alphabet", label: "Alphabet (Google)", trueRank: 4 },
+        { id: "amazon", label: "Amazon", trueRank: 5 },
+        { id: "saudi-aramco", label: "Saudi Aramco", trueRank: 6 },
+        { id: "meta", label: "Meta", trueRank: 7 },
+        { id: "berkshire", label: "Berkshire Hathaway", trueRank: 8 },
+        { id: "tsmc", label: "TSMC", trueRank: 9 },
+        { id: "tesla", label: "Tesla", trueRank: 10 },
+      ],
+    },
+    {
+      id: "montanhas-altas",
+      category: "Montanhas Mais Altas do Mundo",
+      items: [
+        { id: "everest", label: "Monte Everest", trueRank: 1 },
+        { id: "k2", label: "K2", trueRank: 2 },
+        { id: "kangchenjunga", label: "Kangchenjunga", trueRank: 3 },
+        { id: "lhotse", label: "Lhotse", trueRank: 4 },
+        { id: "makalu", label: "Makalu", trueRank: 5 },
+        { id: "cho-oyu", label: "Cho Oyu", trueRank: 6 },
+        { id: "dhaulagiri", label: "Dhaulagiri", trueRank: 7 },
+        { id: "manaslu", label: "Manaslu", trueRank: 8 },
+        { id: "nanga-parbat", label: "Nanga Parbat", trueRank: 9 },
+        { id: "annapurna", label: "Annapurna", trueRank: 10 },
+      ],
+    },
+    {
+      id: "jogos-vendidos",
+      category: "Jogos Mais Vendidos de Todos os Tempos",
+      items: [
+        { id: "minecraft", label: "Minecraft", trueRank: 1 },
+        { id: "gta5", label: "GTA V", trueRank: 2 },
+        { id: "tetris", label: "Tetris", trueRank: 3 },
+        { id: "wii-sports", label: "Wii Sports", trueRank: 4 },
+        { id: "pubg", label: "PUBG", trueRank: 5 },
+        { id: "mario-kart8", label: "Mario Kart 8 Deluxe", trueRank: 6 },
+        { id: "pokemon-gsrby", label: "Pokémon G/S/R/BY", trueRank: 7 },
+        { id: "terraria", label: "Terraria", trueRank: 8 },
+        { id: "animal-crossing", label: "Animal Crossing: New Horizons", trueRank: 9 },
+        { id: "mario-bros", label: "Super Mario Bros", trueRank: 10 },
+      ],
+    },
+    {
+      id: "artistas-streams",
+      category: "Artistas com Mais Streams no Spotify (histórico)",
+      items: [
+        { id: "ed-sheeran", label: "Ed Sheeran", trueRank: 1 },
+        { id: "bad-bunny", label: "Bad Bunny", trueRank: 2 },
+        { id: "taylor-swift", label: "Taylor Swift", trueRank: 3 },
+        { id: "the-weeknd", label: "The Weeknd", trueRank: 4 },
+        { id: "drake", label: "Drake", trueRank: 5 },
+        { id: "ariana", label: "Ariana Grande", trueRank: 6 },
+        { id: "billie", label: "Billie Eilish", trueRank: 7 },
+        { id: "post-malone", label: "Post Malone", trueRank: 8 },
+        { id: "rihanna", label: "Rihanna", trueRank: 9 },
+        { id: "juice-wrld", label: "Juice WRLD", trueRank: 10 },
+      ],
+    },
+  ];
+
+  const rankMasterRooms = new Map<string, RankMasterRoom>();
+  const rankMasterUsedChallenges = new Map<string, number[]>();
+
+  function generateRankMasterCode(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 3; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
+
+  function broadcastToRankMasterRoom(roomCode: string, data: unknown) {
+    const message = JSON.stringify(data);
+    playerConnections.forEach((info, ws) => {
+      if (info.roomCode === roomCode && ws.readyState === WebSocket.OPEN) {
+        ws.send(message);
+      }
+    });
+  }
+
+  function shuffleArray<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function getNextRankMasterChallenge(roomCode: string): RankMasterChallenge {
+    let used = rankMasterUsedChallenges.get(roomCode) ?? [];
+    const available = RANKMASTER_CHALLENGES.filter((_, i) => !used.includes(i));
+    let pool = available.length > 0 ? available : RANKMASTER_CHALLENGES;
+
+    const poolIndex = Math.floor(Math.random() * pool.length);
+    const chosen = pool[poolIndex];
+    const globalIndex = RANKMASTER_CHALLENGES.indexOf(chosen);
+
+    if (available.length > 0) {
+      used = [...used, globalIndex];
+    } else {
+      used = [globalIndex];
+    }
+    rankMasterUsedChallenges.set(roomCode, used);
+    return chosen;
+  }
+
+  function calculateRankMasterPenalty(orderedIds: string[], challenge: RankMasterChallenge): number {
+    let penalty = 0;
+    for (const item of challenge.items) {
+      const playerPos = orderedIds.indexOf(item.id) + 1;
+      if (playerPos === 0) {
+        penalty += 10;
+      } else {
+        penalty += Math.abs(item.trueRank - playerPos);
+      }
+    }
+    return penalty;
+  }
+
+  function doRankMasterReveal(roomCode: string) {
+    const room = rankMasterRooms.get(roomCode);
+    if (!room || !room.gameData || room.gameData.phase !== 'ordering') return;
+
+    const { orders, challenge } = room.gameData;
+    if (orders.length === 0) return;
+
+    const minPenalty = Math.min(...orders.map(o => o.penalty));
+    const roundWinnerIds = orders
+      .filter(o => o.penalty === minPenalty)
+      .map(o => o.playerId);
+
+    for (const winnerId of roundWinnerIds) {
+      const player = room.players.find(p => p.uid === winnerId);
+      if (player) player.score += 100;
+    }
+
+    room.gameData.phase = 'revealing';
+    room.gameData.roundWinnerIds = roundWinnerIds;
+    broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room });
+  }
+
+  const rankMasterConnections = new Map<WebSocket, { roomCode: string; playerId: string; lastPong: number }>();
+  const rankMasterHardExitTimers = new Map<string, NodeJS.Timeout>();
+  const RM_PONG_TIMEOUT = 15000;
+  const RM_HARD_EXIT_GRACE = 15000;
+
+  function markRankMasterDisconnected(roomCode: string, playerId: string) {
+    const room = rankMasterRooms.get(roomCode);
+    if (!room) return;
+    const player = room.players.find(p => p.uid === playerId);
+    if (player && player.connected !== false) {
+      player.connected = false;
+      broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room });
+    }
+  }
+
+  function handleRankMasterHardExit(roomCode: string, playerId: string) {
+    const room = rankMasterRooms.get(roomCode);
+    if (!room) return;
+    const player = room.players.find(p => p.uid === playerId);
+    if (!player) return;
+
+    room.players = room.players.filter(p => p.uid !== playerId);
+
+    if (room.hostId === playerId && room.players.length > 0) {
+      const next = room.players.find(p => p.connected !== false) ?? room.players[0];
+      room.hostId = next.uid;
+      broadcastToRankMasterRoom(roomCode, { type: 'host-changed', newHostId: next.uid, newHostName: next.name });
+    }
+
+    broadcastToRankMasterRoom(roomCode, { type: 'player-removed', playerName: player.name });
+    broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room });
+
+    if (room.players.length === 0) {
+      rankMasterRooms.delete(roomCode);
+      rankMasterUsedChallenges.delete(roomCode);
+    }
+  }
+
+  function scheduleRankMasterHardExit(roomCode: string, playerId: string) {
+    const key = `${roomCode}:${playerId}`;
+    const existing = rankMasterHardExitTimers.get(key);
+    if (existing) clearTimeout(existing);
+    const timer = setTimeout(() => {
+      rankMasterHardExitTimers.delete(key);
+      handleRankMasterHardExit(roomCode, playerId);
+    }, RM_HARD_EXIT_GRACE);
+    rankMasterHardExitTimers.set(key, timer);
+  }
+
+  function cancelRankMasterHardExit(roomCode: string, playerId: string) {
+    const key = `${roomCode}:${playerId}`;
+    const existing = rankMasterHardExitTimers.get(key);
+    if (existing) {
+      clearTimeout(existing);
+      rankMasterHardExitTimers.delete(key);
+    }
+  }
+
+  setInterval(() => {
+    const now = Date.now();
+    rankMasterConnections.forEach((info, ws) => {
+      if (now - info.lastPong > RM_PONG_TIMEOUT) {
+        markRankMasterDisconnected(info.roomCode, info.playerId);
+        scheduleRankMasterHardExit(info.roomCode, info.playerId);
+        rankMasterConnections.delete(ws);
+      } else if (ws.readyState === WebSocket.OPEN) {
+        try { ws.send(JSON.stringify({ type: 'ping' })); } catch {}
+      }
+    });
+  }, 5000);
+
+  app.post("/api/rankmaster-rooms", (req, res) => {
+    const { hostId, playerName } = req.body;
+    if (!hostId || !playerName) return res.status(400).json({ error: "Missing hostId or playerName" });
+
+    let code = generateRankMasterCode();
+    while (rankMasterRooms.has(code)) code = generateRankMasterCode();
+
+    const room: RankMasterRoom = {
+      code,
+      hostId,
+      status: 'waiting',
+      gameData: null,
+      players: [{ uid: hostId, name: playerName, connected: true, score: 0 }],
+      createdAt: new Date().toISOString(),
+    };
+    rankMasterRooms.set(code, room);
+    console.log(`[RankMaster] Room ${code} created by ${playerName}`);
+    res.json(room);
+  });
+
+  app.post("/api/rankmaster-rooms/:code/join", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const { playerId, playerName } = req.body;
+    const room = rankMasterRooms.get(code);
+    if (!room) return res.status(404).json({ error: "Sala não encontrada" });
+    if (room.status !== 'waiting') return res.status(400).json({ error: "Jogo já em andamento" });
+
+    const existing = room.players.find(p => p.uid === playerId);
+    if (existing) {
+      existing.connected = true;
+      existing.name = playerName;
+    } else {
+      room.players.push({ uid: playerId, name: playerName, connected: true, score: 0 });
+    }
+
+    broadcastToRankMasterRoom(code, { type: 'rankmaster-room-update', room });
+    console.log(`[RankMaster] ${playerName} joined room ${code}`);
+    res.json(room);
+  });
+
+  app.get("/api/rankmaster-rooms/:code", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = rankMasterRooms.get(code);
+    if (!room) return res.status(404).json({ error: "Sala não encontrada" });
+    res.json(room);
+  });
+
+  app.post("/api/rankmaster-rooms/:code/disconnect-notice", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const { playerId } = req.body;
+    if (!playerId) return res.status(400).json({ error: 'Missing playerId' });
+    markRankMasterDisconnected(code, playerId);
+    scheduleRankMasterHardExit(code, playerId);
+    res.json({ ok: true });
+  });
+
+  wss.on('connection', (ws) => {
+    ws.on('message', async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+
+        if (data.type === 'pong') {
+          const info = rankMasterConnections.get(ws);
+          if (info) info.lastPong = Date.now();
+          return;
+        }
+
+        if (data.type === 'rankmaster-leave' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          rankMasterConnections.delete(ws);
+          cancelRankMasterHardExit(roomCode, data.playerId);
+          handleRankMasterHardExit(roomCode, data.playerId);
+          return;
+        }
+
+        if (data.type === 'rankmaster-join' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = rankMasterRooms.get(roomCode);
+          if (!room) return;
+
+          rankMasterConnections.set(ws, { roomCode, playerId: data.playerId, lastPong: Date.now() });
+          cancelRankMasterHardExit(roomCode, data.playerId);
+
+          const player = room.players.find(p => p.uid === data.playerId);
+          if (player) player.connected = true;
+          broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room });
+          return;
+        }
+
+        if (data.type === 'rankmaster-start' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = rankMasterRooms.get(roomCode);
+          if (!room || room.hostId !== data.playerId) return;
+
+          const totalRounds = Math.min(10, Math.max(1, Number(data.totalRounds) || 3));
+          const challenge = getNextRankMasterChallenge(roomCode);
+          const shuffledItems = shuffleArray(challenge.items);
+          const preparingEndsAt = Date.now() + 5500;
+
+          room.players.forEach(p => { p.score = 0; });
+          room.status = 'playing';
+          room.gameData = {
+            phase: 'preparing',
+            challenge,
+            shuffledItems,
+            orders: [],
+            roundNumber: 1,
+            totalRounds,
+            roundWinnerIds: [],
+            preparingEndsAt,
+          };
+          rankMasterRooms.set(roomCode, room);
+          broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room });
+
+          setTimeout(() => {
+            const current = rankMasterRooms.get(roomCode);
+            if (current?.gameData?.phase === 'preparing') {
+              current.gameData.phase = 'ordering';
+              broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room: current });
+            }
+          }, 5500);
+          return;
+        }
+
+        if (data.type === 'rankmaster-submit-order' && data.roomCode && data.playerId && data.orderedIds) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = rankMasterRooms.get(roomCode);
+          if (!room || !room.gameData || room.gameData.phase !== 'ordering') return;
+
+          const player = room.players.find(p => p.uid === data.playerId);
+          if (!player) return;
+
+          const orderedIds: string[] = data.orderedIds;
+          const penalty = calculateRankMasterPenalty(orderedIds, room.gameData.challenge);
+
+          const existingIdx = room.gameData.orders.findIndex(o => o.playerId === data.playerId);
+          const order: RankMasterPlayerOrder = {
+            playerId: data.playerId,
+            playerName: player.name,
+            orderedIds,
+            penalty,
+          };
+          if (existingIdx >= 0) {
+            room.gameData.orders[existingIdx] = order;
+          } else {
+            room.gameData.orders.push(order);
+          }
+          broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room });
+
+          const activePlayers = room.players.filter(p => p.connected !== false);
+          const allSubmitted = activePlayers.every(p => room.gameData!.orders.some(o => o.playerId === p.uid));
+          if (allSubmitted) {
+            doRankMasterReveal(roomCode);
+          }
+          return;
+        }
+
+        if (data.type === 'rankmaster-reveal' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = rankMasterRooms.get(roomCode);
+          if (!room || !room.gameData || room.gameData.phase !== 'ordering') return;
+          if (room.hostId !== data.playerId) return;
+          doRankMasterReveal(roomCode);
+          return;
+        }
+
+        if (data.type === 'rankmaster-next-round' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = rankMasterRooms.get(roomCode);
+          if (!room || !room.gameData) return;
+          if (room.hostId !== data.playerId) return;
+
+          if (room.gameData.phase === 'revealing') {
+            const isLastRound = room.gameData.roundNumber >= room.gameData.totalRounds;
+            if (isLastRound) {
+              room.gameData.phase = 'gameover';
+              broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room });
+              return;
+            }
+
+            const challenge = getNextRankMasterChallenge(roomCode);
+            const shuffledItems = shuffleArray(challenge.items);
+            const preparingEndsAt = Date.now() + 5500;
+
+            room.gameData = {
+              phase: 'preparing',
+              challenge,
+              shuffledItems,
+              orders: [],
+              roundNumber: room.gameData.roundNumber + 1,
+              totalRounds: room.gameData.totalRounds,
+              roundWinnerIds: [],
+              preparingEndsAt,
+            };
+            broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room });
+
+            setTimeout(() => {
+              const current = rankMasterRooms.get(roomCode);
+              if (current?.gameData?.phase === 'preparing') {
+                current.gameData.phase = 'ordering';
+                broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room: current });
+              }
+            }, 5500);
+          }
+          return;
+        }
+
+        if (data.type === 'rankmaster-return-to-lobby' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = rankMasterRooms.get(roomCode);
+          if (!room) return;
+          if (room.hostId !== data.playerId) return;
+
+          room.status = 'waiting';
+          room.gameData = null;
+          room.players.forEach(p => { p.score = 0; });
+          rankMasterUsedChallenges.delete(roomCode);
+          broadcastToRankMasterRoom(roomCode, { type: 'rankmaster-room-update', room });
+          return;
+        }
+
+      } catch {
+        // ignore
+      }
+    });
+
+    ws.on('close', () => {
+      const info = rankMasterConnections.get(ws);
+      if (info) {
+        rankMasterConnections.delete(ws);
+        markRankMasterDisconnected(info.roomCode, info.playerId);
+        scheduleRankMasterHardExit(info.roomCode, info.playerId);
+      }
+    });
+  });
+
   return httpServer;
 }

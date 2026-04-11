@@ -98,6 +98,7 @@ import personagemDireito from "@assets/personagem direito.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
 import { useDesafioStore } from "@/lib/desafioStore";
 import { useAproximacaoStore } from "@/lib/aproximacaoStore";
+import { useRankMasterStore } from "@/lib/rankMasterStore";
 import logoAprox from "@assets/Texto__APROX_1775672673721.webp";
 import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd } from "@/components/AdSense";
 import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
@@ -1360,6 +1361,129 @@ const DesafioGameCard = () => {
   );
 };
 
+const RankMasterGameCard = () => {
+  const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname } = useRankMasterStore();
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const [rmName, setRmName] = useState(() => loadSavedNickname() || localStorage.getItem('tikjogos_saved_nickname') || '');
+  const [rmCode, setRmCode] = useState('');
+  const [saveChecked, setSaveChecked] = useState(() => !!localStorage.getItem('tikjogos_saved_nickname'));
+
+  const handleCreate = async () => {
+    if (!rmName.trim()) {
+      toast({ title: 'Nome necessário', variant: 'destructive' });
+      return;
+    }
+    if (saveChecked) saveNickname(rmName.trim());
+    setUser(rmName.trim());
+    await createRoom();
+    navigate('/rankmaster');
+  };
+
+  const handleJoin = async () => {
+    if (!rmName.trim()) {
+      toast({ title: 'Nome necessário', variant: 'destructive' });
+      return;
+    }
+    if (!rmCode.trim()) {
+      toast({ title: 'Código inválido', variant: 'destructive' });
+      return;
+    }
+    if (saveChecked) saveNickname(rmName.trim());
+    setUser(rmName.trim());
+    const ok = await joinRoom(rmCode.trim().toUpperCase());
+    if (ok) {
+      navigate('/rankmaster');
+    } else {
+      toast({ title: 'Sala não encontrada', variant: 'destructive' });
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-center mb-1">
+        <div className="text-center">
+          <div className="inline-flex items-center gap-1 mb-2">
+            <span className="text-4xl font-black text-amber-400 tracking-tight">RANK</span>
+            <span className="text-4xl font-black text-white tracking-tight">MASTER</span>
+          </div>
+          <p className="text-slate-400 text-xs">Ordene os itens e conquiste pontos!</p>
+        </div>
+      </div>
+
+      <input
+        type="text"
+        placeholder="Seu nickname"
+        value={rmName}
+        maxLength={20}
+        onChange={(e) => setRmName(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+        className="input-dark"
+        data-testid="input-rm-nickname"
+      />
+
+      <button
+        onClick={handleCreate}
+        disabled={isLoading}
+        className={cn(
+          'w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl',
+          !isLoading
+            ? 'bg-gradient-to-r from-amber-500 to-orange-500 border-amber-900 text-black hover:brightness-110 active:border-b-0 active:translate-y-2'
+            : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+        )}
+        data-testid="button-rm-criar-sala"
+      >
+        {isLoading ? <Loader2 size={28} className="animate-spin" /> : <Zap size={28} className="animate-bounce" />}
+        CRIAR SALA
+      </button>
+
+      <div className="flex items-center px-1">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={saveChecked}
+            onChange={(e) => setSaveChecked(e.target.checked)}
+            className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-amber-500"
+          />
+          <span className="text-sm text-[#8aa0b0]">Guardar nickname</span>
+        </label>
+      </div>
+
+      <div className="flex items-center gap-4 py-1">
+        <div className="flex-1 h-px bg-[#4a6a8a]" />
+        <span className="text-[#8aa0b0] text-sm font-bold">OU</span>
+        <div className="flex-1 h-px bg-[#4a6a8a]" />
+      </div>
+
+      <div className="flex gap-3">
+        <input
+          type="text"
+          placeholder="CÓDIGO"
+          value={rmCode}
+          onChange={(e) => setRmCode(e.target.value.toUpperCase())}
+          onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+          maxLength={3}
+          className="input-code flex-1"
+          data-testid="input-rm-code"
+        />
+        <button
+          onClick={handleJoin}
+          disabled={isLoading}
+          className={cn(
+            'px-6 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-2 transition-all duration-300 border-b-[6px] shadow-2xl whitespace-nowrap',
+            !isLoading
+              ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2'
+              : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
+          )}
+          data-testid="button-rm-entrar"
+        >
+          ENTRAR
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const AproximacaoGameCard = () => {
   const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname } = useAproximacaoStore();
   const [, navigate] = useLocation();
@@ -1488,7 +1612,7 @@ const HomeScreen = () => {
   const [saveNicknameChecked, setSaveNicknameChecked] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isThemeWorkshopOpen, setIsThemeWorkshopOpen] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia' | 'desafio' | 'aproximacao'>('impostor');
+  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia' | 'desafio' | 'aproximacao' | 'rankmaster'>('impostor');
   const carouselRef = useRef<HTMLDivElement>(null);
   const carouselDrag = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
   const [carouselAtStart, setCarouselAtStart] = useState(true);
@@ -1901,6 +2025,30 @@ const HomeScreen = () => {
               </span>
             </button>
 
+            {/* RankMaster */}
+            <button
+              onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('rankmaster'); carouselDrag.current.moved = false; }}
+              className={cn(
+                "flex-none w-[23%] rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer snap-start relative",
+                selectedGame === 'rankmaster'
+                  ? "border-amber-500 bg-[#2f3252] shadow-lg shadow-amber-500/20 scale-105"
+                  : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
+              )}
+              data-testid="tab-rankmaster"
+            >
+              <div className={cn(
+                "h-12 md:h-16 w-full flex items-center justify-center",
+              )}>
+                <div className="text-center leading-none">
+                  <span className="font-black text-amber-400 text-sm block">RANK</span>
+                  <span className="font-black text-white text-sm block">MASTER</span>
+                </div>
+              </div>
+              <span className="absolute -top-2 -right-1 bg-amber-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shadow-md shadow-amber-900/50">
+                NOVO
+              </span>
+            </button>
+
             {/* Desafio da Palavra — last, revealed by scrolling */}
             <button
               onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('desafio'); carouselDrag.current.moved = false; }}
@@ -2070,6 +2218,13 @@ const HomeScreen = () => {
           {selectedGame === 'aproximacao' && (
             <div className="animate-fade-in">
               <AproximacaoGameCard />
+            </div>
+          )}
+
+          {/* RankMaster */}
+          {selectedGame === 'rankmaster' && (
+            <div className="animate-fade-in">
+              <RankMasterGameCard />
             </div>
           )}
         </div>

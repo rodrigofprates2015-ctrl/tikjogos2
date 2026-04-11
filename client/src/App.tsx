@@ -13,6 +13,7 @@ import ImpostorGame from "@/pages/ImpostorGame";
 import RoomRedirect from "@/pages/RoomRedirect";
 import DesafioDaPalavra from "@/pages/DesafioDaPalavra";
 import AproximacaoGame from "@/pages/AproximacaoGame";
+import RankMasterGame from "@/pages/RankMasterGame";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 
@@ -149,6 +150,10 @@ function AppRouter() {
       {/* Jogo da Aproximação */}
       <Route path="/aproximacao" component={AproximacaoGame} />
       <Route path="/approximation" component={AproximacaoGame} />
+
+      {/* RankMaster */}
+      <Route path="/rankmaster" component={RankMasterGame} />
+      <Route path="/rank-master" component={RankMasterGame} />
 
       {/* Criar tema */}
       {i18nRoutes("/criar-tema", CriarTema)}
