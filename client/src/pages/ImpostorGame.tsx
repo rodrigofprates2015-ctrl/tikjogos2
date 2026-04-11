@@ -971,13 +971,16 @@ const DrawingGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void) 
   return (
     <div className="space-y-3">
       {/* Large logo */}
-      <div className="flex justify-center mb-1">
-        <img
-          src={logoImpostorArt}
-          alt="Logo Desenho do Impostor - TikJogos"
-          width={550} height={192}
-          className="h-14 object-contain drop-shadow-lg"
-        />
+      <div className="text-center mb-1">
+        <div className="flex justify-center mb-1">
+          <img
+            src={logoImpostorArt}
+            alt="Logo Desenho do Impostor - TikJogos"
+            width={550} height={192}
+            className="h-14 object-contain drop-shadow-lg"
+          />
+        </div>
+        <p className="text-slate-400 text-xs">Desenhe, adivinhe e descubra quem é o impostor artista!</p>
       </div>
 
       {/* Nickname input */}
@@ -1126,13 +1129,16 @@ const SincroniaGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void
   return (
     <div className="space-y-3">
       {/* Large logo */}
-      <div className="flex justify-center mb-1">
-        <img
-          src={sincroniaLogo}
-          alt="Logo Sincronia - Respostas em Comum - TikJogos"
-          width={575} height={133}
-          className="h-14 object-contain drop-shadow-lg"
-        />
+      <div className="text-center mb-1">
+        <div className="flex justify-center mb-1">
+          <img
+            src={sincroniaLogo}
+            alt="Logo Sincronia - Respostas em Comum - TikJogos"
+            width={575} height={133}
+            className="h-14 object-contain drop-shadow-lg"
+          />
+        </div>
+        <p className="text-slate-400 text-xs">Pense igual e encontre respostas em comum com seus amigos!</p>
       </div>
 
       {/* Nickname input */}
@@ -1277,12 +1283,15 @@ const DesafioGameCard = () => {
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-center mb-1">
-        <img
-          src={logoDesafioPalavraForms}
-          alt="Desafio da Palavra"
-          className="h-14 object-contain drop-shadow-lg"
-        />
+      <div className="text-center mb-1">
+        <div className="flex justify-center mb-1">
+          <img
+            src={logoDesafioPalavraForms}
+            alt="Desafio da Palavra"
+            className="h-14 object-contain drop-shadow-lg"
+          />
+        </div>
+        <p className="text-slate-400 text-xs">Adivinhe a palavra secreta antes que o tempo acabe!</p>
       </div>
 
       <input
@@ -1523,12 +1532,15 @@ const AproximacaoGameCard = () => {
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-center mb-1">
-        <img
-          src={logoAprox}
-          alt="Jogo da Aproximação"
-          className="h-14 object-contain drop-shadow-lg"
-        />
+      <div className="text-center mb-1">
+        <div className="flex justify-center mb-1">
+          <img
+            src={logoAprox}
+            alt="Jogo da Aproximação"
+            className="h-14 object-contain drop-shadow-lg"
+          />
+        </div>
+        <p className="text-slate-400 text-xs">Chute o número e veja quem chega mais perto da resposta!</p>
       </div>
 
       <input
@@ -2091,13 +2103,16 @@ const HomeScreen = () => {
           {selectedGame === 'impostor' && (
             <div className="space-y-3 animate-fade-in">
               {/* Large logo */}
-              <div className="flex justify-center mb-1">
-                <img 
-                  src={logoImpostor} 
-                  alt="Logo Jogo do Impostor Online - TikJogos" 
-                  width={575} height={133}
-                  className="h-14 object-contain drop-shadow-lg" 
-                />
+              <div className="text-center mb-1">
+                <div className="flex justify-center mb-1">
+                  <img 
+                    src={logoImpostor} 
+                    alt="Logo Jogo do Impostor Online - TikJogos" 
+                    width={575} height={133}
+                    className="h-14 object-contain drop-shadow-lg" 
+                  />
+                </div>
+                <p className="text-slate-400 text-xs">Descubra e elimine o impostor entre os jogadores!</p>
               </div>
 
               <input
