@@ -977,7 +977,7 @@ const DrawingGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void) 
             src={logoImpostorArt}
             alt="Logo Desenho do Impostor - TikJogos"
             width={550} height={192}
-            className="h-14 object-contain drop-shadow-lg"
+            className="h-[67px] object-contain drop-shadow-lg"
           />
         </div>
         <p className="text-slate-400 text-xs">Desenhe e descubra quem é o impostor</p>
@@ -1135,7 +1135,7 @@ const SincroniaGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void
             src={sincroniaLogo}
             alt="Logo Sincronia - Respostas em Comum - TikJogos"
             width={575} height={133}
-            className="h-14 object-contain drop-shadow-lg"
+            className="h-[67px] object-contain drop-shadow-lg"
           />
         </div>
         <p className="text-slate-400 text-xs">Respondeu igual? Pontuou!</p>
@@ -1288,7 +1288,7 @@ const DesafioGameCard = () => {
           <img
             src={logoDesafioPalavraForms}
             alt="Desafio da Palavra"
-            className="h-14 object-contain drop-shadow-lg"
+            className="h-[67px] object-contain drop-shadow-lg"
           />
         </div>
         <p className="text-slate-400 text-xs">Não forme a palavra ou desafie!</p>
@@ -1413,7 +1413,7 @@ const RankMasterGameCard = () => {
       <div className="flex justify-center mb-1">
         <div className="text-center">
           <div className="flex justify-center mb-2">
-            <img src="/rankify-logo.png" alt="Rankify" className="h-14 drop-shadow-lg" />
+            <img src="/rankify-logo.png" alt="Rankify" className="h-[67px] drop-shadow-lg" />
           </div>
           <p className="text-slate-400 text-xs">Ordene os itens e conquiste pontos!</p>
         </div>
@@ -1537,7 +1537,7 @@ const AproximacaoGameCard = () => {
           <img
             src={logoAprox}
             alt="Jogo da Aproximação"
-            className="h-14 object-contain drop-shadow-lg"
+            className="h-[67px] object-contain drop-shadow-lg"
           />
         </div>
         <p className="text-slate-400 text-xs">Quem chega mais perto ganha!</p>
@@ -2109,7 +2109,7 @@ const HomeScreen = () => {
                     src={logoImpostor} 
                     alt="Logo Jogo do Impostor Online - TikJogos" 
                     width={575} height={133}
-                    className="h-14 object-contain drop-shadow-lg" 
+                    className="h-[67px] object-contain drop-shadow-lg" 
                   />
                 </div>
                 <p className="text-slate-400 text-xs">Descubra e elimine o impostor entre os jogadores!</p>

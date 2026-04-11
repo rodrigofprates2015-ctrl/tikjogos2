@@ -143,7 +143,7 @@ function LobbyScreen() {
         <div className="w-full space-y-4">
           <div className="text-center mb-2">
             <div className="flex justify-center">
-              <img src="/rankify-logo.png" alt="Rankify" className="h-16 drop-shadow-lg" />
+              <img src="/rankify-logo.png" alt="Rankify" className="h-[67px] drop-shadow-lg" />
             </div>
             <p className="text-slate-400 text-sm mt-1">Sala de Espera</p>
           </div>
