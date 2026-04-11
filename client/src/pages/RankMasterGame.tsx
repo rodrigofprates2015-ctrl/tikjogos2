@@ -102,11 +102,23 @@ function SortableItem({ item, rank, submitted }: { item: RankMasterItem; rank: n
   );
 }
 
+const RANKMASTER_THEMES = [
+  { id: 'all',        label: 'Todos os Temas',  emoji: '🎲' },
+  { id: 'esportes',   label: 'Esportes',         emoji: '⚽' },
+  { id: 'cinema-tv',  label: 'Cinema & TV',      emoji: '🎬' },
+  { id: 'musica',     label: 'Música',            emoji: '🎵' },
+  { id: 'tecnologia', label: 'Tecnologia',        emoji: '💻' },
+  { id: 'brasil',     label: 'Brasil',            emoji: '🇧🇷' },
+  { id: 'geografia',  label: 'Geografia',         emoji: '🌍' },
+  { id: 'dinheiro',   label: 'Dinheiro & Luxo',   emoji: '💰' },
+];
+
 function LobbyScreen() {
   const { room, user, leaveGame, startGame } = useRankMasterStore();
   const { toast } = useToast();
   const [totalRounds, setTotalRounds] = useState(3);
   const [topCount, setTopCount] = useState<5 | 10>(10);
+  const [selectedTheme, setSelectedTheme] = useState('all');
 
   if (!room || !user) return null;
   const isHost = room.hostId === user.uid;
@@ -222,6 +234,28 @@ function LobbyScreen() {
                 </div>
                 <div className="h-px bg-[#2f3252]" />
                 <div>
+                  <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Tema das Perguntas</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {RANKMASTER_THEMES.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => setSelectedTheme(t.id)}
+                        className={cn(
+                          "flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-sm font-bold transition-all text-left",
+                          selectedTheme === t.id
+                            ? "bg-amber-500 border-amber-500 text-black"
+                            : "bg-[#1a1c2e] border-[#2f3252] text-slate-400 hover:border-amber-500/40"
+                        )}
+                        data-testid={`button-theme-${t.id}`}
+                      >
+                        <span className="text-base leading-none">{t.emoji}</span>
+                        <span className="leading-tight">{t.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="h-px bg-[#2f3252]" />
+                <div>
                   <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Número de Rodadas</p>
                   <div className="flex items-center gap-3">
                     <button
@@ -247,7 +281,7 @@ function LobbyScreen() {
 
           {isHost && (
             <button
-              onClick={() => startGame(totalRounds, topCount)}
+              onClick={() => startGame(totalRounds, topCount, selectedTheme)}
               disabled={!canStart}
               className={cn(
                 "w-full py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",

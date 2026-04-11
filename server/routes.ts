@@ -5059,6 +5059,7 @@ export async function registerRoutes(
     status: 'waiting' | 'playing';
     players: RankMasterPlayer[];
     gameData: RankMasterGameData | null;
+    selectedTheme: string;
     createdAt: string;
   };
 
@@ -5785,6 +5786,60 @@ export async function registerRoutes(
     },
   ];
 
+  const CHALLENGE_THEMES: Record<string, string> = {
+    'atores-vingadores': 'cinema-tv',
+    'atores-ricos-vingadores-v2': 'cinema-tv',
+    'bilheterias-filmes': 'cinema-tv',
+    'franquias-bilheteria': 'cinema-tv',
+    'marvel-avaliados': 'cinema-tv',
+    'bilheteria-cinema-br': 'cinema-tv',
+    'reality-shows-br': 'cinema-tv',
+    'novelas-globo': 'cinema-tv',
+    'naruto-personagens': 'cinema-tv',
+
+    'artistas-streams': 'musica',
+    'turnees-lucrativas': 'musica',
+
+    'esportes-olimpicos': 'esportes',
+    'atletas-pagos': 'esportes',
+    'transferencias-futebol': 'esportes',
+    'selecoes-valiosas': 'esportes',
+    'champions-titulos': 'esportes',
+    'copa-mundo-campeoes': 'esportes',
+    'brasileirao-campeoes': 'esportes',
+    'gols-selecao-br': 'esportes',
+    'estadios-brasil': 'esportes',
+
+    'empresas-valiosas': 'tecnologia',
+    'bilionarios-tech': 'tecnologia',
+    'redes-sociais': 'tecnologia',
+    'apps-baixados': 'tecnologia',
+    'youtubers-faturamento': 'tecnologia',
+    'instagram-seguidos': 'tecnologia',
+    'consoles-vendidos': 'tecnologia',
+    'jogos-vendidos': 'tecnologia',
+
+    'paises-populosos': 'geografia',
+    'paises-maiores': 'geografia',
+    'montanhas-altas': 'geografia',
+    'cidades-caras': 'geografia',
+    'economias-pib': 'geografia',
+    'moedas-valorizadas': 'geografia',
+
+    'bancos-brasil': 'brasil',
+    'influenciadores-br': 'brasil',
+    'marcas-br': 'brasil',
+    'refrigerantes-br': 'brasil',
+    'pizza-sabores': 'brasil',
+    'carros-brasil': 'brasil',
+
+    'marcas-luxo': 'dinheiro',
+    'fastfood-marcas': 'dinheiro',
+    'carros-leilao': 'dinheiro',
+    'loterias-premios': 'dinheiro',
+    'pinturas-caras': 'dinheiro',
+  };
+
   const rankMasterRooms = new Map<string, RankMasterRoom>();
   const rankMasterUsedChallenges = new Map<string, number[]>();
 
@@ -5813,13 +5868,21 @@ export async function registerRoutes(
     return a;
   }
 
-  function getNextRankMasterChallenge(roomCode: string): RankMasterChallenge {
+  function getNextRankMasterChallenge(roomCode: string, selectedTheme = 'all'): RankMasterChallenge {
     let used = rankMasterUsedChallenges.get(roomCode) ?? [];
-    const available = RANKMASTER_CHALLENGES.filter((_, i) => !used.includes(i));
-    let pool = available.length > 0 ? available : RANKMASTER_CHALLENGES;
 
-    const poolIndex = Math.floor(Math.random() * pool.length);
-    const chosen = pool[poolIndex];
+    const themed = selectedTheme === 'all'
+      ? RANKMASTER_CHALLENGES
+      : RANKMASTER_CHALLENGES.filter(c => CHALLENGE_THEMES[c.id] === selectedTheme);
+    const pool_base = themed.length > 0 ? themed : RANKMASTER_CHALLENGES;
+
+    const available = pool_base.filter(c => {
+      const globalIndex = RANKMASTER_CHALLENGES.indexOf(c);
+      return !used.includes(globalIndex);
+    });
+    const pool = available.length > 0 ? available : pool_base;
+
+    const chosen = pool[Math.floor(Math.random() * pool.length)];
     const globalIndex = RANKMASTER_CHALLENGES.indexOf(chosen);
 
     if (available.length > 0) {
@@ -5949,6 +6012,7 @@ export async function registerRoutes(
       hostId,
       status: 'waiting',
       gameData: null,
+      selectedTheme: 'all',
       players: [{ uid: hostId, name: playerName, connected: true, score: 0 }],
       createdAt: new Date().toISOString(),
     };
@@ -6033,7 +6097,9 @@ export async function registerRoutes(
 
           const totalRounds = Math.min(10, Math.max(1, Number(data.totalRounds) || 3));
           const topCount = data.topCount === 5 ? 5 : 10;
-          const challenge = getNextRankMasterChallenge(roomCode);
+          const selectedTheme = (typeof data.selectedTheme === 'string' && data.selectedTheme) ? data.selectedTheme : 'all';
+          room.selectedTheme = selectedTheme;
+          const challenge = getNextRankMasterChallenge(roomCode, selectedTheme);
           const slicedChallenge = { ...challenge, items: challenge.items.slice(0, topCount) };
           const shuffledItems = shuffleArray(slicedChallenge.items);
           const preparingEndsAt = Date.now() + 5500;
@@ -6113,7 +6179,7 @@ export async function registerRoutes(
           if (room.hostId !== data.playerId) return;
 
           const topCount = room.gameData.topCount ?? 10;
-          const challenge = getNextRankMasterChallenge(roomCode);
+          const challenge = getNextRankMasterChallenge(roomCode, room.selectedTheme ?? 'all');
           const slicedChallenge = { ...challenge, items: challenge.items.slice(0, topCount) };
           const shuffledItems = shuffleArray(slicedChallenge.items);
           const preparingEndsAt = Date.now() + 5500;
@@ -6155,7 +6221,7 @@ export async function registerRoutes(
             }
 
             const topCount = room.gameData.topCount ?? 10;
-            const challenge = getNextRankMasterChallenge(roomCode);
+            const challenge = getNextRankMasterChallenge(roomCode, room.selectedTheme ?? 'all');
             const slicedChallenge = { ...challenge, items: challenge.items.slice(0, topCount) };
             const shuffledItems = shuffleArray(slicedChallenge.items);
             const preparingEndsAt = Date.now() + 5500;
