@@ -95,6 +95,9 @@ const logoDesafioPalavraSmall = "/palavra-logo.webp";
 const logoDesafioPalavraForms = "/palavra-logo.webp";
 import personagemEsquerdo from "@assets/personagem esquerdo.png";
 import personagemDireito from "@assets/personagem direito.png";
+import adLogoAmazon from "@assets/amazon_1776412092479.png";
+import adLogoMercadoLivre from "@assets/mercado_1776412092478.png";
+import adLogoShopee from "@assets/SHopee_1776412092478.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
 import { useDesafioStore } from "@/lib/desafioStore";
 import { useAproximacaoStore } from "@/lib/aproximacaoStore";
@@ -1955,6 +1958,24 @@ const HomeScreen = () => {
               if (carouselRef.current) carouselRef.current.style.cursor = 'grab';
             }}
           >
+            {/* Ad card — Amazon */}
+            <a
+              href="https://amzn.to/4836uHs"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="flex-none w-[23%] rounded-2xl p-2 border-2 border-transparent bg-[#1a1c2e] opacity-80 hover:opacity-100 hover:border-[#FF9900]/60 snap-start transition-all duration-300 flex items-center justify-center"
+              data-testid="carousel-ad-amazon"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={adLogoAmazon}
+                alt="Amazon 40% OFF"
+                className="h-12 md:h-16 w-full object-contain"
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+              />
+            </a>
+
             {/* Impostor */}
             <button
               onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('impostor'); carouselDrag.current.moved = false; }}
@@ -1994,6 +2015,24 @@ const HomeScreen = () => {
                 onDragStart={(e) => e.preventDefault()}
               />
             </button>
+
+            {/* Ad card — Mercado Livre */}
+            <a
+              href="https://meli.la/1HnReU5"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="flex-none w-[23%] rounded-2xl p-2 border-2 border-transparent bg-[#1a1c2e] opacity-80 hover:opacity-100 hover:border-[#FFE600]/60 snap-start transition-all duration-300 flex items-center justify-center"
+              data-testid="carousel-ad-mercadolivre"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={adLogoMercadoLivre}
+                alt="Mercado Livre 25% OFF"
+                className="h-12 md:h-16 w-full object-contain"
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+              />
+            </a>
 
             {/* Sincronia */}
             <button
@@ -2037,6 +2076,24 @@ const HomeScreen = () => {
                 NOVO
               </span>
             </button>
+
+            {/* Ad card — Shopee */}
+            <a
+              href="https://s.shopee.com.br/7Kt6kh8yiS"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="flex-none w-[23%] rounded-2xl p-2 border-2 border-transparent bg-[#1a1c2e] opacity-80 hover:opacity-100 hover:border-[#EE4D2D]/60 snap-start transition-all duration-300 flex items-center justify-center"
+              data-testid="carousel-ad-shopee"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={adLogoShopee}
+                alt="Shopee R$25 OFF"
+                className="h-12 md:h-16 w-full object-contain"
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+              />
+            </a>
 
             {/* RankMaster */}
             <button
