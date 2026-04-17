@@ -1890,6 +1890,11 @@ const HomeScreen = () => {
         {/* Top banner ad - above game card */}
         <TopBannerAd />
 
+        {/* Square banner ad before game form - mobile only */}
+        <div className="block md:hidden w-full">
+          <InArticleAd />
+        </div>
+
         {/* Game selector card */}
         <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24 mt-4 md:mt-12">
           <h1 className="sr-only">Jogo do Impostor Online Grátis - TikJogos</h1>
