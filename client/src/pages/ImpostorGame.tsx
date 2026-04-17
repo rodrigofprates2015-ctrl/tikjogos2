@@ -1887,9 +1887,6 @@ const HomeScreen = () => {
         {/* Mobile action buttons - above the card */}
         <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
 
-        {/* Top banner ad - above game card */}
-        <TopBannerAd />
-
         {/* Square banner ad before game form - mobile only */}
         <div className="block md:hidden w-full">
           <InArticleAd />
@@ -2258,6 +2255,11 @@ const HomeScreen = () => {
 
       {/* Ad block between form and footer */}
       <AdBlockBetweenFormAndFooter />
+
+      {/* Mini banner horizontal - above footer, mobile only */}
+      <div className="block md:hidden w-full">
+        <TopBannerAd />
+      </div>
 
       {/* Footer */}
       <footer className="w-full bg-[#0f172a] border-t-8 border-[#242642] pt-16 pb-8 z-20 relative">
