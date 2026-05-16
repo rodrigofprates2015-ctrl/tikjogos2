@@ -292,9 +292,16 @@ function DonationInterstitial({
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-xs text-slate-400 text-center">
-                Ajude a manter o jogo online e gratuito! 🎮
-              </p>
+              <div className="flex items-center gap-3">
+                <img
+                  src="https://raw.githubusercontent.com/rodrigofprates2015-ctrl/tikjogos2/main/client/public/Gemini_Generated_Image_ekoppaekoppaekop.png"
+                  alt="Personagem TikJogos"
+                  className="w-16 h-16 object-contain flex-shrink-0"
+                />
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Gostou do jogo? Ajude a manter o TikJogos online e gratuito com qualquer valor! 💜
+                </p>
+              </div>
 
               {/* Preset amounts */}
               <div className="space-y-1.5">
