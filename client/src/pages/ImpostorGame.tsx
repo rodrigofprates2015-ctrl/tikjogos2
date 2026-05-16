@@ -2888,7 +2888,7 @@ const GameConfigModal: React.FC<GameConfigModalProps> = ({ isOpen, onClose }) =>
   
   // Configuration state - initialize from store or defaults
   const [impostorCount, setImpostorCount] = useState(gameConfig?.impostorCount || 1);
-  const [enableHints, setEnableHints] = useState(gameConfig?.enableHints ?? true);
+  const [enableHints, setEnableHints] = useState(gameConfig?.enableHints ?? false);
   const [firstPlayerHintOnly, setFirstPlayerHintOnly] = useState(gameConfig?.firstPlayerHintOnly || false);
   
   // Config summary
@@ -3029,7 +3029,7 @@ const GameConfigScreen = () => {
   
   // Configuration state
   const [impostorCount, setImpostorCount] = useState(1);
-  const [enableHints, setEnableHints] = useState(true);
+  const [enableHints, setEnableHints] = useState(false);
   const [firstPlayerHintOnly, setFirstPlayerHintOnly] = useState(false);
   
   const isHost = room && user && room.hostId === user.uid;
@@ -4651,11 +4651,70 @@ const PerguntasDiferentesScreen = () => {
 
 type RoundStage = 'WORD_REVEAL' | 'SPEAKING_ORDER' | 'VOTING' | 'VOTING_FEEDBACK' | 'ROUND_RESULT';
 
+type ImpostorPixState =
+  | { status: 'idle' }
+  | { status: 'loading'; type: 'hint' | 'reveal' }
+  | { status: 'awaiting_payment'; type: 'hint' | 'reveal'; paymentId: string; qrCode: string; qrCodeBase64?: string }
+  | { status: 'success'; type: 'hint' | 'reveal' }
+  | { status: 'error'; error: string };
+
 const GameScreen = () => {
   const { user, room, returnToLobby, speakingOrder, speakingOrderPlayerMap, setSpeakingOrder, showSpeakingOrderWheel, setShowSpeakingOrderWheel, triggerSpeakingOrderWheel } = useGameStore();
   const [isRevealed, setIsRevealed] = useState(true);
   const [isSubmittingVote, setIsSubmittingVote] = useState(false);
   const { show: showInterstitial, InterstitialAd } = useInterstitialAd();
+  const [impostorPix, setImpostorPix] = useState<ImpostorPixState>({ status: 'idle' });
+  const [pixCopied, setPixCopied] = useState(false);
+  const [unlockedHint, setUnlockedHint] = useState<string | null>(null);
+  const [unlockedWord, setUnlockedWord] = useState<string | null>(null);
+
+  // Poll PIX payment status for impostor unlock
+  useEffect(() => {
+    if (impostorPix.status !== 'awaiting_payment') return;
+    let active = true;
+    const id = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/donations/status/${impostorPix.paymentId}`);
+        if (res.ok && active) {
+          const data = await res.json();
+          if (data.status === 'approved') {
+            clearInterval(id);
+            if (impostorPix.type === 'hint') {
+              setUnlockedHint(room?.gameData?.hint ?? null);
+            } else {
+              setUnlockedWord(room?.gameData?.word ?? null);
+            }
+            setImpostorPix({ status: 'success', type: impostorPix.type });
+          }
+        }
+      } catch {}
+    }, 5000);
+    return () => { active = false; clearInterval(id); };
+  }, [impostorPix, room]);
+
+  const handleImpostorPix = async (type: 'hint' | 'reveal') => {
+    const amount = type === 'hint' ? 1 : 3;
+    setImpostorPix({ status: 'loading', type });
+    try {
+      const res = await fetch('/api/donations/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ donorName: user?.name || 'Impostor', amount }),
+      });
+      if (!res.ok) throw new Error('Falha ao criar pagamento');
+      const data = await res.json();
+      setImpostorPix({ status: 'awaiting_payment', type, paymentId: data.paymentId, qrCode: data.qrCode, qrCodeBase64: data.qrCodeBase64 });
+    } catch (err: any) {
+      setImpostorPix({ status: 'error', error: err.message });
+    }
+  };
+
+  const copyImpostorPix = () => {
+    if (impostorPix.status !== 'awaiting_payment') return;
+    navigator.clipboard.writeText(impostorPix.qrCode);
+    setPixCopied(true);
+    setTimeout(() => setPixCopied(false), 2000);
+  };
 
   const handleNewRound = () => {
     showInterstitial(async () => {
@@ -4836,7 +4895,7 @@ const GameScreen = () => {
         const hint = gameData.hint;
         const gameConfig = gameData.gameConfig;
         const firstPlayerHintOnly = gameConfig?.firstPlayerHintOnly || false;
-        const enableHints = gameConfig?.enableHints ?? true;
+        const enableHints = gameConfig?.enableHints ?? false;
         
         // Debug logging
         console.log('[ImpostorContent] Hint logic:', {
@@ -4891,20 +4950,93 @@ const GameScreen = () => {
         
         console.log('[ImpostorContent] Result:', { shouldShowHint, hintMessage });
         
+        // Unlocked via PIX overrides everything
+        const pixHint = unlockedHint;
+        const pixWord = unlockedWord;
+
         return (
           <div className="space-y-3 text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
-            {shouldShowHint ? (
+            {/* Already unlocked via PIX */}
+            {pixWord ? (
+              <>
+                <p className="text-yellow-400 text-xs uppercase tracking-[0.3em] font-bold">Palavra Revelada 👑</p>
+                <h3 className="text-2xl sm:text-3xl text-white font-black">{pixWord}</h3>
+                <p className="text-slate-400 text-sm">Você pagou para saber. Use bem!</p>
+              </>
+            ) : pixHint ? (
+              <>
+                <p className="text-rose-400 text-xs uppercase tracking-[0.3em] font-bold">Dica Desbloqueada 🔓</p>
+                <h3 className="text-2xl sm:text-3xl text-white font-black">{pixHint}</h3>
+                <p className="text-slate-400 text-sm">Use a dica para fingir que sabe a palavra!</p>
+              </>
+            ) : shouldShowHint ? (
               <>
                 <p className="text-rose-400 text-xs uppercase tracking-[0.3em] font-bold">Dica</p>
                 <h3 className="text-2xl sm:text-3xl text-white font-black">{hint}</h3>
-                <p className="text-slate-400 text-sm">
-                  Use a dica para fingir que sabe a palavra!
-                </p>
+                <p className="text-slate-400 text-sm">Use a dica para fingir que sabe a palavra!</p>
               </>
             ) : (
-              <p className="text-slate-300 text-sm font-medium leading-relaxed">
-                {hintMessage}
-              </p>
+              <>
+                <p className="text-slate-300 text-sm font-medium leading-relaxed">{hintMessage}</p>
+
+                {/* PIX unlock options — only show when awaiting_payment or idle/error */}
+                {impostorPix.status === 'awaiting_payment' ? (
+                  <div className="mt-3 space-y-2 text-left bg-slate-800/60 rounded-xl p-3 border border-slate-700">
+                    <p className="text-xs text-slate-400 font-bold text-center">
+                      {impostorPix.type === 'hint' ? 'Pague R$ 1,00 para receber a dica' : 'Pague R$ 3,00 para ver a palavra'}
+                    </p>
+                    {impostorPix.qrCodeBase64 && (
+                      <div className="flex justify-center">
+                        <div className="bg-white rounded-lg p-1.5">
+                          <img src={`data:image/png;base64,${impostorPix.qrCodeBase64}`} alt="QR PIX" className="w-28 h-28 object-contain" />
+                        </div>
+                      </div>
+                    )}
+                    <button
+                      onClick={copyImpostorPix}
+                      className="w-full px-3 py-2 rounded-xl font-black text-xs flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white border-b-[3px] border-emerald-800 hover:brightness-110 active:border-b-0 active:translate-y-0.5 transition-all"
+                    >
+                      {pixCopied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      {pixCopied ? 'Copiado!' : 'COPIAR CÓDIGO PIX'}
+                    </button>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-yellow-400">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span className="text-xs font-bold">Aguardando pagamento...</span>
+                      </div>
+                      <button onClick={() => setImpostorPix({ status: 'idle' })} className="text-xs text-slate-500 hover:text-white underline transition-colors">
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3 flex flex-col gap-2">
+                    {impostorPix.status === 'error' && (
+                      <p className="text-xs text-rose-400 font-bold">{impostorPix.error}</p>
+                    )}
+                    <button
+                      onClick={() => handleImpostorPix('hint')}
+                      disabled={impostorPix.status === 'loading'}
+                      className="w-full px-3 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white border-b-[3px] border-rose-800 hover:brightness-110 active:border-b-0 active:translate-y-0.5 transition-all disabled:opacity-50"
+                    >
+                      {impostorPix.status === 'loading' && impostorPix.type === 'hint'
+                        ? <Loader2 className="w-3 h-3 animate-spin" />
+                        : '🔍'}
+                      Receber dica — R$ 1,00
+                    </button>
+                    <button
+                      onClick={() => handleImpostorPix('reveal')}
+                      disabled={impostorPix.status === 'loading'}
+                      className="w-full px-3 py-2.5 rounded-xl font-black text-xs flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-b-[3px] border-yellow-800 hover:brightness-110 active:border-b-0 active:translate-y-0.5 transition-all disabled:opacity-50"
+                    >
+                      {impostorPix.status === 'loading' && impostorPix.type === 'reveal'
+                        ? <Loader2 className="w-3 h-3 animate-spin" />
+                        : '👑'}
+                      Ver a palavra secreta — R$ 3,00
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         );
