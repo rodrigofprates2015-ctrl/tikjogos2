@@ -927,11 +927,20 @@ function OverviewView({
     queryFn: async () => {
       if (!token) return null;
       const res = await fetch("/api/analytics/dashboard", { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (err.code === 'DATABASE_COMPUTE_QUOTA_EXCEEDED') {
+          const error = new Error(err.message || 'Cota de compute do banco excedida') as Error & { code?: string };
+          error.code = err.code;
+          throw error;
+        }
+        return null;
+      }
       return res.json();
     },
-    staleTime: 30 * 1000,
-    refetchInterval: 60 * 1000,
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+    retry: (_failureCount, err: any) => err?.code !== 'DATABASE_COMPUTE_QUOTA_EXCEEDED',
     enabled: !!token,
   });
 

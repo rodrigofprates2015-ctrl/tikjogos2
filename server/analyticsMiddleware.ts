@@ -2,13 +2,15 @@ import type { Request, Response, NextFunction } from 'express';
 import { db } from './db';
 import { analyticsEvents, type InsertAnalyticsEvent } from '@shared/schema';
 import { randomUUID } from 'crypto';
-import { eq, and } from 'drizzle-orm';
 
 const COOKIE_NAME = 'visitor_id';
+const UNIQUE_COOKIE_NAME = 'visitor_seen';
 const COOKIE_MAX_AGE = 365 * 24 * 60 * 60 * 1000; // 365 days
 
 const recentPageviews = new Map<string, number>();
-const DEBOUNCE_MS = 2000;
+const DEBOUNCE_MS = 30000;
+const QUOTA_BACKOFF_MS = 10 * 60 * 1000;
+let analyticsPausedUntil = 0;
 
 const IGNORE_PATHS = [
   /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webp|map|json|txt|xml|webmanifest)$/i,
@@ -89,27 +91,14 @@ export async function analyticsMiddleware(req: Request, res: Response, next: Nex
     });
   }
 
-  let shouldTrackAsUnique = false;
-  
-  if (db && visitorId) {
-    try {
-      const existingVisitor = await db
-        .select()
-        .from(analyticsEvents)
-        .where(
-          and(
-            eq(analyticsEvents.visitorId, visitorId),
-            eq(analyticsEvents.eventType, 'unique_visitor')
-          )
-        )
-        .limit(1);
-      
-      shouldTrackAsUnique = isNewVisitor || existingVisitor.length === 0;
-    } catch (error) {
-      shouldTrackAsUnique = isNewVisitor;
-    }
-  } else {
-    shouldTrackAsUnique = isNewVisitor;
+  const shouldTrackAsUnique = isNewVisitor || req.cookies?.[UNIQUE_COOKIE_NAME] !== '1';
+  if (shouldTrackAsUnique) {
+    res.cookie(UNIQUE_COOKIE_NAME, '1', {
+      maxAge: COOKIE_MAX_AGE,
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
   }
 
   const ipAddress = extractRealIP(req);
@@ -202,10 +191,21 @@ export async function trackSessionEnd(visitorId: string, durationSeconds: number
 
 async function trackEvent(data: Omit<InsertAnalyticsEvent, 'id' | 'createdAt'>) {
   if (!db) return;
+  if (Date.now() < analyticsPausedUntil) return;
 
   try {
     await db.insert(analyticsEvents).values(data);
   } catch (error) {
+    if (isComputeQuotaError(error)) {
+      analyticsPausedUntil = Date.now() + QUOTA_BACKOFF_MS;
+      console.warn('[Analytics] Database compute quota exceeded; pausing analytics writes temporarily');
+      return;
+    }
     console.error('[Analytics] Error inserting event:', error);
   }
+}
+
+function isComputeQuotaError(error: unknown): boolean {
+  const message = String((error as any)?.message || error || '').toLowerCase();
+  return message.includes('compute time quota') || message.includes('exceeded the compute');
 }

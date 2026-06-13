@@ -15,6 +15,57 @@ async function safeQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   try { return await fn(); } catch (e) { console.warn('[Analytics] Query fallback:', (e as any)?.message?.slice(0, 80)); return fallback; }
 }
 
+function isComputeQuotaError(error: unknown): boolean {
+  const message = String((error as any)?.message || error || '').toLowerCase();
+  return message.includes('compute time quota') || message.includes('exceeded the compute');
+}
+
+async function buildFallbackDashboard(period: string, unavailableReason?: string) {
+  const emptyDays = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (29 - i));
+    return { date: d.toISOString().split('T')[0], count: 0 };
+  });
+  const emptyRealtimeStats = {
+    totalRoomsCreated: 0,
+    activeRooms: 0,
+    playingRooms: 0,
+    totalConnectedPlayers: 0,
+    rooms: [],
+  };
+  const safeStat = async <T>(fn: () => T | Promise<T>, fallback: T): Promise<T> => {
+    try {
+      return await fn();
+    } catch (error) {
+      console.warn('[Analytics] Fallback stat unavailable:', (error as any)?.message?.slice(0, 80));
+      return fallback;
+    }
+  };
+
+  return {
+    period,
+    databaseUnavailable: true,
+    unavailableReason,
+    overview: {
+      totalPageviews: 0, totalUniqueVisitors: 0, totalPlayers: 0,
+      avgSessionDuration: 0,
+      changes: { pageviews: 0, visitors: 0, players: 0, session: 0 },
+    },
+    timeSeries: { pageviews: emptyDays, visitors: emptyDays, rooms: emptyDays },
+    devices: [], browsers: [],
+    geo: { countries: [], cities: [] },
+    games: {
+      roomsTotal: 0, roomsToday: 0, roomsMonth: 0, activeRooms: 0,
+      abandonmentRate: 0, avgRoomDuration: 0,
+      gameModes: [], themeUsage: [], roomsLast30Days: emptyDays, roomsPerDayMonth: [],
+    },
+    impostor: await safeStat(() => getImpostorRoomStats(), emptyRealtimeStats),
+    drawing: await safeStat(() => getDrawingRoomStats(), emptyRealtimeStats),
+    sincronia: await safeStat(() => getRCRoomStats(), { ...emptyRealtimeStats, waitingRooms: 0 }),
+    palavra: await safeStat(() => getBRRoomStats(), { rooms: [], totalPlayers: 0 }),
+    topPages: [], referrers: [],
+  };
+}
+
 export function createAnalyticsRouter(verifyAdmin: any) {
 
   // ─── POST /api/analytics/session-end (public, called by client) ───
@@ -74,32 +125,7 @@ export function createAnalyticsRouter(verifyAdmin: any) {
       const prevPeriodStart = new Date(Date.now() - windowMs * 2);
 
       if (!db) {
-        // Return in-memory game stats when DB is unavailable
-        const emptyDays = Array.from({ length: 30 }, (_, i) => {
-          const d = new Date(); d.setDate(d.getDate() - (29 - i));
-          return { date: d.toISOString().split('T')[0], count: 0 };
-        });
-        return res.json({
-          period: periodParam,
-          overview: {
-            totalPageviews: 0, totalUniqueVisitors: 0, totalPlayers: 0,
-            avgSessionDuration: 0,
-            changes: { pageviews: 0, visitors: 0, players: 0, session: 0 },
-          },
-          timeSeries: { pageviews: emptyDays, visitors: emptyDays, rooms: emptyDays },
-          devices: [], browsers: [],
-          geo: { countries: [], cities: [] },
-          games: {
-            roomsTotal: 0, roomsToday: 0, roomsMonth: 0, activeRooms: 0,
-            abandonmentRate: 0, avgRoomDuration: 0,
-            gameModes: [], themeUsage: [], roomsLast30Days: emptyDays, roomsPerDayMonth: [],
-          },
-          impostor: await getImpostorRoomStats(),
-          drawing: getDrawingRoomStats(),
-          sincronia: getRCRoomStats(),
-          palavra: getBRRoomStats(),
-          topPages: [], referrers: [],
-        });
+        return res.json(await buildFallbackDashboard(periodParam, 'database_not_configured'));
       }
 
       const now = new Date();
@@ -374,6 +400,14 @@ export function createAnalyticsRouter(verifyAdmin: any) {
       });
     } catch (error: any) {
       console.error('[Analytics API] Error fetching dashboard:', error);
+
+      if (isComputeQuotaError(error)) {
+        res.setHeader('Retry-After', '3600');
+        return res.json(await buildFallbackDashboard(
+          (req.query.period as string) || '30d',
+          'database_compute_quota_exceeded'
+        ));
+      }
       
       if (error?.code === '42P01') {
         return res.status(503).json({

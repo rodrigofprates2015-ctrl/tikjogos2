@@ -23,6 +23,8 @@ type TimeSeries = Array<{ date: string; count: number }>;
 type NameValue = { name: string; value: number };
 
 type DashboardData = {
+  databaseUnavailable?: boolean;
+  unavailableReason?: string;
   overview: {
     totalPageviews: number;
     totalUniqueVisitors: number;
@@ -355,13 +357,17 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
       const res = await fetch(`/api/analytics/dashboard?period=${period}`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || `${res.status}: ${res.statusText}`);
+        const message = err.message || `${res.status}: ${res.statusText}`;
+        const error = new Error(message) as Error & { code?: string };
+        error.code = err.code;
+        throw error;
       }
       return res.json();
     },
-    staleTime: 15 * 1000,
-    refetchInterval: 30 * 1000,
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
     refetchOnWindowFocus: true,
+    retry: (_failureCount, err: any) => err?.code !== 'DATABASE_COMPUTE_QUOTA_EXCEEDED',
     enabled: !!token,
   });
 
@@ -461,6 +467,20 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
           </Badge>
         </div>
       </div>
+
+      {data.databaseUnavailable && (
+        <Card className="bg-amber-500/10 border-amber-500/30">
+          <CardContent className="pt-5 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-amber-300">Analytics temporariamente indisponível</p>
+              <p className="text-sm text-white/50">
+                O banco recusou as consultas por limite de compute. Os dados de tráfego podem aparecer zerados até a cota renovar ou o plano ser ajustado.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="bg-[#1e293b]/60 border border-white/[0.06] p-1 rounded-xl flex-wrap h-auto gap-1">
