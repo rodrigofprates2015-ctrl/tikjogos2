@@ -52,6 +52,19 @@ const characterImages = [
   character10,
 ];
 
+const featuredSkins = [
+  { name: "Zack", image: character7, description: "Moletom escuro", creator: "TikJogos" },
+  { name: "Luna", image: character1, description: "Menina fazendo pose", creator: "TikJogos" },
+  { name: "Nico", image: character6, description: "Bone verde", creator: "TikJogos" },
+  { name: "Maya", image: character9, description: "Menina loira", creator: "TikJogos" },
+  { name: "Kadu", image: character10, description: "Moletom roxo", creator: "TikJogos" },
+  { name: "Theo", image: character2, description: "Menino de oculos", creator: "TikJogos" },
+  { name: "Lili", image: character4, description: "Bone rosa", creator: "TikJogos" },
+  { name: "Jett", image: character5, description: "Fone gamer", creator: "TikJogos" },
+  { name: "Bia", image: character8, description: "Cafe gelado", creator: "TikJogos" },
+  { name: "Rex", image: character3, description: "Gorro e xadrez", creator: "TikJogos" },
+];
+
 const benefits = [
   { icon: UserRound, title: "Avatar permanente", text: "Seu personagem fica salvo para entrar nas partidas." },
   { icon: Trophy, title: "Destaque no lobby", text: "Apareca com uma skin exclusiva entre os jogadores." },
@@ -243,6 +256,54 @@ export default function Personagem() {
                 className="relative z-10 h-[430px] w-auto max-w-full object-contain drop-shadow-[0_28px_32px_rgba(0,0,0,0.55)] sm:h-[520px]"
                 draggable={false}
               />
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-[#0b1020] py-16 md:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-sm font-black uppercase tracking-[0.24em] text-amber-300">Skins oficiais</p>
+                <h2 className="mt-2 text-3xl font-black uppercase text-white md:text-5xl">Personagens prontos para jogar</h2>
+                <p className="mt-4 text-base leading-relaxed text-slate-300">
+                  Essas skins iniciais aparecem com destaque no site. Quando uma skin personalizada for criada, ela tambem podera exibir o nome escolhido e a referencia ao criador.
+                </p>
+              </div>
+              <button
+                onClick={scrollToForm}
+                className="inline-flex h-12 shrink-0 items-center justify-center rounded-xl bg-white px-5 text-sm font-black uppercase text-slate-950 hover:bg-amber-200"
+              >
+                Quero minha skin
+              </button>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {featuredSkins.map((skin) => (
+                <div
+                  key={skin.name}
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-slate-950/55 p-4 shadow-xl transition hover:-translate-y-1 hover:border-amber-300/35"
+                >
+                  <div className="absolute inset-x-6 bottom-20 h-16 rounded-full bg-violet-500/20 blur-2xl transition group-hover:bg-amber-300/20" />
+                  <div className="relative flex h-72 items-end justify-center overflow-hidden rounded-xl bg-[radial-gradient(circle_at_50%_78%,rgba(245,158,11,0.20),transparent_34%),linear-gradient(180deg,rgba(30,41,59,0.35),rgba(2,6,23,0.35))] sm:h-80">
+                    <div className="absolute bottom-3 h-8 w-[72%] rounded-full border border-violet-300/25 bg-violet-500/10" />
+                    <img
+                      src={skin.image}
+                      alt={`Skin ${skin.name}`}
+                      className="relative z-10 max-h-[96%] w-auto max-w-full object-contain drop-shadow-[0_22px_24px_rgba(0,0,0,0.45)]"
+                      draggable={false}
+                    />
+                  </div>
+
+                  <div className="pt-4 text-center">
+                    <h3 className="text-2xl font-black uppercase text-white">{skin.name}</h3>
+                    <p className="mt-1 text-sm font-bold text-amber-200">{skin.description}</p>
+                    <p className="mt-2 text-xs font-black uppercase tracking-wider text-slate-500">
+                      Referencia: {skin.creator}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
