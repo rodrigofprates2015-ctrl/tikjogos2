@@ -4,6 +4,7 @@ export type Player = {
   uid: string;
   name: string;
   waitingForGame?: boolean;
+  characterIndex?: number;
 };
 
 export type GameStatus = 'home' | 'lobby' | 'modeSelect' | 'gameConfig' | 'submodeSelect' | 'spinning' | 'playing';
@@ -108,8 +109,8 @@ export type GameState = {
   saveNickname: (name: string) => void;
   clearSavedNickname: () => void;
   loadSavedNickname: () => string | null;
-  createRoom: () => Promise<void>;
-  joinRoom: (code: string) => Promise<boolean>;
+  createRoom: (characterIndex?: number) => Promise<void>;
+  joinRoom: (code: string, characterIndex?: number) => Promise<boolean>;
   selectMode: (mode: GameModeType) => void;
   startGame: (themeCode?: string) => Promise<void>;
   startGameWithConfig: (config: GameConfig, themeCode?: string) => Promise<void>;
@@ -131,6 +132,7 @@ export type GameState = {
   removeNotification: (id: string) => void;
   setDisconnected: (disconnected: boolean) => void;
   kickPlayer: (targetPlayerId: string) => void;
+  selectCharacter: (characterIndex: number) => Promise<void>;
   sendLobbyChat: (message: string) => void;
   addLobbyChatMessage: (msg: LobbyChatMessage) => void;
   clearLobbyChat: () => void;
@@ -450,6 +452,12 @@ export const useGameStore = create<GameState>((set, get) => ({
             message: `${data.newHostName} agora é o host da sala`
           });
         }
+        if (data.type === 'character-selection-rejected') {
+          get().addNotification({
+            type: 'player-kicked',
+            message: 'Esse personagem já foi escolhido'
+          });
+        }
         if (data.type === 'player-kicked') {
           get().addNotification({
             type: 'player-kicked',
@@ -599,7 +607,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     });
   },
 
-  createRoom: async () => {
+  createRoom: async (characterIndex = 0) => {
     const { user } = get();
     console.log('[CreateRoom] Called, user:', user);
     
@@ -619,6 +627,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         body: JSON.stringify({
           hostId: user.uid,
           hostName: user.name,
+          characterIndex,
         }),
       });
 
@@ -643,7 +652,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
   },
 
-  joinRoom: async (code: string) => {
+  joinRoom: async (code: string, characterIndex = 0) => {
     const { user } = get();
     if (!user) return false;
 
@@ -657,6 +666,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           code: code.toUpperCase(),
           playerId: user.uid,
           playerName: user.name,
+          characterIndex,
         }),
       });
 
@@ -912,6 +922,53 @@ export const useGameStore = create<GameState>((set, get) => ({
       targetPlayerId,
       requesterId: user.uid
     }));
+  },
+
+  selectCharacter: async (characterIndex: number) => {
+    const { room, user } = get();
+    if (!room || !user) return;
+
+    const isTaken = room.players.some(p => p.uid !== user.uid && p.characterIndex === characterIndex);
+    if (isTaken) {
+      get().addNotification({
+        type: 'player-kicked',
+        message: 'Esse personagem já foi escolhido'
+      });
+      return;
+    }
+
+    const previousRoom = room;
+    const optimisticRoom = {
+      ...room,
+      players: room.players.map(p => p.uid === user.uid ? { ...p, characterIndex } : p)
+    };
+    set({ room: optimisticRoom });
+
+    try {
+      const response = await fetch(`/api/rooms/${room.code}/select-character`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId: user.uid, characterIndex }),
+      });
+
+      if (!response.ok) {
+        set({ room: previousRoom });
+        get().addNotification({
+          type: 'player-kicked',
+          message: 'Esse personagem já foi escolhido'
+        });
+        return;
+      }
+
+      const updatedRoom = await response.json();
+      get().updateRoom(updatedRoom);
+    } catch (error) {
+      set({ room: previousRoom });
+      get().addNotification({
+        type: 'disconnected',
+        message: 'Não foi possível trocar o personagem agora'
+      });
+    }
   },
 
   revealQuestion: async () => {

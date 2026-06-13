@@ -120,7 +120,14 @@ export class MemoryStorage implements IStorage {
     if (!room) return undefined;
 
     const playerExists = room.players.some(p => p.uid === player.uid);
-    if (playerExists) return room;
+    if (playerExists) {
+      const updatedRoom: Room = {
+        ...room,
+        players: room.players.map(p => p.uid === player.uid ? { ...p, ...player } : p)
+      };
+      this.rooms.set(code, updatedRoom);
+      return updatedRoom;
+    }
 
     const updatedRoom: Room = {
       ...room,
@@ -300,7 +307,14 @@ export class DatabaseStorage implements IStorage {
     if (!room) return undefined;
 
     const playerExists = room.players.some(p => p.uid === player.uid);
-    if (playerExists) return room;
+    if (playerExists) {
+      const updatedRoom: Room = {
+        ...room,
+        players: room.players.map(p => p.uid === player.uid ? { ...p, ...player } : p)
+      };
+      this.rooms.set(code, updatedRoom);
+      return updatedRoom;
+    }
 
     const updatedRoom: Room = {
       ...room,

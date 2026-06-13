@@ -95,6 +95,17 @@ const logoDesafioPalavraSmall = "/palavra-logo.webp";
 const logoDesafioPalavraForms = "/palavra-logo.webp";
 import personagemEsquerdo from "@assets/personagem esquerdo.png";
 import personagemDireito from "@assets/personagem direito.png";
+import lobbyCharacter1 from "@assets/character (1).png";
+import lobbyCharacter2 from "@assets/character (2).png";
+import lobbyCharacter3 from "@assets/character (3).png";
+import lobbyCharacter4 from "@assets/character (4).png";
+import lobbyCharacter5 from "@assets/character (5).png";
+import lobbyCharacter6 from "@assets/character (6).png";
+import lobbyCharacter7 from "@assets/character (7).png";
+import lobbyCharacter8 from "@assets/character (8).png";
+import lobbyCharacter9 from "@assets/character (9).png";
+import lobbyCharacter10 from "@assets/character (10).png";
+import lobbyPodium from "@assets/podio.png";
 import { useRCGameStore } from "@/lib/rcGameStore";
 import { useDesafioStore } from "@/lib/desafioStore";
 import { useAproximacaoStore } from "@/lib/aproximacaoStore";
@@ -104,6 +115,37 @@ import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd } from "@/compone
 import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
+
+const DEFAULT_LOBBY_CHARACTERS = [
+  lobbyCharacter1,
+  lobbyCharacter2,
+  lobbyCharacter3,
+  lobbyCharacter4,
+  lobbyCharacter5,
+  lobbyCharacter6,
+  lobbyCharacter7,
+  lobbyCharacter8,
+  lobbyCharacter9,
+  lobbyCharacter10,
+];
+
+const characterAccents = [
+  "from-violet-500 to-fuchsia-500",
+  "from-amber-400 to-orange-500",
+  "from-emerald-400 to-teal-500",
+  "from-sky-400 to-blue-500",
+  "from-rose-400 to-pink-500",
+  "from-lime-400 to-emerald-500",
+  "from-purple-400 to-indigo-500",
+  "from-cyan-400 to-sky-500",
+  "from-yellow-400 to-amber-500",
+  "from-red-400 to-rose-500",
+];
+
+const normalizeLobbyCharacterIndex = (index?: number) => {
+  if (typeof index !== 'number' || Number.isNaN(index)) return 0;
+  return Math.abs(index) % DEFAULT_LOBBY_CHARACTERS.length;
+};
 
 const MIN_PALAVRAS = 10;
 const MAX_PALAVRAS = 20;
@@ -3218,7 +3260,7 @@ const GameConfigScreen = () => {
 };
 
 const LobbyScreen = () => {
-  const { room, user, goToModeSelect, leaveGame, kickPlayer, gameConfig } = useGameStore();
+  const { room, user, goToModeSelect, leaveGame, kickPlayer, selectCharacter, gameConfig } = useGameStore();
   const { toast } = useToast();
   const [showConfigModal, setShowConfigModal] = useState(false);
 
@@ -3228,6 +3270,13 @@ const LobbyScreen = () => {
   const players = room.players || [];
   const currentPlayer = players.find(p => p.uid === user?.uid);
   const isWaitingForNextRound = currentPlayer?.waitingForGame === true && room.status === 'playing';
+  const canStart = players.length >= 3;
+  const currentCharacterIndex = normalizeLobbyCharacterIndex(currentPlayer?.characterIndex);
+  const takenCharacterIndexes = new Set(
+    players
+      .filter(p => p.uid !== user?.uid && typeof p.characterIndex === 'number')
+      .map(p => normalizeLobbyCharacterIndex(p.characterIndex))
+  );
 
   const copyLink = () => {
     const shareLink = `${window.location.origin}/sala/${room.code}`;
@@ -3235,213 +3284,293 @@ const LobbyScreen = () => {
     toast({ title: "Copiado!", description: "Link da sala copiado para a área de transferência." });
   };
 
-  return (
-    <div className="flex flex-col w-full max-w-2xl h-full py-6 px-4 animate-fade-in relative z-10">
-      {/* Elementos decorativos de fundo */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
+  const getPlayerCharacter = (index?: number) => DEFAULT_LOBBY_CHARACTERS[normalizeLobbyCharacterIndex(index)];
+  const getPlayerAccent = (index?: number) => characterAccents[normalizeLobbyCharacterIndex(index)];
+
+  const actionContent = isWaitingForNextRound ? (
+    <div className="w-full text-center py-5 flex flex-col items-center gap-3 rounded-2xl bg-amber-500/10 border border-amber-400/25">
+      <Clock className="w-7 h-7 text-amber-300 animate-pulse" />
+      <div>
+        <p className="text-amber-300 font-black text-base">Aguardando próxima rodada...</p>
+        <p className="text-slate-400 text-sm">Você entrará quando a rodada começar</p>
       </div>
-      
-      <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] relative z-10">
-        {/* Header com código da sala */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
-          <div onClick={copyLink} className="cursor-pointer group flex-1 text-center md:text-left">
-            <p className="text-slate-400 text-xs uppercase tracking-widest mb-2 font-bold group-hover:text-orange-400 transition-colors">
-              Código da Sala
-            </p>
-            <div className="flex items-center justify-center md:justify-start gap-3">
-              <h2 className="text-5xl md:text-6xl font-black tracking-widest font-mono text-orange-500 group-hover:text-orange-400 transition-colors" data-testid="text-room-code">
-                {room.code}
-              </h2>
-              <div className="p-3 bg-orange-500/10 rounded-2xl border-2 border-orange-500/20 group-hover:bg-orange-500/20 transition-colors">
-                <Copy className="w-6 h-6 text-orange-500" />
-              </div>
-            </div>
-            <p className="text-slate-500 text-xs mt-2 font-medium">Clique para copiar o link</p>
-          </div>
-          
-          <div className="flex gap-2">
-            {isHost && (
-              <button 
-                onClick={() => setShowConfigModal(true)}
-                className="p-3 bg-slate-800 rounded-2xl hover:bg-orange-500 transition-all border-b-4 border-slate-950 hover:border-orange-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group"
-                title="Configurações da Partida"
-              >
-                <Settings size={24} strokeWidth={3} className="group-hover:animate-pulse" />
-              </button>
-            )}
-            
-            <button 
+    </div>
+  ) : isHost ? (
+    <div className="w-full space-y-3">
+      <button
+        onClick={goToModeSelect}
+        disabled={!canStart}
+        className={cn(
+          "mx-auto w-full max-w-sm px-7 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
+          canStart
+            ? "bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 border-purple-950 text-white hover:brightness-110 active:border-b-0 active:translate-y-1"
+            : "bg-slate-800 border-slate-950 text-slate-500 cursor-not-allowed opacity-70"
+        )}
+        data-testid="button-start-game"
+      >
+        <Play size={24} className={canStart ? "fill-current" : "fill-current opacity-60"} />
+        {canStart ? "ESCOLHER MODO" : "AGUARDANDO JOGADORES"}
+      </button>
+      {!canStart && (
+        <p className="text-center text-sm font-bold text-rose-300">Mínimo de 3 jogadores para iniciar</p>
+      )}
+    </div>
+  ) : (
+    <div className="w-full text-center py-5 flex flex-col items-center gap-3 rounded-2xl bg-blue-500/10 border border-blue-400/25">
+      <Crown className="w-7 h-7 text-blue-300 animate-pulse" />
+      <div>
+        <p className="text-blue-300 font-black text-base">Aguardando o capitão...</p>
+        <p className="text-slate-400 text-sm">O capitão escolherá o modo de jogo</p>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="w-full max-w-7xl px-3 sm:px-5 py-4 md:py-6 animate-fade-in relative z-10">
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.14),transparent_32%)]" />
+
+      <div className="relative z-10 rounded-[2rem] md:rounded-[2.25rem] border border-white/10 bg-slate-950/80 shadow-[0_24px_80px_rgba(0,0,0,0.45)] overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(180deg,rgba(255,255,255,0.06),transparent_22%),radial-gradient(circle_at_50%_38%,rgba(124,58,237,0.18),transparent_42%)]" />
+
+        <div className="relative px-4 py-4 sm:px-6 md:px-8 md:py-7">
+          <div className="grid grid-cols-[auto_1fr_auto] items-start gap-3 md:gap-6">
+            <button
               onClick={leaveGame}
-              className="p-3 bg-slate-800 rounded-2xl hover:bg-rose-500 transition-all border-b-4 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group"
+              className="h-12 px-3 sm:px-4 rounded-2xl bg-slate-900/90 border border-white/10 text-slate-200 hover:text-white hover:bg-rose-500/20 hover:border-rose-400/40 transition-all flex items-center gap-2 font-black"
               data-testid="button-leave-room"
             >
-              <LogOut size={24} strokeWidth={3} className="group-hover:animate-pulse" />
+              <ArrowLeft className="w-5 h-5" />
+              <span className="hidden sm:inline">SAIR DA SALA</span>
             </button>
-          </div>
-        </div>
 
-      {/* Lista de Jogadores */}
-      <div className="flex-1 w-full mb-6 overflow-y-auto scrollbar-hide">
-        <div className="flex items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/10 rounded-xl border-2 border-blue-500/20">
-              <Users className="w-5 h-5 text-blue-500" />
-            </div>
-            <h3 className="text-white text-lg font-black">
-              Tripulantes na Nave
-            </h3>
-            <div className="px-3 py-1 bg-blue-500 text-white text-sm font-black rounded-full border-2 border-blue-700">
-              {players.length}
+            <button onClick={copyLink} className="group text-center justify-self-center" data-testid="text-room-code">
+              <p className="text-slate-400 text-xs uppercase tracking-widest mb-1 font-black">Código da Sala</p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-4xl md:text-5xl font-black tracking-wider font-mono text-amber-400 group-hover:text-amber-300 transition-colors">
+                  {room.code}
+                </span>
+                <span className="p-2 rounded-xl bg-slate-900 border border-white/10 text-slate-400 group-hover:text-amber-300 group-hover:border-amber-400/30 transition-colors">
+                  <Copy className="w-5 h-5" />
+                </span>
+              </div>
+            </button>
+
+            <div className="flex items-start gap-2 justify-end">
+              {isHost && (
+                <button
+                  onClick={() => setShowConfigModal(true)}
+                  className="h-12 w-12 rounded-2xl bg-slate-900/90 border border-white/10 text-slate-300 hover:text-white hover:bg-slate-800 transition-all flex items-center justify-center"
+                  title="Configurações da Partida"
+                >
+                  <Settings className="w-6 h-6" />
+                </button>
+              )}
+              <div className="hidden md:block">
+                <VoiceChatJoinButton />
+              </div>
             </div>
           </div>
-          <VoiceChatJoinButton />
-        </div>
-        
-        <ul className="space-y-3 pb-4">
-          {players.map((p) => {
-            const isMe = p.uid === user?.uid;
-            const isPlayerHost = p.uid === room.hostId;
-            const initial = p.name.charAt(0).toUpperCase();
-            
-            return (
-              <li 
-                key={p.uid} 
-                className={cn(
-                  "relative p-4 rounded-3xl flex items-center justify-between border-4 transition-all duration-200",
-                  isMe 
-                    ? "bg-emerald-500 border-emerald-700 shadow-[0_6px_0_0_rgba(0,0,0,0.2)]" 
-                    : "bg-slate-800 border-slate-900 hover:bg-slate-750 hover:-translate-y-1 shadow-lg"
-                )}
-                data-testid={`player-${p.uid}`}
-              >
-                {/* Badge Capitão */}
-                {isPlayerHost && (
-                  <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 rounded-full p-1.5 border-3 border-yellow-600 shadow-sm z-10">
-                    <Crown size={16} fill="currentColor" />
-                  </div>
-                )}
-                
-                <div className="flex items-center gap-4 flex-1">
-                  {/* Avatar com indicador de fala */}
-                  <div className="relative">
-                    <div className={cn(
-                      "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black border-2 border-black/10 shrink-0",
-                      isMe ? "bg-white/20 text-white" : "bg-blue-500 text-white"
-                    )}>
-                      {initial}
-                    </div>
-                    <SpeakingIndicator playerId={p.uid} isCurrentUser={isMe} />
-                  </div>
-                  
-                  {/* Info */}
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={cn(
-                        "font-black text-lg leading-tight",
-                        isMe ? "text-white" : "text-slate-100"
-                      )}>
-                        {p.name}
-                      </span>
-                      {isMe && (
-                        <span className="text-xs font-bold px-2 py-0.5 bg-white/20 text-white rounded-full border border-white/30">
-                          VOCÊ
-                        </span>
-                      )}
-                    </div>
-                    
-                    {p.waitingForGame && (
-                      <span className="text-xs text-white/70 font-medium mt-1">
-                        ⏳ Aguardando partida acabar
+
+          <div className="mt-6 md:hidden">
+            <VoiceChatJoinButton />
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/55 p-3">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <span className="text-xs font-black uppercase tracking-widest text-slate-400">Escolha seu personagem</span>
+              <span className="text-[11px] font-bold text-slate-500">Ocupados ficam bloqueados</span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" role="radiogroup" aria-label="Escolha seu personagem">
+              {DEFAULT_LOBBY_CHARACTERS.map((character, index) => {
+                const selected = currentCharacterIndex === index;
+                const taken = takenCharacterIndexes.has(index);
+                const accent = characterAccents[index % characterAccents.length];
+
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => !taken && !selected && selectCharacter(index)}
+                    disabled={taken}
+                    className={cn(
+                      "relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border bg-slate-950/80 transition-all",
+                      selected
+                        ? "border-amber-300 shadow-[0_0_0_2px_rgba(251,191,36,0.25),0_10px_24px_rgba(0,0,0,0.35)]"
+                        : taken
+                          ? "border-white/5 opacity-35 cursor-not-allowed grayscale"
+                          : "border-white/10 hover:border-white/30 hover:-translate-y-0.5"
+                    )}
+                    role="radio"
+                    aria-checked={selected}
+                    title={taken ? "Personagem ocupado" : `Personagem ${index + 1}`}
+                    data-testid={`button-lobby-character-${index}`}
+                  >
+                    <div className={cn("absolute inset-x-2 bottom-1 h-4 rounded-full bg-gradient-to-r opacity-30 blur-sm", accent)} />
+                    <img
+                      src={character}
+                      alt=""
+                      className="absolute left-1/2 top-0 h-24 w-auto max-w-none -translate-x-1/2 object-contain"
+                      draggable={false}
+                    />
+                    {selected && (
+                      <span className="absolute right-1 top-1 rounded-full bg-emerald-500 p-0.5 text-white shadow-lg">
+                        <Check className="h-3.5 w-3.5" strokeWidth={4} />
                       </span>
                     )}
-                    
-                    {isPlayerHost && (
-                      <span className="text-xs text-yellow-400 font-bold mt-1 flex items-center gap-1">
-                        <Crown className="w-3 h-3" fill="currentColor" /> CAPITÃO DA NAVE
+                    {taken && (
+                      <span className="absolute inset-x-1 bottom-1 rounded-full bg-slate-950/85 px-1 py-0.5 text-[9px] font-black text-slate-300">
+                        OCUPADO
                       </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="hidden md:grid mt-12 min-h-[420px] grid-cols-2 lg:grid-cols-5 gap-x-5 gap-y-10 items-end">
+            {players.map((p, index) => {
+              const isMe = p.uid === user?.uid;
+              const isPlayerHost = p.uid === room.hostId;
+              const characterIndex = p.characterIndex ?? index;
+              const accent = getPlayerAccent(characterIndex);
+
+              return (
+                <div key={p.uid} className="relative flex min-w-0 flex-col items-center" data-testid={`player-${p.uid}`}>
+                  <div className="mb-4 flex flex-col items-center gap-2">
+                    {isPlayerHost && (
+                      <div className="text-amber-300 drop-shadow-[0_2px_8px_rgba(251,191,36,0.55)]">
+                        <Crown className="w-6 h-6" fill="currentColor" />
+                      </div>
+                    )}
+                    <div className="max-w-[160px] rounded-xl border border-white/10 bg-slate-900/90 px-3 py-2 text-center shadow-lg">
+                      <p className="truncate text-base font-black text-white">{p.name}</p>
+                    </div>
+                    <div className="rounded-full border border-emerald-300/20 bg-emerald-500/20 px-3 py-1 text-xs font-black text-white shadow-[0_0_16px_rgba(34,197,94,0.22)] flex items-center gap-1.5">
+                      <Check className="w-4 h-4 rounded-full bg-emerald-500 p-0.5" />
+                      {p.waitingForGame ? "AGUARDANDO" : "PRONTO"}
+                    </div>
+                  </div>
+
+                  <div className="relative h-[245px] w-full max-w-[180px] flex items-end justify-center">
+                    <div className={cn("absolute bottom-0 h-10 w-[94%] rounded-full bg-gradient-to-r opacity-50 blur-md", accent)} />
+                    <img
+                      src={lobbyPodium}
+                      alt=""
+                      className="absolute bottom-0 w-[112%] max-w-none object-contain drop-shadow-[0_8px_18px_rgba(56,189,248,0.28)]"
+                      draggable={false}
+                    />
+                    <img
+                      src={getPlayerCharacter(characterIndex)}
+                      alt=""
+                      className="relative z-10 max-h-[238px] w-auto max-w-full object-contain drop-shadow-[0_18px_22px_rgba(0,0,0,0.45)]"
+                      draggable={false}
+                    />
+                    <div className="absolute bottom-8 right-2 z-20">
+                      <SpeakingIndicator playerId={p.uid} isCurrentUser={isMe} />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex h-8 items-center justify-center gap-2">
+                    {isPlayerHost && (
+                      <span className="rounded-lg border border-amber-400/20 bg-slate-900 px-3 py-1 text-xs font-black text-amber-300">
+                        CAPITÃO DA SALA
+                      </span>
+                    )}
+                    {isMe && (
+                      <span className="rounded-lg bg-violet-600 px-3 py-1 text-xs font-black text-white shadow-lg shadow-violet-950/50">
+                        VOCÊ
+                      </span>
+                    )}
+                    <VoiceControlButton playerId={p.uid} isCurrentUser={isMe} />
+                    {isHost && !isMe && (
+                      <button
+                        onClick={() => kickPlayer(p.uid)}
+                        className="rounded-lg bg-slate-900 p-2 text-slate-400 border border-white/10 hover:text-white hover:bg-rose-500/25 hover:border-rose-400/30 transition-colors"
+                        data-testid={`button-kick-${p.uid}`}
+                        title="Expulsar jogador"
+                      >
+                        <UserX className="w-4 h-4" />
+                      </button>
                     )}
                   </div>
                 </div>
-                
-                {/* Controles de voz e expulsar */}
-                <div className="flex items-center">
-                  <VoiceControlButton playerId={p.uid} isCurrentUser={isMe} />
-                  
-                  {/* Botão Expulsar */}
+              );
+            })}
+          </div>
+
+          <div className="md:hidden mt-6 space-y-3">
+            {players.map((p, index) => {
+              const isMe = p.uid === user?.uid;
+              const isPlayerHost = p.uid === room.hostId;
+              const characterIndex = p.characterIndex ?? index;
+              const accent = getPlayerAccent(characterIndex);
+
+              return (
+                <div
+                  key={p.uid}
+                  className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/80 p-3 flex items-center gap-3"
+                  data-testid={`player-${p.uid}`}
+                >
+                  <div className={cn("absolute left-0 top-0 h-full w-1 bg-gradient-to-b", accent)} />
+                  {isPlayerHost && (
+                    <Crown className="absolute left-3 top-2 h-4 w-4 text-amber-300" fill="currentColor" />
+                  )}
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-slate-950/70 border border-white/10">
+                    <div className={cn("absolute inset-x-2 bottom-1 h-4 rounded-full bg-gradient-to-r opacity-35 blur-sm", accent)} />
+                    <img
+                      src={getPlayerCharacter(characterIndex)}
+                      alt=""
+                      className="absolute left-1/2 top-0 z-10 h-32 w-auto max-w-none -translate-x-1/2 object-contain"
+                      draggable={false}
+                    />
+                    <div className="absolute bottom-1 right-1">
+                      <SpeakingIndicator playerId={p.uid} isCurrentUser={isMe} />
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <p className="truncate text-lg font-black text-white">{p.name}</p>
+                      {isPlayerHost && <span className="rounded-lg bg-violet-700 px-2 py-1 text-[10px] font-black text-white">CAPITÃO</span>}
+                      {isMe && <span className="rounded-lg bg-violet-600 px-2 py-1 text-[10px] font-black text-white">VOCÊ</span>}
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="rounded-full bg-emerald-500/20 px-2.5 py-1 text-xs font-black text-white flex items-center gap-1.5">
+                        <Check className="w-4 h-4 rounded-full bg-emerald-500 p-0.5" />
+                        {p.waitingForGame ? "AGUARDANDO" : "PRONTO"}
+                      </span>
+                      <VoiceControlButton playerId={p.uid} isCurrentUser={isMe} />
+                    </div>
+                  </div>
                   {isHost && !isMe && (
                     <button
                       onClick={() => kickPlayer(p.uid)}
-                      className="p-2 bg-slate-900 rounded-xl hover:bg-rose-500 transition-all border-b-3 border-slate-950 hover:border-rose-700 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white group ml-2"
+                      className="rounded-xl bg-slate-950 p-2 text-slate-400 border border-white/10 hover:text-white hover:bg-rose-500/25"
                       data-testid={`button-kick-${p.uid}`}
                       title="Expulsar jogador"
                     >
-                      <UserX className="w-5 h-5 group-hover:animate-pulse" strokeWidth={2.5} />
+                      <UserX className="w-5 h-5" />
                     </button>
                   )}
                 </div>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+              );
+            })}
+          </div>
 
-      {/* Ações do Lobby */}
-      {isWaitingForNextRound ? (
-        <div className="w-full text-center py-6 flex flex-col items-center gap-4 bg-amber-500/10 rounded-3xl border-4 border-amber-500/20">
-          <div className="p-4 bg-amber-500/20 rounded-2xl">
-            <Clock className="w-8 h-8 text-amber-400 animate-pulse" />
-          </div>
-          <div>
-            <p className="text-amber-400 font-black text-lg mb-1">Aguardando próxima rodada...</p>
-            <p className="text-slate-400 text-sm font-medium">Você entrará quando a rodada começar</p>
-          </div>
-          <div className="flex gap-2">
-            <div className="w-3 h-3 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-3 h-3 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-3 h-3 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-          </div>
-        </div>
-      ) : isHost ? (
-        <div className="w-full animate-fade-in space-y-4">
-          <button 
-            onClick={goToModeSelect}
-            disabled={players.length < 3}
-            className={cn(
-              "w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
-              players.length >= 3
-                ? 'bg-gradient-to-r from-purple-500 to-violet-500 border-purple-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
-                : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
-            )}
-            data-testid="button-start-game"
-          >
-            <Play size={28} className={players.length >= 3 ? 'animate-bounce fill-current' : 'fill-current'} />
-            {players.length >= 3 ? 'ESCOLHER MODO' : 'AGUARDANDO TRIPULANTES'}
-          </button>
-          {players.length < 3 && (
-            <div className="flex items-center justify-center gap-2 text-rose-400">
-              <Info size={16} />
-              <p className="text-sm font-bold">Mínimo de 3 tripulantes para iniciar</p>
+          <div className="mt-7 border-t border-white/10 pt-6">
+            <div className="grid gap-5 md:grid-cols-[1fr_auto_1fr] md:items-center">
+              <div className="flex flex-col items-center md:items-start gap-1 text-slate-300">
+                <div className="flex items-center gap-2 text-lg font-black">
+                  <Users className="w-5 h-5" />
+                  {players.length} / 10 JOGADORES
+                </div>
+                <p className="text-sm text-slate-500">Todos aparecem com um personagem no lobby</p>
+              </div>
+              <div>{actionContent}</div>
+              <div className="hidden md:block" />
             </div>
-          )}
-        </div>
-      ) : (
-        <div className="w-full text-center py-6 flex flex-col items-center gap-4 bg-blue-500/10 rounded-3xl border-4 border-blue-500/20">
-          <div className="p-4 bg-blue-500/20 rounded-2xl">
-            <Crown className="w-8 h-8 text-blue-400 animate-pulse" />
-          </div>
-          <div>
-            <p className="text-blue-400 font-black text-lg mb-1">Aguardando o capitão...</p>
-            <p className="text-slate-400 text-sm font-medium">O capitão escolherá o modo de jogo</p>
-          </div>
-          <div className="flex gap-2">
-            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
           </div>
         </div>
-      )}
       </div>
 
       <LobbyChat />

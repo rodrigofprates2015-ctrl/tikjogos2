@@ -51,6 +51,7 @@ export type Player = {
   name: string;
   waitingForGame?: boolean;
   connected?: boolean;  // Track connection status - true = connected, false = temporarily disconnected
+  characterIndex?: number;
   // Desafio da Palavra fields
   vidas?: number;
   ordem?: number;

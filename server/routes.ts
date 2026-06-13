@@ -1287,6 +1287,16 @@ export async function registerRoutes(
   const roomConnections = new Map<string, Set<WebSocket>>();
   const playerConnections = new Map<WebSocket, { roomCode: string; playerId?: string; lastPong: number }>();
 
+  function resolveAvailableCharacterIndex(players: Player[], requestedIndex: number, playerId?: string): number {
+    const normalizedIndex = Math.abs(requestedIndex) % 10;
+    const isAvailable = (index: number) => !players.some(p => p.uid !== playerId && p.characterIndex === index);
+    if (isAvailable(normalizedIndex)) return normalizedIndex;
+    for (let index = 0; index < 10; index++) {
+      if (isAvailable(index)) return index;
+    }
+    return normalizedIndex;
+  }
+
   function broadcastToRoom(roomCode: string, data: unknown) {
     const connections = roomConnections.get(roomCode);
     if (!connections) return;
@@ -1766,6 +1776,34 @@ export async function registerRoutes(
             }
           }
         }
+
+        if (data.type === 'select-character' && data.roomCode && data.playerId) {
+          const roomCode = data.roomCode as string;
+          const playerId = data.playerId as string;
+          const parsedIndex = Number(data.characterIndex);
+          const requestedIndex = Number.isInteger(parsedIndex) ? Math.abs(parsedIndex) % 10 : 0;
+          const room = await storage.getRoom(roomCode);
+          if (!room) return;
+
+          const characterIndex = resolveAvailableCharacterIndex(room.players, requestedIndex, playerId);
+          if (characterIndex !== requestedIndex) {
+            ws.send(JSON.stringify({
+              type: 'character-selection-rejected',
+              characterIndex: requestedIndex,
+              reason: 'taken',
+            }));
+            return;
+          }
+
+          const updatedRoom = await storage.updateRoom(roomCode, {
+            players: room.players.map(p => p.uid === playerId ? { ...p, characterIndex } : p)
+          });
+
+          if (updatedRoom) {
+            broadcastToRoom(roomCode, { type: 'room-update', room: updatedRoom });
+          }
+          return;
+        }
         
         // Handle host back-to-lobby - broadcast to all players in room
         if (data.type === 'host-back-to-lobby' && data.roomCode) {
@@ -2055,13 +2093,19 @@ export async function registerRoutes(
 
   app.post("/api/rooms/create", async (req, res) => {
     try {
-      const { hostId, hostName } = z.object({
+      const { hostId, hostName, characterIndex } = z.object({
         hostId: z.string(),
         hostName: z.string(),
+        characterIndex: z.number().int().min(0).max(9).optional().default(0),
       }).parse(req.body);
 
       const code = generateRoomCode();
-      const player: Player = { uid: hostId, name: hostName, connected: true };
+      const player: Player = {
+        uid: hostId,
+        name: hostName,
+        connected: true,
+        characterIndex: resolveAvailableCharacterIndex([], characterIndex, hostId)
+      };
 
       const room = await storage.createRoom({
         code,
@@ -2085,12 +2129,15 @@ export async function registerRoutes(
         console.log(`[Admin Mode] Detected admin user, adding 4 bots to room ${code}`);
         const botNames = ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"];
         
-        for (const botName of botNames) {
+        for (let botIndex = 0; botIndex < botNames.length; botIndex++) {
+          const botName = botNames[botIndex];
           const botId = `bot-${randomBytes(4).toString('hex')}`;
+          const currentRoom = await storage.getRoom(code);
           const botPlayer: Player = { 
             uid: botId, 
             name: botName, 
-            connected: true 
+            connected: true,
+            characterIndex: resolveAvailableCharacterIndex(currentRoom?.players || [], botIndex + 1, botId),
           };
           
           await storage.addPlayerToRoom(code, botPlayer);
@@ -2114,10 +2161,11 @@ export async function registerRoutes(
 
   app.post("/api/rooms/join", async (req, res) => {
     try {
-      const { code, playerId, playerName } = z.object({
+      const { code, playerId, playerName, characterIndex } = z.object({
         code: z.string(),
         playerId: z.string(),
         playerName: z.string(),
+        characterIndex: z.number().int().min(0).max(9).optional().default(0),
       }).parse(req.body);
 
       const roomCode = code.toUpperCase();
@@ -2137,6 +2185,7 @@ export async function registerRoutes(
       const player: Player = { 
         uid: playerId, 
         name: playerName,
+        characterIndex: resolveAvailableCharacterIndex(room.players, characterIndex, playerId),
         waitingForGame: isGameInProgress,
         connected: true  // New players start as connected
       };
@@ -2153,6 +2202,41 @@ export async function registerRoutes(
     } catch (error) {
       console.error('[Room Join Error]:', error);
       res.status(400).json({ error: "Failed to join room", details: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
+  app.post("/api/rooms/:code/select-character", async (req, res) => {
+    try {
+      const { playerId, characterIndex } = z.object({
+        playerId: z.string(),
+        characterIndex: z.number().int().min(0).max(9),
+      }).parse(req.body);
+      const roomCode = req.params.code.toUpperCase();
+      const room = await storage.getRoom(roomCode);
+
+      if (!room) {
+        return res.status(404).json({ error: "Room not found" });
+      }
+
+      const requestedIndex = Math.abs(characterIndex) % 10;
+      const resolvedIndex = resolveAvailableCharacterIndex(room.players, requestedIndex, playerId);
+
+      if (resolvedIndex !== requestedIndex) {
+        return res.status(409).json({ error: "Character already selected" });
+      }
+
+      const updatedRoom = await storage.updateRoom(roomCode, {
+        players: room.players.map(p => p.uid === playerId ? { ...p, characterIndex: requestedIndex } : p)
+      });
+
+      if (!updatedRoom) {
+        return res.status(404).json({ error: "Room not found" });
+      }
+
+      broadcastToRoom(roomCode, { type: 'room-update', room: updatedRoom });
+      res.json(updatedRoom);
+    } catch (error) {
+      res.status(400).json({ error: "Failed to select character", details: error instanceof Error ? error.message : String(error) });
     }
   });
 
