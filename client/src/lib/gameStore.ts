@@ -5,6 +5,7 @@ export type Player = {
   name: string;
   waitingForGame?: boolean;
   characterIndex?: number;
+  impostorWins?: number;
 };
 
 export type GameStatus = 'home' | 'lobby' | 'modeSelect' | 'gameConfig' | 'submodeSelect' | 'spinning' | 'playing';
@@ -64,6 +65,7 @@ export type GameData = {
   hint?: string;
   gameConfig?: GameConfig;
   impostorIds?: string[];
+  impostorWinCounted?: boolean;
 };
 
 export type Room = {

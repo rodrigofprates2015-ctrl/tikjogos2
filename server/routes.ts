@@ -93,6 +93,43 @@ export function getDrawingRoomStats() {
 const ADMIN_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 const adminTokens = new Map<string, number>(); // token -> expiry timestamp
 
+type SkinRequestStatus = "awaiting_payment" | "approved" | "rejected" | "cancelled" | "unknown";
+
+type SkinRequest = {
+  id: string;
+  paymentId: string;
+  status: SkinRequestStatus;
+  name: string;
+  instagram?: string;
+  about: string;
+  photoName?: string;
+  amount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+const skinRequests = new Map<string, SkinRequest>();
+
+function normalizeSkinRequestStatus(status: string): SkinRequestStatus {
+  if (status === "approved") return "approved";
+  if (status === "rejected") return "rejected";
+  if (status === "cancelled") return "cancelled";
+  if (status === "pending" || status === "in_process") return "awaiting_payment";
+  return "unknown";
+}
+
+function updateSkinRequestPaymentStatus(paymentId: string | number, status: string): void {
+  const normalizedPaymentId = String(paymentId);
+  const request = Array.from(skinRequests.values()).find(item => item.paymentId === normalizedPaymentId);
+  if (!request) return;
+
+  skinRequests.set(request.id, {
+    ...request,
+    status: normalizeSkinRequestStatus(status),
+    updatedAt: new Date().toISOString(),
+  });
+}
+
 function storeAdminToken(token: string): void {
   adminTokens.set(token, Date.now() + ADMIN_TOKEN_TTL_MS);
 }
@@ -2104,6 +2141,7 @@ export async function registerRoutes(
         uid: hostId,
         name: hostName,
         connected: true,
+        impostorWins: 0,
         characterIndex: resolveAvailableCharacterIndex([], characterIndex, hostId)
       };
 
@@ -2137,6 +2175,7 @@ export async function registerRoutes(
             uid: botId, 
             name: botName, 
             connected: true,
+            impostorWins: 0,
             characterIndex: resolveAvailableCharacterIndex(currentRoom?.players || [], botIndex + 1, botId),
           };
           
@@ -2187,6 +2226,7 @@ export async function registerRoutes(
         name: playerName,
         characterIndex: resolveAvailableCharacterIndex(room.players, characterIndex, playerId),
         waitingForGame: isGameInProgress,
+        impostorWins: 0,
         connected: true  // New players start as connected
       };
       const updatedRoom = await storage.addPlayerToRoom(roomCode, player);
@@ -2658,10 +2698,25 @@ export async function registerRoutes(
         return res.status(400).json({ error: "No game in progress" });
       }
 
+      const allImpostorIds = room.gameData.impostorIds?.length
+        ? room.gameData.impostorIds
+        : (room.impostorId ? [room.impostorId] : []);
+      const activePlayers = room.players.filter(p => !p.waitingForGame);
+      const votes = room.gameData.votes || [];
+      const votesForImpostors = votes.filter(v => allImpostorIds.includes(v.targetId)).length;
+      const crewWins = votesForImpostors > activePlayers.length / 2;
+      const votingComplete = activePlayers.length > 0 && votes.length >= activePlayers.length;
+      const shouldCountImpostorWin = votingComplete && !crewWins && !room.gameData.impostorWinCounted;
+      const updatedPlayers = shouldCountImpostorWin
+        ? room.players.map(p => allImpostorIds.includes(p.uid) ? { ...p, impostorWins: (p.impostorWins || 0) + 1 } : p)
+        : room.players;
+
       const updatedRoom = await storage.updateRoom(code.toUpperCase(), {
+        players: updatedPlayers,
         gameData: {
           ...room.gameData,
-          votesRevealed: true
+          votesRevealed: true,
+          impostorWinCounted: room.gameData.impostorWinCounted || shouldCountImpostorWin
         }
       });
 
@@ -2822,8 +2877,14 @@ export async function registerRoutes(
   // Donation Payment Route
   const createDonationSchema = z.object({
     donorName: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").max(50, "Nome deve ter no máximo 50 caracteres"),
-    message: z.string().max(200, "Mensagem deve ter no máximo 200 caracteres").optional(),
-    amount: z.number().min(1, "Valor mínimo é R$ 1,00").max(1000, "Valor máximo é R$ 1.000,00")
+    message: z.string().max(1500, "Mensagem deve ter no máximo 1500 caracteres").optional(),
+    amount: z.number().min(1, "Valor mínimo é R$ 1,00").max(1000, "Valor máximo é R$ 1.000,00"),
+    skinRequest: z.object({
+      name: z.string().min(2).max(50),
+      instagram: z.string().max(80).optional(),
+      about: z.string().min(12).max(500),
+      photoName: z.string().max(160).optional(),
+    }).optional()
   });
 
   app.post("/api/donations/create", async (req, res) => {
@@ -2843,12 +2904,31 @@ export async function registerRoutes(
           error: paymentResult.error || "Falha ao criar pagamento" 
         });
       }
+
+      let skinRequestId: string | undefined;
+      if (validatedData.skinRequest && paymentResult.paymentId) {
+        skinRequestId = `skin-${randomBytes(6).toString('hex')}`;
+        const now = new Date().toISOString();
+        skinRequests.set(skinRequestId, {
+          id: skinRequestId,
+          paymentId: String(paymentResult.paymentId),
+          status: "awaiting_payment",
+          name: validatedData.skinRequest.name,
+          instagram: validatedData.skinRequest.instagram,
+          about: validatedData.skinRequest.about,
+          photoName: validatedData.skinRequest.photoName,
+          amount: validatedData.amount,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
       
       console.log('[Donation] Created payment:', paymentResult.paymentId, 'for donor:', donationData.donorName);
       
       res.json({
         success: true,
         paymentId: paymentResult.paymentId,
+        skinRequestId,
         qrCode: paymentResult.qrCode,
         qrCodeBase64: paymentResult.qrCodeBase64,
         ticketUrl: paymentResult.ticketUrl,
@@ -2876,6 +2956,7 @@ export async function registerRoutes(
       }
       
       const paymentInfo = await getPaymentStatus(paymentId);
+      updateSkinRequestPaymentStatus(paymentId, paymentInfo.status);
       res.json({ status: paymentInfo.status });
     } catch (error) {
       console.error('[Donation Status] Error:', error);
@@ -2906,6 +2987,7 @@ export async function registerRoutes(
       }
       
       const paymentInfo = await getPaymentStatus(paymentId);
+      updateSkinRequestPaymentStatus(paymentId, paymentInfo.status);
       console.log('[Donation Webhook] Payment status:', paymentInfo.status, 'for ID:', paymentId);
       
     } catch (error) {
@@ -3175,6 +3257,13 @@ export async function registerRoutes(
   // Verify token endpoint - client calls this on page load to check if stored token is still valid
   app.get("/api/admin/verify", verifyAdmin, (_req, res) => {
     res.json({ valid: true });
+  });
+
+  app.get("/api/admin/skin-requests", verifyAdmin, (_req, res) => {
+    const requests = Array.from(skinRequests.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    res.json(requests);
   });
 
   // Analytics routes

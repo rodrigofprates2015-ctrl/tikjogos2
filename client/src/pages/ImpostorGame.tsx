@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useGameStore, type GameModeType, type PlayerVote, type PlayerAnswer, type GameConfig } from "@/lib/gameStore";
+import { useGameStore, type GameModeType, type PlayerVote, type PlayerAnswer, type GameConfig, type Player as GamePlayer } from "@/lib/gameStore";
 import { useDrawingGameStore } from "@/lib/drawingGameStore";
 import { notifyGameEnded } from "@/hooks/useFeedback";
 import { Link, useLocation } from "wouter";
@@ -145,6 +145,34 @@ const characterAccents = [
 const normalizeLobbyCharacterIndex = (index?: number) => {
   if (typeof index !== 'number' || Number.isNaN(index)) return 0;
   return Math.abs(index) % DEFAULT_LOBBY_CHARACTERS.length;
+};
+
+const getLobbyCharacterSrc = (index?: number) => DEFAULT_LOBBY_CHARACTERS[normalizeLobbyCharacterIndex(index)];
+
+const getLobbyCharacterAccent = (index?: number) => characterAccents[normalizeLobbyCharacterIndex(index)];
+
+const CharacterFaceAvatar = ({
+  player,
+  className,
+  imageClassName,
+}: {
+  player: Pick<GamePlayer, 'characterIndex' | 'name'>;
+  className?: string;
+  imageClassName?: string;
+}) => {
+  const accent = getLobbyCharacterAccent(player.characterIndex);
+
+  return (
+    <div className={cn("relative shrink-0 overflow-hidden rounded-xl border border-white/10 bg-slate-950/80", className)}>
+      <div className={cn("absolute inset-x-2 bottom-1 h-3 rounded-full bg-gradient-to-r opacity-35 blur-sm", accent)} />
+      <img
+        src={getLobbyCharacterSrc(player.characterIndex)}
+        alt=""
+        className={cn("absolute left-1/2 top-0 z-10 h-[150%] w-auto max-w-none -translate-x-1/2 object-contain", imageClassName)}
+        draggable={false}
+      />
+    </div>
+  );
 };
 
 const MIN_PALAVRAS = 10;
@@ -3443,8 +3471,14 @@ const LobbyScreen = () => {
                         <Crown className="w-6 h-6" fill="currentColor" />
                       </div>
                     )}
-                    <div className="max-w-[160px] rounded-xl border border-white/10 bg-slate-900/90 px-3 py-2 text-center shadow-lg">
-                      <p className="truncate text-base font-black text-white">{p.name}</p>
+                    <div className="max-w-[190px] rounded-xl border border-white/10 bg-slate-900/90 px-3 py-2 text-center shadow-lg">
+                      <div className="flex min-w-0 items-center justify-center gap-2">
+                        <p className="truncate text-base font-black text-white">{p.name}</p>
+                        <span className="shrink-0 rounded-lg border border-amber-300/25 bg-amber-400/10 px-2 py-0.5 text-xs font-black text-amber-200 inline-flex items-center gap-1">
+                          <Trophy className="h-3.5 w-3.5" />
+                          {p.impostorWins ?? 0}
+                        </span>
+                      </div>
                     </div>
                     <div className="rounded-full border border-emerald-300/20 bg-emerald-500/20 px-3 py-1 text-xs font-black text-white shadow-[0_0_16px_rgba(34,197,94,0.22)] flex items-center gap-1.5">
                       <Check className="w-4 h-4 rounded-full bg-emerald-500 p-0.5" />
@@ -3531,6 +3565,10 @@ const LobbyScreen = () => {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 min-w-0">
                       <p className="truncate text-lg font-black text-white">{p.name}</p>
+                      <span className="shrink-0 rounded-lg border border-amber-300/25 bg-amber-400/10 px-2 py-0.5 text-xs font-black text-amber-200 inline-flex items-center gap-1">
+                        <Trophy className="h-3.5 w-3.5" />
+                        {p.impostorWins ?? 0}
+                      </span>
                       {isPlayerHost && <span className="rounded-lg bg-violet-700 px-2 py-1 text-[10px] font-black text-white">CAPITÃO</span>}
                       {isMe && <span className="rounded-lg bg-violet-600 px-2 py-1 text-[10px] font-black text-white">VOCÊ</span>}
                     </div>
@@ -5305,13 +5343,14 @@ const GameScreen = () => {
                     <div 
                       key={player.uid}
                       className={cn(
-                        "px-3 py-1.5 rounded-xl text-sm font-medium transition-all",
+                        "px-2.5 py-1.5 rounded-xl text-sm font-medium transition-all inline-flex items-center gap-2",
                         hasVoted 
                           ? "bg-emerald-500/20 text-emerald-300 border-2 border-emerald-500/40"
                           : "bg-slate-700/50 text-slate-400 border-2 border-slate-600/30"
                       )}
                     >
-                      {hasVoted && <Check className="w-3 h-3 inline mr-1" />}
+                      <CharacterFaceAvatar player={player} className="h-8 w-8 rounded-lg" imageClassName="h-12" />
+                      {hasVoted && <Check className="w-3 h-3" />}
                       {player.name}
                     </div>
                   );
@@ -5385,6 +5424,18 @@ const GameScreen = () => {
                   </div>
                 )}
 
+                <div className="mt-4 flex flex-wrap justify-center gap-3">
+                  {resultImpostorPlayers.map(player => (
+                    <div key={player.uid} className="inline-flex items-center gap-2 rounded-2xl border border-rose-400/30 bg-rose-500/15 px-3 py-2">
+                      <CharacterFaceAvatar player={player} className="h-14 w-14" imageClassName="h-24" />
+                      <div className="text-left">
+                        <p className="max-w-[130px] truncate text-sm font-black text-white">{player.name}</p>
+                        <p className="text-[11px] font-black uppercase tracking-wider text-rose-200">Impostor</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 <p className="text-white text-base">
                   {resultImpostorPlayers.length > 1 ? "Os impostores eram" : "O impostor era"}: <span className="text-rose-400 font-bold text-lg">{resultImpostorNames}</span>
                 </p>
@@ -5406,19 +5457,35 @@ const GameScreen = () => {
                     <div 
                       key={player.uid}
                       className={cn(
-                        "w-full p-3 rounded-xl flex items-center justify-between transition-all",
+                        "w-full p-3 rounded-xl flex items-center justify-between gap-3 transition-all",
                         isTheImpostor 
                           ? "bg-rose-500/20 border-2 border-rose-500/50 shadow-lg"
                           : "bg-slate-700/50 border-2 border-slate-600/30"
                       )}
                     >
-                      <span className={cn(
-                        "font-bold text-sm",
-                        isTheImpostor ? "text-rose-300" : "text-slate-200"
-                      )}>
-                        {player.name}
-                        {isTheImpostor && " 👹"}
-                      </span>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <CharacterFaceAvatar player={player} className="h-12 w-12" imageClassName="h-20" />
+                        <div className="min-w-0">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span className={cn(
+                              "truncate font-bold text-sm",
+                              isTheImpostor ? "text-rose-300" : "text-slate-200"
+                            )}>
+                              {player.name}
+                            </span>
+                            {isTheImpostor && (
+                              <span className="shrink-0 rounded-md bg-rose-500/25 px-2 py-0.5 text-[10px] font-black uppercase text-rose-100 inline-flex items-center gap-1">
+                                <Skull className="h-3 w-3" />
+                                Impostor
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-1 inline-flex items-center gap-1 rounded-md bg-amber-400/10 px-2 py-0.5 text-[11px] font-black text-amber-200">
+                            <Trophy className="h-3 w-3" />
+                            {player.impostorWins ?? 0}
+                          </div>
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-800/50">
                         <span className="text-orange-400 font-bold text-base">{votesReceived}</span>
                         <span className="text-slate-400 text-xs">votos</span>
@@ -5575,7 +5642,7 @@ const VotingPlayerList = ({
   onSubmitVote, 
   isSubmitting 
 }: { 
-  activePlayers: { uid: string; name: string }[]; 
+  activePlayers: GamePlayer[];
   userId: string; 
   onSubmitVote: (targetId: string) => void; 
   isSubmitting: boolean;
@@ -5597,15 +5664,21 @@ const VotingPlayerList = ({
             )}
             data-testid={`button-vote-${player.uid}`}
           >
-            <div className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center text-base font-bold",
-              selectedVote === player.uid ? "bg-[#e9c46a] text-black" : "bg-gray-600 text-gray-200"
-            )}>
-              {player.name.charAt(0).toUpperCase()}
-            </div>
-            <span className="font-bold text-sm">{player.name}</span>
+            <CharacterFaceAvatar
+              player={player}
+              className={cn(
+                "h-11 w-11 rounded-xl",
+                selectedVote === player.uid ? "border-[#e9c46a]" : "border-white/10"
+              )}
+              imageClassName="h-16"
+            />
+            <span className="min-w-0 truncate font-bold text-sm">{player.name}</span>
+            <span className="ml-auto shrink-0 rounded-lg border border-amber-300/20 bg-amber-400/10 px-2 py-0.5 text-xs font-black text-amber-200 inline-flex items-center gap-1">
+              <Trophy className="h-3.5 w-3.5" />
+              {player.impostorWins ?? 0}
+            </span>
             {selectedVote === player.uid && (
-              <Check className="w-4 h-4 ml-auto" />
+              <Check className="w-4 h-4 shrink-0" />
             )}
           </button>
         ))}

@@ -43,6 +43,8 @@ const GameModes = lazy(() => import("@/pages/GameModes"));
 const DesenhoImpostor = lazy(() => import("@/pages/DesenhoImpostor"));
 const RespostasEmComum = lazy(() => import("@/pages/RespostasEmComum"));
 const SincBrGame = lazy(() => import("@/pages/SincBrGame"));
+const Personagem = lazy(() => import("@/pages/Personagem"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
 
 function VersionManager() {
   useEffect(() => {
@@ -166,6 +168,12 @@ function AppRouter() {
       {i18nRoutes("/donations", Doacoes)}
       {i18nRoutes("/donaciones", Doacoes)}
       {i18nRoutes("/apoie", Doacoes)}
+
+      {/* Personagem personalizado */}
+      {i18nRoutes("/personagem", Personagem)}
+      {i18nRoutes("/personagens", Personagem)}
+      {i18nRoutes("/skin", Personagem)}
+      <Route path="/dashboard" component={Dashboard} />
 
       {i18nRoutes("/prototipo", Prototipo)}
 

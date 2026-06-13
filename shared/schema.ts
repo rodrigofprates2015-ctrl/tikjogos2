@@ -52,6 +52,7 @@ export type Player = {
   waitingForGame?: boolean;
   connected?: boolean;  // Track connection status - true = connected, false = temporarily disconnected
   characterIndex?: number;
+  impostorWins?: number;
   // Desafio da Palavra fields
   vidas?: number;
   ordem?: number;
@@ -105,6 +106,7 @@ export type GameData = {
   votesRevealed?: boolean;
   gameConfig?: GameConfig;
   impostorIds?: string[];
+  impostorWinCounted?: boolean;
   hint?: string;
   // Desafio da Palavra fields
   currentWord?: string;
