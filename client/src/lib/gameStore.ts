@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { trackVirtualPageview } from './analytics';
 
 export type Player = {
   uid: string;
@@ -214,6 +215,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   goToModeSelect: () => {
     set({ status: 'modeSelect' });
     get().fetchGameModes();
+    trackVirtualPageview('/game/mode-select', 'Escolha de Modo — TikJogos');
   },
 
   goToGameConfig: () => {
@@ -582,6 +584,10 @@ export const useGameStore = create<GameState>((set, get) => ({
       newStatus = 'lobby';
     } else if (validatedRoom.status === 'playing') {
       newStatus = 'playing';
+      const prevStatus = get().status;
+      if (prevStatus !== 'playing') {
+        trackVirtualPageview('/game/playing', 'Jogo em Andamento — TikJogos');
+      }
     }
     
     // Reset selectedMode and speaking order state when room is reset to waiting (Nova Rodada)
@@ -646,6 +652,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         isLoading: false 
       });
 
+      trackVirtualPageview('/game/lobby', 'Sala de Espera — TikJogos');
       get().connectWebSocket(room.code);
 
     } catch (error) {
@@ -685,6 +692,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         isLoading: false 
       });
 
+      trackVirtualPageview('/game/lobby', 'Sala de Espera — TikJogos');
       get().connectWebSocket(room.code);
       return true;
 
@@ -813,6 +821,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           speakingOrderPlayerMap: null,
           showSpeakingOrderWheel: false
         });
+        trackVirtualPageview('/game/resultado', 'Resultado da Rodada — TikJogos');
         console.log('returnToLobby: Successfully reset room and status to lobby');
 
       } catch (error) {
@@ -860,6 +869,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         speakingOrderPlayerMap: null,
         showSpeakingOrderWheel: false
       });
+      trackVirtualPageview('/game/resultado', 'Resultado da Rodada — TikJogos');
       console.log('leaveCurrentGame: Successfully left game and returned to lobby');
 
     } catch (error) {
