@@ -310,6 +310,93 @@ export const InArticleAd = () => {
   );
 };
 
+// Anchor ad — banner fixo no rodapé, apenas mobile (<768px)
+// Segue as políticas do AdSense: botão fechar visível, z-index alto
+export const AnchorMobileAd = () => {
+  const [dismissed, setDismissed] = useState(false);
+  const insRef = useRef<HTMLModElement>(null);
+  const pushed = useRef(false);
+
+  useEffect(() => {
+    if (pushed.current || dismissed) return;
+    const timer = setTimeout(() => {
+      try {
+        if (!insRef.current) return;
+        window.adsbygoogle = window.adsbygoogle || [];
+        window.adsbygoogle.push({});
+        pushed.current = true;
+      } catch (e) {
+        console.error("AnchorMobileAd error:", e);
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [dismissed]);
+
+  if (dismissed) return null;
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-[60] md:hidden">
+      <div className="relative bg-[#0f172a] border-t border-slate-700/60 shadow-2xl">
+        <button
+          onClick={() => setDismissed(true)}
+          aria-label="Fechar anúncio"
+          className="absolute -top-7 right-2 bg-slate-800/90 text-slate-400 hover:text-white text-[10px] font-bold px-2 py-1 rounded-t-md border border-b-0 border-slate-700"
+        >
+          ✕ Fechar
+        </button>
+        <div className="flex justify-center py-1">
+          <ins
+            ref={insRef}
+            className="adsbygoogle"
+            style={{ display: "inline-block", width: "320px", height: "50px" }}
+            data-ad-client="ca-pub-9927561573478881"
+            data-ad-slot="7536067322"
+            data-ad-format="horizontal"
+            data-full-width-responsive="false"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Anúncio de resultado — exibido na tela de resultado após a partida
+// Retângulo 300x250 (alto RPM) centralizado
+export const ResultAd = () => {
+  const insRef = useRef<HTMLModElement>(null);
+  const pushed = useRef(false);
+
+  useEffect(() => {
+    if (pushed.current) return;
+    const timer = setTimeout(() => {
+      try {
+        if (!insRef.current) return;
+        window.adsbygoogle = window.adsbygoogle || [];
+        window.adsbygoogle.push({});
+        pushed.current = true;
+      } catch (e) {
+        console.error("ResultAd error:", e);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="w-full flex flex-col items-center gap-1 py-3">
+      <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Publicidade</span>
+      <ins
+        ref={insRef}
+        className="adsbygoogle"
+        style={{ display: "inline-block", width: "300px", height: "250px" }}
+        data-ad-client="ca-pub-9927561573478881"
+        data-ad-slot="7536067322"
+        data-ad-format="rectangle"
+        data-full-width-responsive="false"
+      />
+    </div>
+  );
+};
+
 // Anúncio fluido para o Blog
 export const BlogFluidAd = ({ className }: { className?: string }) => {
   const pushed = useRef(false);

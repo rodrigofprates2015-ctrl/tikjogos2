@@ -111,7 +111,7 @@ import { useDesafioStore } from "@/lib/desafioStore";
 import { useAproximacaoStore } from "@/lib/aproximacaoStore";
 import { useRankMasterStore } from "@/lib/rankMasterStore";
 const logoAprox = "/aproximacao-logo.webp";
-import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd } from "@/components/AdSense";
+import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd, AnchorMobileAd, ResultAd } from "@/components/AdSense";
 import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
@@ -4800,6 +4800,8 @@ const PerguntasDiferentesScreen = () => {
             </div>
           </div>
 
+          <ResultAd />
+
           {isHost && (
             <Button 
               onClick={handleNewRound}
@@ -5496,6 +5498,8 @@ const GameScreen = () => {
               </div>
             </div>
 
+            <ResultAd />
+
             {isHost && (
               <Button 
                 onClick={handleNewRound}
@@ -5719,6 +5723,7 @@ function ImpostorGameInner() {
       <>
         <NotificationCenter />
         <HomeScreen />
+        <AnchorMobileAd />
       </>
     );
   }
@@ -5740,6 +5745,7 @@ function ImpostorGameInner() {
       {status === 'submodeSelect' && <PalavraSuperSecretaSubmodeScreen />}
       {status === 'playing' && <GameScreen />}
       {NewRoundInterstitialAd}
+      <AnchorMobileAd />
     </div>
   );
 }
