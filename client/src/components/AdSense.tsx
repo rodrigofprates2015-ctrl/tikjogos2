@@ -397,6 +397,42 @@ export const ResultAd = () => {
   );
 };
 
+// Anúncio responsivo para o lobby de espera
+export const LobbyAd = () => {
+  const insRef = useRef<HTMLModElement>(null);
+  const pushed = useRef(false);
+
+  useEffect(() => {
+    if (pushed.current) return;
+    const timer = setTimeout(() => {
+      try {
+        if (!insRef.current) return;
+        window.adsbygoogle = window.adsbygoogle || [];
+        window.adsbygoogle.push({});
+        pushed.current = true;
+      } catch (e) {
+        console.error("LobbyAd error:", e);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="w-full flex flex-col items-center gap-1 pt-5 pb-2">
+      <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Publicidade</span>
+      <ins
+        ref={insRef}
+        className="adsbygoogle"
+        style={{ display: "block", width: "100%", minHeight: "90px" }}
+        data-ad-client="ca-pub-9927561573478881"
+        data-ad-slot="2913946988"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
+    </div>
+  );
+};
+
 // Anúncio fluido para o Blog
 export const BlogFluidAd = ({ className }: { className?: string }) => {
   const pushed = useRef(false);

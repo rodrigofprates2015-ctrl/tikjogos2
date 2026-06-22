@@ -111,7 +111,7 @@ import { useDesafioStore } from "@/lib/desafioStore";
 import { useAproximacaoStore } from "@/lib/aproximacaoStore";
 import { useRankMasterStore } from "@/lib/rankMasterStore";
 const logoAprox = "/aproximacao-logo.webp";
-import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd, AnchorMobileAd, ResultAd } from "@/components/AdSense";
+import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd, AnchorMobileAd, ResultAd, LobbyAd } from "@/components/AdSense";
 import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
@@ -3595,7 +3595,9 @@ const LobbyScreen = () => {
             })}
           </div>
 
-          <div className="mt-7 border-t border-white/10 pt-6">
+          <LobbyAd />
+
+          <div className="mt-4 border-t border-white/10 pt-6">
             <div className="grid gap-5 md:grid-cols-[1fr_auto_1fr] md:items-center">
               <div className="flex flex-col items-center md:items-start gap-1 text-slate-300">
                 <div className="flex items-center gap-2 text-lg font-black">

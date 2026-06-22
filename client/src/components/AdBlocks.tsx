@@ -44,7 +44,7 @@ export function AdBlock({ slot, format = "auto", responsive = true, style }: AdB
 export function AdBlockTop() {
   return (
     <div className="w-full py-6 px-4">
-      <AdBlock slot="1234567890" format="horizontal" />
+      <AdBlock slot="7536067322" format="horizontal" />
     </div>
   );
 }
@@ -52,7 +52,7 @@ export function AdBlockTop() {
 export function AdBlockBottom() {
   return (
     <div className="w-full py-6 px-4">
-      <AdBlock slot="1234567891" format="horizontal" />
+      <AdBlock slot="7536067322" format="horizontal" />
     </div>
   );
 }
@@ -60,7 +60,7 @@ export function AdBlockBottom() {
 export function AdBlockSidebarMiddle() {
   return (
     <div className="w-full py-2">
-      <AdBlock slot="1234567892" format="rectangle" />
+      <AdBlock slot="2913946988" format="rectangle" />
     </div>
   );
 }
@@ -68,7 +68,7 @@ export function AdBlockSidebarMiddle() {
 export function AdBlockSidebarBottom() {
   return (
     <div className="w-full py-2">
-      <AdBlock slot="1234567893" format="rectangle" />
+      <AdBlock slot="9215812637" format="rectangle" />
     </div>
   );
 }
@@ -76,7 +76,7 @@ export function AdBlockSidebarBottom() {
 export function AdBlockSidebarFloating() {
   return (
     <div className="hidden lg:block fixed right-4 top-20 w-64 z-40">
-      <AdBlock slot="1234567894" format="vertical" responsive={false} style={{ width: '250px', height: '600px' }} />
+      <AdBlock slot="7536067322" format="vertical" responsive={false} style={{ width: '250px', height: '600px' }} />
     </div>
   );
 }
@@ -84,7 +84,7 @@ export function AdBlockSidebarFloating() {
 export function AdBlockInContent() {
   return (
     <div className="w-full py-6 px-4">
-      <AdBlock slot="1234567895" format="fluid" />
+      <AdBlock slot="4766433750" format="fluid" />
     </div>
   );
 }
