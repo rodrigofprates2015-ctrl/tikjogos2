@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { AnchorMobileAd, ResultAd } from "@/components/AdSense";
 import { useDesafioStore } from '@/lib/desafioStore';
 import { notifyGameEnded } from '@/hooks/useFeedback';
 import { useToast } from '@/hooks/use-toast';
@@ -354,6 +355,8 @@ function GameScreen() {
               ))}
           </div>
 
+          <ResultAd />
+
           {isHost ? (
             <button
               onClick={returnToLobby}
@@ -571,6 +574,7 @@ export default function DesafioDaPalavra({ initialCode }: { initialCode?: string
   return (
     <>
       <NotificationToast />
+      <AnchorMobileAd />
       {status === 'lobby' && <LobbyScreen />}
       {(status === 'playing' || status === 'defendendo') && <GameScreen />}
     </>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { AnchorMobileAd, ResultAd } from "@/components/AdSense";
 import { useAproximacaoStore } from "@/lib/aproximacaoStore";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -685,6 +686,8 @@ function PlayingScreen() {
               </div>
             </div>
 
+            <ResultAd />
+
             {/* Actions */}
             {isHost ? (
               <button
@@ -727,6 +730,7 @@ export default function AproximacaoGame() {
   return (
     <>
       <NotificationCenter />
+      <AnchorMobileAd />
       {phase === 'home' && <HomeScreen />}
       {phase === 'lobby' && <LobbyScreen />}
       {phase === 'playing' && <PlayingScreen />}

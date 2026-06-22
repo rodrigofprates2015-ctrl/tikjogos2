@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSincBRStore } from '@/lib/sincBrStore';
-import { SideAds } from '@/components/AdSense';
+import { SideAds, AnchorMobileAd, ResultAd } from '@/components/AdSense';
 import { notifyGameEnded } from '@/hooks/useFeedback';
 import type { BRAnswerGroup, BRLeaderboardEntry } from '@/lib/sincBrStore';
 import { useLocation } from 'wouter';
@@ -296,6 +296,8 @@ function MatchEndOverlay({ leaderboard, myUid }: { leaderboard: BRLeaderboardEnt
           ))}
         </div>
 
+        <ResultAd />
+
         <div className="pt-2">
           <div className="w-6 h-6 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-white/30 text-xs mt-2">Reiniciando...</p>
@@ -461,6 +463,7 @@ export default function SincBrGame() {
   return (
     <>
       <SideAds />
+      <AnchorMobileAd />
       {phase === 'playing' ? <GameScreen /> : <RoomSelection />}
     </>
   );

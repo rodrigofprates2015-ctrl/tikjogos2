@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { SideAds } from "@/components/AdSense";
+import { SideAds, AnchorMobileAd, ResultAd } from "@/components/AdSense";
 import { useDrawingGameStore } from "@/lib/drawingGameStore";
 import { notifyGameEnded } from "@/hooks/useFeedback";
 import { useLocation } from "wouter";
@@ -778,6 +778,8 @@ const ResultScreen = () => {
           ))}
         </div>
 
+        <ResultAd />
+
         {/* Actions */}
         <div className="flex flex-col gap-3">
           {isHost ? (
@@ -830,6 +832,7 @@ export default function DesenhoImpostor() {
       style={{ backgroundColor: '#1C202C' }}
     >
       <SideAds />
+      <AnchorMobileAd />
 
       {/* Decorative bg */}
       <div className="fixed inset-0 pointer-events-none z-0">
