@@ -109,7 +109,7 @@ export default function SupportHome() {
         <section className="mt-8">
           <div className="support-panel supporter-panel" aria-labelledby="supporters-title">
             <div className="flex items-center gap-3"><Users className="h-7 w-7 text-purple-400" /><h2 id="supporters-title" className="text-2xl font-black">Quem está ajudando a construir o TikJogos</h2></div>
-            <p className="mt-3 text-sm text-slate-400">Um mural de assinaturas da nossa comunidade.</p>
+            <p className="mt-3 text-sm text-slate-400">Deixe seu @ no mural, conecte-se com outros jogadores e faça parte da comunidade.</p>
             <div className="supporter-wall">
               {support.supporters.map((supporter, index) => <span key={supporter} className={`supporter-name supporter-name--${index % 6}`}>{supporter}</span>)}
               <span className="supporter-you">@você?</span>
