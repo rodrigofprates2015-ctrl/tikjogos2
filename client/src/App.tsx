@@ -46,6 +46,8 @@ const RespostasEmComum = lazy(() => import("@/pages/RespostasEmComum"));
 const SincBrGame = lazy(() => import("@/pages/SincBrGame"));
 const Personagem = lazy(() => import("@/pages/Personagem"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Login = lazy(() => import("@/pages/Login"));
+const Account = lazy(() => import("@/pages/Account"));
 
 function VersionManager() {
   useEffect(() => {
@@ -145,6 +147,8 @@ function AppRouter() {
       <Route path="/jogos" component={ImpostorGame} />
       <Route path="/en/games" component={ImpostorGame} />
       <Route path="/es/juegos" component={ImpostorGame} />
+      <Route path="/entrar" component={Login} />
+      <Route path="/conta" component={Account} />
 
       {i18nRoutes("/sala/:codigo", RoomRedirect)}
 

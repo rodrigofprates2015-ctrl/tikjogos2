@@ -27,6 +27,7 @@ import {
   Lock,
   AlertTriangle,
   User,
+  UserRound,
   Skull,
   Trash2,
   CheckCircle,
@@ -116,7 +117,8 @@ type AproximacaoAdminRoom = {
   createdAt: string;
 };
 
-type NavItem = "overview" | "impostor" | "desenho" | "sincronia" | "palavra" | "aproximacao" | "temas" | "analytics" | "feedback";
+type NavItem = "overview" | "users" | "impostor" | "desenho" | "sincronia" | "palavra" | "aproximacao" | "temas" | "analytics" | "feedback";
+type RegisteredUser = { id: string; email: string | null; firstName: string | null; lastName: string | null; authProvider: string; createdAt: string | null; lastLoginAt: string | null };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -1131,6 +1133,7 @@ export default function AdminDashboard() {
   const [desafioRooms, setDesafioRooms] = useState<DesafioRoom[]>([]);
   const [aproximacaoRooms, setAproximacaoRooms] = useState<AproximacaoAdminRoom[]>([]);
   const [themes, setThemes] = useState<Theme[]>([]);
+  const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const [inspectRoom, setInspectRoom] = useState<Room | null>(null);
@@ -1175,12 +1178,13 @@ export default function AdminDashboard() {
 
   const fetchAll = useCallback(async (t: string) => {
     const headers = { Authorization: `Bearer ${t}` };
-    const [roomsRes, drawRes, sincRes, desafioRes, aproximacaoRes] = await Promise.allSettled([
+    const [roomsRes, drawRes, sincRes, desafioRes, aproximacaoRes, usersRes] = await Promise.allSettled([
       fetch("/api/admin/rooms", { headers }),
       fetch("/api/admin/drawing-rooms", { headers }),
       fetch("/api/admin/sincronia-rooms", { headers }),
       fetch("/api/admin/desafio-rooms", { headers }),
       fetch("/api/admin/aproximacao-rooms", { headers }),
+      fetch("/api/admin/users", { headers }),
     ]);
 
     if (roomsRes.status === "fulfilled" && roomsRes.value.ok) setRooms(await roomsRes.value.json());
@@ -1190,6 +1194,7 @@ export default function AdminDashboard() {
     if (sincRes.status === "fulfilled" && sincRes.value.ok) setSincStats(await sincRes.value.json());
     if (desafioRes.status === "fulfilled" && desafioRes.value.ok) setDesafioRooms(await desafioRes.value.json());
     if (aproximacaoRes.status === "fulfilled" && aproximacaoRes.value.ok) setAproximacaoRooms(await aproximacaoRes.value.json());
+    if (usersRes.status === "fulfilled" && usersRes.value.ok) setRegisteredUsers(await usersRes.value.json());
 
     setLastUpdated(new Date());
   }, [handleLogout]);
@@ -1284,6 +1289,7 @@ export default function AdminDashboard() {
   // ── Nav items ──
   const navItems: { id: NavItem; label: string; icon: any; accent: string; badge?: number }[] = [
     { id: "overview", label: "Visão Geral", icon: Home, accent: "#6366f1" },
+    { id: "users", label: "Cadastros", icon: UserRound, accent: "#8b5cf6", badge: registeredUsers.length || undefined },
     { id: "impostor", label: "Impostor Clássico", icon: Skull, accent: "#6366f1", badge: rooms.length || undefined },
     { id: "desenho", label: "Impostor Desenho", icon: Paintbrush, accent: "#a855f7", badge: drawingRooms.length || undefined },
     { id: "sincronia", label: "Sincronia", icon: Sparkles, accent: "#10b981", badge: sincStats?.activeRooms || undefined },
@@ -1327,6 +1333,9 @@ export default function AdminDashboard() {
             token={token}
           />
         );
+
+      case "users":
+        return <div className="space-y-4"><div className="flex items-center gap-3"><div className="rounded-xl bg-violet-500/20 p-2.5"><Users className="h-5 w-5 text-violet-400"/></div><div><h2 className="text-lg font-bold">Novos cadastros</h2><p className="text-sm text-slate-400">{registeredUsers.length} contas registradas</p></div></div><Card className="border-slate-700 bg-slate-800"><CardContent className="p-0"><Table><TableHeader><TableRow className="border-slate-700"><TableHead>Usuário</TableHead><TableHead>Provedor</TableHead><TableHead>Cadastro</TableHead><TableHead>Último acesso</TableHead></TableRow></TableHeader><TableBody>{registeredUsers.map(user=><TableRow key={user.id} className="border-slate-700"><TableCell><div className="font-bold text-white">{[user.firstName,user.lastName].filter(Boolean).join(' ')||'Sem nome'}</div><div className="text-xs text-slate-400">{user.email}</div></TableCell><TableCell><Badge className="bg-violet-600/60">{user.authProvider||'email'}</Badge></TableCell><TableCell className="text-sm text-slate-300">{user.createdAt?new Date(user.createdAt).toLocaleDateString('pt-BR'):'—'}</TableCell><TableCell className="text-sm text-slate-300">{user.lastLoginAt?new Date(user.lastLoginAt).toLocaleString('pt-BR'):'Nunca'}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></div>;
 
       case "impostor":
         return (
@@ -1433,10 +1442,10 @@ export default function AdminDashboard() {
         );
 
       case "analytics":
-        return <AnalyticsDashboard token={token} />;
+        return <AnalyticsDashboard token={token!} />;
 
       case "feedback":
-        return <FeedbackView token={token} />;
+        return <FeedbackView token={token!} />;
 
       default:
         return null;

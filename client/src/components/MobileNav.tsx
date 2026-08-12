@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
 interface NavItem {
@@ -37,6 +38,7 @@ export function MobileNav() {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
   const { t, lang, langPath } = useLanguage();
+  const { user } = useAuth();
   const playHref = lang === "en" ? "/en/games" : lang === "es" ? "/es/juegos" : "/jogos";
 
   return (
@@ -72,6 +74,7 @@ export function MobileNav() {
             <span>{t("buttons.play", "Jogar")}</span>
           </Link>
           <LanguageSwitcher />
+          <Link href={user ? "/conta" : "/entrar"} className="rounded-xl border border-purple-400/30 px-3 py-2 text-sm font-black text-purple-200 hover:bg-purple-500/10">{user ? user.firstName || "Conta" : "Entrar"}</Link>
         </div>
 
         {/* Mobile Menu Button */}
@@ -124,6 +127,7 @@ export function MobileNav() {
                   <span>{t("buttons.play", "Jogar")}</span>
                 </Link>
               </div>
+              <div className="px-5 pt-4"><Link href={user ? "/conta" : "/entrar"} onClick={()=>setOpen(false)} className="flex w-full items-center justify-center rounded-xl border-2 border-purple-400/30 px-4 py-3 font-black text-purple-200">{user ? "Minha conta" : "Entrar ou criar conta"}</Link></div>
 
               {/* Language switcher in mobile menu */}
               <div className="px-6 py-4 border-t border-[#2f3252] mt-2">
@@ -143,7 +147,7 @@ export function MobileNav() {
                   rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full bg-[#5865F2] flex items-center justify-center text-white hover:brightness-110 transition-all"
                 >
-                  <SiDiscord className="w-5 h-5" />
+                <SiDiscord />
                 </a>
               </div>
             </div>

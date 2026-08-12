@@ -3319,6 +3319,18 @@ export async function registerRoutes(
       res.status(500).json({ message: "Internal server error" });
     }
   });
+
+  app.get("/api/admin/users", verifyAdmin, async (_req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users
+        .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())
+        .map(({ passwordHash: _passwordHash, ...user }) => user));
+    } catch (error) {
+      console.error('[Admin Users] Error:', error);
+      res.status(500).json({ error: "Erro ao buscar cadastros" });
+    }
+  });
   
   // Get all rooms for admin dashboard (protected)
   app.get("/api/admin/rooms", verifyAdmin, async (req, res) => {

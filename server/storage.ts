@@ -86,6 +86,10 @@ export class MemoryStorage implements IStorage {
       firstName: userData.firstName ?? null,
       lastName: userData.lastName ?? null,
       profileImageUrl: userData.profileImageUrl ?? null,
+      passwordHash: userData.passwordHash ?? null,
+      authProvider: userData.authProvider ?? "email",
+      googleId: userData.googleId ?? null,
+      lastLoginAt: userData.lastLoginAt ?? null,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
     };

@@ -1,58 +1,75 @@
 import passport from "passport";
-import { Strategy as GitHubStrategy } from "passport-github2";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import connectPg from "connect-pg-simple";
-import { storage } from "./storage";
+import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from "crypto";
+import { promisify } from "util";
+import { pool } from "./db";
+
+const scrypt = promisify(scryptCallback);
+
+type SafeUser = { id: string; email: string | null; firstName: string | null; lastName: string | null; profileImageUrl: string | null; authProvider: string; createdAt?: Date | null; lastLoginAt?: Date | null };
+const memoryUsers = new Map<string, SafeUser & { passwordHash?: string | null }>();
+
+function safeUser(row: any): SafeUser {
+  return { id: row.id, email: row.email ?? null, firstName: row.first_name ?? row.firstName ?? null, lastName: row.last_name ?? row.lastName ?? null, profileImageUrl: row.profile_image_url ?? row.profileImageUrl ?? null, authProvider: row.auth_provider ?? row.authProvider ?? "email", createdAt: row.created_at ?? row.createdAt ?? null, lastLoginAt: row.last_login_at ?? row.lastLoginAt ?? null };
+}
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const derived = await scrypt(password, salt, 64) as Buffer;
+  return `${salt}:${derived.toString("hex")}`;
+}
+
+async function verifyPassword(password: string, stored: string) {
+  const [salt, key] = stored.split(":");
+  if (!salt || !key) return false;
+  const derived = await scrypt(password, salt, 64) as Buffer;
+  const expected = Buffer.from(key, "hex");
+  return expected.length === derived.length && timingSafeEqual(expected, derived);
+}
+
+async function findUserById(id: string) {
+  if (!pool) return memoryUsers.get(id) ?? null;
+  const result = await (pool as any).query("SELECT * FROM users WHERE id = $1 LIMIT 1", [id]);
+  return result.rows[0] ?? null;
+}
+
+async function findUserByEmail(email: string) {
+  if (!pool) return Array.from(memoryUsers.values()).find((user) => user.email === email) ?? null;
+  const result = await (pool as any).query("SELECT * FROM users WHERE lower(email) = $1 LIMIT 1", [email]);
+  return result.rows[0] ?? null;
+}
+
+async function saveOAuthUser(profile: { googleId: string; email: string; firstName?: string; lastName?: string; picture?: string }) {
+  const existing = await findUserByEmail(profile.email);
+  const id = existing?.id ?? `google_${profile.googleId}`;
+  if (!pool) {
+    const user = { id, email: profile.email, firstName: profile.firstName ?? null, lastName: profile.lastName ?? null, profileImageUrl: profile.picture ?? null, authProvider: existing?.authProvider === "email" ? "email,google" : "google", createdAt: existing?.createdAt ?? new Date(), lastLoginAt: new Date() };
+    memoryUsers.set(id, user);
+    return user;
+  }
+  const result = await (pool as any).query(
+    `INSERT INTO users (id,email,first_name,last_name,profile_image_url,auth_provider,google_id,last_login_at)
+     VALUES ($1,$2,$3,$4,$5,'google',$6,NOW())
+     ON CONFLICT (email) DO UPDATE SET google_id=$6, profile_image_url=COALESCE(EXCLUDED.profile_image_url,users.profile_image_url), auth_provider=CASE WHEN users.auth_provider LIKE '%email%' THEN 'email,google' ELSE 'google' END, last_login_at=NOW(), updated_at=NOW()
+     RETURNING *`,
+    [id, profile.email, profile.firstName ?? null, profile.lastName ?? null, profile.picture ?? null, profile.googleId],
+  );
+  return result.rows[0];
+}
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000;
   const isProduction = process.env.NODE_ENV === "production";
-  
-  let sessionSecret = process.env.SESSION_SECRET;
-  
-  if (!sessionSecret) {
-    if (isProduction) {
-      throw new Error("SESSION_SECRET environment variable is required in production");
-    }
-    console.warn("SESSION_SECRET not set. Using development-only fallback.");
-    sessionSecret = "dev-only-secret-not-for-production";
-  }
-  
-  const sessionConfig: session.SessionOptions = {
-    name: 'tikjogos.sid',
-    secret: sessionSecret,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: isProduction,
-      maxAge: sessionTtl,
-      sameSite: 'lax',
-    },
-  };
-
+  const sessionSecret = process.env.SESSION_SECRET || (isProduction ? "" : "dev-only-secret-not-for-production");
+  if (!sessionSecret) throw new Error("SESSION_SECRET environment variable is required in production");
+  const config: session.SessionOptions = { name: "tikjogos.sid", secret: sessionSecret, resave: false, saveUninitialized: false, cookie: { httpOnly: true, secure: isProduction, maxAge: sessionTtl, sameSite: "lax" } };
   if (process.env.DATABASE_URL) {
-    try {
-      const pgStore = connectPg(session);
-      const store = new pgStore({
-        conObject: {
-          connectionString: process.env.DATABASE_URL,
-          ssl: { rejectUnauthorized: false },
-        },
-        createTableIfMissing: true,
-        ttl: sessionTtl,
-        tableName: "sessions",
-      });
-      sessionConfig.store = store;
-      console.log("PostgreSQL session store initialized successfully");
-    } catch (error) {
-      console.error("Failed to initialize PostgreSQL session store:", error);
-      console.log("Falling back to in-memory session store");
-    }
+    const PgStore = connectPg(session);
+    config.store = new PgStore({ conObject: { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } }, createTableIfMissing: true, ttl: sessionTtl, tableName: "sessions" });
   }
-
-  return session(sessionConfig);
+  return session(config);
 }
 
 export async function setupAuth(app: Express) {
@@ -60,112 +77,66 @@ export async function setupAuth(app: Express) {
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
+  passport.serializeUser((user: any, done) => done(null, user.id));
+  passport.deserializeUser(async (id: string, done) => { try { const user = await findUserById(id); done(null, user ? safeUser(user) : false); } catch (error) { done(error); } });
 
-  const clientID = process.env.GITHUB_CLIENT_ID;
-  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-
-  if (!clientID || !clientSecret) {
-    console.warn("GitHub OAuth not configured. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET.");
-    
-    app.get("/api/login", (_req, res) => {
-      res.status(503).json({ 
-        message: "GitHub authentication not configured. Please set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET." 
-      });
-    });
-
-    app.get("/api/auth/user", (_req, res) => {
-      res.json(null);
-    });
-
-    return;
-  }
-
-  const callbackURL = process.env.GITHUB_CALLBACK_URL || 
-    (process.env.REPL_SLUG 
-      ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co/api/auth/github/callback`
-      : "http://localhost:5000/api/auth/github/callback");
-
-  passport.use(
-    new GitHubStrategy(
-      {
-        clientID,
-        clientSecret,
-        callbackURL,
-      },
-      async (
-        accessToken: string,
-        refreshToken: string,
-        profile: any,
-        done: (err: any, user?: any) => void
-      ) => {
-        try {
-          const email = profile.emails?.[0]?.value || `${profile.username}@github.local`;
-          const names = (profile.displayName || profile.username || "").split(" ");
-          
-          const userData = {
-            id: `github_${profile.id}`,
-            email,
-            firstName: names[0] || profile.username,
-            lastName: names.slice(1).join(" ") || null,
-            profileImageUrl: profile.photos?.[0]?.value || null,
-          };
-
-          await storage.upsertUser(userData);
-
-          done(null, {
-            id: userData.id,
-            email: userData.email,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            profileImageUrl: userData.profileImageUrl,
-            accessToken,
-          });
-        } catch (error) {
-          done(error);
-        }
-      }
-    )
-  );
-
-  passport.serializeUser((user: any, done) => {
-    done(null, user);
+  app.post("/api/auth/register", async (req, res, next) => {
+    try {
+      const email = String(req.body.email ?? "").trim().toLowerCase();
+      const password = String(req.body.password ?? "");
+      const name = String(req.body.name ?? "").trim();
+      if (!/^\S+@\S+\.\S+$/.test(email) || name.length < 2 || password.length < 8) return res.status(400).json({ error: "Informe nome, e-mail válido e senha com pelo menos 8 caracteres." });
+      if (await findUserByEmail(email)) return res.status(409).json({ error: "Este e-mail já está cadastrado." });
+      const passwordHash = await hashPassword(password);
+      const id = `email_${randomBytes(12).toString("hex")}`;
+      const names = name.split(/\s+/);
+      let user: any;
+      if (!pool) { user = { id, email, firstName: names[0], lastName: names.slice(1).join(" ") || null, profileImageUrl: null, authProvider: "email", passwordHash, createdAt: new Date(), lastLoginAt: new Date() }; memoryUsers.set(id, user); }
+      else { const result = await (pool as any).query(`INSERT INTO users (id,email,first_name,last_name,password_hash,auth_provider,last_login_at) VALUES ($1,$2,$3,$4,$5,'email',NOW()) RETURNING *`, [id,email,names[0],names.slice(1).join(" ")||null,passwordHash]); user=result.rows[0]; }
+      req.login(safeUser(user), (error) => error ? next(error) : res.status(201).json(safeUser(user)));
+    } catch (error) { next(error); }
   });
 
-  passport.deserializeUser((user: any, done) => {
-    done(null, user);
+  app.post("/api/auth/login", async (req, res, next) => {
+    try {
+      const email = String(req.body.email ?? "").trim().toLowerCase();
+      const user = await findUserByEmail(email);
+      const storedHash = user?.password_hash ?? user?.passwordHash;
+      if (!user || !storedHash || !(await verifyPassword(String(req.body.password ?? ""), storedHash))) return res.status(401).json({ error: "E-mail ou senha incorretos." });
+      if (pool) await (pool as any).query("UPDATE users SET last_login_at=NOW(), updated_at=NOW() WHERE id=$1", [user.id]);
+      req.login(safeUser(user), (error) => error ? next(error) : res.json(safeUser(user)));
+    } catch (error) { next(error); }
   });
 
-  app.get("/api/login", passport.authenticate("github", { scope: ["user:email"] }));
-
-  app.get(
-    "/api/auth/github/callback",
-    passport.authenticate("github", { failureRedirect: "/api/login" }),
-    (req, res) => {
-      res.redirect("/");
-    }
-  );
-
-  app.get("/api/logout", (req, res) => {
-    req.logout((err) => {
-      if (err) {
-        console.error("Logout error:", err);
-      }
-      res.redirect("/");
-    });
+  const googleClientId = process.env.GOOGLE_CLIENT_ID;
+  const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const googleCallback = process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/api/auth/google/callback";
+  app.get("/api/auth/google", (req, res) => {
+    if (!googleClientId || !googleClientSecret) return res.redirect("/entrar?google=unavailable");
+    const state = randomBytes(24).toString("hex");
+    (req.session as any).googleOAuthState = state;
+    const params = new URLSearchParams({ client_id: googleClientId, redirect_uri: googleCallback, response_type: "code", scope: "openid email profile", state, prompt: "select_account" });
+    res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+  });
+  app.get("/api/auth/google/callback", async (req, res, next) => {
+    try {
+      if (!googleClientId || !googleClientSecret || req.query.state !== (req.session as any).googleOAuthState) return res.redirect("/entrar?google=error");
+      delete (req.session as any).googleOAuthState;
+      const tokenResponse = await fetch("https://oauth2.googleapis.com/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ code: String(req.query.code ?? ""), client_id: googleClientId, client_secret: googleClientSecret, redirect_uri: googleCallback, grant_type: "authorization_code" }) });
+      if (!tokenResponse.ok) return res.redirect("/entrar?google=error");
+      const tokens: any = await tokenResponse.json();
+      const profileResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", { headers: { Authorization: `Bearer ${tokens.access_token}` } });
+      const profile: any = await profileResponse.json();
+      if (!profile.email || !profile.email_verified) return res.redirect("/entrar?google=unverified");
+      const user = await saveOAuthUser({ googleId: profile.sub, email: profile.email.toLowerCase(), firstName: profile.given_name, lastName: profile.family_name, picture: profile.picture });
+      req.login(safeUser(user), (error) => error ? next(error) : res.redirect("/conta"));
+    } catch (error) { next(error); }
   });
 
-  app.get("/api/auth/user", (req, res) => {
-    if (req.isAuthenticated() && req.user) {
-      res.json(req.user);
-    } else {
-      res.json(null);
-    }
-  });
+  app.post("/api/auth/logout", (req, res) => req.logout(() => req.session.destroy(() => res.json({ success: true }))));
+  app.get("/api/logout", (req, res) => req.logout(() => req.session.destroy(() => res.redirect("/"))));
+  app.get("/api/auth/user", (req, res) => res.json(req.isAuthenticated() && req.user ? req.user : null));
+  app.get("/api/auth/providers", (_req, res) => res.json({ google: Boolean(googleClientId && googleClientSecret), email: true }));
 }
 
-export const isAuthenticated: RequestHandler = (req, res, next) => {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.status(401).json({ message: "Unauthorized" });
-};
+export const isAuthenticated: RequestHandler = (req, res, next) => req.isAuthenticated() ? next() : res.status(401).json({ message: "Unauthorized" });
