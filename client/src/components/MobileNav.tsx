@@ -36,7 +36,8 @@ const navItemsDef: NavItem[] = [
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
-  const { t, langPath } = useLanguage();
+  const { t, lang, langPath } = useLanguage();
+  const playHref = lang === "en" ? "/en/games" : lang === "es" ? "/es/juegos" : "/jogos";
 
   return (
     <nav className="bg-[#242642]/90 backdrop-blur-sm border-b border-[#2f3252] sticky top-0 z-50">
@@ -62,6 +63,14 @@ export function MobileNav() {
               {t(item.labelKey)}
             </Link>
           ))}
+          <Link
+            href={playHref}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-300/30 bg-gradient-to-b from-emerald-500 to-emerald-600 px-4 py-2 text-sm font-black uppercase tracking-wide text-white shadow-[0_3px_0_#166534] transition-all hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0.5 active:shadow-[0_1px_0_#166534]"
+            data-testid="nav-play-cta"
+          >
+            <Gamepad2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>{t("buttons.play", "Jogar")}</span>
+          </Link>
           <LanguageSwitcher />
         </div>
 
@@ -103,6 +112,18 @@ export function MobileNav() {
                   {t(item.labelKey)}
                 </Link>
               ))}
+
+              <div className="px-5 pt-3">
+                <Link
+                  href={playHref}
+                  onClick={() => setOpen(false)}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-300/30 bg-gradient-to-b from-emerald-500 to-emerald-600 px-4 py-3 font-black uppercase tracking-wide text-white shadow-[0_4px_0_#166534]"
+                  data-testid="mobile-nav-play-cta"
+                >
+                  <Gamepad2 className="h-5 w-5 shrink-0" aria-hidden="true" />
+                  <span>{t("buttons.play", "Jogar")}</span>
+                </Link>
+              </div>
 
               {/* Language switcher in mobile menu */}
               <div className="px-6 py-4 border-t border-[#2f3252] mt-2">
