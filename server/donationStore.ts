@@ -19,7 +19,7 @@ export async function savePendingDonation(donation: Omit<PendingDonation, "statu
     memoryDonations.set(donation.paymentId, { ...donation, status: "pending" });
     return;
   }
-  await pool.query(
+  await (pool as any).query(
     `INSERT INTO donations (payment_id, donor_name, instagram, amount_cents, status)
      VALUES ($1, $2, $3, $4, 'pending')
      ON CONFLICT (payment_id) DO NOTHING`,
@@ -34,7 +34,7 @@ export async function updateDonationStatus(paymentId: string | number, status: s
     if (donation) memoryDonations.set(id, { ...donation, status });
     return;
   }
-  await pool.query(
+  await (pool as any).query(
     `UPDATE donations
      SET status = $2, approved_at = CASE WHEN $2 = 'approved' THEN COALESCE(approved_at, NOW()) ELSE approved_at END,
          updated_at = NOW()
@@ -48,20 +48,20 @@ export async function getSupportSummary() {
   let approvedNames: string[] = [];
 
   if (!pool) {
-    const approved = [...memoryDonations.values()].filter((item) => item.status === "approved");
+    const approved = Array.from(memoryDonations.values()).filter((item) => item.status === "approved");
     approvedAmount = approved.reduce((sum, item) => sum + item.amount, 0);
     approvedNames = approved.flatMap((item) => item.instagram ? [item.instagram] : []);
   } else {
-    const totalResult = await pool.query<{ total_cents: string }>(
+    const totalResult = await (pool as any).query(
       `SELECT COALESCE(SUM(amount_cents), 0)::text AS total_cents FROM donations WHERE status = 'approved'`,
     );
-    const namesResult = await pool.query<{ instagram: string }>(
+    const namesResult = await (pool as any).query(
       `SELECT instagram FROM donations
        WHERE status = 'approved' AND instagram IS NOT NULL AND instagram <> ''
        ORDER BY approved_at ASC, created_at ASC`,
     );
     approvedAmount = Number(totalResult.rows[0]?.total_cents ?? 0) / 100;
-    approvedNames = namesResult.rows.map((row) => row.instagram);
+    approvedNames = namesResult.rows.map((row: { instagram: string }) => row.instagram);
   }
 
   const raised = SUPPORT_BASE_AMOUNT + approvedAmount;
@@ -70,6 +70,6 @@ export async function getSupportSummary() {
     raised,
     remaining: Math.max(SUPPORT_GOAL - raised, 0),
     percentage: Math.min(Math.round((raised / SUPPORT_GOAL) * 100), 100),
-    supporters: [...new Set([...SUPPORT_BASE_NAMES, ...approvedNames])],
+    supporters: Array.from(new Set([...SUPPORT_BASE_NAMES, ...approvedNames])),
   };
 }

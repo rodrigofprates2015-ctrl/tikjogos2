@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Gamepad2, Loader2, LockKeyhole, Mail, UserRound } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
@@ -12,6 +12,13 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const googleStatus = new URLSearchParams(window.location.search).get("google");
+    if (googleStatus === "unavailable") setError("O login com Google não está configurado neste ambiente. No site público, ele usa as credenciais salvas no Render.");
+    if (googleStatus === "error") setError("O Google não conseguiu concluir o login. Confira as credenciais e a URL de retorno.");
+    if (googleStatus === "unverified") setError("A conta Google precisa ter um e-mail verificado.");
+  }, []);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault(); setError(""); setLoading(true);
