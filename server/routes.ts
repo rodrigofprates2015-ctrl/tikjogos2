@@ -12,6 +12,7 @@ import { createAnalyticsRouter } from "./analyticsRoutes";
 import { recordGameSession, getGameSessionStats } from "./db";
 import { trackLobbyJoin, trackLobbyLeave, trackLobbyGameStart } from "./lobbyTracker";
 import { trackRoomJoin } from "./analyticsMiddleware";
+import { getSupportSummary, savePendingDonation, updateDonationStatus } from "./donationStore";
 import agoraToken from 'agora-token';
 const { RtcTokenBuilder, RtcRole } = agoraToken;
 
@@ -2832,7 +2833,7 @@ export async function registerRoutes(
           error: paymentResult.error || "Falha ao criar pagamento" 
         });
       }
-      
+
       // Save theme to database with status 'pending' and paymentId
       // This persists the theme data across server restarts
       if (paymentResult.paymentId) {
@@ -2907,6 +2908,15 @@ export async function registerRoutes(
         });
       }
 
+      if (paymentResult.paymentId) {
+        await savePendingDonation({
+          paymentId: String(paymentResult.paymentId),
+          donorName: validatedData.donorName,
+          instagram: validatedData.instagram,
+          amount: validatedData.amount,
+        });
+      }
+
       let skinRequestId: string | undefined;
       if (validatedData.skinRequest && paymentResult.paymentId) {
         skinRequestId = `skin-${randomBytes(6).toString('hex')}`;
@@ -2959,6 +2969,7 @@ export async function registerRoutes(
       
       const paymentInfo = await getPaymentStatus(paymentId);
       updateSkinRequestPaymentStatus(paymentId, paymentInfo.status);
+      await updateDonationStatus(paymentId, paymentInfo.status);
       res.json({ status: paymentInfo.status });
     } catch (error) {
       console.error('[Donation Status] Error:', error);
@@ -2990,10 +3001,21 @@ export async function registerRoutes(
       
       const paymentInfo = await getPaymentStatus(paymentId);
       updateSkinRequestPaymentStatus(paymentId, paymentInfo.status);
+      await updateDonationStatus(paymentId, paymentInfo.status);
       console.log('[Donation Webhook] Payment status:', paymentInfo.status, 'for ID:', paymentId);
       
     } catch (error) {
       console.error('[Donation Webhook] Error:', error);
+    }
+  });
+
+  app.get("/api/support-summary", async (_req, res) => {
+    try {
+      res.setHeader("Cache-Control", "public, max-age=30, stale-while-revalidate=60");
+      res.json(await getSupportSummary());
+    } catch (error) {
+      console.error('[Support Summary] Error:', error);
+      res.status(500).json({ error: "Erro ao carregar a meta de apoio" });
     }
   });
 

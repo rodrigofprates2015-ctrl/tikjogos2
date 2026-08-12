@@ -204,6 +204,22 @@ async function runMigrations() {
     `);
     console.log('[Migration] feedback_responses table ready');
 
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS donations (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        payment_id VARCHAR NOT NULL UNIQUE,
+        donor_name VARCHAR(50) NOT NULL,
+        instagram VARCHAR(31),
+        amount_cents INTEGER NOT NULL CHECK (amount_cents > 0),
+        status VARCHAR(30) NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        approved_at TIMESTAMP
+      )
+    `);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_donations_status ON donations (status)`);
+    console.log('[Migration] donations table ready');
+
     console.log('[Migration] All migrations completed successfully!');
   } catch (error) {
     console.error('[Migration] Error running migrations:', error);

@@ -1,14 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Clock3, Gamepad2, Heart, Sparkles, Users } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 import { SideAds } from "@/components/AdSense";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
-import "./support-home.css";
+import "./support-home.css?animation=2";
 
-const supporters = [
-  "@ana.games", "@joaozinho", "@lu_costa",
-];
+const initialSupport = { goal: 300, raised: 50, remaining: 250, percentage: 17, supporters: ["@ana.games", "@joaozinho", "@lu_costa"] };
 
 function BombDemo() {
   return (
@@ -41,9 +39,15 @@ function BombDemo() {
 }
 
 export default function SupportHome() {
+  const [support, setSupport] = useState(initialSupport);
+
   useEffect(() => {
     document.title = "Ajude o TikJogos a criar novos jogos";
     document.querySelector('meta[name="description"]')?.setAttribute("content", "Conheça o Bomba!, o próximo jogo do TikJogos, e apoie voluntariamente seu desenvolvimento.");
+    fetch('/api/support-summary')
+      .then((response) => response.ok ? response.json() : Promise.reject())
+      .then(setSupport)
+      .catch(() => setSupport(initialSupport));
   }, []);
 
   return (
@@ -89,13 +93,13 @@ export default function SupportHome() {
         <section className="mt-8 grid gap-8 md:grid-cols-[1.15fr_0.85fr]">
           <div className="support-panel" aria-labelledby="goal-title">
             <div className="flex items-start justify-between gap-4">
-              <div><span className="text-sm font-black uppercase tracking-[0.16em] text-purple-300">Meta para o lançamento</span><h2 id="goal-title" className="mt-2 text-3xl font-black">R$ 50 <span className="text-lg text-slate-400">de R$ 300</span></h2></div>
+              <div><span className="text-sm font-black uppercase tracking-[0.16em] text-purple-300">Meta para o lançamento</span><h2 id="goal-title" className="mt-2 text-3xl font-black">R$ {support.raised.toLocaleString('pt-BR')} <span className="text-lg text-slate-400">de R$ {support.goal.toLocaleString('pt-BR')}</span></h2></div>
               <Heart className="h-8 w-8 fill-amber-400 text-amber-400" />
             </div>
-            <div className="mt-6 h-5 overflow-hidden rounded-full border-2 border-[#3b3e63] bg-[#151629] p-0.5" role="progressbar" aria-valuenow={50} aria-valuemin={0} aria-valuemax={300}>
-              <div className="h-full w-[16.67%] rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-500 to-amber-400 shadow-[0_0_18px_rgba(192,132,252,0.45)]" />
+            <div className="mt-6 h-5 overflow-hidden rounded-full border-2 border-[#3b3e63] bg-[#151629] p-0.5" role="progressbar" aria-valuenow={support.raised} aria-valuemin={0} aria-valuemax={support.goal}>
+              <div className="h-full rounded-full bg-gradient-to-r from-purple-600 via-fuchsia-500 to-amber-400 shadow-[0_0_18px_rgba(192,132,252,0.45)] transition-[width] duration-700" style={{ width: `${support.percentage}%` }} />
             </div>
-            <div className="mt-3 flex justify-between text-sm font-bold text-slate-400"><span>17% da meta</span><span>Faltam R$ 250</span></div>
+            <div className="mt-3 flex justify-between text-sm font-bold text-slate-400"><span>{support.percentage}% da meta</span><span>Faltam R$ {support.remaining.toLocaleString('pt-BR')}</span></div>
             <p className="mt-5 text-sm leading-relaxed text-slate-300">O apoio é voluntário e ajuda no desenvolvimento, na arte e na infraestrutura. Todos os jogos continuarão gratuitos.</p>
             <Link href="/doacoes" className="btn-orange mt-6 w-full" data-testid="button-support-launch"><Heart className="h-5 w-5" /> Apoiar o lançamento</Link>
           </div>
@@ -104,7 +108,7 @@ export default function SupportHome() {
             <div className="flex items-center gap-3"><Users className="h-7 w-7 text-purple-400" /><h2 id="supporters-title" className="text-2xl font-black">Quem está ajudando a construir o TikJogos</h2></div>
             <p className="mt-3 text-sm text-slate-400">Um mural de assinaturas da nossa comunidade.</p>
             <div className="supporter-wall">
-              {supporters.map((supporter, index) => <span key={supporter} className={`supporter-name supporter-name--${index % 6}`}>{supporter}</span>)}
+              {support.supporters.map((supporter, index) => <span key={supporter} className={`supporter-name supporter-name--${index % 6}`}>{supporter}</span>)}
               <span className="supporter-you">@você?</span>
             </div>
           </div>
