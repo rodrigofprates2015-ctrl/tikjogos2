@@ -28,6 +28,7 @@ export default function Doacoes() {
   const { t, langPath } = useLanguage();
   
   const [donorName, setDonorName] = useState('');
+  const [instagram, setInstagram] = useState('');
   const [message, setMessage] = useState('');
   const [amount, setAmount] = useState(5);
   const [customAmount, setCustomAmount] = useState('');
@@ -72,6 +73,12 @@ export default function Doacoes() {
       toast({ title: t('alerts.error', 'Erro'), description: t('donate.enterName', 'Digite seu nome'), variant: "destructive" });
       return;
     }
+
+    const normalizedInstagram = instagram.trim() ? `@${instagram.trim().replace(/^@+/, '')}` : undefined;
+    if (normalizedInstagram && !/^@[A-Za-z0-9._]{1,30}$/.test(normalizedInstagram)) {
+      toast({ title: 'Instagram inválido', description: 'Use apenas letras, números, ponto e sublinhado.', variant: "destructive" });
+      return;
+    }
     
     if (!finalAmount || finalAmount < 1) {
       toast({ title: t('alerts.error', 'Erro'), description: t('donate.minAmount', 'Valor mínimo é R$ 1,00'), variant: "destructive" });
@@ -91,6 +98,7 @@ export default function Doacoes() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           donorName: donorName.trim(),
+          instagram: normalizedInstagram,
           message: message.trim() || undefined,
           amount: finalAmount
         })
@@ -136,6 +144,7 @@ export default function Doacoes() {
 
   const resetForm = () => {
     setDonorName('');
+    setInstagram('');
     setMessage('');
     setAmount(5);
     setCustomAmount('');
@@ -255,13 +264,26 @@ export default function Doacoes() {
                       maxLength={50}
                       className="w-full px-4 py-3 bg-[#1a2a3a] border-2 border-[#3a5a7a] rounded-xl text-white text-sm placeholder-[#6a8aaa] focus:outline-none focus:border-[#7ec8e3] transition-all"
                     />
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="@ do Instagram (opcional)"
+                        value={instagram}
+                        onChange={(e) => setInstagram(e.target.value)}
+                        maxLength={31}
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        className="w-full px-4 py-3 bg-[#1a2a3a] border-2 border-[#3a5a7a] rounded-xl text-white text-sm placeholder-[#6a8aaa] focus:outline-none focus:border-[#7ec8e3] transition-all"
+                      />
+                      <p className="mt-1 px-1 text-[11px] font-medium text-slate-500">Se informado, aparece no mural somente após a confirmação do PIX.</p>
+                    </div>
                     <input
                       type="text"
                       placeholder={t('donate.message', 'Mensagem (opcional)')}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       maxLength={100}
-                      className="w-full px-4 py-3 bg-[#1a2a3a] border-2 border-[#3a5a7a] rounded-xl text-white text-sm placeholder-[#6a8aaa] focus:outline-none focus:border-[#7ec8e3] transition-all"
+                      className="w-full px-4 py-3 bg-[#1a2a3a] border-2 border-[#3a5a7a] rounded-xl text-white text-sm placeholder-[#6a8aaa] focus:outline-none focus:border-[#7ec8e3] transition-all md:col-span-2"
                     />
                   </div>
                   

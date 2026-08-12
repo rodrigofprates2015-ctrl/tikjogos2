@@ -39,6 +39,7 @@ export interface ThemeData {
 
 export interface DonationData {
   donorName: string;
+  instagram?: string;
   message?: string;
   amount: number;
 }
@@ -85,6 +86,7 @@ export async function createDonationPayment(donationData: DonationData): Promise
       metadata: {
         type: 'donation',
         donorName: donationData.donorName,
+        instagram: donationData.instagram || '',
         message: donationData.message || ''
       }
     };

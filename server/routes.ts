@@ -2877,6 +2877,7 @@ export async function registerRoutes(
   // Donation Payment Route
   const createDonationSchema = z.object({
     donorName: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").max(50, "Nome deve ter no máximo 50 caracteres"),
+    instagram: z.string().regex(/^@[A-Za-z0-9._]{1,30}$/, "Instagram inválido").optional(),
     message: z.string().max(1500, "Mensagem deve ter no máximo 1500 caracteres").optional(),
     amount: z.number().min(1, "Valor mínimo é R$ 1,00").max(1000, "Valor máximo é R$ 1.000,00"),
     skinRequest: z.object({
@@ -2893,6 +2894,7 @@ export async function registerRoutes(
       
       const donationData: DonationData = {
         donorName: validatedData.donorName,
+        instagram: validatedData.instagram,
         message: validatedData.message,
         amount: validatedData.amount
       };
