@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import { Clock3, Gamepad2, Heart, Sparkles, Users } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import { SideAds } from "@/components/AdSense";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 import "./support-home.css";
 
@@ -47,6 +48,7 @@ export default function SupportHome() {
 
   return (
     <div className="min-h-screen w-full bg-[#1a1b2e] text-white selection:bg-purple-500/30">
+      <SideAds />
       <MobileNav />
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
         <div className="absolute top-[-12rem] right-[-8rem] h-96 w-96 rounded-full bg-purple-600/20 blur-[100px]" />
