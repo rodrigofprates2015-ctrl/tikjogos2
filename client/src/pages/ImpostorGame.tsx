@@ -4,6 +4,7 @@ import { useDrawingGameStore } from "@/lib/drawingGameStore";
 import { notifyGameEnded } from "@/hooks/useFeedback";
 import { Link, useLocation } from "wouter";
 import PalavraSuperSecretaSubmodeScreen from "@/pages/PalavraSuperSecretaSubmodeScreen";
+import SupportHome from "@/pages/SupportHome";
 import { NotificationCenter } from "@/components/NotificationCenter";
 
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
@@ -1686,7 +1687,7 @@ const AproximacaoGameCard = () => {
   );
 };
 
-const HomeScreen = () => {
+const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boolean }) => {
   const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname, clearSavedNickname, savedNickname } = useGameStore();
   const [name, setNameInput] = useState("");
   const [code, setCodeInput] = useState("");
@@ -2319,6 +2320,8 @@ const HomeScreen = () => {
         </div>
 
       </div>
+
+      {showSupportContent && <SupportHome embedded />}
 
       {/* In-article ad before footer */}
       <InArticleAd />
@@ -5704,7 +5707,7 @@ const VotingPlayerList = ({
 };
 
 
-function ImpostorGameInner() {
+function ImpostorGameInner({ showSupportContent = false }: { showSupportContent?: boolean }) {
   const { status, user, room } = useGameStore();
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const { show: showNewRoundAd, InterstitialAd: NewRoundInterstitialAd } = useInterstitialAd();
@@ -5724,7 +5727,7 @@ function ImpostorGameInner() {
     return (
       <>
         <NotificationCenter />
-        <HomeScreen />
+        <HomeScreen showSupportContent={showSupportContent} />
         <AnchorMobileAd />
       </>
     );
@@ -5754,10 +5757,10 @@ function ImpostorGameInner() {
 
 // VoiceChatProvider (and agora-rtc-sdk-ng) is scoped here so it's only
 // loaded when this page chunk is parsed, not on the initial app bootstrap.
-export default function ImpostorGame() {
+export default function ImpostorGame({ showSupportContent = false }: any) {
   return (
     <VoiceChatProvider>
-      <ImpostorGameInner />
+      <ImpostorGameInner showSupportContent={showSupportContent} />
     </VoiceChatProvider>
   );
 }

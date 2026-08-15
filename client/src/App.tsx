@@ -10,7 +10,6 @@ import FeedbackPopup from "@/components/FeedbackPopup";
 import { useFeedback } from "@/hooks/useFeedback";
 // ImpostorGame is the home page — keep it eager so there's no lazy waterfall on /
 import ImpostorGame from "@/pages/ImpostorGame";
-import SupportHome from "@/pages/SupportHome";
 import RoomRedirect from "@/pages/RoomRedirect";
 import DesafioDaPalavra from "@/pages/DesafioDaPalavra";
 import AproximacaoGame from "@/pages/AproximacaoGame";
@@ -133,6 +132,10 @@ function LazyFallback() {
   );
 }
 
+function MergedHome() {
+  return <ImpostorGame showSupportContent />;
+}
+
 function AppRouter() {
   const { user, isLoading, isAuthenticated } = useAuth();
 
@@ -140,9 +143,9 @@ function AppRouter() {
     <Suspense fallback={<LazyFallback />}>
     <Switch>
       {/* Home — PT default (no prefix), EN, ES */}
-      <Route path="/" component={SupportHome} />
-      <Route path="/en" component={SupportHome} />
-      <Route path="/es" component={SupportHome} />
+      <Route path="/" component={MergedHome} />
+      <Route path="/en" component={MergedHome} />
+      <Route path="/es" component={MergedHome} />
 
       <Route path="/jogos" component={ImpostorGame} />
       <Route path="/en/games" component={ImpostorGame} />

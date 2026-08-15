@@ -38,28 +38,34 @@ function BombDemo() {
   );
 }
 
-export default function SupportHome() {
+type SupportHomeProps = {
+  embedded?: boolean;
+};
+
+export default function SupportHome({ embedded = false }: SupportHomeProps) {
   const [support, setSupport] = useState(initialSupport);
 
   useEffect(() => {
-    document.title = "Ajude o TikJogos a criar novos jogos";
-    document.querySelector('meta[name="description"]')?.setAttribute("content", "Conheça o Bomba!, o próximo jogo do TikJogos, e apoie voluntariamente seu desenvolvimento.");
+    if (!embedded) {
+      document.title = "Ajude o TikJogos a criar novos jogos";
+      document.querySelector('meta[name="description"]')?.setAttribute("content", "Conheça o Bomba!, o próximo jogo do TikJogos, e apoie voluntariamente seu desenvolvimento.");
+    }
     fetch('/api/support-summary')
       .then((response) => response.ok ? response.json() : Promise.reject())
       .then(setSupport)
       .catch(() => setSupport(initialSupport));
-  }, []);
+  }, [embedded]);
 
   return (
-    <div className="min-h-screen w-full bg-[#1a1b2e] text-white selection:bg-purple-500/30">
-      <SideAds />
-      <MobileNav />
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+    <div className={`${embedded ? "w-full" : "min-h-screen w-full"} bg-[#1a1b2e] text-white selection:bg-purple-500/30`}>
+      {!embedded && <SideAds />}
+      {!embedded && <MobileNav />}
+      {!embedded && <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
         <div className="absolute top-[-12rem] right-[-8rem] h-96 w-96 rounded-full bg-purple-600/20 blur-[100px]" />
         <div className="absolute bottom-[-12rem] left-[-8rem] h-96 w-96 rounded-full bg-blue-600/20 blur-[100px]" />
-      </div>
+      </div>}
 
-      <main className="relative z-10 mx-auto w-full max-w-5xl px-4 pb-20 pt-10 sm:px-6 md:pt-16">
+      <main className={`relative z-10 mx-auto w-full max-w-5xl px-4 pb-20 sm:px-6 ${embedded ? "pt-8 md:pt-12" : "pt-10 md:pt-16"}`}>
         <section className="launch-goal animate-fade-in" aria-labelledby="goal-title">
           <div className="launch-goal__flare launch-goal__flare--one" aria-hidden="true">✦</div>
           <div className="launch-goal__flare launch-goal__flare--two" aria-hidden="true">✦</div>
@@ -119,14 +125,14 @@ export default function SupportHome() {
 
       </main>
 
-      <footer className="relative z-10 w-full border-t-8 border-[#242642] bg-[#0f172a] py-10">
+      {!embedded && <footer className="relative z-10 w-full border-t-8 border-[#242642] bg-[#0f172a] py-10">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-6 px-4 text-center sm:flex-row sm:text-left">
           <div><img src={logoTikjogos} alt="TikJogos" className="h-12 w-auto" /><p className="mt-3 max-w-md text-sm font-medium text-slate-400">Jogos gratuitos feitos para reunir amigos, rir e criar boas histórias.</p></div>
           <div className="flex flex-wrap justify-center gap-5 text-sm font-bold text-slate-300">
             <Link href="/blog" className="hover:text-purple-400">Blog</Link><Link href="/comojogar" className="hover:text-purple-400">Como jogar</Link><Link href="/termos" className="hover:text-purple-400">Termos</Link><Link href="/privacidade" className="hover:text-purple-400">Privacidade</Link>
           </div>
         </div>
-      </footer>
+      </footer>}
     </div>
   );
 }
