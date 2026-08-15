@@ -1353,43 +1353,41 @@ export async function registerRoutes(
     
     setTimeout(async () => {
       const room = await storage.getRoom(roomCode);
-      if (!room || room.status !== 'playing') return;
+      if (!room || room.status !== 'playing' || !room.gameData?.votingStarted) return;
       
       const humanPlayers = room.players.filter(p => !p.name.startsWith('Bot '));
       if (humanPlayers.length === 0) return;
       
       for (const bot of bots) {
-        const randomDelay = Math.random() * 3000;
+        await new Promise(resolve => setTimeout(resolve, 400 + Math.random() * 800));
+
+        const currentRoom = await storage.getRoom(roomCode);
+        if (!currentRoom || currentRoom.status !== 'playing' || !currentRoom.gameData?.votingStarted) return;
+
+        const target = humanPlayers[Math.floor(Math.random() * humanPlayers.length)];
+        const existingVotes = currentRoom.gameData.votes || [];
+        const alreadyVoted = existingVotes.some(v => v.playerId === bot.uid);
         
-        setTimeout(async () => {
-          const currentRoom = await storage.getRoom(roomCode);
-          if (!currentRoom || currentRoom.status !== 'playing') return;
-          
-          const target = humanPlayers[Math.floor(Math.random() * humanPlayers.length)];
-          const existingVotes = currentRoom.gameData?.votes || [];
-          const alreadyVoted = existingVotes.some(v => v.playerId === bot.uid);
-          
-          if (!alreadyVoted) {
-            const newVotes = [...existingVotes, { 
-              playerId: bot.uid, 
-              playerName: bot.name,
-              targetId: target.uid,
-              targetName: target.name
-            }];
-            
-            const updatedRoom = await storage.updateRoom(roomCode, {
-              gameData: {
-                ...currentRoom.gameData,
-                votes: newVotes
-              }
-            });
-            
-            if (updatedRoom) {
-              broadcastToRoom(roomCode, { type: 'room-update', room: updatedRoom });
-              console.log(`[Bot Vote] ${bot.name} voted for ${target.name}`);
+        if (!alreadyVoted) {
+          const newVotes = [...existingVotes, {
+            playerId: bot.uid,
+            playerName: bot.name,
+            targetId: target.uid,
+            targetName: target.name
+          }];
+
+          const updatedRoom = await storage.updateRoom(roomCode, {
+            gameData: {
+              ...currentRoom.gameData,
+              votes: newVotes
             }
+          });
+
+          if (updatedRoom) {
+            broadcastToRoom(roomCode, { type: 'room-update', room: updatedRoom });
+            console.log(`[Bot Vote] ${bot.name} voted for ${target.name}`);
           }
-        }, randomDelay);
+        }
       }
     }, delay);
   }
@@ -2430,8 +2428,6 @@ export async function registerRoutes(
         const bots = updatedRoom.players.filter(p => p.name.startsWith('Bot '));
         if (bots.length > 0) {
           console.log(`[Bot System] Scheduling auto-actions for ${bots.length} bots`);
-          scheduleBotVotes(code.toUpperCase(), bots);
-          
           // Also schedule answers for "Perguntas Diferentes" mode
           if (gameMode === 'perguntasDiferentes') {
             scheduleBotAnswers(code.toUpperCase(), bots);
@@ -2626,6 +2622,12 @@ export async function registerRoutes(
 
       if (updatedRoom) {
         broadcastToRoom(code.toUpperCase(), { type: 'room-update', room: updatedRoom });
+
+        const bots = updatedRoom.players.filter(p => p.name.startsWith('Bot '));
+        if (bots.length > 0) {
+          console.log(`[Bot System] Voting started — scheduling votes for ${bots.length} bots`);
+          scheduleBotVotes(code.toUpperCase(), bots);
+        }
       }
 
       res.json(updatedRoom);
