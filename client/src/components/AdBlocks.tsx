@@ -142,6 +142,67 @@ export function AdBlockBetweenFormAndFooter() {
   );
 }
 
+// Anúncio exibido na pausa entre partidas.
+// O fechamento permanece disponível para evitar cliques acidentais.
+function InterstitialOverlay({ onDismiss }: { onDismiss: () => void }) {
+  const insRef = useRef<HTMLModElement>(null);
+  const width = Math.min(window.innerWidth - 24, 380);
+
+  useEffect(() => {
+    const element = insRef.current;
+    if (!element || element.dataset.adsbygoogleStatus) return;
+
+    const timer = setTimeout(() => {
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch (error) {
+        console.error('InterstitialAd error:', error);
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 px-3"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Publicidade entre partidas"
+    >
+      <div
+        className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#1a1b2e] shadow-2xl"
+        style={{ width }}
+      >
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+          <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+            Pausa rápida — Anúncio
+          </span>
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white transition-all hover:bg-emerald-500"
+            aria-label="Fechar anúncio e continuar"
+          >
+            <X size={14} />
+            Fechar
+          </button>
+        </div>
+
+        <ins
+          ref={insRef}
+          className="adsbygoogle"
+          style={{ display: 'block', width, minHeight: 250 }}
+          data-ad-client="ca-pub-9927561573478881"
+          data-ad-slot="7536067322"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
+      </div>
+    </div>
+  );
+}
+
 type PaymentState =
   | { status: 'idle' }
   | { status: 'loading' }
@@ -371,7 +432,7 @@ function DonationInterstitial({
   );
 }
 
-// Hook intersticial: exibe popup de doação antes de executar a ação
+// Hook intersticial: exibe anúncio antes de executar a ação
 export function useInterstitialAd() {
   const [visible, setVisible] = useState(false);
   const pendingAction = useRef<(() => void) | null>(null);
@@ -389,7 +450,7 @@ export function useInterstitialAd() {
   }, []);
 
   const InterstitialAd = visible ? (
-    <DonationInterstitial onDismiss={dismiss} />
+    <InterstitialOverlay onDismiss={dismiss} />
   ) : null;
 
   return { show, InterstitialAd };
