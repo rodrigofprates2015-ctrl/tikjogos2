@@ -112,7 +112,10 @@
 .bomba-center__icon { width: 30%; height: 30%; color: #fff; }
 .bomba-center strong { font-size: clamp(1.3rem, 6vw, 2.5rem); line-height: 1; }
 .bomba-center span { color: #ffccd0; font-size: clamp(.55rem, 2vw, .8rem); font-weight: 850; text-transform: uppercase; }
-.bomba-center.is-boom { animation: explode .55s both; background: radial-gradient(circle, #fff 0 8%, #ffd43b 9% 28%, #ef233c 29% 60%, #4a050d); }
+.bomba-center.is-boom { animation: explode .55s both; border-color: #ffca28; background: radial-gradient(circle at 42% 32%, #3b356f 0, #171633 48%, #090a1b 100%); box-shadow: inset 0 0 28px #000c, 0 0 0 10px #ffca28, 0 0 34px #ffca2890, 0 14px 30px #000c; }
+.bomba-center.is-boom .bomba-center__light { display: none; }
+.bomba-center.is-boom .bomba-center__icon { width: 24%; height: 24%; margin-bottom: .28rem; color: #ffca28; filter: drop-shadow(0 3px 0 #8f5700) drop-shadow(0 0 8px #ffca2866); }
+.bomba-center.is-boom strong { position: relative; z-index: 1; color: #fff; font-size: clamp(1.15rem, 5vw, 2.15rem); letter-spacing: -.04em; text-shadow: 0 3px 0 #08091a, 0 0 12px #000; }
 .bomba-result-actions { display: flex; justify-content: center; gap: 10px; margin: 15px auto; }
 .bomba-result-actions button { display: flex; align-items: center; gap: 7px; padding: 12px 15px; border-radius: 14px; background: #27304f; border: 1px solid #3d486c; font-weight: 850; }
 .bomba-result-actions button:last-child { background: #d51f31; border-color: #f04453; }
