@@ -22,6 +22,7 @@ type BombaRoom = {
   usedLetters: string[];
   answers: BombaAnswer[];
   currentPlayerIndex: number;
+  selectedLetter: string | null;
   endAt: number | null;
   duration: number;
   loserId: string | null;
@@ -67,6 +68,11 @@ function refreshExpiredRoom(room: BombaRoom) {
   return room;
 }
 
+function roomResponse(room: BombaRoom) {
+  refreshExpiredRoom(room);
+  return { ...room, serverNow: Date.now() };
+}
+
 export function getBombaRoomStats() {
   const rooms = Array.from(bombaRooms.values()).map(refreshExpiredRoom);
   return rooms.map((room) => ({
@@ -100,6 +106,7 @@ function scheduleBombaBotTurn(room: BombaRoom) {
       return;
     }
     const letter = available[Math.floor(Math.random() * available.length)];
+    current.selectedLetter = letter;
     current.usedLetters.push(letter);
     current.answers.push({ playerId: bot.uid, playerName: bot.name, letter, answer: BOT_WORDS[letter] || `${letter} resposta` });
     if (current.usedLetters.length === ALPHABET.length) {
@@ -108,6 +115,7 @@ function scheduleBombaBotTurn(room: BombaRoom) {
       return;
     }
     current.currentPlayerIndex = (current.currentPlayerIndex + 1) % current.players.length;
+    current.selectedLetter = null;
     current.endAt = Date.now() + current.duration * 1000;
     scheduleBombaBotTurn(current);
   }, 900 + Math.floor(Math.random() * 900));
@@ -130,6 +138,7 @@ export function setupBombaGame(app: Express) {
         usedLetters: [],
         answers: [],
         currentPlayerIndex: 0,
+        selectedLetter: null,
         endAt: null,
         duration: 0,
         loserId: null,
@@ -143,7 +152,7 @@ export function setupBombaGame(app: Express) {
       }
       bombaRooms.set(code, room);
       trackRoomJoin(req.cookies?.['visitor_id'] || playerId, code, 'bomba', req).catch(() => {});
-      res.json(room);
+      res.json(roomResponse(room));
     } catch (error) {
       res.status(400).json({ error: "Não foi possível criar a sala." });
     }
@@ -167,7 +176,7 @@ export function setupBombaGame(app: Express) {
         if (room.players.length >= 10) return res.status(409).json({ error: "A sala está cheia." });
         room.players.push({ uid: playerId, name: nickname, connected: true });
       }
-      res.json(room);
+      res.json(roomResponse(room));
     } catch {
       res.status(400).json({ error: "Não foi possível entrar na sala." });
     }
@@ -176,7 +185,7 @@ export function setupBombaGame(app: Express) {
   app.get("/api/bomba/rooms/:code", (req, res) => {
     const room = bombaRooms.get(req.params.code.toUpperCase());
     if (!room) return res.status(404).json({ error: "Sala não encontrada." });
-    res.json(refreshExpiredRoom(room));
+    res.json(roomResponse(room));
   });
 
   app.post("/api/bomba/rooms/:code/settings", (req, res) => {
@@ -193,7 +202,7 @@ export function setupBombaGame(app: Express) {
       roundSeconds: parsed.data.roundSeconds,
       bannedLetters: Array.from(new Set(parsed.data.bannedLetters.map((letter) => letter.toUpperCase()).filter((letter) => ALPHABET.includes(letter)))),
     };
-    res.json(room);
+    res.json(roomResponse(room));
   });
 
   app.post("/api/bomba/rooms/:code/start", (req, res) => {
@@ -209,12 +218,32 @@ export function setupBombaGame(app: Express) {
     room.usedLetters = [...room.settings.bannedLetters];
     room.answers = [];
     room.currentPlayerIndex = Math.floor(Math.random() * room.players.length);
+    room.selectedLetter = null;
     room.duration = duration;
     room.endAt = Date.now() + duration * 1000;
     room.loserId = null;
-    res.json(room);
+    res.json(roomResponse(room));
     recordGameSession('bomba', code, room.players.length).catch(() => {});
     scheduleBombaBotTurn(room);
+  });
+
+  app.post("/api/bomba/rooms/:code/letter", (req, res) => {
+    const room = bombaRooms.get(req.params.code.toUpperCase());
+    if (!room) return res.status(404).json({ error: "Sala não encontrada." });
+    refreshExpiredRoom(room);
+    if (room.status !== "playing") return res.status(409).json({ error: "A rodada terminou." });
+    const parsed = z.object({ playerId: z.string(), letter: z.string().length(1) }).safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Escolha uma letra válida." });
+    const player = room.players[room.currentPlayerIndex];
+    if (!player || player.uid !== parsed.data.playerId) return res.status(409).json({ error: "Ainda não é a sua vez." });
+    const letter = parsed.data.letter.toUpperCase();
+    if (room.selectedLetter) {
+      if (room.selectedLetter !== letter) return res.status(409).json({ error: `Você já escolheu a letra ${room.selectedLetter}.` });
+      return res.json(roomResponse(room));
+    }
+    if (!ALPHABET.includes(letter) || room.usedLetters.includes(letter)) return res.status(409).json({ error: "Essa letra não está disponível." });
+    room.selectedLetter = letter;
+    res.json(roomResponse(room));
   });
 
   app.post("/api/bomba/rooms/:code/answer", (req, res) => {
@@ -233,6 +262,8 @@ export function setupBombaGame(app: Express) {
     const letter = parsed.data.letter.toUpperCase();
     const player = room.players[room.currentPlayerIndex];
     if (!player || player.uid !== playerId) return res.status(409).json({ error: "Ainda não é a sua vez." });
+    if (!room.selectedLetter) return res.status(409).json({ error: "Escolha uma letra antes de responder." });
+    if (letter !== room.selectedLetter) return res.status(409).json({ error: `Sua letra escolhida é ${room.selectedLetter}.` });
     if (!ALPHABET.includes(letter) || room.usedLetters.includes(letter)) return res.status(409).json({ error: "Essa letra não está disponível." });
     if (normalizeInitial(answer) !== letter) return res.status(400).json({ error: `A resposta precisa começar com ${letter}.` });
     room.usedLetters.push(letter);
@@ -242,9 +273,10 @@ export function setupBombaGame(app: Express) {
       room.endAt = null;
     } else {
       room.currentPlayerIndex = (room.currentPlayerIndex + 1) % room.players.length;
+      room.selectedLetter = null;
       room.endAt = Date.now() + room.duration * 1000;
     }
-    res.json(room);
+    res.json(roomResponse(room));
     scheduleBombaBotTurn(room);
   });
 
@@ -260,10 +292,11 @@ export function setupBombaGame(app: Express) {
     room.usedLetters = [...room.settings.bannedLetters];
     room.answers = [];
     room.currentPlayerIndex = Math.floor(Math.random() * room.players.length);
+    room.selectedLetter = null;
     room.duration = duration;
     room.endAt = Date.now() + duration * 1000;
     room.loserId = null;
-    res.json(room);
+    res.json(roomResponse(room));
     recordGameSession('bomba', code, room.players.length).catch(() => {});
     scheduleBombaBotTurn(room);
   });

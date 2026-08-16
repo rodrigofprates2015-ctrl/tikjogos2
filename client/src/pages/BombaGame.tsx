@@ -22,8 +22,10 @@ type OnlineRoom = {
   usedLetters: string[];
   answers: Array<{ playerId: string; playerName: string; letter: string; answer: string }>;
   currentPlayerIndex: number;
+  selectedLetter: string | null;
   endAt: number | null;
   duration: number;
+  serverNow: number;
   loserId: string | null;
   settings: { roundSeconds: number; bannedLetters: string[] };
 };
@@ -41,6 +43,7 @@ export default function BombaGame() {
   const [onlineError, setOnlineError] = useState("");
   const [onlineBusy, setOnlineBusy] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [serverClockOffset, setServerClockOffset] = useState(0);
   const [roomLoading, setRoomLoading] = useState(!isLocalMode);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [roundSeconds, setRoundSeconds] = useState(10);
@@ -82,7 +85,6 @@ export default function BombaGame() {
   useEffect(() => {
     if (!onlineRoom) return;
     const poll = window.setInterval(async () => {
-      setNow(Date.now());
       try {
         const response = await fetch(`/api/bomba/rooms/${onlineRoom.code}`);
         if (response.ok) setOnlineRoom(await response.json());
@@ -90,6 +92,18 @@ export default function BombaGame() {
     }, 600);
     return () => window.clearInterval(poll);
   }, [onlineRoom?.code]);
+
+  useEffect(() => {
+    if (!onlineRoom?.serverNow) return;
+    setServerClockOffset(onlineRoom.serverNow - Date.now());
+    setOnlineLetter(onlineRoom.selectedLetter || null);
+  }, [onlineRoom?.serverNow, onlineRoom?.selectedLetter]);
+
+  useEffect(() => {
+    if (onlineRoom?.status !== "playing") return;
+    const timer = window.setInterval(() => setNow(Date.now()), 100);
+    return () => window.clearInterval(timer);
+  }, [onlineRoom?.status]);
 
   const onlineRequest = async (url: string, body: unknown) => {
     const response = await fetch(url, {
@@ -226,6 +240,24 @@ export default function BombaGame() {
     finally { setOnlineBusy(false); }
   };
 
+  const selectOnlineLetter = async (letter: string) => {
+    if (!onlineRoom || onlineRoom.selectedLetter || onlineBusy) return;
+    setOnlineLetter(letter);
+    setOnlineBusy(true);
+    setOnlineError("");
+    try {
+      setOnlineRoom(await onlineRequest(`/api/bomba/rooms/${onlineRoom.code}/letter`, {
+        playerId: playerIdRef.current,
+        letter,
+      }));
+    } catch (error: any) {
+      setOnlineLetter(null);
+      setOnlineError(error.message);
+    } finally {
+      setOnlineBusy(false);
+    }
+  };
+
   const toggleBannedLetter = (letter: string) => {
     setBannedLetters((current) => current.includes(letter) ? current.filter((item) => item !== letter) : [...current, letter]);
   };
@@ -347,7 +379,7 @@ export default function BombaGame() {
     const currentOnlinePlayer = onlineRoom.players[onlineRoom.currentPlayerIndex];
     const isMyTurn = onlineRoom.status === "playing" && currentOnlinePlayer?.uid === playerIdRef.current;
     const isHost = onlineRoom.hostId === playerIdRef.current;
-    const onlineTimeLeft = onlineRoom.endAt ? Math.max(0, (onlineRoom.endAt - now) / 1000) : 0;
+    const onlineTimeLeft = onlineRoom.endAt ? Math.max(0, (onlineRoom.endAt - (now + serverClockOffset)) / 1000) : 0;
     const onlineProgress = onlineRoom.duration ? Math.max(0, (onlineTimeLeft / onlineRoom.duration) * 100) : 0;
     const loser = onlineRoom.players.find((player) => player.uid === onlineRoom.loserId);
     const onlineRemaining = ALPHABET.length - onlineRoom.usedLetters.length;
@@ -373,15 +405,15 @@ export default function BombaGame() {
               {ALPHABET.map((letter, index) => {
                 const angle = (360 / ALPHABET.length) * index;
                 const used = onlineRoom.usedLetters.includes(letter);
-                const selected = onlineLetter === letter;
+                const selected = (onlineRoom.selectedLetter || onlineLetter) === letter;
                 return (
                   <button
                     type="button"
                     key={letter}
                     className={`bomba-letter ${used ? "is-used" : ""} ${selected ? "is-selected" : ""}`}
                     style={{ "--letter-angle": `${angle}deg` } as React.CSSProperties}
-                    onPointerDown={(event) => { event.preventDefault(); if (isMyTurn && !used) setOnlineLetter(letter); }}
-                    disabled={used || !isMyTurn}
+                    onPointerDown={(event) => { event.preventDefault(); if (isMyTurn && !used) selectOnlineLetter(letter); }}
+                    disabled={used || !isMyTurn || !!onlineRoom.selectedLetter || onlineBusy}
                     aria-label={used ? `Letra ${letter} eliminada` : `Escolher letra ${letter}`}
                   ><span style={{ transform: `rotate(${-angle}deg)` }}>{letter}</span></button>
                 );
@@ -395,13 +427,13 @@ export default function BombaGame() {
 
           {isMyTurn && (
             <div className="bomba-online-answer">
-              <div className="bomba-online-answer__letter">{onlineLetter || "?"}</div>
+              <div className="bomba-online-answer__letter">{onlineRoom.selectedLetter || onlineLetter || "?"}</div>
               <input
                 value={onlineAnswer}
                 onChange={(event) => setOnlineAnswer(event.target.value)}
                 onKeyDown={(event) => { if (event.key === "Enter") submitOnlineAnswer(); }}
-                placeholder={onlineLetter ? `Digite uma palavra com ${onlineLetter}` : "Escolha uma letra acima"}
-                disabled={!onlineLetter || onlineBusy}
+                placeholder={(onlineRoom.selectedLetter || onlineLetter) ? `Digite uma palavra com ${onlineRoom.selectedLetter || onlineLetter}` : "Escolha uma letra acima"}
+                disabled={!(onlineRoom.selectedLetter || onlineLetter) || onlineBusy}
                 maxLength={60}
                 autoFocus={!!onlineLetter}
               />
