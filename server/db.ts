@@ -57,12 +57,19 @@ export async function recordGameSession(gameType: GameType, roomCode: string, pl
 
 export type DailyCount = { date: string; count: number };
 
+function brazilDateString(date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(date);
+}
+
 export async function getGameSessionStats(gameType: GameType, days = 30): Promise<DailyCount[]> {
   if (!pool) return [];
   try {
     const res = await (pool as PgPool).query<{ date: string; count: string }>(`
       SELECT
-        to_char(date_trunc('day', played_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS date,
+        to_char(date_trunc('day', (played_at AT TIME ZONE 'UTC') AT TIME ZONE 'America/Sao_Paulo'), 'YYYY-MM-DD') AS date,
         COUNT(*)::int AS count
       FROM game_sessions
       WHERE game_type = $1
@@ -75,9 +82,8 @@ export async function getGameSessionStats(gameType: GameType, days = 30): Promis
     const result: DailyCount[] = [];
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date();
-      d.setUTCHours(0, 0, 0, 0);
-      d.setUTCDate(d.getUTCDate() - i);
-      const dateStr = d.toISOString().slice(0, 10);
+      d.setDate(d.getDate() - i);
+      const dateStr = brazilDateString(d);
       const found = rows.find(r => r.date === dateStr);
       result.push({ date: dateStr, count: found ? Number(found.count) : 0 });
     }
