@@ -6,6 +6,7 @@ import bombaLogo from "@/assets/bomba-logo.png";
 import "./bomba-game.css?online=2";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+const MOBILE_KEYBOARD = ["QWERTYUIOP".split(""), "ASDFGHJKL".split(""), "ZXCVBNM".split("")];
 const THEMES = [
   "Bebidas", "Animais", "Comidas", "Filmes", "Séries", "Países", "Cidades",
   "Profissões", "Esportes", "Frutas", "Marcas", "Objetos da casa", "Celebridades",
@@ -44,6 +45,7 @@ export default function BombaGame() {
   const [onlineBusy, setOnlineBusy] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [serverClockOffset, setServerClockOffset] = useState(0);
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia("(max-width: 600px)").matches);
   const [roomLoading, setRoomLoading] = useState(!isLocalMode);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [roundSeconds, setRoundSeconds] = useState(10);
@@ -111,7 +113,15 @@ export default function BombaGame() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    const data = await response.json();
+    const responseText = await response.text();
+    let data: any = {};
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch {
+      throw new Error(responseText.trim().startsWith("<!DOCTYPE")
+        ? "O servidor do jogo está desatualizado. Atualize a página após o novo deploy."
+        : "O servidor devolveu uma resposta inválida. Tente novamente.");
+    }
     if (!response.ok) throw new Error(data.error || "Não foi possível concluir a ação.");
     return data;
   };
@@ -142,6 +152,13 @@ export default function BombaGame() {
 
   useEffect(() => {
     document.title = "Bomba! — TikJogos";
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 600px)");
+    const update = () => setIsMobile(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
   }, []);
 
   useEffect(() => {
@@ -256,6 +273,13 @@ export default function BombaGame() {
     } finally {
       setOnlineBusy(false);
     }
+  };
+
+  const typeOnMobileKeyboard = (key: string) => {
+    if (onlineBusy) return;
+    if (key === "BACKSPACE") return setOnlineAnswer((value) => value.slice(0, -1));
+    if (key === "SPACE") return setOnlineAnswer((value) => value.length < 60 && !value.endsWith(" ") ? `${value} ` : value);
+    setOnlineAnswer((value) => value.length < 60 ? `${value}${key}` : value);
   };
 
   const toggleBannedLetter = (letter: string) => {
@@ -399,7 +423,7 @@ export default function BombaGame() {
             {onlineRoom.status === "completed" && <><span>ALFABETO COMPLETO!</span><strong>Vocês venceram!</strong><small>Todas as letras foram usadas.</small></>}
           </section>
 
-          <section className="bomba-device" aria-label="Alfabeto do jogo Bomba online">
+          <section className="bomba-device bomba-device--desktop" aria-label="Alfabeto do jogo Bomba online">
             <div className="bomba-fuse" style={{ "--fuse-progress": `${onlineProgress}%`, "--fuse-color": onlineProgress <= 25 ? "#ef4444" : onlineProgress <= 50 ? "#ffca28" : "#09a9f5" } as React.CSSProperties} />
             <div className="bomba-letter-ring">
               {ALPHABET.map((letter, index) => {
@@ -425,6 +449,28 @@ export default function BombaGame() {
             </div>
           </section>
 
+          <section className="bomba-mobile-board" aria-label="Tabuleiro compacto do jogo Bomba">
+            <div className={`bomba-mobile-timer ${onlineRoom.status === "exploded" ? "is-boom" : ""}`}>
+              <Bomb />
+              <div><strong>{onlineRoom.status === "exploded" ? "BOOM!" : Math.ceil(onlineTimeLeft)}</strong><span>{onlineRoom.status === "exploded" ? "" : "segundos"}</span></div>
+              <div className="bomba-mobile-timer__track"><i style={{ width: `${onlineProgress}%` }} /></div>
+            </div>
+            <div className="bomba-mobile-letters">
+              {ALPHABET.map((letter) => {
+                const used = onlineRoom.usedLetters.includes(letter);
+                const selected = (onlineRoom.selectedLetter || onlineLetter) === letter;
+                return <button
+                  type="button"
+                  key={letter}
+                  className={`${used ? "is-used" : ""} ${selected ? "is-selected" : ""}`}
+                  onPointerDown={(event) => { event.preventDefault(); if (isMyTurn && !used) selectOnlineLetter(letter); }}
+                  disabled={used || !isMyTurn || !!onlineRoom.selectedLetter || onlineBusy}
+                  aria-label={used ? `Letra ${letter} eliminada` : `Escolher letra ${letter}`}
+                >{letter}</button>;
+              })}
+            </div>
+          </section>
+
           {isMyTurn && (
             <div className="bomba-online-answer">
               <div className="bomba-online-answer__letter">{onlineRoom.selectedLetter || onlineLetter || "?"}</div>
@@ -434,10 +480,20 @@ export default function BombaGame() {
                 onKeyDown={(event) => { if (event.key === "Enter") submitOnlineAnswer(); }}
                 placeholder={(onlineRoom.selectedLetter || onlineLetter) ? `Digite uma palavra com ${onlineRoom.selectedLetter || onlineLetter}` : "Escolha uma letra acima"}
                 disabled={!(onlineRoom.selectedLetter || onlineLetter) || onlineBusy}
+                readOnly={isMobile}
+                inputMode={isMobile ? "none" : "text"}
                 maxLength={60}
                 autoFocus={!!onlineLetter}
               />
               <button onClick={submitOnlineAnswer} disabled={!onlineLetter || !onlineAnswer.trim() || onlineBusy}>CONFIRMAR</button>
+              {isMobile && (onlineRoom.selectedLetter || onlineLetter) && <div className="bomba-virtual-keyboard">
+                {MOBILE_KEYBOARD.map((row, index) => <div key={index}>{row.map((key) => <button type="button" key={key} onPointerDown={(event) => { event.preventDefault(); typeOnMobileKeyboard(key); }}>{key}</button>)}</div>)}
+                <div className="bomba-virtual-keyboard__actions">
+                  <button type="button" onPointerDown={(event) => { event.preventDefault(); typeOnMobileKeyboard("BACKSPACE"); }}>⌫</button>
+                  <button type="button" className="is-space" onPointerDown={(event) => { event.preventDefault(); typeOnMobileKeyboard("SPACE"); }}>ESPAÇO</button>
+                  <button type="button" className="is-confirm" disabled={!onlineAnswer.trim() || onlineBusy} onPointerDown={(event) => { event.preventDefault(); submitOnlineAnswer(); }}>ENTER</button>
+                </div>
+              </div>}
             </div>
           )}
           {onlineError && <p className="bomba-error">{onlineError}</p>}
