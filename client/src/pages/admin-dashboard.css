@@ -40,8 +40,20 @@
 .admin-light .text-slate-600 { color: #adb4c5 !important; }
 
 .admin-main [class*="bg-slate-800"],
+.admin-main [class*="bg-[#1e293b]"],
 .admin-light > [class*="bg-slate-800"] {
   background: #fff !important;
+}
+
+.admin-main [class*="text-white/"] { color: #717b94 !important; }
+.admin-main [class*="border-white/"] { border-color: var(--admin-line) !important; }
+.admin-main [class*="bg-white/"] { background: #f7f8fc !important; }
+.admin-main [class*="bg-white/5"] { background: #f2f4fa !important; }
+
+.admin-main [data-state="active"] {
+  background: #fff !important;
+  color: var(--admin-purple) !important;
+  box-shadow: 0 3px 12px rgba(97, 87, 245, .12);
 }
 
 .admin-main [class*="border-slate-7"],

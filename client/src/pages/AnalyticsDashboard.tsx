@@ -209,11 +209,11 @@ function MiniChart({ data, color, height = 200 }: { data: TimeSeries; color: str
             <stop offset="95%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-        <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-        <YAxis tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} width={35} axisLine={false} tickLine={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#e8eaf4" />
+        <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#8a93aa' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+        <YAxis tick={{ fontSize: 10, fill: '#8a93aa' }} width={35} axisLine={false} tickLine={false} />
         <Tooltip
-          contentStyle={{ backgroundColor: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
+          contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7f0', borderRadius: '12px', fontSize: '12px', color: '#111747', boxShadow: '0 8px 28px rgba(38,46,105,0.12)' }}
           labelFormatter={l => `${l}`}
           formatter={(v: number) => [v.toLocaleString('pt-BR'), '']}
         />
@@ -234,7 +234,7 @@ function DevicePieChart({ data }: { data: NameValue[] }) {
             {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
           </Pie>
           <Tooltip
-            contentStyle={{ backgroundColor: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
+            contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7f0', borderRadius: '12px', fontSize: '12px', color: '#111747' }}
             formatter={(v: number) => [v.toLocaleString('pt-BR'), '']}
           />
         </PieChart>
@@ -571,10 +571,10 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
             <CardContent>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={(timeSeries.rooms || []).map(d => ({ ...d, label: format(parseISO(d.date), 'dd/MM', { locale: ptBR }) }))}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-                  <YAxis tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} width={35} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', color: '#fff' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e8eaf4" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#8a93aa' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 10, fill: '#8a93aa' }} width={35} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7f0', borderRadius: '12px', fontSize: '12px', color: '#111747' }} />
                   <Bar dataKey="count" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -729,10 +729,10 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
             <CardContent>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={(games.roomsLast30Days || []).map(d => ({ ...d, label: format(parseISO(d.date), 'dd/MM', { locale: ptBR }) }))}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-                  <YAxis tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }} width={35} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', color: '#fff' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e8eaf4" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#8a93aa' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 10, fill: '#8a93aa' }} width={35} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7f0', borderRadius: '12px', fontSize: '12px', color: '#111747' }} />
                   <Bar dataKey="count" fill="#f59e0b" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>

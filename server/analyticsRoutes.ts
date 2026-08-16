@@ -199,11 +199,11 @@ export function createAnalyticsRouter(verifyAdmin: any) {
           .groupBy(sql`DATE(${analyticsEvents.createdAt})`)
           .orderBy(sql`DATE(${analyticsEvents.createdAt})`)
           .limit(31),
-        db.select({ date: sql<string>`DATE(${rooms.createdAt})`, count: count() })
-          .from(rooms)
-          .where(gte(rooms.createdAt, thirtyDaysAgo))
-          .groupBy(sql`DATE(${rooms.createdAt})`)
-          .orderBy(sql`DATE(${rooms.createdAt})`)
+        db.select({ date: sql<string>`DATE(${analyticsEvents.createdAt})`, count: countDistinct(analyticsEvents.roomCode) })
+          .from(analyticsEvents)
+          .where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.roomCode} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`)
+          .groupBy(sql`DATE(${analyticsEvents.createdAt})`)
+          .orderBy(sql`DATE(${analyticsEvents.createdAt})`)
           .limit(31),
       ]);
 
@@ -249,9 +249,9 @@ export function createAnalyticsRouter(verifyAdmin: any) {
 
       // ── Rooms / Games ──
       const [roomsTotalRes, roomsTodayRes, roomsMonthRes] = await Promise.all([
-        db.select({ count: count() }).from(rooms).limit(1),
-        db.select({ count: count() }).from(rooms).where(gte(rooms.createdAt, startOfToday)).limit(1),
-        db.select({ count: count() }).from(rooms).where(gte(rooms.createdAt, startOfMonth)).limit(1),
+        db.select({ count: countDistinct(analyticsEvents.roomCode) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.roomCode} IS NOT NULL`).limit(1),
+        db.select({ count: countDistinct(analyticsEvents.roomCode) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.roomCode} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${startOfToday}`).limit(1),
+        db.select({ count: countDistinct(analyticsEvents.roomCode) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.roomCode} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${startOfMonth}`).limit(1),
       ]);
 
       const gameModeStats = await safeQuery(
@@ -311,11 +311,11 @@ export function createAnalyticsRouter(verifyAdmin: any) {
 
       // Rooms created per day (for monthly chart saving)
       const roomsPerDayMonth = await db
-        .select({ date: sql<string>`DATE(${rooms.createdAt})`, count: count() })
-        .from(rooms)
-        .where(gte(rooms.createdAt, startOfMonth))
-        .groupBy(sql`DATE(${rooms.createdAt})`)
-        .orderBy(sql`DATE(${rooms.createdAt})`)
+        .select({ date: sql<string>`DATE(${analyticsEvents.createdAt})`, count: countDistinct(analyticsEvents.roomCode) })
+        .from(analyticsEvents)
+        .where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.roomCode} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${startOfMonth}`)
+        .groupBy(sql`DATE(${analyticsEvents.createdAt})`)
+        .orderBy(sql`DATE(${analyticsEvents.createdAt})`)
         .limit(31);
 
       // Top pages visited (top 10)
@@ -448,10 +448,10 @@ export function createAnalyticsRouter(verifyAdmin: any) {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const [todayRes, monthRes, totalRes, tsRes] = await Promise.all([
-        db.select({ count: count() }).from(rooms).where(gte(rooms.createdAt, startOfToday)).limit(1),
-        db.select({ count: count() }).from(rooms).where(gte(rooms.createdAt, startOfMonth)).limit(1),
-        db.select({ count: count() }).from(rooms).limit(1),
-        db.select({ date: sql<string>`DATE(${rooms.createdAt})`, count: count() }).from(rooms).where(gte(rooms.createdAt, thirtyDaysAgo)).groupBy(sql`DATE(${rooms.createdAt})`).orderBy(sql`DATE(${rooms.createdAt})`).limit(31),
+        db.select({ count: countDistinct(analyticsEvents.roomCode) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.roomCode} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${startOfToday}`).limit(1),
+        db.select({ count: countDistinct(analyticsEvents.roomCode) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.roomCode} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${startOfMonth}`).limit(1),
+        db.select({ count: countDistinct(analyticsEvents.roomCode) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.roomCode} IS NOT NULL`).limit(1),
+        db.select({ date: sql<string>`DATE(${analyticsEvents.createdAt})`, count: countDistinct(analyticsEvents.roomCode) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.roomCode} IS NOT NULL AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`).groupBy(sql`DATE(${analyticsEvents.createdAt})`).orderBy(sql`DATE(${analyticsEvents.createdAt})`).limit(31),
       ]);
       res.json({ roomsToday: todayRes[0]?.count || 0, roomsMonth: monthRes[0]?.count || 0, roomsTotal: totalRes[0]?.count || 0, roomsLast30Days: fillMissingDates(tsRes, 30) });
     } catch (error: any) {

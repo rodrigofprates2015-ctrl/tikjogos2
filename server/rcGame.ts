@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { randomBytes } from 'crypto';
 import { recordGameSession } from './db';
 import { trackLobbyJoin } from './lobbyTracker';
+import { trackRoomJoin } from './analyticsMiddleware';
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -536,6 +537,7 @@ export function setupRCGame(httpServer: Server, app: Express) {
       rcTotalRoomsCreated++;
       console.log(`[RC] Room created: ${code} by ${hostName}`);
       trackLobbyJoin(code, hostId, hostName, true, 'sincronia').catch(() => {});
+      trackRoomJoin(req.cookies?.['visitor_id'] || hostId, code, 'sincronia', req).catch(() => {});
       res.json({ code, hostId, players: room.players });
     } catch (error) {
       res.status(400).json({ error: 'Failed to create room' });

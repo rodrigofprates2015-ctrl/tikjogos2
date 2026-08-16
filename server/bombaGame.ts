@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { randomBytes } from "crypto";
 import { z } from "zod";
 import { recordGameSession } from "./db.js";
+import { trackRoomJoin } from "./analyticsMiddleware.js";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const THEMES = [
@@ -141,6 +142,7 @@ export function setupBombaGame(app: Express) {
         });
       }
       bombaRooms.set(code, room);
+      trackRoomJoin(req.cookies?.['visitor_id'] || playerId, code, 'bomba', req).catch(() => {});
       res.json(room);
     } catch (error) {
       res.status(400).json({ error: "Não foi possível criar a sala." });
