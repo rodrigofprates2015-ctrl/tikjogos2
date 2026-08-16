@@ -50,6 +50,7 @@ import {
   Trophy,
   Target,
   Heart,
+  Bomb,
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery } from "@tanstack/react-query";
@@ -67,6 +68,7 @@ import {
 } from "recharts";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import "./admin-dashboard.css";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -117,7 +119,18 @@ type AproximacaoAdminRoom = {
   createdAt: string;
 };
 
-type NavItem = "overview" | "users" | "impostor" | "desenho" | "sincronia" | "palavra" | "aproximacao" | "temas" | "analytics" | "feedback";
+type BombaAdminRoom = {
+  code: string;
+  status: 'waiting' | 'playing' | 'exploded' | 'completed';
+  players: Array<{ uid: string; name: string; connected: boolean }>;
+  theme: string | null;
+  usedLetters: number;
+  answerCount: number;
+  roundSeconds: number;
+  createdAt: string;
+};
+
+type NavItem = "overview" | "games" | "users" | "impostor" | "desenho" | "sincronia" | "palavra" | "aproximacao" | "bomba" | "temas" | "analytics" | "feedback";
 type RegisteredUser = { id: string; email: string | null; firstName: string | null; lastName: string | null; authProvider: string; createdAt: string | null; lastLoginAt: string | null };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -419,6 +432,34 @@ function AproximacaoRoomsTable({ rooms }: { rooms: AproximacaoAdminRoom[] }) {
             </TableRow>
           ))}
         </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function BombaRoomsTable({ rooms }: { rooms: BombaAdminRoom[] }) {
+  if (rooms.length === 0) return <EmptyState />;
+  const statusLabel = { waiting: 'Aguardando', playing: 'Jogando', exploded: 'Explodiu', completed: 'Concluída' };
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader><TableRow className="border-slate-700 hover:bg-transparent">
+          <TableHead className="text-slate-400">Status</TableHead><TableHead className="text-slate-400">Código</TableHead>
+          <TableHead className="text-slate-400">Jogadores</TableHead><TableHead className="text-slate-400">Tema</TableHead>
+          <TableHead className="text-slate-400">Progresso</TableHead><TableHead className="text-slate-400">Tempo</TableHead>
+          <TableHead className="text-slate-400">Criada</TableHead>
+        </TableRow></TableHeader>
+        <TableBody>{rooms.map(room => (
+          <TableRow key={room.code} className="border-slate-700/50 hover:bg-slate-700/30">
+            <TableCell><div className="flex items-center gap-2"><StatusDot active={room.status === 'playing'} /><Badge className={room.status === 'playing' ? 'bg-emerald-600/80 text-xs' : room.status === 'exploded' ? 'bg-red-600/80 text-xs' : 'bg-slate-600/80 text-xs'}>{statusLabel[room.status]}</Badge></div></TableCell>
+            <TableCell className="font-mono font-bold text-white">{room.code}</TableCell>
+            <TableCell><span className="text-slate-300 text-sm">{room.players.length} jogadores</span><div className="flex gap-1 flex-wrap mt-1">{room.players.map(player => <span key={player.uid} className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-700 text-slate-300">{player.name}</span>)}</div></TableCell>
+            <TableCell className="text-slate-300 text-sm">{room.theme || '—'}</TableCell>
+            <TableCell className="text-slate-400 text-sm">{room.usedLetters}/26 letras · {room.answerCount} respostas</TableCell>
+            <TableCell className="text-slate-400 text-sm">{room.roundSeconds}s</TableCell>
+            <TableCell className="text-slate-500 text-xs">{new Date(room.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</TableCell>
+          </TableRow>
+        ))}</TableBody>
       </Table>
     </div>
   );
@@ -906,23 +947,26 @@ function TemasView({ token, themes, setThemes, onLogout }: {
 // ─── Overview (home) ─────────────────────────────────────────────────────────
 
 function OverviewView({
-  rooms, drawingRooms, sincStats, desafioRooms, aproximacaoRooms, token,
+  rooms, drawingRooms, sincStats, desafioRooms, aproximacaoRooms, bombaRooms, token, onOpenGames,
 }: {
   rooms: Room[]; drawingRooms: DrawingRoom[];
   sincStats: SincStats | null; desafioRooms: DesafioRoom[];
   aproximacaoRooms: AproximacaoAdminRoom[];
+  bombaRooms: BombaAdminRoom[];
   token: string | null;
+  onOpenGames: () => void;
 }) {
   const totalOnline =
     rooms.filter(r => r.gameMode !== 'desafioPalavra').reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0) +
     drawingRooms.reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0) +
     (sincStats?.totalConnectedPlayers ?? 0) +
     desafioRooms.reduce((s, r) => s + r.players.filter(p => p.connected !== false).length, 0) +
-    aproximacaoRooms.reduce((s, r) => s + r.players.filter(p => p.connected).length, 0);
+    aproximacaoRooms.reduce((s, r) => s + r.players.filter(p => p.connected).length, 0) +
+    bombaRooms.reduce((s, r) => s + r.players.filter(p => p.connected).length, 0);
 
-  const totalRooms = rooms.filter(r => r.gameMode !== 'desafioPalavra').length + drawingRooms.length + (sincStats?.activeRooms ?? 0) + desafioRooms.length + aproximacaoRooms.length;
-  const playing = rooms.filter(r => r.status === "playing" && r.gameMode !== 'desafioPalavra').length + drawingRooms.filter(r => r.status !== "waiting").length + (sincStats?.playingRooms ?? 0) + desafioRooms.filter(r => r.status === "playing").length + aproximacaoRooms.filter(r => r.status === "playing").length;
-  const waiting = rooms.filter(r => r.status === "waiting" && r.gameMode !== 'desafioPalavra').length + drawingRooms.filter(r => r.status === "waiting").length + (sincStats?.waitingRooms ?? 0) + desafioRooms.filter(r => r.status === "waiting").length + aproximacaoRooms.filter(r => r.status === "waiting").length;
+  const totalRooms = rooms.filter(r => r.gameMode !== 'desafioPalavra').length + drawingRooms.length + (sincStats?.activeRooms ?? 0) + desafioRooms.length + aproximacaoRooms.length + bombaRooms.length;
+  const playing = rooms.filter(r => r.status === "playing" && r.gameMode !== 'desafioPalavra').length + drawingRooms.filter(r => r.status !== "waiting").length + (sincStats?.playingRooms ?? 0) + desafioRooms.filter(r => r.status === "playing").length + aproximacaoRooms.filter(r => r.status === "playing").length + bombaRooms.filter(r => r.status === "playing").length;
+  const waiting = rooms.filter(r => r.status === "waiting" && r.gameMode !== 'desafioPalavra').length + drawingRooms.filter(r => r.status === "waiting").length + (sincStats?.waitingRooms ?? 0) + desafioRooms.filter(r => r.status === "waiting").length + aproximacaoRooms.filter(r => r.status === "waiting").length + bombaRooms.filter(r => r.status === "waiting").length;
 
   const { data: analytics } = useQuery<any>({
     queryKey: ["/api/analytics/dashboard", token],
@@ -958,6 +1002,7 @@ function OverviewView({
     { label: "Sincronia", rooms: sincStats?.activeRooms ?? 0, players: sincStats?.totalConnectedPlayers ?? 0, accent: "#10b981", icon: Sparkles },
     { label: "Desafio da Palavra", rooms: desafioRooms.length, players: desafioRooms.reduce((s, r) => s + r.players.length, 0), accent: "#f59e0b", icon: Type },
     { label: "Aproximação", rooms: aproximacaoRooms.length, players: aproximacaoRooms.reduce((s, r) => s + r.players.length, 0), accent: "#06b6d4", icon: Target },
+    { label: "Bomba", rooms: bombaRooms.length, players: bombaRooms.reduce((s, r) => s + r.players.length, 0), accent: "#ff244d", icon: Bomb },
   ];
 
   return (
@@ -970,25 +1015,7 @@ function OverviewView({
         <StatCard label="Aguardando" value={waiting} icon={Clock} accent="#64748b" />
       </div>
 
-      {/* Per-game mini cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {gameCards.map((g) => (
-          <Card key={g.label} className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors">
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-2 rounded-lg shrink-0" style={{ background: `${g.accent}22` }}>
-                  <g.icon className="w-4 h-4" style={{ color: g.accent }} />
-                </div>
-                <p className="text-xs text-slate-400 leading-tight">{g.label}</p>
-              </div>
-              <p className="text-xl font-bold text-white">{g.rooms} <span className="text-xs text-slate-500 font-normal">salas</span></p>
-              <p className="text-sm text-slate-400 mt-0.5">{g.players} jogadores</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Rooms chart */}
+      <div className="grid xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,.7fr)] gap-5">
       <Card className="bg-slate-800/70 border-slate-700">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm text-slate-300 font-medium flex items-center gap-2">
@@ -1000,11 +1027,11 @@ function OverviewView({
           {formattedRoomsChart.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={formattedRoomsChart}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis dataKey="label" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-                <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} width={30} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", fontSize: "12px", color: "#fff" }} />
-                <Bar dataKey="count" fill="#f59e0b" radius={[3, 3, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e8eaf4" />
+                <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#8990a8" }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                <YAxis tick={{ fontSize: 10, fill: "#8990a8" }} width={30} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ backgroundColor: "#fff", border: "1px solid #e5e7f0", borderRadius: "12px", fontSize: "12px", color: "#12194b" }} />
+                <Bar dataKey="count" fill="#6157f5" radius={[5, 5, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -1012,16 +1039,13 @@ function OverviewView({
           )}
         </CardContent>
       </Card>
-
-      {/* Analytics stats if available */}
-      {analytics && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <StatCard label="Pageviews (total)" value={analytics.overview?.totalPageviews?.toLocaleString("pt-BR") || "0"} icon={Eye} accent="#6366f1" />
-          <StatCard label="Visitantes Únicos" value={analytics.overview?.totalUniqueVisitors?.toLocaleString("pt-BR") || "0"} icon={Users} accent="#8b5cf6" />
-          <StatCard label="Jogadores Únicos" value={analytics.overview?.totalPlayers?.toLocaleString("pt-BR") || "0"} icon={Gamepad2} accent="#ec4899" />
-          <StatCard label="Sessão Média" value={(() => { const s = analytics.overview?.avgSessionDuration || 0; if (s < 60) return `${s}s`; return `${Math.floor(s/60)}m ${s%60}s`; })()} icon={Clock} accent="#f59e0b" />
-        </div>
-      )}
+      <Card className="bg-slate-800/70 border-slate-700">
+        <CardHeader className="pb-3"><div className="flex items-center justify-between"><CardTitle className="text-sm text-slate-300">Jogos agora</CardTitle><button onClick={onOpenGames} className="text-xs font-bold text-indigo-600">Ver todos</button></div></CardHeader>
+        <CardContent className="space-y-2">
+          {gameCards.map(g => <div key={g.label} className="flex items-center gap-3 rounded-xl border border-slate-700 p-3"><div className="p-2 rounded-lg" style={{background:`${g.accent}18`}}><g.icon className="w-4 h-4" style={{color:g.accent}}/></div><div className="min-w-0 flex-1"><p className="text-sm font-bold text-white truncate">{g.label}</p><p className="text-xs text-slate-400">{g.rooms} salas</p></div><span className="text-sm font-bold text-slate-300">{g.players}</span></div>)}
+        </CardContent>
+      </Card>
+      </div>
     </div>
   );
 }
@@ -1029,25 +1053,13 @@ function OverviewView({
 // ─── Per-game section wrapper ─────────────────────────────────────────────────
 
 function GameSection({
-  title, icon: Icon, accent, statsCards, children, lastUpdated,
+  statsCards, children, lastUpdated,
 }: {
   title: string; icon: any; accent: string; statsCards: React.ReactNode; children: React.ReactNode; lastUpdated?: Date;
 }) {
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl" style={{ background: `${accent}22` }}>
-            <Icon className="w-5 h-5" style={{ color: accent }} />
-          </div>
-          <h2 className="text-lg font-bold text-white">{title}</h2>
-        </div>
-        {lastUpdated && (
-          <span className="text-xs text-slate-500">
-            Atualizado às {lastUpdated.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-          </span>
-        )}
-      </div>
+      {lastUpdated && <div className="flex justify-end"><span className="text-xs text-slate-500">Atualizado às {lastUpdated.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span></div>}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">{statsCards}</div>
       <Card className="bg-slate-800/70 border-slate-700">
         <CardContent className="p-0 pt-1">{children}</CardContent>
@@ -1118,12 +1130,13 @@ function GameSessionsChart({ gameType, token, accent }: { gameType: string; toke
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const isDesignPreview = import.meta.env.DEV && new URLSearchParams(window.location.search).get("dashboardPreview") === "1";
+  const [isAuthenticated, setIsAuthenticated] = useState(isDesignPreview);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(isDesignPreview ? "local-design-preview" : null);
   const [nav, setNav] = useState<NavItem>("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -1132,6 +1145,7 @@ export default function AdminDashboard() {
   const [sincStats, setSincStats] = useState<SincStats | null>(null);
   const [desafioRooms, setDesafioRooms] = useState<DesafioRoom[]>([]);
   const [aproximacaoRooms, setAproximacaoRooms] = useState<AproximacaoAdminRoom[]>([]);
+  const [bombaRooms, setBombaRooms] = useState<BombaAdminRoom[]>([]);
   const [themes, setThemes] = useState<Theme[]>([]);
   const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -1171,19 +1185,20 @@ export default function AdminDashboard() {
       localStorage.removeItem("adminToken");
       setToken(null);
       setIsAuthenticated(false);
-      setRooms([]); setDrawingRooms([]); setSincStats(null); setDesafioRooms([]); setAproximacaoRooms([]); setThemes([]);
+      setRooms([]); setDrawingRooms([]); setSincStats(null); setDesafioRooms([]); setAproximacaoRooms([]); setBombaRooms([]); setThemes([]);
       setEmail(""); setPassword(""); setLoginError("");
     }
   }, []);
 
   const fetchAll = useCallback(async (t: string) => {
     const headers = { Authorization: `Bearer ${t}` };
-    const [roomsRes, drawRes, sincRes, desafioRes, aproximacaoRes, usersRes] = await Promise.allSettled([
+    const [roomsRes, drawRes, sincRes, desafioRes, aproximacaoRes, bombaRes, usersRes] = await Promise.allSettled([
       fetch("/api/admin/rooms", { headers }),
       fetch("/api/admin/drawing-rooms", { headers }),
       fetch("/api/admin/sincronia-rooms", { headers }),
       fetch("/api/admin/desafio-rooms", { headers }),
       fetch("/api/admin/aproximacao-rooms", { headers }),
+      fetch("/api/admin/bomba-rooms", { headers }),
       fetch("/api/admin/users", { headers }),
     ]);
 
@@ -1194,6 +1209,7 @@ export default function AdminDashboard() {
     if (sincRes.status === "fulfilled" && sincRes.value.ok) setSincStats(await sincRes.value.json());
     if (desafioRes.status === "fulfilled" && desafioRes.value.ok) setDesafioRooms(await desafioRes.value.json());
     if (aproximacaoRes.status === "fulfilled" && aproximacaoRes.value.ok) setAproximacaoRooms(await aproximacaoRes.value.json());
+    if (bombaRes.status === "fulfilled" && bombaRes.value.ok) setBombaRooms(await bombaRes.value.json());
     if (usersRes.status === "fulfilled" && usersRes.value.ok) setRegisteredUsers(await usersRes.value.json());
 
     setLastUpdated(new Date());
@@ -1227,6 +1243,7 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
+    if (isDesignPreview) return;
     const saved = localStorage.getItem("adminToken");
     if (!saved) return;
     fetch("/api/admin/verify", { headers: { Authorization: `Bearer ${saved}` } })
@@ -1235,20 +1252,21 @@ export default function AdminDashboard() {
         else localStorage.removeItem("adminToken");
       })
       .catch(() => localStorage.removeItem("adminToken"));
-  }, []);
+  }, [isDesignPreview]);
 
   useEffect(() => {
     if (!isAuthenticated || !token) return;
+    if (isDesignPreview) return;
     fetchAll(token);
     fetchThemes(token);
     const interval = setInterval(() => fetchAll(token), 5000);
     return () => clearInterval(interval);
-  }, [isAuthenticated, token, fetchAll, fetchThemes]);
+  }, [isAuthenticated, token, fetchAll, fetchThemes, isDesignPreview]);
 
   // ── Login screen ──
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+      <div className="admin-light min-h-screen bg-slate-900 flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-slate-800 border-slate-700">
           <CardHeader className="text-center pb-4">
             <div className="mx-auto w-12 h-12 bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-4">
@@ -1289,12 +1307,8 @@ export default function AdminDashboard() {
   // ── Nav items ──
   const navItems: { id: NavItem; label: string; icon: any; accent: string; badge?: number }[] = [
     { id: "overview", label: "Visão Geral", icon: Home, accent: "#6366f1" },
+    { id: "games", label: "Jogos", icon: Gamepad2, accent: "#6157f5", badge: rooms.length + drawingRooms.length + (sincStats?.activeRooms ?? 0) + desafioRooms.length + aproximacaoRooms.length + bombaRooms.length || undefined },
     { id: "users", label: "Cadastros", icon: UserRound, accent: "#8b5cf6", badge: registeredUsers.length || undefined },
-    { id: "impostor", label: "Impostor Clássico", icon: Skull, accent: "#6366f1", badge: rooms.length || undefined },
-    { id: "desenho", label: "Impostor Desenho", icon: Paintbrush, accent: "#a855f7", badge: drawingRooms.length || undefined },
-    { id: "sincronia", label: "Sincronia", icon: Sparkles, accent: "#10b981", badge: sincStats?.activeRooms || undefined },
-    { id: "palavra", label: "Desafio da Palavra", icon: Type, accent: "#f59e0b", badge: desafioRooms.filter(r => r.players.some(p => p.connected !== false)).length || undefined },
-    { id: "aproximacao", label: "Aproximação", icon: Target, accent: "#06b6d4", badge: aproximacaoRooms.length || undefined },
     { id: "temas", label: "Temas", icon: FileText, accent: "#ec4899", badge: themes.filter(t => !t.approved).length || undefined },
     { id: "analytics", label: "Analytics", icon: BarChart3, accent: "#06b6d4" },
     { id: "feedback", label: "Feedback", icon: Star, accent: "#f59e0b" },
@@ -1330,9 +1344,23 @@ export default function AdminDashboard() {
             rooms={rooms} drawingRooms={drawingRooms}
             sincStats={sincStats} desafioRooms={desafioRooms}
             aproximacaoRooms={aproximacaoRooms}
+            bombaRooms={bombaRooms}
             token={token}
+            onOpenGames={() => setNav("games")}
           />
         );
+
+      case "games": {
+        const games = [
+          { id: "impostor" as NavItem, name: "Impostor Clássico", icon: Skull, accent: "#6366f1", rooms: rooms.length, players: rooms.reduce((s,r)=>s+r.players.length,0) },
+          { id: "desenho" as NavItem, name: "Impostor Desenho", icon: Paintbrush, accent: "#a855f7", rooms: drawingRooms.length, players: drawingRooms.reduce((s,r)=>s+r.players.length,0) },
+          { id: "sincronia" as NavItem, name: "Sincronia", icon: Sparkles, accent: "#10b981", rooms: sincStats?.activeRooms ?? 0, players: sincStats?.totalConnectedPlayers ?? 0 },
+          { id: "palavra" as NavItem, name: "Desafio da Palavra", icon: Type, accent: "#f59e0b", rooms: desafioRooms.length, players: desafioRooms.reduce((s,r)=>s+r.players.length,0) },
+          { id: "aproximacao" as NavItem, name: "Aproximação", icon: Target, accent: "#06b6d4", rooms: aproximacaoRooms.length, players: aproximacaoRooms.reduce((s,r)=>s+r.players.length,0) },
+          { id: "bomba" as NavItem, name: "Bomba", icon: Bomb, accent: "#ff244d", rooms: bombaRooms.length, players: bombaRooms.reduce((s,r)=>s+r.players.length,0) },
+        ];
+        return <div className="space-y-5"><p className="text-sm text-slate-400">Acompanhe todos os jogos em um só lugar. Abra um deles para ver salas e histórico.</p><div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">{games.map(game=><button key={game.id} onClick={()=>setNav(game.id)} className="admin-game-card text-left rounded-2xl border border-slate-700 bg-slate-800 p-5 transition-all"><div className="flex items-start justify-between"><div className="p-3 rounded-xl" style={{background:`${game.accent}18`}}><game.icon className="w-6 h-6" style={{color:game.accent}}/></div><span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Online</span></div><h3 className="mt-5 text-lg font-black text-white">{game.name}</h3><div className="mt-4 flex gap-6"><div><strong className="text-xl text-white">{game.rooms}</strong><span className="block text-xs text-slate-400">salas</span></div><div><strong className="text-xl text-white">{game.players}</strong><span className="block text-xs text-slate-400">jogadores</span></div></div></button>)}</div></div>;
+      }
 
       case "users":
         return <div className="space-y-4"><div className="flex items-center gap-3"><div className="rounded-xl bg-violet-500/20 p-2.5"><Users className="h-5 w-5 text-violet-400"/></div><div><h2 className="text-lg font-bold">Novos cadastros</h2><p className="text-sm text-slate-400">{registeredUsers.length} contas registradas</p></div></div><Card className="border-slate-700 bg-slate-800"><CardContent className="p-0"><Table><TableHeader><TableRow className="border-slate-700"><TableHead>Usuário</TableHead><TableHead>Provedor</TableHead><TableHead>Cadastro</TableHead><TableHead>Último acesso</TableHead></TableRow></TableHeader><TableBody>{registeredUsers.map(user=><TableRow key={user.id} className="border-slate-700"><TableCell><div className="font-bold text-white">{[user.firstName,user.lastName].filter(Boolean).join(' ')||'Sem nome'}</div><div className="text-xs text-slate-400">{user.email}</div></TableCell><TableCell><Badge className="bg-violet-600/60">{user.authProvider||'email'}</Badge></TableCell><TableCell className="text-sm text-slate-300">{user.createdAt?new Date(user.createdAt).toLocaleDateString('pt-BR'):'—'}</TableCell><TableCell className="text-sm text-slate-300">{user.lastLoginAt?new Date(user.lastLoginAt).toLocaleString('pt-BR'):'Nunca'}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></div>;
@@ -1427,6 +1455,24 @@ export default function AdminDashboard() {
           </div>
         );
 
+      case "bomba":
+        return (
+          <div className="space-y-5">
+            <GameSection
+              title="Bomba" icon={Bomb} accent="#ff244d" lastUpdated={lastUpdated}
+              statsCards={<>
+                <StatCard label="Salas Ativas" value={bombaRooms.length} icon={Home} accent="#ff244d" />
+                <StatCard label="Jogadores" value={bombaRooms.reduce((s, r) => s + r.players.length, 0)} icon={Users} accent="#09a9f5" />
+                <StatCard label="Jogando" value={bombaRooms.filter(r => r.status === "playing").length} icon={Activity} accent="#10b981" />
+                <StatCard label="Aguardando" value={bombaRooms.filter(r => r.status === "waiting").length} icon={Clock} accent="#ffca28" />
+              </>}
+            >
+              <BombaRoomsTable rooms={bombaRooms} />
+            </GameSection>
+            <GameSessionsChart gameType="bomba" token={token} accent="#ff244d" />
+          </div>
+        );
+
       case "temas":
         return (
           <div className="space-y-4">
@@ -1452,17 +1498,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const pageTitles: Partial<Record<NavItem, string>> = {
+    overview: "Visão Geral", games: "Jogos", users: "Cadastros", temas: "Temas da comunidade",
+    analytics: "Analytics", feedback: "Feedback", impostor: "Impostor Clássico", desenho: "Impostor Desenho",
+    sincronia: "Sincronia", palavra: "Desafio da Palavra", aproximacao: "Aproximação", bomba: "Bomba",
+  };
+
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col">
+    <div className="admin-light min-h-screen bg-slate-900 text-white flex">
       {/* Header */}
-      <header className="bg-slate-800/80 border-b border-slate-700 px-4 py-3 flex items-center gap-3 sticky top-0 z-20 backdrop-blur-sm">
+      <header className="admin-topbar bg-slate-800/80 border-b border-slate-700 px-4 lg:px-7 py-3 flex items-center gap-3 fixed top-0 left-0 lg:left-64 right-0 z-20 backdrop-blur-sm">
         <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700">
           {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
-        <div className="flex items-center gap-2 font-bold text-white">
-          <Gamepad2 className="w-5 h-5 text-indigo-400" />
-          <span className="hidden sm:block">TikJogos Admin</span>
-        </div>
+        <div><p className="text-[11px] font-bold uppercase tracking-[.16em] text-slate-400">Dashboard</p><h1 className="text-lg font-black text-white">{pageTitles[nav]}</h1></div>
         <div className="flex items-center gap-2 ml-auto">
           <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 mr-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
@@ -1477,7 +1526,7 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <div className="flex flex-1 relative">
+      <div className="flex flex-1 relative w-full">
         {/* Mobile sidebar overlay */}
         {sidebarOpen && (
           <div className="fixed inset-0 z-30 lg:hidden" onClick={() => setSidebarOpen(false)}>
@@ -1492,12 +1541,15 @@ export default function AdminDashboard() {
         )}
 
         {/* Desktop sidebar */}
-        <aside className="hidden lg:block w-56 shrink-0 bg-slate-800/40 border-r border-slate-700/50 p-3 h-[calc(100vh-57px)] sticky top-[57px] overflow-y-auto">
+        <aside className="admin-sidebar hidden lg:flex w-64 shrink-0 bg-slate-800/40 border-r border-slate-700/50 p-5 h-screen sticky top-0 overflow-y-auto flex-col">
+          <div className="flex items-center gap-3 px-2 mb-8"><div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center"><Gamepad2 className="w-5 h-5 text-white"/></div><div><p className="font-black text-white">TikJogos</p><p className="text-[11px] text-slate-400">Painel administrativo</p></div></div>
+          <p className="px-3 mb-2 text-[10px] uppercase tracking-[.18em] font-bold text-slate-400">Navegação</p>
           <Sidebar />
+          <button onClick={handleLogout} className="mt-auto flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-slate-400 hover:bg-slate-100"><LogOut className="w-4 h-4"/>Sair</button>
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+        <main className="admin-main flex-1 p-4 lg:p-7 pt-24 lg:pt-24 overflow-auto min-w-0">
           {renderContent()}
         </main>
       </div>

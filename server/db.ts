@@ -36,7 +36,7 @@ if (process.env.DATABASE_URL) {
 
 export { pool, db };
 
-export type GameType = 'impostor' | 'desenho' | 'sincronia' | 'desafio';
+export type GameType = 'impostor' | 'desenho' | 'sincronia' | 'desafio' | 'aproximacao' | 'bomba';
 
 export async function recordGameSession(gameType: GameType, roomCode: string, playerCount: number): Promise<void> {
   if (!pool) {

@@ -1294,7 +1294,7 @@ function setupGameMode(mode: GameModeType, players: Player[], impostorId: string
 
 import { setupRCGame, getRCRoomStats } from './rcGame.js';
 import { setupSincBR, getBRRoomStats } from './sincBrGame.js';
-import { setupBombaGame } from './bombaGame.js';
+import { setupBombaGame, getBombaRoomStats } from './bombaGame.js';
 
 export async function registerRoutes(
   httpServer: Server,
@@ -3768,10 +3768,19 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/admin/bomba-rooms", verifyAdmin, (_req, res) => {
+    try {
+      res.json(getBombaRoomStats());
+    } catch (error) {
+      console.error('[Admin] Error fetching Bomba rooms:', error);
+      res.status(500).json({ error: "Erro ao buscar salas do Bomba" });
+    }
+  });
+
   // Admin: 30-day game session stats per game type
   app.get("/api/admin/game-sessions/:gameType", verifyAdmin, async (req, res) => {
     const { gameType } = req.params;
-    if (!['impostor', 'desenho', 'sincronia', 'desafio', 'aproximacao'].includes(gameType)) {
+    if (!['impostor', 'desenho', 'sincronia', 'desafio', 'aproximacao', 'bomba'].includes(gameType)) {
       return res.status(400).json({ error: "Invalid game type" });
     }
     try {

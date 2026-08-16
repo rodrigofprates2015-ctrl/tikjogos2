@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { randomBytes } from "crypto";
 import { z } from "zod";
+import { recordGameSession } from "./db.js";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const THEMES = [
@@ -63,6 +64,20 @@ function refreshExpiredRoom(room: BombaRoom) {
     room.loserId = room.players[room.currentPlayerIndex]?.uid || null;
   }
   return room;
+}
+
+export function getBombaRoomStats() {
+  const rooms = Array.from(bombaRooms.values()).map(refreshExpiredRoom);
+  return rooms.map((room) => ({
+    code: room.code,
+    status: room.status,
+    players: room.players,
+    theme: room.theme,
+    usedLetters: room.usedLetters.length,
+    answerCount: room.answers.length,
+    roundSeconds: room.settings.roundSeconds,
+    createdAt: new Date(room.createdAt).toISOString(),
+  }));
 }
 
 function scheduleBombaBotTurn(room: BombaRoom) {
@@ -196,6 +211,7 @@ export function setupBombaGame(app: Express) {
     room.endAt = Date.now() + duration * 1000;
     room.loserId = null;
     res.json(room);
+    recordGameSession('bomba', code, room.players.length).catch(() => {});
     scheduleBombaBotTurn(room);
   });
 
@@ -246,6 +262,7 @@ export function setupBombaGame(app: Express) {
     room.endAt = Date.now() + duration * 1000;
     room.loserId = null;
     res.json(room);
+    recordGameSession('bomba', code, room.players.length).catch(() => {});
     scheduleBombaBotTurn(room);
   });
 
