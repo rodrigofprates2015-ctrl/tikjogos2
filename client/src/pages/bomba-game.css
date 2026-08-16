@@ -91,8 +91,8 @@
 .bomba-game-header { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 4vw; border-bottom: 1px solid #ffffff14; background: #090c1bcc; }
 .bomba-game-header button, .bomba-game-header > span { display: flex; align-items: center; gap: 6px; color: #a8b1c8; font-size: .78rem; font-weight: 800; }
 .bomba-game { width: min(100%, 720px); margin: 0 auto; padding: 22px 12px 48px; text-align: center; overflow: hidden; }
-.bomba-theme-card { position: relative; width: min(94%, 500px); margin: 0 auto; padding: 12px 54px; border: 2px solid #f4cb3b; border-radius: 17px; background: linear-gradient(135deg, #8d111f, #ce1f31); box-shadow: 0 8px 0 #5b0b13, 0 16px 32px #0008; }
-.bomba-theme-card span { display: block; color: #ffd95c; font-size: .68rem; font-weight: 950; letter-spacing: .18em; }
+.bomba-theme-card { position: relative; width: min(94%, 500px); margin: 0 auto; padding: 12px 54px; border: 2px solid #a86cff; border-radius: 17px; background: linear-gradient(135deg, #43218d, #7c25e8); box-shadow: 0 8px 0 #241550, 0 16px 32px #0008; }
+.bomba-theme-card span { display: block; color: #e5d4ff; font-size: .68rem; font-weight: 950; letter-spacing: .18em; }
 .bomba-theme-card strong { display: block; margin-top: 2px; font-size: clamp(1.35rem, 6vw, 2rem); text-transform: uppercase; }
 .bomba-theme-card button { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #ffffff18; }
 .bomba-turn { min-height: 92px; padding: 20px 10px 8px; }
@@ -100,19 +100,19 @@
 .bomba-turn strong { display: block; margin: 2px 0; font-size: clamp(1.6rem, 7vw, 2.6rem); color: #fff; }
 .bomba-device { position: relative; margin: 4px auto 12px; width: min(94vw, 570px); aspect-ratio: 1; }
 .bomba-fuse { position: absolute; inset: 3%; border-radius: 50%; background: conic-gradient(var(--fuse-color) var(--fuse-progress), #26304b 0); filter: drop-shadow(0 0 9px color-mix(in srgb, var(--fuse-color), transparent 45%)); }
-.bomba-fuse::after { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: #8d111f; border: 8px solid #b91e2d; }
-.bomba-letter-ring { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, #182954 0 26%, #b81d2d 27% 49%, #750c17 50% 58%, transparent 59%); box-shadow: inset 0 0 30px #0009, 0 24px 45px #0009; }
-.bomba-letter { --radius: clamp(120px, 37vw, 238px); position: absolute; z-index: 3; left: 50%; top: 50%; width: clamp(28px, 8vw, 44px); height: clamp(32px, 9vw, 50px); margin-left: calc(clamp(28px, 8vw, 44px) / -2); margin-top: calc(clamp(32px, 9vw, 50px) / -2); transform: rotate(var(--letter-angle)) translateY(calc(var(--radius) * -1)); display: grid; place-items: center; border-radius: 10px; border-bottom: 5px solid #9da6b6; background: linear-gradient(180deg, #fff, #dce2ec); color: #121729; box-shadow: 0 4px 8px #0008; font-size: clamp(.8rem, 3.5vw, 1.25rem); font-weight: 1000; transition: opacity .2s, filter .2s, scale .15s; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent; }
+.bomba-fuse::after { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: #161533; border: 8px solid #5130a9; }
+.bomba-letter-ring { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, #11142e 0 26%, #43218d 27% 47%, #241550 48% 58%, transparent 59%); box-shadow: inset 0 0 35px #070817cc, 0 0 0 3px #14aaf555, 0 24px 45px #0009; }
+.bomba-letter { --radius: clamp(120px, 37vw, 238px); position: absolute; z-index: 3; left: 50%; top: 50%; width: clamp(28px, 8vw, 44px); height: clamp(32px, 9vw, 50px); margin-left: calc(clamp(28px, 8vw, 44px) / -2); margin-top: calc(clamp(32px, 9vw, 50px) / -2); transform: rotate(var(--letter-angle)) translateY(calc(var(--radius) * -1)); display: grid; place-items: center; border: 2px solid #54c9ff; border-radius: 12px; border-bottom: 5px solid #07558f; background: #09a9f5; color: #fff; box-shadow: 0 5px 10px #050612aa, inset 0 1px #ffffff66; font-size: clamp(.8rem, 3.5vw, 1.25rem); font-weight: 1000; transition: opacity .2s, filter .2s, scale .15s; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent; }
 .bomba-letter:not(:disabled):active { scale: .88; }
-.bomba-letter.is-used { opacity: .17; filter: grayscale(1); border-bottom-color: #313849; }
+.bomba-letter.is-used { opacity: .16; filter: grayscale(.75); border-bottom-color: #11152a; }
 .bomba-letter.is-last { opacity: .35; animation: letter-pop .35s ease; }
-.bomba-letter.is-selected { background: linear-gradient(180deg, #fff173, #ffca28); border-bottom-color: #b87900; color: #4b2b00; box-shadow: 0 0 0 4px #ffdf4445, 0 6px 14px #0009; }
-.bomba-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 34%; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 50%; border: clamp(8px, 2vw, 14px) solid #e33844; background: radial-gradient(circle at 40% 30%, #ff5b63, #b50e1c 55%, #5e0710); box-shadow: inset 0 0 25px #000b, 0 0 0 10px #111b3b, 0 12px 25px #000a; }
+.bomba-letter.is-selected { border-color: #fff; border-bottom-color: #fff; background: #fff; color: #171329; box-shadow: 0 0 0 4px #ffca28, 0 0 20px #ffca2899, 0 6px 14px #0009; }
+.bomba-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 34%; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 50%; border: clamp(8px, 2vw, 14px) solid #ffca28; background: radial-gradient(circle at 40% 30%, #383477, #181735 58%, #090a1b); box-shadow: inset 0 0 25px #000b, 0 0 0 10px #0b1238, 0 0 25px #ffca2866, 0 12px 25px #000a; }
 .bomba-center__light { position: absolute; top: 11%; right: 23%; width: 9%; aspect-ratio: 1; border-radius: 50%; background: #79ff77; box-shadow: 0 0 12px #5cff59; animation: blink .8s infinite; }
 .bomba-center__icon { width: 30%; height: 30%; color: #fff; }
 .bomba-center strong { font-size: clamp(1.3rem, 6vw, 2.5rem); line-height: 1; }
 .bomba-center span { color: #ffccd0; font-size: clamp(.55rem, 2vw, .8rem); font-weight: 850; text-transform: uppercase; }
-.bomba-center.is-boom { animation: explode .55s both; border-color: #ffca28; background: radial-gradient(circle at 42% 32%, #3b356f 0, #171633 48%, #090a1b 100%); box-shadow: inset 0 0 28px #000c, 0 0 0 10px #ffca28, 0 0 34px #ffca2890, 0 14px 30px #000c; }
+.bomba-center.is-boom { animation: explode .55s both; border-width: clamp(16px, 3.5vw, 24px); border-color: #ff244d; background: radial-gradient(circle at 42% 32%, #3b356f 0, #171633 48%, #090a1b 100%); box-shadow: inset 0 0 28px #000c, 0 0 34px #ff244d90, 0 14px 30px #000c; }
 .bomba-center.is-boom .bomba-center__light { display: none; }
 .bomba-center.is-boom .bomba-center__icon { width: 24%; height: 24%; margin-bottom: .28rem; color: #ffca28; filter: drop-shadow(0 3px 0 #8f5700) drop-shadow(0 0 8px #ffca2866); }
 .bomba-center.is-boom strong { position: relative; z-index: 1; color: #fff; font-size: clamp(1.15rem, 5vw, 2.15rem); letter-spacing: -.04em; text-shadow: 0 3px 0 #08091a, 0 0 12px #000; }

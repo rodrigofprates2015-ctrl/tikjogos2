@@ -104,8 +104,8 @@ export default function BombaGame() {
 
   const fuseColor = useMemo(() => {
     if (progress <= 25) return "#ef4444";
-    if (progress <= 50) return "#f59e0b";
-    return "#22c55e";
+    if (progress <= 50) return "#ffca28";
+    return "#09a9f5";
   }, [progress]);
 
   const playTone = (frequency: number, duration = 0.08) => {
@@ -368,7 +368,7 @@ export default function BombaGame() {
           </section>
 
           <section className="bomba-device" aria-label="Alfabeto do jogo Bomba online">
-            <div className="bomba-fuse" style={{ "--fuse-progress": `${onlineProgress}%`, "--fuse-color": onlineProgress <= 25 ? "#ef4444" : onlineProgress <= 50 ? "#f59e0b" : "#22c55e" } as React.CSSProperties} />
+            <div className="bomba-fuse" style={{ "--fuse-progress": `${onlineProgress}%`, "--fuse-color": onlineProgress <= 25 ? "#ef4444" : onlineProgress <= 50 ? "#ffca28" : "#09a9f5" } as React.CSSProperties} />
             <div className="bomba-letter-ring">
               {ALPHABET.map((letter, index) => {
                 const angle = (360 / ALPHABET.length) * index;
