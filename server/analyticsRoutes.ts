@@ -10,7 +10,10 @@ import { getImpostorRoomStats, getDrawingRoomStats } from './routes';
 
 const router = Router();
 const ANALYTICS_TIME_ZONE = 'America/Sao_Paulo';
-const brazilDaySql = sql<string>`DATE((${analyticsEvents.createdAt} AT TIME ZONE 'UTC') AT TIME ZONE ${ANALYTICS_TIME_ZONE})`;
+// Keep the timezone literal inside the SQL expression. Parameterizing it causes
+// PostgreSQL to see different expressions in SELECT and GROUP BY ($1 vs $2),
+// which invalidates every time-series query.
+const brazilDaySql = sql<string>`DATE((${analyticsEvents.createdAt} AT TIME ZONE 'UTC') AT TIME ZONE 'America/Sao_Paulo')`;
 
 function brazilDateString(date = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', {
