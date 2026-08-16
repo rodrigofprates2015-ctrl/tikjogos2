@@ -1294,6 +1294,7 @@ function setupGameMode(mode: GameModeType, players: Player[], impostorId: string
 
 import { setupRCGame, getRCRoomStats } from './rcGame.js';
 import { setupSincBR, getBRRoomStats } from './sincBrGame.js';
+import { setupBombaGame } from './bombaGame.js';
 
 export async function registerRoutes(
   httpServer: Server,
@@ -1305,6 +1306,9 @@ export async function registerRoutes(
 
   // Setup Sincronia Battle Royale (continuous public rooms)
   setupSincBR(httpServer, app);
+
+  // Setup Bomba game rooms and turn flow
+  setupBombaGame(app);
 
   // Serve version info
   app.get("/api/version", (_req, res) => {

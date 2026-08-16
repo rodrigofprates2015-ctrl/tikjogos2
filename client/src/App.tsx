@@ -40,6 +40,7 @@ const AdTest = lazy(() => import("@/pages/AdTest"));
 const ThemePage = lazy(() => import("@/pages/ThemePage"));
 const Temas = lazy(() => import("@/pages/Temas"));
 const GameModes = lazy(() => import("@/pages/GameModes"));
+const BombaGame = lazy(() => import("@/pages/BombaGame"));
 const DesenhoImpostor = lazy(() => import("@/pages/DesenhoImpostor"));
 const RespostasEmComum = lazy(() => import("@/pages/RespostasEmComum"));
 const SincBrGame = lazy(() => import("@/pages/SincBrGame"));
@@ -168,6 +169,9 @@ function AppRouter() {
       {/* RankMaster */}
       <Route path="/rankmaster" component={RankMasterGame} />
       <Route path="/rank-master" component={RankMasterGame} />
+
+      {/* Bomba */}
+      <Route path="/bomba" component={BombaGame} />
 
       {/* Criar tema */}
       {i18nRoutes("/criar-tema", CriarTema)}

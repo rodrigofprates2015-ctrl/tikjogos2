@@ -6,6 +6,8 @@ import { Link, useLocation } from "wouter";
 import PalavraSuperSecretaSubmodeScreen from "@/pages/PalavraSuperSecretaSubmodeScreen";
 import SupportHome from "@/pages/SupportHome";
 import { NotificationCenter } from "@/components/NotificationCenter";
+import bombaLogo from "@/assets/bomba-logo.png";
+import bombaIcon from "@/assets/bomba-icon.png";
 
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
 import { LobbyChat } from "@/components/LobbyChat";
@@ -66,7 +68,8 @@ import {
   MessageCircle,
   Paintbrush,
   BookOpen,
-  ChevronDown
+  ChevronDown,
+  Bomb
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1563,6 +1566,62 @@ const RankMasterGameCard = () => {
   );
 };
 
+const BombaGameCard = () => {
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const [name, setName] = useState(() => localStorage.getItem('tikjogos_nickname') || localStorage.getItem('tikjogos_saved_nickname') || '');
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const playerId = () => {
+    const current = sessionStorage.getItem('bomba_player_id') || crypto.randomUUID();
+    sessionStorage.setItem('bomba_player_id', current);
+    return current;
+  };
+
+  const enterRoom = async (mode: 'create' | 'join') => {
+    const nickname = name.trim();
+    if (!nickname) return toast({ title: 'Digite seu apelido', variant: 'destructive' });
+    if (mode === 'join' && code.trim().length !== 3) return toast({ title: 'Digite o código de 3 letras', variant: 'destructive' });
+    setBusy(true);
+    try {
+      localStorage.setItem('tikjogos_nickname', nickname);
+      const roomCode = code.trim().toUpperCase();
+      const url = mode === 'create' ? '/api/bomba/rooms' : `/api/bomba/rooms/${roomCode}/join`;
+      const response = await fetch(url, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId: playerId(), nickname }),
+      });
+      const room = await response.json();
+      if (!response.ok) throw new Error(room.error || 'Não foi possível entrar na sala.');
+      sessionStorage.setItem('bomba_room_code', room.code);
+      navigate(`/bomba?room=${room.code}`);
+    } catch (error: any) {
+      toast({ title: error.message, variant: 'destructive' });
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="text-center">
+        <img src={bombaLogo} alt="Bomba" className="mx-auto h-[92px] w-auto max-w-full object-contain drop-shadow-[0_12px_24px_rgba(124,58,237,.35)]" />
+        <p className="text-xs font-semibold text-slate-400">Escolha uma letra, responda e passe a vez antes de explodir.</p>
+      </div>
+      <input className="input-dark" value={name} onChange={(event) => setName(event.target.value)} placeholder="Seu nickname" maxLength={18} />
+      <button onClick={() => enterRoom('create')} disabled={busy} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-[#b77900] bg-[#ffca28] px-8 py-5 text-xl font-black text-[#171329] shadow-[0_14px_30px_rgba(255,202,40,.28)] transition-all hover:bg-[#ffd43b] active:translate-y-2 active:border-b-0 disabled:opacity-50">
+        <Bomb size={27} /> CRIAR SALA
+      </button>
+      <div className="flex items-center gap-3"><div className="h-px flex-1 bg-slate-700"/><span className="text-xs font-black text-slate-500">OU</span><div className="h-px flex-1 bg-slate-700"/></div>
+      <div className="flex gap-2">
+        <input className="input-code min-w-0 flex-1" value={code} onChange={(event) => setCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3))} onKeyDown={(event) => event.key === 'Enter' && enterRoom('join')} placeholder="CÓDIGO" maxLength={3} />
+        <button onClick={() => enterRoom('join')} disabled={busy} className="rounded-2xl border-b-[6px] border-green-800 bg-gradient-to-r from-green-500 to-emerald-500 px-6 font-black text-white active:translate-y-2 active:border-b-0 disabled:opacity-50">ENTRAR</button>
+      </div>
+      <div className="flex items-center gap-3"><div className="h-px flex-1 bg-slate-700"/><span className="text-xs font-black text-slate-500">OU</span><div className="h-px flex-1 bg-slate-700"/></div>
+      <Link href="/bomba?local=1" className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-slate-600 bg-slate-800 px-6 py-4 font-black text-white"><Users size={21}/> MODO LOCAL</Link>
+    </div>
+  );
+};
+
 const AproximacaoGameCard = () => {
   const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname } = useAproximacaoStore();
   const [, navigate] = useLocation();
@@ -1694,7 +1753,7 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
   const [saveNicknameChecked, setSaveNicknameChecked] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isThemeWorkshopOpen, setIsThemeWorkshopOpen] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia' | 'desafio' | 'aproximacao' | 'rankmaster'>('impostor');
+  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia' | 'desafio' | 'aproximacao' | 'rankmaster' | 'bomba'>('impostor');
   const carouselRef = useRef<HTMLDivElement>(null);
   const carouselDrag = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
   const [carouselAtStart, setCarouselAtStart] = useState(true);
@@ -2066,6 +2125,25 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
               />
             </button>
 
+            {/* Bomba */}
+            <button
+              onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('bomba'); carouselDrag.current.moved = false; }}
+              className={cn(
+                "relative flex-none w-[23%] cursor-pointer snap-start rounded-2xl border-2 p-2 transition-all duration-300",
+                selectedGame === 'bomba'
+                  ? "scale-105 border-red-500 bg-[#2f3252] shadow-lg shadow-red-500/20"
+                  : "border-transparent bg-[#1a1c2e] opacity-50 hover:border-[#4a6a8a] hover:opacity-80"
+              )}
+              data-testid="tab-bomba"
+            >
+              <div className="flex h-12 w-full items-center justify-center md:h-16">
+                <img src={bombaIcon} alt="Bomba" className="h-12 w-full object-contain drop-shadow-[0_0_8px_rgba(124,58,237,.55)] md:h-16" draggable={false} />
+              </div>
+              <span className="absolute -right-1 -top-2 rounded-full bg-red-500 px-1.5 py-0.5 text-[9px] font-black leading-none text-white shadow-md shadow-red-900/50">
+                NOVO
+              </span>
+            </button>
+
             {/* Sincronia */}
             <button
               onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('sincronia'); carouselDrag.current.moved = false; }}
@@ -2104,9 +2182,6 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
                 draggable={false}
                 onDragStart={(e) => e.preventDefault()}
               />
-              <span className="absolute -top-2 -right-1 bg-cyan-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shadow-md shadow-cyan-900/50 animate-pulse">
-                NOVO
-              </span>
             </button>
 
             {/* RankMaster */}
@@ -2131,9 +2206,6 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
                   onDragStart={(e) => e.preventDefault()}
                 />
               </div>
-              <span className="absolute -top-2 -right-1 bg-amber-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded-full leading-none shadow-md shadow-amber-900/50">
-                NOVO
-              </span>
             </button>
 
             {/* Desafio da Palavra — last, revealed by scrolling */}
@@ -2165,8 +2237,9 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
                 "absolute top-0 h-full w-1/5 rounded-full transition-all duration-300",
                 selectedGame === 'impostor' && "left-0 bg-gradient-to-r from-orange-500 to-amber-500",
                 selectedGame === 'desenho' && "left-[20%] bg-gradient-to-r from-[#46cfa5] to-[#2ea87e]",
-                selectedGame === 'sincronia' && "left-[40%] bg-gradient-to-r from-[#43065c] to-[#6b21a8]",
-                selectedGame === 'aproximacao' && "left-[60%] bg-gradient-to-r from-cyan-500 to-teal-500",
+                selectedGame === 'bomba' && "left-[40%] bg-gradient-to-r from-red-500 to-rose-600",
+                selectedGame === 'sincronia' && "left-[60%] bg-gradient-to-r from-[#43065c] to-[#6b21a8]",
+                selectedGame === 'aproximacao' && "left-[80%] bg-gradient-to-r from-cyan-500 to-teal-500",
                 selectedGame === 'desafio' && "left-[80%] bg-gradient-to-r from-violet-500 to-purple-600"
               )}
             />
@@ -2315,6 +2388,13 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
           {selectedGame === 'rankmaster' && (
             <div className="animate-fade-in">
               <RankMasterGameCard />
+            </div>
+          )}
+
+          {/* Bomba */}
+          {selectedGame === 'bomba' && (
+            <div className="animate-fade-in">
+              <BombaGameCard />
             </div>
           )}
         </div>
