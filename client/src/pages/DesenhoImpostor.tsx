@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DrawingCanvas } from "@/components/DrawingCanvas";
+import { useGameIntermission } from "@/components/GameIntermission";
 import { OrderWheelIcon } from "@/components/OrderWheelIcon";
 import { PALAVRA_SECRETA_SUBMODES, type PalavraSuperSecretaSubmode } from "@/lib/palavra-secreta-submodes";
 const logoImpostorArt = "/art-impostor-logo.webp";
@@ -714,11 +715,13 @@ const VotingScreen = () => {
 // ─── RESULT SCREEN ───
 const ResultScreen = () => {
   const { room, user, returnToLobby } = useDrawingGameStore();
+  const { showIntermission, intermissionScreen } = useGameIntermission();
   const handleLeave = useLeaveAndGoHome();
 
   useEffect(() => { notifyGameEnded(); }, []);
 
   if (!room || !room.gameData) return null;
+  if (intermissionScreen) return intermissionScreen;
 
   const gameData = room.gameData;
   const votes = gameData.votes || [];
@@ -784,7 +787,7 @@ const ResultScreen = () => {
         <div className="flex flex-col gap-3">
           {isHost ? (
             <button
-              onClick={() => returnToLobby()}
+              onClick={() => showIntermission(returnToLobby)}
               className="w-full px-6 py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all border-b-[6px] shadow-2xl bg-gradient-to-r from-emerald-500 to-green-500 border-emerald-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
             >
               <Play size={20} /> Jogar Novamente

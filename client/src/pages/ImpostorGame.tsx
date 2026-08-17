@@ -116,7 +116,8 @@ import { useAproximacaoStore } from "@/lib/aproximacaoStore";
 import { useRankMasterStore } from "@/lib/rankMasterStore";
 const logoAprox = "/aproximacao-logo.webp";
 import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd, AnchorMobileAd, ResultAd, LobbyAd } from "@/components/AdSense";
-import { useInterstitialAd, AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
+import { AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
+import { useGameIntermission } from "@/components/GameIntermission";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
 
@@ -1767,7 +1768,6 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
   };
   const { toast } = useToast();
   const { t, langPath, lang } = useLanguage();
-  const { show: showInterstitial, InterstitialAd } = useInterstitialAd();
 
   // Detect carousel scroll limits on mount
   useEffect(() => {
@@ -1878,7 +1878,7 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
       saveNickname(name);
     }
     setUser(name);
-    showInterstitial(() => createRoom());
+    createRoom();
   };
 
   const handleJoin = () => {
@@ -1895,11 +1895,8 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
       saveNickname(name);
     }
     setUser(name);
-    showInterstitial(async () => {
-      const success = await joinRoom(code.toUpperCase());
-      if (!success) {
-        toast({ title: "Erro ao entrar", description: "Sala não encontrada ou código inválido.", variant: "destructive" });
-      }
+    void joinRoom(code.toUpperCase()).then((success) => {
+      if (!success) toast({ title: "Erro ao entrar", description: "Sala não encontrada ou código inválido.", variant: "destructive" });
     });
   };
 
@@ -2359,14 +2356,14 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
           {/* Drawing game form */}
           {selectedGame === 'desenho' && (
             <div className="animate-fade-in">
-              <DrawingGameCard onCreateRoom={showInterstitial} />
+              <DrawingGameCard onCreateRoom={(action) => action()} />
             </div>
           )}
 
           {/* Sincronia game form */}
           {selectedGame === 'sincronia' && (
             <div className="animate-fade-in">
-              <SincroniaGameCard onCreateRoom={showInterstitial} />
+              <SincroniaGameCard onCreateRoom={(action) => action()} />
             </div>
           )}
 
@@ -2493,8 +2490,6 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
       <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />
       <ThemeWorkshopModal isOpen={isThemeWorkshopOpen} onClose={() => setIsThemeWorkshopOpen(false)} />
 
-      {/* Interstitial ad overlay — shown on Criar Sala */}
-      {InterstitialAd}
     </div>
   );
 };
@@ -4916,7 +4911,7 @@ const GameScreen = () => {
   const { user, room, returnToLobby, speakingOrder, speakingOrderPlayerMap, setSpeakingOrder, showSpeakingOrderWheel, setShowSpeakingOrderWheel, triggerSpeakingOrderWheel } = useGameStore();
   const [isRevealed, setIsRevealed] = useState(true);
   const [isSubmittingVote, setIsSubmittingVote] = useState(false);
-  const { show: showInterstitial, InterstitialAd } = useInterstitialAd();
+  const { showIntermission, intermissionScreen } = useGameIntermission();
   const [impostorPix, setImpostorPix] = useState<ImpostorPixState>({ status: 'idle' });
   const [pixCopied, setPixCopied] = useState(false);
   const [unlockedHint, setUnlockedHint] = useState<string | null>(null);
@@ -4971,7 +4966,7 @@ const GameScreen = () => {
   };
 
   const handleNewRound = () => {
-    showInterstitial(async () => {
+    showIntermission(async () => {
       try {
         await returnToLobby();
       } catch (error) {
@@ -4993,6 +4988,7 @@ const GameScreen = () => {
   const gameMode = room?.gameMode;
 
   if (!room) return null;
+  if (intermissionScreen) return intermissionScreen;
 
   const isHost = room.hostId === user?.uid;
   // Check if user is impostor - support both single impostorId and multiple impostorIds
@@ -5720,7 +5716,6 @@ const GameScreen = () => {
         {renderStageContent()}
       </div>
 
-      {InterstitialAd}
     </div>
   );
 };
@@ -5790,7 +5785,7 @@ const VotingPlayerList = ({
 function ImpostorGameInner({ showSupportContent = false }: { showSupportContent?: boolean }) {
   const { status, user, room } = useGameStore();
   const [isDonationOpen, setIsDonationOpen] = useState(false);
-  const { show: showNewRoundAd, InterstitialAd: NewRoundInterstitialAd } = useInterstitialAd();
+  const { showIntermission: showNewRoundAd, intermissionScreen: newRoundIntermission } = useGameIntermission();
 
   useEffect(() => {
     return useGameStore.subscribe((state, prevState) => {
@@ -5813,6 +5808,8 @@ function ImpostorGameInner({ showSupportContent = false }: { showSupportContent?
     );
   }
 
+  if (newRoundIntermission) return newRoundIntermission;
+
   return (
     <div 
       className="min-h-screen w-full flex items-center justify-center font-poppins text-white overflow-hidden relative"
@@ -5829,7 +5826,6 @@ function ImpostorGameInner({ showSupportContent = false }: { showSupportContent?
       {status === 'modeSelect' && <ModeSelectScreen />}
       {status === 'submodeSelect' && <PalavraSuperSecretaSubmodeScreen />}
       {status === 'playing' && <GameScreen />}
-      {NewRoundInterstitialAd}
       <AnchorMobileAd />
     </div>
   );

@@ -249,7 +249,7 @@ function MatchEndOverlay({ leaderboard, myUid }: { leaderboard: BRLeaderboardEnt
   useEffect(() => { notifyGameEnded(); }, []);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 animate-fade-in">
+    <main className="min-h-screen w-full bg-[#15172a] flex items-center justify-center p-4 animate-fade-in">
       <div className="bg-[#242642] rounded-3xl border-2 border-amber-500/50 p-6 max-w-md w-full text-center space-y-4">
         <div className="flex justify-center">
           <Trophy size={48} className="text-amber-400 animate-bounce" />
@@ -303,7 +303,7 @@ function MatchEndOverlay({ leaderboard, myUid }: { leaderboard: BRLeaderboardEnt
           <p className="text-white/30 text-xs mt-2">Reiniciando...</p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -323,6 +323,10 @@ function GameScreen() {
     }
   }, [showingResult, hasSubmitted, questionNumber, showingMatchEnd]);
 
+  if (showingMatchEnd) {
+    return <MatchEndOverlay leaderboard={matchEndLeaderboard} myUid={uid} />;
+  }
+
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!hasSubmitted && myAnswer.trim()) submitAnswer();
@@ -338,9 +342,6 @@ function GameScreen() {
   return (
     <div className="min-h-screen w-full bg-[#1a1b2e] flex flex-col">
       {/* Match End Overlay */}
-      {showingMatchEnd && (
-        <MatchEndOverlay leaderboard={matchEndLeaderboard} myUid={uid} />
-      )}
 
       {/* Header */}
       <div className="bg-[#242642] border-b border-[#2f3252] px-4 py-2 flex items-center justify-between">

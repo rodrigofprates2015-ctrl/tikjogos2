@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Bomb, Check, Copy, Crown, Play, Plus, RotateCcw, Settings, Shuffle, Trash2, Users, Volume2, X } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import { useGameIntermission } from "@/components/GameIntermission";
 import bombaLogo from "@/assets/bomba-logo.png";
 import "./bomba-game.css?online=2";
 
@@ -37,6 +38,7 @@ function randomTheme(previous?: string) {
 }
 
 export default function BombaGame() {
+  const { showIntermission, intermissionScreen } = useGameIntermission();
   const isLocalMode = new URLSearchParams(window.location.search).get("local") === "1";
   const [onlineRoom, setOnlineRoom] = useState<OnlineRoom | null>(null);
   const [onlineLetter, setOnlineLetter] = useState<string | null>(null);
@@ -399,6 +401,8 @@ export default function BombaGame() {
     );
   }
 
+  if (intermissionScreen) return intermissionScreen;
+
   if (onlineRoom) {
     const currentOnlinePlayer = onlineRoom.players[onlineRoom.currentPlayerIndex];
     const isMyTurn = onlineRoom.status === "playing" && currentOnlinePlayer?.uid === playerIdRef.current;
@@ -501,8 +505,8 @@ export default function BombaGame() {
           {onlineRoom.status === "playing" && <p className="bomba-rule"><strong>{onlineRemaining}</strong> letras disponíveis. Se o tempo zerar, a bomba explode no jogador da vez e ele é eliminado da rodada.</p>}
           {onlineRoom.status !== "playing" && isHost && (
             <div className="bomba-result-actions">
-              <button onClick={() => startOnlineRound(true)}><RotateCcw size={19} /> Mesmo tema</button>
-              <button onClick={() => startOnlineRound(false)}><Shuffle size={19} /> Novo tema</button>
+              <button onClick={() => showIntermission(() => startOnlineRound(true))}><RotateCcw size={19} /> Mesmo tema</button>
+              <button onClick={() => showIntermission(() => startOnlineRound(false))}><Shuffle size={19} /> Novo tema</button>
             </div>
           )}
           {onlineRoom.status !== "playing" && !isHost && <div className="bomba-waiting">Aguardando o líder iniciar outra rodada...</div>}
@@ -620,8 +624,8 @@ export default function BombaGame() {
 
         {phase !== "playing" && (
           <div className="bomba-result-actions">
-            <button onClick={() => startRound(true)}><RotateCcw size={19} /> Mesmo tema</button>
-            <button onClick={() => startRound()}><Shuffle size={19} /> Novo tema</button>
+            <button onClick={() => showIntermission(() => startRound(true))}><RotateCcw size={19} /> Mesmo tema</button>
+            <button onClick={() => showIntermission(() => startRound())}><Shuffle size={19} /> Novo tema</button>
           </div>
         )}
 

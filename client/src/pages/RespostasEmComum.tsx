@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
 import { Loader2, Copy, Users, Crown, LogOut, Play, Send, Clock, Trophy, X, Settings, Sparkles, Star, ArrowLeft, Home, UserX, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useGameIntermission } from '@/components/GameIntermission';
 const sincroniaLogo = "/sincronia-logo.webp";
 import jogosCover from '@/assets/jogos_cover.png';
 import animesCover from '@/assets/submode-animes.png';
@@ -561,7 +562,9 @@ const RCQuestionScreen = () => {
 
 const RCRoundResultScreen = () => {
   const { roundResult, scores, room, user, currentRound, totalRounds, nextRound, returnToLobby } = useRCGameStore();
+  const { showIntermission, intermissionScreen } = useGameIntermission();
   if (!roundResult || !room || !user) return null;
+  if (intermissionScreen) return intermissionScreen;
 
   const isHost = room.hostId === user.uid;
   const isLastRound = currentRound >= totalRounds;
@@ -641,7 +644,7 @@ const RCRoundResultScreen = () => {
         {/* Next button (host) */}
         {isHost && (
           <button
-            onClick={nextRound}
+            onClick={() => showIntermission(nextRound)}
             className="w-full py-4 rounded-2xl font-black text-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-b-4 border-emerald-800 hover:brightness-110 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center gap-2"
           >
             {isLastRound ? <><Trophy size={20} /> VER RESULTADO FINAL</> : <><Play size={20} /> PRÓXIMA RODADA</>}

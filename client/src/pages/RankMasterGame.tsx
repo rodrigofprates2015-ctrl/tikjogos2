@@ -4,6 +4,7 @@ import { useRankMasterStore, type RankMasterItem } from "@/lib/rankMasterStore";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { MobileNav } from "@/components/MobileNav";
+import { useGameIntermission } from "@/components/GameIntermission";
 import {
   Copy, LogOut, Play, Crown, Loader2, Users, Zap,
   Trophy, ArrowLeft, CheckCircle, Clock,
@@ -506,6 +507,7 @@ function OrderingScreen() {
 
 function RevealScreen() {
   const { room, user, nextRound, returnToLobby } = useRankMasterStore();
+  const { showIntermission, intermissionScreen } = useGameIntermission();
   const gameData = room?.gameData;
   const [revealedCount, setRevealedCount] = useState(0);
   const [animating, setAnimating] = useState(true);
@@ -527,6 +529,7 @@ function RevealScreen() {
   }, [gameData?.roundNumber]);
 
   if (!gameData || !room || !user) return null;
+  if (intermissionScreen) return intermissionScreen;
 
   const isHost = room.hostId === user.uid;
   const correctItems = [...gameData.challenge.items].sort((a, b) => a.trueRank - b.trueRank);
@@ -612,7 +615,7 @@ function RevealScreen() {
           <div className="pt-3 space-y-2 shrink-0">
             {!isLastRound ? (
               <button
-                onClick={nextRound}
+                onClick={() => showIntermission(nextRound)}
                 className="w-full py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-orange-500 border-b-[6px] border-amber-900 text-black hover:brightness-110 active:border-b-0 active:translate-y-2 transition-all duration-200 shadow-2xl"
                 data-testid="button-next-round"
               >
@@ -621,7 +624,7 @@ function RevealScreen() {
               </button>
             ) : (
               <button
-                onClick={nextRound}
+                onClick={() => showIntermission(nextRound)}
                 className="w-full py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 bg-gradient-to-r from-purple-500 to-pink-500 border-b-[6px] border-purple-900 text-white hover:brightness-110 active:border-b-0 active:translate-y-2 transition-all duration-200 shadow-2xl"
                 data-testid="button-see-final-score"
               >

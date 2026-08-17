@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AnchorMobileAd, ResultAd } from "@/components/AdSense";
+import { useGameIntermission } from "@/components/GameIntermission";
 import { useDesafioStore } from '@/lib/desafioStore';
 import { notifyGameEnded } from '@/hooks/useFeedback';
 import { useToast } from '@/hooks/use-toast';
@@ -221,6 +222,7 @@ function LobbyScreen() {
 // ─── GameScreen ───────────────────────────────────────────────────────────────
 
 function GameScreen() {
+  const { showIntermission, intermissionScreen } = useGameIntermission();
   const {
     room, user, status,
     inserirLetra, desafiar, defender,
@@ -322,6 +324,8 @@ function GameScreen() {
     if (isGameOver) notifyGameEnded();
   }, [isGameOver]);
 
+  if (intermissionScreen) return intermissionScreen;
+
   if (isGameOver) {
     const winner = room.players.find(p => p.uid === gd.vencedorId);
     const iWon = gd.vencedorId === user.uid;
@@ -359,7 +363,7 @@ function GameScreen() {
 
           {isHost ? (
             <button
-              onClick={returnToLobby}
+              onClick={() => showIntermission(returnToLobby)}
               className="w-full px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl bg-gradient-to-r from-violet-600 to-purple-600 border-violet-900 text-white hover:brightness-110 active:border-b-0 active:translate-y-2"
             >
               <RotateCcw size={24} /> NOVA RODADA

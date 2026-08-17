@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { AnchorMobileAd, ResultAd } from "@/components/AdSense";
+import { useGameIntermission } from "@/components/GameIntermission";
 import { useAproximacaoStore } from "@/lib/aproximacaoStore";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -323,11 +324,13 @@ function LobbyScreen() {
 
 function PlayingScreen() {
   const { room, user, submitGuess, revealResults, nextRound, returnToLobby, leaveGame, myGuess, setMyGuess } = useAproximacaoStore();
+  const { showIntermission, intermissionScreen } = useGameIntermission();
   const [inputValue, setInputValue] = useState('');
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
 
   if (!room || !user || !room.gameData) return null;
+  if (intermissionScreen) return intermissionScreen;
 
   const { gameData } = room;
   const isHost = room.hostId === user.uid;
@@ -582,7 +585,7 @@ function PlayingScreen() {
               gameData.pendingWinnerId ? (
                 // Last round — show winner reveal button (no lobby button)
                 <button
-                  onClick={nextRound}
+                  onClick={() => showIntermission(nextRound)}
                   className="w-full py-4 rounded-2xl font-black text-base bg-gradient-to-r from-yellow-400 to-orange-500 text-black border-b-4 border-yellow-700 hover:brightness-110 active:border-b-0 active:translate-y-1 shadow-lg shadow-yellow-500/30 transition-all"
                   data-testid="button-see-winner"
                 >
@@ -599,7 +602,7 @@ function PlayingScreen() {
                     Lobby
                   </button>
                   <button
-                    onClick={nextRound}
+                    onClick={() => showIntermission(nextRound)}
                     className="flex-1 py-3 rounded-2xl font-black text-sm bg-gradient-to-r from-cyan-500 to-teal-500 text-white border-b-4 border-cyan-800 hover:brightness-110 active:border-b-0 active:translate-y-1 shadow-lg shadow-cyan-500/25 transition-all"
                     data-testid="button-next-round"
                   >
