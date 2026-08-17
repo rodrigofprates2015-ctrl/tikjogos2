@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Clock3, Play } from "lucide-react";
-
-const DEFAULT_WAIT_SECONDS = 6;
+import { X } from "lucide-react";
 
 function IntermissionAd() {
   const insRef = useRef<HTMLModElement>(null);
@@ -45,45 +43,36 @@ function IntermissionAd() {
 
 export function GameIntermissionScreen({
   onContinue,
-  seconds = DEFAULT_WAIT_SECONDS,
 }: {
   onContinue: () => void;
-  seconds?: number;
 }) {
-  const [remaining, setRemaining] = useState(seconds);
-
-  useEffect(() => {
-    if (remaining <= 0) return;
-    const timer = window.setTimeout(() => setRemaining(value => Math.max(0, value - 1)), 1000);
-    return () => window.clearTimeout(timer);
-  }, [remaining]);
-
   return (
-    <main className="min-h-screen w-full bg-[#15172a] px-4 py-8 text-white">
-      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-md flex-col justify-center gap-6">
-        <header className="text-center">
-          <span className="mb-2 inline-flex items-center gap-2 rounded-full border border-violet-400/20 bg-violet-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-violet-300">
-            <Clock3 size={14} /> Intervalo da partida
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 px-3 py-5 text-white"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Publicidade entre partidas"
+    >
+      <div className="w-full max-w-[380px] overflow-hidden rounded-3xl border border-white/10 bg-[#1a1b2e] shadow-2xl">
+        <header className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+          <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+            Pausa rápida — Publicidade
           </span>
-          <h1 className="text-2xl font-black">Prepare-se para a próxima rodada</h1>
-          <p className="mt-2 text-sm text-slate-400">O anúncio é opcional para interação. Você nunca precisa clicar para continuar.</p>
-        </header>
-
-        <IntermissionAd />
-
-        <div className="border-t border-white/10 pt-5">
           <button
             type="button"
             onClick={onContinue}
-            disabled={remaining > 0}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border-b-4 border-emerald-800 bg-emerald-500 px-6 py-4 text-base font-black text-white transition enabled:hover:bg-emerald-400 enabled:active:translate-y-1 enabled:active:border-b-0 disabled:cursor-wait disabled:bg-slate-700 disabled:text-slate-400 disabled:border-slate-900"
+            className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white transition hover:bg-emerald-500"
+            aria-label="Fechar anúncio e continuar"
           >
-            <Play size={19} fill="currentColor" />
-            {remaining > 0 ? `Continuar em ${remaining}s` : "Continuar para a próxima rodada"}
+            <X size={14} /> Fechar
           </button>
+        </header>
+
+        <div className="p-3">
+          <IntermissionAd />
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 

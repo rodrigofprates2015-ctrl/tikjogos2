@@ -188,7 +188,8 @@ function ResultOverlay({ result, myUid, pointsGained }: { result: import('@/lib/
   const didNotAnswer = result.noAnswer.some(p => p.uid === myUid);
 
   return (
-    <div className="space-y-3 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 animate-fade-in">
+      <div className="w-full max-w-md space-y-3 rounded-3xl border border-white/10 bg-[#242642] p-4 shadow-2xl">
       {/* My result banner */}
       <div className={cn(
         'rounded-xl p-3 text-center border',
@@ -233,6 +234,8 @@ function ResultOverlay({ result, myUid, pointsGained }: { result: import('@/lib/
           );
         })}
       </div>
+      <ResultAd />
+      </div>
     </div>
   );
 }
@@ -249,7 +252,7 @@ function MatchEndOverlay({ leaderboard, myUid }: { leaderboard: BRLeaderboardEnt
   useEffect(() => { notifyGameEnded(); }, []);
 
   return (
-    <main className="min-h-screen w-full bg-[#15172a] flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 animate-fade-in">
       <div className="bg-[#242642] rounded-3xl border-2 border-amber-500/50 p-6 max-w-md w-full text-center space-y-4">
         <div className="flex justify-center">
           <Trophy size={48} className="text-amber-400 animate-bounce" />
@@ -303,7 +306,7 @@ function MatchEndOverlay({ leaderboard, myUid }: { leaderboard: BRLeaderboardEnt
           <p className="text-white/30 text-xs mt-2">Reiniciando...</p>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 
