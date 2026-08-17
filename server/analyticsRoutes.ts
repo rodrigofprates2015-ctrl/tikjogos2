@@ -173,18 +173,18 @@ export function createAnalyticsRouter(verifyAdmin: any) {
       ] = await Promise.all([
         // Current period (WITH 30-DAY LIMIT)
         db.select({ count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${actualPeriodStart}`).limit(1),
-        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.createdAt} >= ${actualPeriodStart}`).limit(1),
+        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${actualPeriodStart}`).limit(1),
         db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.createdAt} >= ${actualPeriodStart}`).limit(1),
         // Previous period (WITH 30-DAY LIMIT)
         db.select({ count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${actualPrevPeriodStart} AND ${analyticsEvents.createdAt} < ${actualPeriodStart}`).limit(1),
-        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.createdAt} >= ${actualPrevPeriodStart} AND ${analyticsEvents.createdAt} < ${actualPeriodStart}`).limit(1),
+        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${actualPrevPeriodStart} AND ${analyticsEvents.createdAt} < ${actualPeriodStart}`).limit(1),
         db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.createdAt} >= ${actualPrevPeriodStart} AND ${analyticsEvents.createdAt} < ${actualPeriodStart}`).limit(1),
         // Week queries (kept for session change calc compatibility)
         db.select({ count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${sevenDaysAgo}`).limit(1),
-        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.createdAt} >= ${sevenDaysAgo}`).limit(1),
+        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${sevenDaysAgo}`).limit(1),
         db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.createdAt} >= ${sevenDaysAgo}`).limit(1),
         db.select({ count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${fourteenDaysAgo} AND ${analyticsEvents.createdAt} < ${sevenDaysAgo}`).limit(1),
-        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.createdAt} >= ${fourteenDaysAgo} AND ${analyticsEvents.createdAt} < ${sevenDaysAgo}`).limit(1),
+        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${fourteenDaysAgo} AND ${analyticsEvents.createdAt} < ${sevenDaysAgo}`).limit(1),
         db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'room_join' AND ${analyticsEvents.createdAt} >= ${fourteenDaysAgo} AND ${analyticsEvents.createdAt} < ${sevenDaysAgo}`).limit(1),
       ]);
 
@@ -212,7 +212,7 @@ export function createAnalyticsRouter(verifyAdmin: any) {
           .limit(31),
         db.select({ date: brazilDaySql, count: countDistinct(analyticsEvents.visitorId) })
           .from(analyticsEvents)
-          .where(sql`${analyticsEvents.createdAt} >= ${thirtyDaysAgo} AND ${analyticsEvents.eventType} = 'unique_visitor'`)
+          .where(sql`${analyticsEvents.createdAt} >= ${thirtyDaysAgo} AND ${analyticsEvents.eventType} = 'pageview'`)
           .groupBy(brazilDaySql)
           .orderBy(brazilDaySql)
           .limit(31),
@@ -447,9 +447,9 @@ export function createAnalyticsRouter(verifyAdmin: any) {
       const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const [pvRes, uvRes, pvTS, uvTS] = await Promise.all([
         db.select({ count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`).limit(1),
-        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'unique_visitor' AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`).limit(1),
+        db.select({ count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.eventType} = 'pageview' AND ${analyticsEvents.createdAt} >= ${thirtyDaysAgo}`).limit(1),
         db.select({ date: brazilDaySql, count: count() }).from(analyticsEvents).where(sql`${analyticsEvents.createdAt} >= ${thirtyDaysAgo} AND ${analyticsEvents.eventType} = 'pageview'`).groupBy(brazilDaySql).orderBy(brazilDaySql).limit(31),
-        db.select({ date: brazilDaySql, count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.createdAt} >= ${thirtyDaysAgo} AND ${analyticsEvents.eventType} = 'unique_visitor'`).groupBy(brazilDaySql).orderBy(brazilDaySql).limit(31),
+        db.select({ date: brazilDaySql, count: countDistinct(analyticsEvents.visitorId) }).from(analyticsEvents).where(sql`${analyticsEvents.createdAt} >= ${thirtyDaysAgo} AND ${analyticsEvents.eventType} = 'pageview'`).groupBy(brazilDaySql).orderBy(brazilDaySql).limit(31),
       ]);
       res.json({ totalPageviews: pvRes[0]?.count || 0, totalUniqueVisitors: uvRes[0]?.count || 0, pageviewsLast30Days: fillMissingDates(pvTS, 30), uniqueVisitorsLast30Days: fillMissingDates(uvTS, 30) });
     } catch (error: any) {

@@ -533,7 +533,7 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
           {/* KPI Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <KpiCard title="Pageviews" value={formatNum(overview.totalPageviews)} icon={Eye} change={overview.changes.pageviews} accent="#6366f1" subtitle={period === '24h' ? 'Últimas 24h' : period === '7d' ? 'Últimos 7 dias' : 'Último mês'} />
-            <KpiCard title="Visitantes Únicos" value={formatNum(overview.totalUniqueVisitors)} icon={Users} change={overview.changes.visitors} accent="#8b5cf6" subtitle={period === '24h' ? 'IPs distintos — 24h' : period === '7d' ? 'IPs distintos — 7 dias' : 'IPs distintos — 1 mês'} />
+            <KpiCard title="Navegadores Únicos" value={formatNum(overview.totalUniqueVisitors)} icon={Users} change={overview.changes.visitors} accent="#8b5cf6" subtitle={period === '24h' ? 'Cookies distintos — 24h' : period === '7d' ? 'Cookies distintos — 7 dias' : 'Cookies distintos — 1 mês'} />
             <KpiCard title="Jogadores Únicos" value={formatNum(overview.totalPlayers)} icon={Gamepad2} change={overview.changes.players} accent="#ec4899" subtitle={period === '24h' ? 'Entraram em sala — 24h' : period === '7d' ? 'Entraram em sala — 7 dias' : 'Entraram em sala — 1 mês'} />
             <KpiCard title="Sessão Média" value={formatDuration(overview.avgSessionDuration)} icon={Clock} change={overview.changes.session} accent="#f59e0b" />
           </div>
@@ -553,7 +553,7 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-white/60 flex items-center gap-2">
                   <Users className="h-4 w-4 text-purple-400" />
-                  Visitantes Únicos — 30 dias
+                  Navegadores Únicos — 30 dias
                 </CardTitle>
               </CardHeader>
               <CardContent><MiniChart data={timeSeries.visitors} color="#8b5cf6" /></CardContent>
@@ -600,7 +600,7 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
         <TabsContent value="users" className="space-y-6">
           {/* User KPIs */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <KpiCard title="Visitantes Únicos (IPs)" value={formatNum(overview.totalUniqueVisitors)} icon={Users} change={overview.changes.visitors} accent="#8b5cf6" subtitle="IPs diferentes que acessaram" />
+            <KpiCard title="Navegadores Únicos" value={formatNum(overview.totalUniqueVisitors)} icon={Users} change={overview.changes.visitors} accent="#8b5cf6" subtitle="Identificados por cookie no navegador" />
             <KpiCard title="Jogadores Únicos" value={formatNum(overview.totalPlayers)} icon={Gamepad2} change={overview.changes.players} accent="#ec4899" subtitle="Entraram em pelo menos 1 sala" />
             <KpiCard title="Tempo Médio de Sessão" value={formatDuration(overview.avgSessionDuration)} icon={Timer} change={overview.changes.session} accent="#f59e0b" subtitle="Duração média no site" />
           </div>

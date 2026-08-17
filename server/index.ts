@@ -178,8 +178,8 @@ app.use((req, res, next) => {
   httpServer.listen(
     {
       port,
-      host: "0.0.0.0",
-      reusePort: true,
+      host: process.env.CODEX_PREVIEW === "1" ? "127.0.0.1" : "0.0.0.0",
+      ...(process.env.CODEX_PREVIEW === "1" ? {} : { reusePort: true }),
     },
     () => {
       log(`serving on port ${port}`);

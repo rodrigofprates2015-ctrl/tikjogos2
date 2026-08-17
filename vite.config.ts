@@ -1,11 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import { fileURLToPath } from "url";
 import tailwindcss from "@tailwindcss/vite";
 import { metaImagesPlugin } from "./vite-plugin-meta-images";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = process.cwd();
 const isDev = process.env.NODE_ENV !== "production";
 
 export default defineConfig(async () => {

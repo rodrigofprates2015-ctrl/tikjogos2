@@ -25,6 +25,30 @@ const IGNORE_PATHS = [
   /^\/sitemap/,
 ];
 
+// Automated clients usually do not retain cookies. Without this guard, each
+// request made by a crawler receives a fresh UUID and looks like a new person.
+const BOT_USER_AGENT = /bot\b|crawler|spider|slurp|bingpreview|headless|lighthouse|pagespeed|facebookexternalhit|facebot|whatsapp|telegrambot|discordbot|twitterbot|linkedinbot|pinterest|uptimerobot|statuscake|pingdom|semrush|ahrefs|mj12bot|dotbot/i;
+
+function isAutomatedRequest(req: Request): boolean {
+  const userAgent = String(req.headers['user-agent'] || '');
+  return !userAgent || BOT_USER_AGENT.test(userAgent);
+}
+
+function cookieOptions(req: Request) {
+  const hostname = req.hostname.toLowerCase();
+  return {
+    maxAge: COOKIE_MAX_AGE,
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    path: '/',
+    // Keep the same identity between tikjogos.com.br and www.tikjogos.com.br.
+    ...(hostname === 'tikjogos.com.br' || hostname.endsWith('.tikjogos.com.br')
+      ? { domain: '.tikjogos.com.br' }
+      : {}),
+  };
+}
+
 function parseDeviceType(ua: string): string {
   if (!ua) return 'unknown';
   if (/mobile|android|iphone|ipod|blackberry|opera mini|iemobile/i.test(ua)) return 'mobile';
@@ -76,6 +100,10 @@ export async function analyticsMiddleware(req: Request, res: Response, next: Nex
     return next();
   }
 
+  if (isAutomatedRequest(req)) {
+    return next();
+  }
+
   let visitorId = req.cookies?.[COOKIE_NAME];
   let isNewVisitor = false;
 
@@ -83,22 +111,12 @@ export async function analyticsMiddleware(req: Request, res: Response, next: Nex
     visitorId = randomUUID();
     isNewVisitor = true;
     
-    res.cookie(COOKIE_NAME, visitorId, {
-      maxAge: COOKIE_MAX_AGE,
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
+    res.cookie(COOKIE_NAME, visitorId, cookieOptions(req));
   }
 
   const shouldTrackAsUnique = isNewVisitor || req.cookies?.[UNIQUE_COOKIE_NAME] !== '1';
   if (shouldTrackAsUnique) {
-    res.cookie(UNIQUE_COOKIE_NAME, '1', {
-      maxAge: COOKIE_MAX_AGE,
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
+    res.cookie(UNIQUE_COOKIE_NAME, '1', cookieOptions(req));
   }
 
   const ipAddress = extractRealIP(req);
@@ -121,7 +139,7 @@ export async function analyticsMiddleware(req: Request, res: Response, next: Nex
   
   const entriesToDelete: string[] = [];
   recentPageviews.forEach((timestamp, key) => {
-    if (now - timestamp > 10000) {
+    if (now - timestamp > DEBOUNCE_MS) {
       entriesToDelete.push(key);
     }
   });
