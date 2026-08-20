@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TikJogos</string>
+    <string name="title_activity_main">TikJogos</string>
+    <string name="package_name">com.tikjogos.app</string>
+    <string name="custom_url_scheme">com.tikjogos.app</string>
+</resources>
