@@ -11,6 +11,29 @@
   font-display: swap;
 }
 
+/* Android app shell: gameplay only. The website remains unchanged. */
+html[data-native-app="true"] body {
+  overscroll-behavior-y: none;
+  background: #1a1b2e;
+}
+
+html[data-native-app="true"] nav,
+html[data-native-app="true"] footer,
+html[data-native-app="true"] .adsense-container,
+html[data-native-app="true"] ins.adsbygoogle,
+html[data-native-app="true"] [aria-label="Publicidade"] {
+  display: none !important;
+}
+
+html[data-native-app="true"] .native-web-only {
+  display: none !important;
+}
+
+html[data-native-app="true"] body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* GT America Compressed Medium Italic - for smaller banner text */
 @font-face {
   font-family: 'GT America Compressed Medium';

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Sparkles, BookOpen, ExternalLink } from "lucide-react";
+import { isNativeApp } from "@/lib/nativeApp";
 
 declare global {
   interface Window {
@@ -11,6 +12,10 @@ function useAdFilled(insRef: React.RefObject<HTMLElement | null>, delay = 150): 
   const [filled, setFilled] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (isNativeApp()) {
+      setFilled(false);
+      return;
+    }
     let pushTimer: ReturnType<typeof setTimeout>;
     let checkTimer: ReturnType<typeof setTimeout>;
 

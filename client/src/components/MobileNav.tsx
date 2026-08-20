@@ -19,6 +19,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
+import { isNativeApp } from "@/lib/nativeApp";
 
 interface NavItem {
   href: string;
@@ -39,6 +40,7 @@ export function MobileNav() {
   const [location] = useLocation();
   const { t, lang, langPath } = useLanguage();
   const { user } = useAuth();
+  if (isNativeApp()) return null;
   const playHref = lang === "en" ? "/en/games" : lang === "es" ? "/es/juegos" : "/jogos";
   const getNavHref = (item: NavItem) => item.labelKey === "nav.howToPlay"
     ? (lang === "en" ? "/en/how-to-play" : lang === "es" ? "/es/como-jugar" : "/comojogar")

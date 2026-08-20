@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 .npm-cache/
+.pnpm-cache/
+.pnpm-store/
+.pnpm-config/
 .gradle-cache/
 android/local.properties
 

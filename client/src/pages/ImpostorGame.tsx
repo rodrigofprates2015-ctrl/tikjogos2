@@ -117,6 +117,7 @@ import { useRankMasterStore } from "@/lib/rankMasterStore";
 const logoAprox = "/aproximacao-logo.webp";
 import { SideAds, TopBannerAd, InArticleAd, BottomRightVideoAd, AnchorMobileAd, ResultAd, LobbyAd } from "@/components/AdSense";
 import { AdBlockBetweenFormAndFooter } from "@/components/AdBlocks";
+import { isNativeApp } from "@/lib/nativeApp";
 import { useGameIntermission } from "@/components/GameIntermission";
 
 const PIX_KEY = "48492456-23f1-4edc-b739-4e36547ef90e";
@@ -2474,7 +2475,7 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
 
       </div>
 
-      <section className="relative z-20 mx-auto mb-10 max-w-3xl px-6 text-center" aria-label="Sobre o Jogo do Impostor">
+      <section className="native-web-only relative z-20 mx-auto mb-10 max-w-3xl px-6 text-center" aria-label="Sobre o Jogo do Impostor">
         <h1 className="mb-3 text-3xl font-black leading-tight text-white md:text-4xl">
           {lang === 'en' ? 'Free Online Impostor Game' : lang === 'es' ? 'Juego del Impostor Online Gratis' : 'Jogo do Impostor Online Grátis'}
         </h1>
@@ -2487,7 +2488,7 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
         </p>
       </section>
 
-      <section className="relative z-20 mx-auto mb-16 w-full max-w-6xl px-4" aria-labelledby="home-games-title">
+      <section className="native-web-only relative z-20 mx-auto mb-16 w-full max-w-6xl px-4" aria-labelledby="home-games-title">
         <header className="mx-auto mb-8 max-w-3xl text-center">
           <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-purple-400/30 bg-purple-500/10 px-4 py-2 text-xs font-black uppercase tracking-[.18em] text-purple-300">
             <Gamepad2 className="h-4 w-4" /> {lang === 'en' ? 'Games for friends' : lang === 'es' ? 'Juegos para amigos' : 'Jogos para amigos'}
@@ -2617,9 +2618,9 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
       </footer>
 
       {/* Donation Button and Modal */}
-      <TopRightButtons onDonateClick={() => setIsDonationOpen(true)} />
-      <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />
-      <ThemeWorkshopModal isOpen={isThemeWorkshopOpen} onClose={() => setIsThemeWorkshopOpen(false)} />
+      {!isNativeApp() && <TopRightButtons onDonateClick={() => setIsDonationOpen(true)} />}
+      {!isNativeApp() && <DonationModal isOpen={isDonationOpen} onClose={() => setIsDonationOpen(false)} />}
+      {!isNativeApp() && <ThemeWorkshopModal isOpen={isThemeWorkshopOpen} onClose={() => setIsThemeWorkshopOpen(false)} />}
 
     </div>
   );

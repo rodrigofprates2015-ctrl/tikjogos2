@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
+import { isNativeApp } from "@/lib/nativeApp";
 
 function IntermissionAd() {
   const insRef = useRef<HTMLModElement>(null);
@@ -46,6 +47,7 @@ export function GameIntermissionScreen({
 }: {
   onContinue: () => void;
 }) {
+  if (isNativeApp()) return null;
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 px-3 py-5 text-white"
@@ -81,6 +83,10 @@ export function useGameIntermission() {
   const pendingAction = useRef<(() => void) | null>(null);
 
   const showIntermission = useCallback((action: () => void) => {
+    if (isNativeApp()) {
+      action();
+      return;
+    }
     pendingAction.current = action;
     setVisible(true);
   }, []);

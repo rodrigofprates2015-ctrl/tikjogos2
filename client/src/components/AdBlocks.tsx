@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { X, Heart, Copy, Loader2, Check } from "lucide-react";
+import { isNativeApp } from "@/lib/nativeApp";
 
 
 declare global {
@@ -16,9 +17,11 @@ interface AdBlockProps {
 }
 
 export function AdBlock({ slot, format = "auto", responsive = true, style }: AdBlockProps) {
+  const nativeApp = isNativeApp();
   const insRef = useRef<HTMLModElement>(null);
 
   useEffect(() => {
+    if (nativeApp) return;
     const el = insRef.current;
     if (!el || el.dataset.adsbygoogleStatus) return;
     try {
@@ -26,7 +29,9 @@ export function AdBlock({ slot, format = "auto", responsive = true, style }: AdB
     } catch (e) {
       console.error('AdSense error:', e);
     }
-  }, []);
+  }, [nativeApp]);
+
+  if (nativeApp) return null;
 
   return (
     <ins
@@ -145,10 +150,12 @@ export function AdBlockBetweenFormAndFooter() {
 // Anúncio exibido na pausa entre partidas.
 // O fechamento permanece disponível para evitar cliques acidentais.
 function InterstitialOverlay({ onDismiss }: { onDismiss: () => void }) {
+  const nativeApp = isNativeApp();
   const insRef = useRef<HTMLModElement>(null);
   const width = Math.min(window.innerWidth - 24, 380);
 
   useEffect(() => {
+    if (nativeApp) return;
     const element = insRef.current;
     if (!element || element.dataset.adsbygoogleStatus) return;
 
@@ -161,7 +168,9 @@ function InterstitialOverlay({ onDismiss }: { onDismiss: () => void }) {
     }, 200);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [nativeApp]);
+
+  if (nativeApp) return null;
 
   return (
     <div

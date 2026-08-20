@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { X, ChevronUp } from "lucide-react";
+import { isNativeApp } from "@/lib/nativeApp";
 
 declare global {
   interface Window {
@@ -24,10 +25,12 @@ const AdSenseBlock = ({
   layoutKey, 
   responsive = true 
 }: AdSenseProps) => {
+  const nativeApp = isNativeApp();
   const adRef = useRef<HTMLModElement>(null);
   const pushed = useRef(false);
 
   useEffect(() => {
+    if (nativeApp) return;
     if (pushed.current) return;
     
     const timer = setTimeout(() => {
@@ -41,7 +44,9 @@ const AdSenseBlock = ({
     }, 100);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [nativeApp]);
+
+  if (nativeApp) return null;
 
   return (
     <div className={`adsense-container my-8 overflow-hidden flex justify-center ${className}`}>

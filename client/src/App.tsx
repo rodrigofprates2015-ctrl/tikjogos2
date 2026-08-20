@@ -16,6 +16,7 @@ import AproximacaoGame from "@/pages/AproximacaoGame";
 import RankMasterGame from "@/pages/RankMasterGame";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
+import { isNativeApp } from "@/lib/nativeApp";
 
 // Lazy-loaded pages - reduces initial JS bundle for faster LCP on mobile
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
@@ -138,7 +139,7 @@ function LazyFallback() {
 }
 
 function MergedHome() {
-  return <ImpostorGame showSupportContent />;
+  return <ImpostorGame showSupportContent={!isNativeApp()} />;
 }
 
 function AppRouter() {
@@ -445,6 +446,7 @@ function AppRouter() {
 }
 
 function FeedbackController() {
+  if (isNativeApp()) return null;
   const { showFeedback, dismiss, markDone } = useFeedback();
 
   if (!showFeedback) return null;

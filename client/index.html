@@ -40,9 +40,19 @@
     <!-- Language -->
     <meta http-equiv="content-language" content="pt-BR" />
     
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9927561573478881"
-     crossorigin="anonymous"></script>
+    <!-- Google AdSense: website only. Native Android uses AdMob separately. -->
+    <script>
+      (function () {
+        var nativePreview = new URLSearchParams(location.search).get('nativeapp') === '1';
+        var nativeCapacitor = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+        if (nativePreview || nativeCapacitor) return;
+        var ad = document.createElement('script');
+        ad.async = true;
+        ad.crossOrigin = 'anonymous';
+        ad.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9927561573478881';
+        document.head.appendChild(ad);
+      })();
+    </script>
     
     <!-- Google tag (gtag.js) - loaded after user interaction or 3s delay -->
     <script>
