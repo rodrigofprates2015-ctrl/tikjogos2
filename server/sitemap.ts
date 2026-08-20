@@ -43,15 +43,20 @@ const I18N_PAGES: Array<{ paths: [string, string, string]; priority: string; cha
   { paths: ['/', '/en', '/es'], priority: '1.0', changefreq: 'daily' },
   { paths: ['/desenho-impostor', '/en/desenho-impostor', '/es/desenho-impostor'], priority: '0.9', changefreq: 'weekly' },
   { paths: ['/respostas-em-comum', '/en/common-answers', '/es/respuestas-en-comun'], priority: '0.9', changefreq: 'weekly' },
-  { paths: ['/aproximacao', '/approximation', '/aproximacao'], priority: '0.9', changefreq: 'weekly' },
+  { paths: ['/aproximacao', '/approximation', '/es/aproximacion'], priority: '0.9', changefreq: 'weekly' },
   { paths: ['/sincronia-br', '/en/sincronia-br', '/es/sincronia-br'], priority: '0.8', changefreq: 'weekly' },
   { paths: ['/modo-local', '/en/local-mode', '/es/modo-local'], priority: '0.7', changefreq: 'weekly' },
   // How-to-play
+  { paths: ['/comojogar', '/en/how-to-play', '/es/como-jugar'], priority: '0.8', changefreq: 'monthly' },
   { paths: ['/como-jogar/jogo-do-impostor', '/en/how-to-play/impostor-game', '/es/como-jugar/juego-del-impostor'], priority: '0.9', changefreq: 'weekly' },
   { paths: ['/como-jogar/jogo-do-impostor-desenho', '/en/how-to-play/impostor-drawing-game', '/es/como-jugar/juego-del-impostor-dibujo'], priority: '0.8', changefreq: 'weekly' },
   { paths: ['/como-jogar/sincronia', '/en/how-to-play/sincronia', '/es/como-jugar/sincronia'], priority: '0.8', changefreq: 'weekly' },
   { paths: ['/desafio-da-palavra', '/en/desafio-da-palavra', '/es/desafio-da-palavra'], priority: '0.9', changefreq: 'weekly' },
   { paths: ['/como-jogar/desafio-da-palavra', '/en/how-to-play/word-challenge', '/es/como-jugar/desafio-de-la-palabra'], priority: '0.8', changefreq: 'weekly' },
+  { paths: ['/como-jogar/bomba', '/en/how-to-play/bomba', '/es/como-jugar/bomba'], priority: '0.8', changefreq: 'weekly' },
+  { paths: ['/como-jogar/cronometro', '/en/how-to-play/timer-game', '/es/como-jugar/juego-del-cronometro'], priority: '0.8', changefreq: 'weekly' },
+  { paths: ['/como-jogar/rankify', '/en/how-to-play/rankify', '/es/como-jugar/rankify'], priority: '0.8', changefreq: 'weekly' },
+  { paths: ['/como-jogar/aproximacao', '/en/how-to-play/approximation', '/es/como-jugar/aproximacion'], priority: '0.8', changefreq: 'weekly' },
   // Themes
   { paths: ['/temas', '/en/themes', '/es/temas-del-juego'], priority: '0.8', changefreq: 'weekly' },
   { paths: ['/criar-tema', '/en/create-theme', '/es/crear-tema'], priority: '0.6', changefreq: 'monthly' },
@@ -75,14 +80,14 @@ function escapeXml(s: string): string {
 }
 
 function urlEntry(loc: string, opts: { priority?: string; changefreq?: string; lastmod?: string; hreflangs?: [string, string, string] } = {}): string {
-  const { priority = '0.5', changefreq = 'monthly', lastmod = today(), hreflangs } = opts;
+  const { priority = '0.5', changefreq = 'monthly', lastmod, hreflangs } = opts;
   let xml = `  <url>\n    <loc>${escapeXml(loc)}</loc>\n`;
   if (hreflangs) {
     xml += `    <xhtml:link rel="alternate" hreflang="pt" href="${escapeXml(hreflangs[0])}" />\n`;
     xml += `    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(hreflangs[1])}" />\n`;
     xml += `    <xhtml:link rel="alternate" hreflang="es" href="${escapeXml(hreflangs[2])}" />\n`;
   }
-  xml += `    <lastmod>${lastmod}</lastmod>\n`;
+  if (lastmod) xml += `    <lastmod>${lastmod}</lastmod>\n`;
   xml += `    <changefreq>${changefreq}</changefreq>\n`;
   xml += `    <priority>${priority}</priority>\n`;
   xml += `  </url>`;
@@ -109,18 +114,18 @@ function generateMainSitemap(): string {
     }
   }
 
-  // Include blog posts directly so /sitemap.xml alone is complete
-  for (const post of BLOG_POSTS_FULL) {
-    const lastmod = parseDate(post.date || today());
-    const hreflangs: [string, string, string] = [
-      `${BASE_URL}/blog/${post.slug}`,
-      `${BASE_URL}/en/blog/${post.slugEn || post.slug}`,
-      `${BASE_URL}/es/blog/${post.slugEs || post.slug}`,
-    ];
-    for (const loc of hreflangs) {
-      entries.push(urlEntry(loc, { priority: '0.7', changefreq: 'monthly', lastmod, hreflangs }));
-    }
+  // Public game pages that do not yet have separate localized URLs.
+  // Room URLs and authenticated/admin areas must not be listed here.
+  const standaloneGames = [
+    '/bomba',
+    '/cronometro',
+    '/rankmaster',
+  ];
+  for (const path of standaloneGames) {
+    entries.push(urlEntry(`${BASE_URL}${path}`, { priority: '0.9', changefreq: 'weekly' }));
   }
+
+  entries.push(urlEntry(`${BASE_URL}/personagem`, { priority: '0.6', changefreq: 'monthly' }));
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -183,20 +188,16 @@ ${entries.join('\n')}
 }
 
 function generateSitemapIndex(): string {
-  const d = today();
   return `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
     <loc>${BASE_URL}/sitemap.xml</loc>
-    <lastmod>${d}</lastmod>
   </sitemap>
   <sitemap>
     <loc>${BASE_URL}/sitemap-temas.xml</loc>
-    <lastmod>${d}</lastmod>
   </sitemap>
   <sitemap>
     <loc>${BASE_URL}/sitemap-blog.xml</loc>
-    <lastmod>${d}</lastmod>
   </sitemap>
 </sitemapindex>`;
 }

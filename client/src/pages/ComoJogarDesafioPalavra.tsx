@@ -4,6 +4,7 @@ import { Gamepad2, Rocket, Swords, CheckCircle2, HelpCircle, Lightbulb, Trophy, 
 import { MobileNav } from "@/components/MobileNav";
 import { SideAds, BottomAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
+import { setPageSeo } from "@/lib/pageSeo";
 import logoDesafio from "@assets/logo_desafio_palavra_forms.webp";
 
 const CONTENT = {
@@ -169,7 +170,8 @@ export default function ComoJogarDesafioPalavra() {
   const c = CONTENT[lang as keyof typeof CONTENT] || CONTENT.pt;
 
   useEffect(() => {
-    document.title = `${c.heroTitle} ${c.heroHighlight} - TikJogos`;
+    const canonical = lang === 'en' ? '/en/how-to-play/word-challenge' : lang === 'es' ? '/es/como-jugar/desafio-de-la-palabra' : '/como-jogar/desafio-da-palavra';
+    setPageSeo({ title: `${c.heroTitle} ${c.heroHighlight} | TikJogos`, description: c.heroDesc, canonical: `https://tikjogos.com.br${canonical}` });
     window.scrollTo(0, 0);
   }, [lang]);
 

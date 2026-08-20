@@ -190,8 +190,16 @@ const PAGE_SEO: Record<string, { title: string; description: string }> = {
     description: 'Aprenda como jogar o Jogo do Impostor online. Regras, dicas e estratégias para jogar com amigos. Grátis e sem download.',
   },
   '/comojogar': {
-    title: 'Como Jogar o Jogo do Impostor Online | TikJogos',
-    description: 'Aprenda como jogar o Jogo do Impostor online. Regras, dicas e estratégias para jogar com amigos. Grátis e sem download.',
+    title: 'Como Jogar no TikJogos: Regras de Todos os Jogos | TikJogos',
+    description: 'Veja como jogar todos os jogos do TikJogos: Impostor, Desenho, Bomba, Cronômetro, Sincronia, Rankify, Aproximação e Desafio da Palavra.',
+  },
+  '/how-to-play': {
+    title: 'How to Play on TikJogos: Rules for Every Game | TikJogos',
+    description: 'Learn how to play every TikJogos game: Impostor, Drawing, Bomba, Timer, Sincronia, Rankify, Approximation and Word Challenge.',
+  },
+  '/como-jugar': {
+    title: 'Cómo Jugar en TikJogos: Reglas de Todos los Juegos | TikJogos',
+    description: 'Aprende a jugar todos los juegos de TikJogos: Impostor, Dibujo, Bomba, Cronómetro, Sincronia, Rankify, Aproximación y Desafío de la Palabra.',
   },
   '/como-jogar/jogo-do-impostor': {
     title: 'Como Jogar o Jogo do Impostor Online | TikJogos',
@@ -205,6 +213,38 @@ const PAGE_SEO: Record<string, { title: string; description: string }> = {
     title: 'Como Jogar Sincronia - Respostas em Comum | TikJogos',
     description: 'Aprenda como jogar Sincronia, o jogo onde você ganha pontos ao dar a mesma resposta que outros jogadores. Regras e estratégias.',
   },
+  '/como-jogar/desafio-da-palavra': {
+    title: 'Como Jogar Desafio da Palavra | TikJogos',
+    description: 'Aprenda como jogar Desafio da Palavra online. Veja as regras, como avançar nas rodadas e dicas para vencer com seus amigos.',
+  },
+  '/como-jogar/bomba': {
+    title: 'Como Jogar Bomba Online | TikJogos',
+    description: 'Aprenda como jogar Bomba no TikJogos: escolha letras, responda ao tema antes do cronômetro e evite ser eliminado.',
+  },
+  '/cronometro': {
+    title: 'Jogo do Cronômetro Online Grátis | TikJogos',
+    description: 'Pare o cronômetro no tempo sorteado e dispute com seus amigos para ver quem chega mais perto do alvo.',
+  },
+  '/como-jogar/cronometro': {
+    title: 'Jogo do Tempo e Jogo do Cronômetro: Como Jogar | TikJogos',
+    description: 'Aprenda a jogar o jogo do tempo, também conhecido como jogo do cronômetro ou jogo do relógio, e tente parar no instante exato.',
+  },
+  '/how-to-play/timer-game': {
+    title: 'How to Play the Timer Game | TikJogos',
+    description: 'Learn the Timer Game rules, how to stop at the exact target and beat your friends by approximation.',
+  },
+  '/como-jugar/juego-del-cronometro': {
+    title: 'Cómo Jugar al Juego del Cronómetro | TikJogos',
+    description: 'Aprende las reglas del Juego del Cronómetro, cómo detenerlo en el objetivo y ganar por aproximación.',
+  },
+  '/como-jogar/rankify': {
+    title: 'Como Jogar Rankify Online | TikJogos',
+    description: 'Aprenda como jogar Rankify: organize o ranking, compare com o gabarito e marque mais pontos que seus amigos.',
+  },
+  '/como-jogar/aproximacao': {
+    title: 'Como Jogar o Jogo da Aproximação | TikJogos',
+    description: 'Aprenda como jogar o Jogo da Aproximação: envie palpites, ganhe corações ao chegar mais perto e evite a eliminação.',
+  },
   '/how-to-play/impostor-game': {
     title: 'How to Play Impostor Game Online | TikJogos',
     description: 'Learn how to play the Impostor Game online. Rules, tips and strategies to play with friends. Free, no download.',
@@ -217,6 +257,22 @@ const PAGE_SEO: Record<string, { title: string; description: string }> = {
     title: 'How to Play Sincronia - Common Answers | TikJogos',
     description: 'Learn how to play Sincronia, the game where you score by giving the same answer as other players. Rules and strategies.',
   },
+  '/how-to-play/word-challenge': {
+    title: 'How to Play Word Challenge | TikJogos',
+    description: 'Learn how to play Word Challenge online. See the rules, how to advance through rounds and tips to win with friends.',
+  },
+  '/how-to-play/bomba': {
+    title: 'How to Play Bomba Online | TikJogos',
+    description: 'Learn how to play Bomba: choose letters, answer the theme before time runs out and avoid elimination.',
+  },
+  '/how-to-play/rankify': {
+    title: 'How to Play Rankify Online | TikJogos',
+    description: 'Learn how to play Rankify: order the ranking, compare it with the answer and score more points than your friends.',
+  },
+  '/how-to-play/approximation': {
+    title: 'How to Play the Approximation Game | TikJogos',
+    description: 'Learn how to play the Approximation Game: submit guesses, earn hearts by getting closest and avoid elimination.',
+  },
   '/como-jugar/juego-del-impostor': {
     title: 'Cómo Jugar al Juego del Impostor Online | TikJogos',
     description: 'Aprende a jugar al Juego del Impostor online. Reglas, consejos y estrategias para jugar con amigos. Gratis y sin descarga.',
@@ -228,6 +284,22 @@ const PAGE_SEO: Record<string, { title: string; description: string }> = {
   '/como-jugar/sincronia': {
     title: 'Cómo Jugar Sincronia - Respuestas en Común | TikJogos',
     description: 'Aprende a jugar Sincronia, el juego donde ganas puntos al dar la misma respuesta que otros jugadores. Reglas y estrategias.',
+  },
+  '/como-jugar/desafio-de-la-palabra': {
+    title: 'Cómo Jugar Desafío de la Palabra | TikJogos',
+    description: 'Aprende a jugar Desafío de la Palabra online. Consulta las reglas, cómo avanzar de ronda y consejos para ganar con amigos.',
+  },
+  '/como-jugar/bomba': {
+    title: 'Cómo Jugar Bomba Online | TikJogos',
+    description: 'Aprende a jugar Bomba: elige letras, responde al tema antes de que se acabe el tiempo y evita ser eliminado.',
+  },
+  '/como-jugar/rankify': {
+    title: 'Cómo Jugar Rankify Online | TikJogos',
+    description: 'Aprende a jugar Rankify: ordena el ranking, compáralo con la respuesta y suma más puntos que tus amigos.',
+  },
+  '/como-jugar/aproximacion': {
+    title: 'Cómo Jugar el Juego de Aproximación | TikJogos',
+    description: 'Aprende a jugar el Juego de Aproximación: envía estimaciones, gana corazones al acercarte y evita la eliminación.',
   },
   '/modo-local': {
     title: 'Jogo do Impostor Modo Local – Jogar Offline | TikJogos',
@@ -266,9 +338,15 @@ const PAGE_SEO: Record<string, { title: string; description: string }> = {
 // Bidirectional hreflang mapping: PT base path -> [pt, en, es] full paths
 // Used to inject hreflang tags on all language versions of a page
 const HREFLANG_MAP: Array<[string, string, string]> = [
+  ['/comojogar', '/en/how-to-play', '/es/como-jugar'],
   ['/como-jogar/jogo-do-impostor', '/en/how-to-play/impostor-game', '/es/como-jugar/juego-del-impostor'],
   ['/como-jogar/jogo-do-impostor-desenho', '/en/how-to-play/impostor-drawing-game', '/es/como-jugar/juego-del-impostor-dibujo'],
   ['/como-jogar/sincronia', '/en/how-to-play/sincronia', '/es/como-jugar/sincronia'],
+  ['/como-jogar/desafio-da-palavra', '/en/how-to-play/word-challenge', '/es/como-jugar/desafio-de-la-palabra'],
+  ['/como-jogar/bomba', '/en/how-to-play/bomba', '/es/como-jugar/bomba'],
+  ['/como-jogar/cronometro', '/en/how-to-play/timer-game', '/es/como-jugar/juego-del-cronometro'],
+  ['/como-jogar/rankify', '/en/how-to-play/rankify', '/es/como-jugar/rankify'],
+  ['/como-jogar/aproximacao', '/en/how-to-play/approximation', '/es/como-jugar/aproximacion'],
   ['/desenho-impostor', '/en/desenho-impostor', '/es/desenho-impostor'],
   ['/respostas-em-comum', '/en/common-answers', '/es/respuestas-en-comun'],
   ['/modo-local', '/en/local-mode', '/es/modo-local'],
@@ -484,40 +562,10 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
     ].join('\n    ');
 
     return {
-      title: 'Jogo do Impostor Online Grátis | Palavras, Dedução Social e Diversão | TikJogos',
-      description: 'Jogue o Jogo do Impostor online grátis com amigos! Jogo do impostor palavras, modos exclusivos e salas multiplayer. Sem download, direto no PC ou celular.',
+      title: 'Jogo do Impostor Online Grátis com Amigos | TikJogos',
+      description: 'Jogue o Jogo do Impostor online grátis com seus amigos. Crie uma sala, compartilhe o código e descubra quem recebeu a palavra diferente.',
       canonical: `${BASE_URL}${path === '/' ? '/' : path}`,
       hreflangTags: hreflang,
-      bodyHtml: `<main style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
-      <h1>Jogo do Impostor Online Grátis – TikJogos</h1>
-      <p>Bem-vindo ao TikJogos, a melhor plataforma para jogar o <strong>jogo do impostor online</strong> grátis com seus amigos. Sem baixar nada, sem cadastro obrigatório — basta criar uma sala e começar a jogar.</p>
-      <h2>O que é o Jogo do Impostor?</h2>
-      <p>O <strong>jogo do impostor</strong> é um jogo multiplayer de dedução social onde todos os jogadores recebem uma palavra secreta, exceto o impostor. A missão dos jogadores honestos é descobrir quem é o impostor antes que ele adivinhe a palavra e vença. É pura estratégia, blefe e diversão.</p>
-      <h2>Jogo do Impostor Palavras Online</h2>
-      <p>No modo clássico de <strong>jogo do impostor palavras</strong>, cada rodada tem um tema diferente. Os jogadores recebem uma palavra (ex: "âncora", "futebol", "vampiro") e precisam dar dicas sem revelar a palavra para o impostor. O <strong>jogo do impostor palavras online</strong> no TikJogos conta com dezenas de temas, de animes a esportes.</p>
-      <h2>Jogo do Impostor no PC e Celular</h2>
-      <p>O TikJogos funciona diretamente no navegador, tornando o <strong>jogo do impostor pc</strong> acessível sem instalação. Jogue no computador, tablet ou smartphone — a experiência é a mesma em qualquer dispositivo.</p>
-      <h2>Diferença entre Among Us e Jogo do Impostor</h2>
-      <p>Muita gente compara o <strong>among us jogo do impostor</strong> com o TikJogos. Enquanto o Among Us é um videogame com movimentação em mapa, o <strong>jogo do impostor</strong> do TikJogos é um jogo de palavras e dedução social, jogado em roda, sem gráficos complexos. É o equivalente digital de jogar o impostor com cartinhas, mas muito mais prático.</p>
-      <h2>Como Jogar o Jogo do Impostor para Jogar Agora</h2>
-      <p>Para o <strong>jogo do impostor para jogar</strong> agora mesmo: (1) acesse o TikJogos, (2) escolha um apelido, (3) crie uma sala ou entre com um código, (4) compartilhe o código com seus amigos. Em segundos vocês já estão jogando. Simples assim!</p>
-      <h2>Jogos do Impostor – Todos os Modos</h2>
-      <p>Os <strong>jogos do impostor</strong> no TikJogos incluem: Jogo do Impostor clássico (palavras), Desenho do Impostor (todos desenham a mesma palavra menos o impostor), Sincronia (respostas em comum), Desafio da Palavra e Modo Local (sem internet). Há sempre um novo modo para descobrir.</p>
-      <h2>Modos de Jogo</h2>
-      <ul>
-        <li><a href="${BASE_URL}/como-jogar/jogo-do-impostor">Como Jogar Impostor – Modo Palavras</a></li>
-        <li><a href="${BASE_URL}/como-jogar/jogo-do-impostor-desenho">Como Jogar Desenho do Impostor</a></li>
-        <li><a href="${BASE_URL}/como-jogar/sincronia">Como Jogar Sincronia</a></li>
-        <li><a href="${BASE_URL}/modo-local">Modo Local – Sem Internet</a></li>
-        <li><a href="${BASE_URL}/temas">Temas do Jogo do Impostor</a></li>
-        <li><a href="${BASE_URL}/blog">Blog – Dicas e Estratégias</a></li>
-        <li><a href="${BASE_URL}/outros-jogos">Outros Jogos Online Grátis</a></li>
-      </ul>
-      <h2>Posts Recentes</h2>
-      <ul>
-        ${BLOG_POSTS_FULL.slice(0, 5).map(p => `<li><a href="${BASE_URL}/blog/${p.slug}">${escapeHtml(p.title)}</a></li>`).join('\n        ')}
-      </ul>
-    </main>`,
     };
   }
 
@@ -622,15 +670,6 @@ export function injectSeoIntoHtml(html: string, seo: SeoMeta): string {
     if (extraHead) {
       html = html.replace('</head>', `${extraHead}\n  </head>`);
     }
-  }
-
-  // Inject visible content into body for crawlers (positioned off-screen so
-  // it doesn't flash before React hydrates, but fully readable by bots)
-  if (seo.bodyHtml) {
-    html = html.replace(
-      '<div id="root"></div>',
-      `<div id="root"></div>\n    ${seo.bodyHtml}`
-    );
   }
 
   return html;

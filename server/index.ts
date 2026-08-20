@@ -24,6 +24,48 @@ async function runMigrationsOnStartup() {
 
 const app = express();
 
+// Consolidate duplicate public URLs before analytics and SPA rendering.
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production' && req.hostname.toLowerCase() === 'www.tikjogos.com.br') {
+    return res.redirect(301, `https://tikjogos.com.br${req.originalUrl}`);
+  }
+
+  const homeAliases: Record<string, string> = {
+    '/jogos': '/',
+    '/en/games': '/en',
+    '/es/juegos': '/es',
+    '/como-jogar': '/comojogar',
+    '/how-to-play': '/en/how-to-play',
+    '/como-jugar': '/es/como-jugar',
+    '/how-to-play/impostor-game': '/en/how-to-play/impostor-game',
+    '/how-to-play/impostor-drawing-game': '/en/how-to-play/impostor-drawing-game',
+    '/how-to-play/sincronia': '/en/how-to-play/sincronia',
+    '/how-to-play/word-challenge': '/en/how-to-play/word-challenge',
+    '/como-jugar/juego-del-impostor': '/es/como-jugar/juego-del-impostor',
+    '/como-jugar/juego-del-impostor-dibujo': '/es/como-jugar/juego-del-impostor-dibujo',
+    '/como-jugar/sincronia': '/es/como-jugar/sincronia',
+    '/como-jugar/desafio-de-la-palabra': '/es/como-jugar/desafio-de-la-palabra',
+    '/en/comojogar': '/en/how-to-play',
+    '/es/comojogar': '/es/como-jugar',
+    '/en/como-jogar/jogo-do-impostor': '/en/how-to-play/impostor-game',
+    '/es/como-jogar/jogo-do-impostor': '/es/como-jugar/juego-del-impostor',
+    '/en/como-jogar/jogo-do-impostor-desenho': '/en/how-to-play/impostor-drawing-game',
+    '/es/como-jogar/jogo-do-impostor-desenho': '/es/como-jugar/juego-del-impostor-dibujo',
+    '/en/como-jogar/sincronia': '/en/how-to-play/sincronia',
+    '/es/como-jogar/sincronia': '/es/como-jugar/sincronia',
+    '/en/como-jogar/desafio-da-palavra': '/en/how-to-play/word-challenge',
+    '/es/como-jogar/desafio-da-palavra': '/es/como-jugar/desafio-de-la-palabra',
+  };
+  const destination = homeAliases[req.path];
+  if (destination) {
+    const queryIndex = req.originalUrl.indexOf('?');
+    const query = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : '';
+    return res.redirect(301, `${destination}${query}`);
+  }
+
+  next();
+});
+
 // Add cache-control headers to prevent stale assets
 app.use((req, res, next) => {
   if (req.url === '/' || req.url.endsWith('.html')) {

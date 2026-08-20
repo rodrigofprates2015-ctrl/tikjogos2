@@ -987,8 +987,8 @@ const getModeDifficulty = (modeId: string) => {
 
 const HOME_META: Record<string, { title: string; description: string }> = {
   pt: {
-    title: 'TikJogos - Jogo do Impostor Online Grátis Com Amigos | Impostor Game',
-    description: 'Jogue Impostor online grátis! Encontre amigos, estratégias e desafie outros jogadores no TikJogos. Sem downloads.',
+    title: 'Jogo do Impostor Online Grátis com Amigos | TikJogos',
+    description: 'Jogue o Jogo do Impostor online grátis com seus amigos. Crie uma sala, compartilhe o código e descubra quem recebeu a palavra diferente.',
   },
   en: {
     title: 'TikJogos - Free Online Impostor Game With Friends | Play Now',
@@ -1623,6 +1623,38 @@ const BombaGameCard = () => {
   );
 };
 
+const CronometroGameCard = () => {
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const [name, setName] = useState(() => localStorage.getItem('tikjogos_nickname') || localStorage.getItem('tikjogos_saved_nickname') || '');
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const getPlayerId = () => { const current = sessionStorage.getItem('cronometro_player_id') || crypto.randomUUID(); sessionStorage.setItem('cronometro_player_id', current); return current; };
+  const enter = async (mode: 'create' | 'join') => {
+    const nickname = name.trim();
+    if (!nickname) return toast({ title: 'Digite seu apelido', variant: 'destructive' });
+    if (mode === 'join' && code.length !== 3) return toast({ title: 'Digite o código de 3 letras', variant: 'destructive' });
+    setBusy(true);
+    try {
+      localStorage.setItem('tikjogos_nickname', nickname);
+      const roomCode = code.toUpperCase();
+      const response = await fetch(mode === 'create' ? '/api/cronometro/rooms' : `/api/cronometro/rooms/${roomCode}/join`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ playerId: getPlayerId(), nickname }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Não foi possível entrar na sala.');
+      sessionStorage.setItem('cronometro_room_code', data.code);
+      navigate(`/cronometro?room=${data.code}`);
+    } catch (e: any) { toast({ title: e.message, variant: 'destructive' }); }
+    finally { setBusy(false); }
+  };
+  return <div className="space-y-3">
+    <div className="text-center"><div className="mx-auto w-fit rounded-xl border-2 border-cyan-400/40 bg-[#080d19] px-4 py-2 font-mono text-2xl font-black tracking-wider text-cyan-300 shadow-[0_0_20px_rgba(34,211,238,.16)]"><span className="text-slate-400">T3:</span>MP:00</div><p className="mt-2 text-xs font-semibold text-slate-400">Pare o cronômetro no tempo exato.</p></div>
+    <input className="input-dark" value={name} onChange={e => setName(e.target.value)} placeholder="Seu nickname" maxLength={18}/>
+    <button onClick={() => enter('create')} disabled={busy} style={{ backgroundColor: "#18bff2", color: "#07152b" }} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-cyan-800 px-8 py-5 text-xl font-black shadow-[0_12px_28px_rgba(24,191,242,.28)] transition-all hover:brightness-110 active:translate-y-2 active:border-b-0 disabled:opacity-50"><Clock size={27}/> CRIAR SALA</button>
+    <div className="flex items-center gap-3"><div className="h-px flex-1 bg-slate-700"/><span className="text-xs font-black text-slate-500">OU</span><div className="h-px flex-1 bg-slate-700"/></div>
+    <div className="flex gap-2"><input className="input-code min-w-0 flex-1" value={code} onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3))} onKeyDown={e => e.key === 'Enter' && enter('join')} placeholder="CÓDIGO" maxLength={3}/><button onClick={() => enter('join')} disabled={busy} className="rounded-2xl border-b-[6px] border-green-800 bg-gradient-to-r from-green-500 to-emerald-500 px-6 font-black text-white active:translate-y-2 active:border-b-0 disabled:opacity-50">ENTRAR</button></div>
+  </div>;
+};
+
 const AproximacaoGameCard = () => {
   const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname } = useAproximacaoStore();
   const [, navigate] = useLocation();
@@ -1754,7 +1786,7 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
   const [saveNicknameChecked, setSaveNicknameChecked] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isThemeWorkshopOpen, setIsThemeWorkshopOpen] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia' | 'desafio' | 'aproximacao' | 'rankmaster' | 'bomba'>('impostor');
+  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia' | 'desafio' | 'aproximacao' | 'rankmaster' | 'bomba' | 'cronometro'>('impostor');
   const carouselRef = useRef<HTMLDivElement>(null);
   const carouselDrag = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
   const [carouselAtStart, setCarouselAtStart] = useState(true);
@@ -1768,6 +1800,41 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
   };
   const { toast } = useToast();
   const { t, langPath, lang } = useLanguage();
+  const homeGames = useMemo(() => {
+    const games = {
+      pt: [
+        { title: 'Jogo do Impostor', description: 'Um jogo de dedução social em que todos recebem uma palavra, menos o impostor. Dê pistas, desconfie dos amigos e vote para encontrar quem está fingindo.', play: '/', guide: '/como-jogar/jogo-do-impostor', icon: Gamepad2, accent: '#f97316' },
+        { title: 'Bomba', description: 'Um tema é sorteado e cada jogador escolhe uma letra para responder. A letra usada é eliminada e você precisa passar a vez antes que a bomba exploda.', play: '/bomba', guide: '/como-jogar/bomba', icon: Bomb, accent: '#ff244d' },
+        { title: 'T3:MP:00 — Jogo do Cronômetro', description: 'Um tempo-alvo é sorteado e todos tentam parar o cronômetro no instante exato. Vence quem terminar com a menor diferença.', play: '/cronometro', guide: '/como-jogar/cronometro', icon: Clock, accent: '#22d3ee' },
+        { title: 'Desenho do Impostor', description: 'Todos desenham a mesma palavra, menos o impostor. Observe cada traço, descubra quem não conhece o tema e escolha seu suspeito.', play: '/desenho-impostor', guide: '/como-jogar/jogo-do-impostor-desenho', icon: Paintbrush, accent: '#34d399' },
+        { title: 'Sincronia', description: 'Responda às perguntas pensando como seus amigos. Quanto mais jogadores escreverem a mesma resposta, mais pontos vocês conquistam.', play: '/respostas-em-comum', guide: '/como-jogar/sincronia', icon: Sparkles, accent: '#a855f7' },
+        { title: 'Rankify', description: 'Coloque os itens na ordem que considera correta. O gabarito é revelado no fim e vence quem chegar mais perto do ranking real.', play: '/rankmaster', guide: '/como-jogar/rankify', icon: Trophy, accent: '#f59e0b' },
+        { title: 'Jogo da Aproximação', description: 'Dê seu melhor palpite para perguntas numéricas. Quem chegar mais perto ganha um coração; quem ficar mais longe perde um.', play: '/aproximacao', guide: '/como-jogar/aproximacao', icon: Target, accent: '#06b6d4' },
+        { title: 'Desafio da Palavra', description: 'Adicione letras ao fragmento, forme palavras possíveis e desafie os blefes dos adversários antes de perder todas as vidas.', play: '/desafio-da-palavra', guide: '/como-jogar/desafio-da-palavra', icon: BookOpen, accent: '#8b5cf6' },
+      ],
+      en: [
+        { title: 'Impostor Game', description: 'A social deduction game where everyone receives a word except the impostor. Give clues, question your friends and vote for the pretender.', play: '/en', guide: '/en/how-to-play/impostor-game', icon: Gamepad2, accent: '#f97316' },
+        { title: 'Bomba', description: 'A theme is drawn and each player chooses a letter to answer. The used letter is removed and you must pass the turn before the bomb explodes.', play: '/bomba', guide: '/en/how-to-play/bomba', icon: Bomb, accent: '#ff244d' },
+        { title: 'Timer Game', description: 'A target time is drawn and everyone tries to stop the timer at the exact moment. The smallest difference wins.', play: '/cronometro', guide: '/en/how-to-play/timer-game', icon: Clock, accent: '#22d3ee' },
+        { title: 'Impostor Drawing', description: 'Everyone draws the same word except the impostor. Watch every stroke, find who does not know the theme and choose your suspect.', play: '/desenho-impostor', guide: '/en/how-to-play/impostor-drawing-game', icon: Paintbrush, accent: '#34d399' },
+        { title: 'Sincronia', description: 'Answer questions by thinking like your friends. The more players give the same answer, the more points you score.', play: '/respostas-em-comum', guide: '/en/how-to-play/sincronia', icon: Sparkles, accent: '#a855f7' },
+        { title: 'Rankify', description: 'Put the items in the order you believe is correct. The answer is revealed at the end and the closest ranking wins.', play: '/rankmaster', guide: '/en/how-to-play/rankify', icon: Trophy, accent: '#f59e0b' },
+        { title: 'Approximation Game', description: 'Give your best estimate for numerical questions. The closest player gains a heart and the farthest loses one.', play: '/aproximacao', guide: '/en/how-to-play/approximation', icon: Target, accent: '#06b6d4' },
+        { title: 'Word Challenge', description: 'Add letters to the fragment, keep real words possible and challenge your opponents’ bluffs before losing all your lives.', play: '/desafio-da-palavra', guide: '/en/how-to-play/word-challenge', icon: BookOpen, accent: '#8b5cf6' },
+      ],
+      es: [
+        { title: 'Juego del Impostor', description: 'Un juego de deducción social donde todos reciben una palabra menos el impostor. Da pistas, sospecha de tus amigos y vota al farsante.', play: '/es', guide: '/es/como-jugar/juego-del-impostor', icon: Gamepad2, accent: '#f97316' },
+        { title: 'Bomba', description: 'Se sortea un tema y cada jugador elige una letra para responder. La letra usada se elimina y debes pasar el turno antes de la explosión.', play: '/bomba', guide: '/es/como-jugar/bomba', icon: Bomb, accent: '#ff244d' },
+        { title: 'Juego del Cronómetro', description: 'Se sortea un tiempo objetivo y todos intentan detener el cronómetro en el instante exacto. Gana la menor diferencia.', play: '/cronometro', guide: '/es/como-jugar/juego-del-cronometro', icon: Clock, accent: '#22d3ee' },
+        { title: 'Dibujo del Impostor', description: 'Todos dibujan la misma palabra excepto el impostor. Observa cada trazo, descubre quién no conoce el tema y elige a tu sospechoso.', play: '/desenho-impostor', guide: '/es/como-jugar/juego-del-impostor-dibujo', icon: Paintbrush, accent: '#34d399' },
+        { title: 'Sincronia', description: 'Responde pensando como tus amigos. Cuantos más jugadores escriban la misma respuesta, más puntos conseguirán.', play: '/respostas-em-comum', guide: '/es/como-jugar/sincronia', icon: Sparkles, accent: '#a855f7' },
+        { title: 'Rankify', description: 'Coloca los elementos en el orden que creas correcto. La respuesta se revela al final y gana quien más se acerque.', play: '/rankmaster', guide: '/es/como-jugar/rankify', icon: Trophy, accent: '#f59e0b' },
+        { title: 'Juego de Aproximación', description: 'Da tu mejor estimación para preguntas numéricas. Quien más se acerca gana un corazón y quien queda más lejos pierde uno.', play: '/aproximacao', guide: '/es/como-jugar/aproximacion', icon: Target, accent: '#06b6d4' },
+        { title: 'Desafío de la Palabra', description: 'Añade letras al fragmento, mantén palabras posibles y desafía los engaños de tus rivales antes de perder todas las vidas.', play: '/desafio-da-palavra', guide: '/es/como-jugar/desafio-de-la-palabra', icon: BookOpen, accent: '#8b5cf6' },
+      ],
+    };
+    return games[(lang === 'en' || lang === 'es' ? lang : 'pt')];
+  }, [lang]);
 
   // Detect carousel scroll limits on mount
   useEffect(() => {
@@ -2021,8 +2088,6 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
 
         {/* Game selector card */}
         <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24 mt-4 md:mt-12">
-          <h1 className="sr-only">Jogo do Impostor Online Grátis - TikJogos</h1>
-
           {/* Game logo carousel */}
           {/* Arrow row — sits above the scroll track, outside overflow-hidden */}
           <div className="flex items-center justify-between px-1 mb-1">
@@ -2143,6 +2208,16 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
 
             {/* Sincronia */}
             <button
+              onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('cronometro'); carouselDrag.current.moved = false; }}
+              className={cn("relative flex-none w-[23%] cursor-pointer snap-start rounded-2xl border-2 p-2 transition-all duration-300", selectedGame === 'cronometro' ? "scale-105 border-cyan-400 bg-[#2f3252] shadow-lg shadow-cyan-400/20" : "border-transparent bg-[#1a1c2e] opacity-50 hover:border-[#4a6a8a] hover:opacity-80")}
+              data-testid="tab-cronometro"
+            >
+              <div className="flex h-12 items-center justify-center rounded-lg bg-[#080d19] font-mono text-[11px] font-black text-cyan-300 md:h-16 md:text-sm"><span className="text-slate-400">T3:</span>MP:00</div>
+              <span className="absolute -right-1 -top-2 rounded-full bg-cyan-500 px-1.5 py-0.5 text-[9px] font-black leading-none text-slate-950">NOVO</span>
+            </button>
+
+            {/* Sincronia */}
+            <button
               onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('sincronia'); carouselDrag.current.moved = false; }}
               className={cn(
                 "flex-none w-[23%] rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer snap-start",
@@ -2250,7 +2325,7 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
                 <div className="flex justify-center mb-1">
                   <img 
                     src={logoImpostor} 
-                    alt="Logo Jogo do Impostor Online - TikJogos" 
+                    alt="Logo Jogo do Impostor"
                     width={575} height={133}
                     className="h-[67px] object-contain drop-shadow-lg" 
                   />
@@ -2394,9 +2469,65 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
               <BombaGameCard />
             </div>
           )}
+          {selectedGame === 'cronometro' && <div className="animate-fade-in"><CronometroGameCard /></div>}
         </div>
 
       </div>
+
+      <section className="relative z-20 mx-auto mb-10 max-w-3xl px-6 text-center" aria-label="Sobre o Jogo do Impostor">
+        <h1 className="mb-3 text-3xl font-black leading-tight text-white md:text-4xl">
+          {lang === 'en' ? 'Free Online Impostor Game' : lang === 'es' ? 'Juego del Impostor Online Gratis' : 'Jogo do Impostor Online Grátis'}
+        </h1>
+        <p className="text-base font-medium leading-relaxed text-slate-300 md:text-lg">
+          {lang === 'en'
+            ? 'Create a room, invite your friends and discover who received the different word.'
+            : lang === 'es'
+              ? 'Crea una sala, invita a tus amigos y descubre quién recibió la palabra diferente.'
+              : 'Crie uma sala, convide seus amigos e descubra quem recebeu a palavra diferente.'}
+        </p>
+      </section>
+
+      <section className="relative z-20 mx-auto mb-16 w-full max-w-6xl px-4" aria-labelledby="home-games-title">
+        <header className="mx-auto mb-8 max-w-3xl text-center">
+          <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-purple-400/30 bg-purple-500/10 px-4 py-2 text-xs font-black uppercase tracking-[.18em] text-purple-300">
+            <Gamepad2 className="h-4 w-4" /> {lang === 'en' ? 'Games for friends' : lang === 'es' ? 'Juegos para amigos' : 'Jogos para amigos'}
+          </span>
+          <h2 id="home-games-title" className="text-3xl font-black text-white md:text-4xl">
+            {lang === 'en' ? 'Discover all TikJogos games' : lang === 'es' ? 'Descubre todos los juegos de TikJogos' : 'Conheça todos os jogos do TikJogos'}
+          </h2>
+          <p className="mt-3 text-slate-400">
+            {lang === 'en' ? 'Choose your favorite, create a room and invite your friends.' : lang === 'es' ? 'Elige tu favorito, crea una sala e invita a tus amigos.' : 'Escolha seu favorito, crie uma sala e convide seus amigos.'}
+          </p>
+        </header>
+
+        <div className="grid gap-5 md:grid-cols-2">
+          {homeGames.map(({ title, description, guide, icon: Icon, accent }, index) => (
+            <article
+              key={title}
+              className={cn(
+                "group relative overflow-hidden rounded-3xl border border-[#343854] bg-[#242642] p-6 shadow-xl transition-all hover:-translate-y-1 hover:border-[#4b5078] md:p-7",
+                index === 0 && "md:col-span-2"
+              )}
+            >
+              <div className="absolute -right-12 -top-12 h-36 w-36 rounded-full opacity-10 blur-3xl" style={{ backgroundColor: accent }} />
+              <div className="relative flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border" style={{ color: accent, borderColor: `${accent}55`, backgroundColor: `${accent}18` }}>
+                  <Icon className="h-6 w-6" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-white">{title}</h2>
+                  <p className="mt-3 leading-relaxed text-slate-400">{description}</p>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <Link href={guide} className="inline-flex items-center gap-2 rounded-xl border border-[#454a70] bg-[#1a1b2e] px-5 py-3 text-sm font-black text-slate-200 transition-colors hover:border-purple-400 hover:text-white">
+                      <BookOpen className="h-4 w-4" /> {lang === 'en' ? 'How to play' : lang === 'es' ? 'Cómo jugar' : 'Como jogar'}
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
       {showSupportContent && <SupportHome embedded />}
 

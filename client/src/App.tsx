@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Redirect, Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -24,6 +24,9 @@ const ComoJogar = lazy(() => import("@/pages/ComoJogar"));
 const ComoJogarDesenho = lazy(() => import("@/pages/ComoJogarDesenho"));
 const ComoJogarSincronia = lazy(() => import("@/pages/ComoJogarSincronia"));
 const ComoJogarDesafioPalavra = lazy(() => import("@/pages/ComoJogarDesafioPalavra"));
+const ComoJogarHub = lazy(() => import("@/pages/ComoJogarHub"));
+const ComoJogarOutros = lazy(() => import("@/pages/ComoJogarOutros"));
+const ComoJogarCronometro = lazy(() => import("@/pages/ComoJogarCronometro"));
 const CriarTema = lazy(() => import("@/pages/CriarTema"));
 const Doacoes = lazy(() => import("@/pages/Doacoes"));
 const OutrosJogos = lazy(() => import("@/pages/OutrosJogos"));
@@ -41,6 +44,7 @@ const ThemePage = lazy(() => import("@/pages/ThemePage"));
 const Temas = lazy(() => import("@/pages/Temas"));
 const GameModes = lazy(() => import("@/pages/GameModes"));
 const BombaGame = lazy(() => import("@/pages/BombaGame"));
+const CronometroGame = lazy(() => import("@/pages/CronometroGame"));
 const DesenhoImpostor = lazy(() => import("@/pages/DesenhoImpostor"));
 const RespostasEmComum = lazy(() => import("@/pages/RespostasEmComum"));
 const SincBrGame = lazy(() => import("@/pages/SincBrGame"));
@@ -148,9 +152,9 @@ function AppRouter() {
       <Route path="/en" component={MergedHome} />
       <Route path="/es" component={MergedHome} />
 
-      <Route path="/jogos" component={ImpostorGame} />
-      <Route path="/en/games" component={ImpostorGame} />
-      <Route path="/es/juegos" component={ImpostorGame} />
+      <Route path="/jogos"><Redirect to="/" replace /></Route>
+      <Route path="/en/games"><Redirect to="/en" replace /></Route>
+      <Route path="/es/juegos"><Redirect to="/es" replace /></Route>
       <Route path="/entrar" component={Login} />
       <Route path="/conta" component={Account} />
 
@@ -165,6 +169,7 @@ function AppRouter() {
       {/* Jogo da Aproximação */}
       <Route path="/aproximacao" component={AproximacaoGame} />
       <Route path="/approximation" component={AproximacaoGame} />
+      <Route path="/es/aproximacion" component={AproximacaoGame} />
 
       {/* RankMaster */}
       <Route path="/rankmaster" component={RankMasterGame} />
@@ -172,6 +177,7 @@ function AppRouter() {
 
       {/* Bomba */}
       <Route path="/bomba" component={BombaGame} />
+      <Route path="/cronometro" component={CronometroGame} />
 
       {/* Criar tema */}
       {i18nRoutes("/criar-tema", CriarTema)}
@@ -212,30 +218,64 @@ function AppRouter() {
       {i18nRoutes("/ad-test", AdTest)}
 
       {/* Como jogar */}
+      <Route path="/comojogar" component={ComoJogarHub} />
+      <Route path="/en/how-to-play" component={ComoJogarHub} />
+      <Route path="/es/como-jugar" component={ComoJogarHub} />
+
       {/* Como Jogar - game-specific pages */}
-      {i18nRoutes("/como-jogar/jogo-do-impostor", ComoJogar)}
-      {i18nRoutes("/how-to-play/impostor-game", ComoJogar)}
-      {i18nRoutes("/como-jugar/juego-del-impostor", ComoJogar)}
+      <Route path="/como-jogar/jogo-do-impostor" component={ComoJogar} />
+      <Route path="/en/how-to-play/impostor-game" component={ComoJogar} />
+      <Route path="/es/como-jugar/juego-del-impostor" component={ComoJogar} />
 
-      {i18nRoutes("/como-jogar/jogo-do-impostor-desenho", ComoJogarDesenho)}
-      {i18nRoutes("/how-to-play/impostor-drawing-game", ComoJogarDesenho)}
-      {i18nRoutes("/como-jugar/juego-del-impostor-dibujo", ComoJogarDesenho)}
+      <Route path="/como-jogar/jogo-do-impostor-desenho" component={ComoJogarDesenho} />
+      <Route path="/en/how-to-play/impostor-drawing-game" component={ComoJogarDesenho} />
+      <Route path="/es/como-jugar/juego-del-impostor-dibujo" component={ComoJogarDesenho} />
 
-      {i18nRoutes("/como-jogar/sincronia", ComoJogarSincronia)}
-      {i18nRoutes("/how-to-play/sincronia", ComoJogarSincronia)}
-      {i18nRoutes("/como-jugar/sincronia", ComoJogarSincronia)}
+      <Route path="/como-jogar/sincronia" component={ComoJogarSincronia} />
+      <Route path="/en/how-to-play/sincronia" component={ComoJogarSincronia} />
+      <Route path="/es/como-jugar/sincronia" component={ComoJogarSincronia} />
 
       <Route path="/como-jogar/desafio-da-palavra" component={ComoJogarDesafioPalavra} />
-      <Route path="/how-to-play/word-challenge" component={ComoJogarDesafioPalavra} />
       <Route path="/en/how-to-play/word-challenge" component={ComoJogarDesafioPalavra} />
-      <Route path="/como-jugar/desafio-de-la-palabra" component={ComoJogarDesafioPalavra} />
       <Route path="/es/como-jugar/desafio-de-la-palabra" component={ComoJogarDesafioPalavra} />
+      <Route path="/como-jogar/cronometro" component={ComoJogarCronometro} />
+      <Route path="/en/how-to-play/timer-game" component={ComoJogarCronometro} />
+      <Route path="/es/como-jugar/juego-del-cronometro" component={ComoJogarCronometro} />
+
+      <Route path="/como-jogar/bomba">{() => <ComoJogarOutros game="bomba" />}</Route>
+      <Route path="/en/how-to-play/bomba">{() => <ComoJogarOutros game="bomba" />}</Route>
+      <Route path="/es/como-jugar/bomba">{() => <ComoJogarOutros game="bomba" />}</Route>
+
+      <Route path="/como-jogar/rankify">{() => <ComoJogarOutros game="rankify" />}</Route>
+      <Route path="/en/how-to-play/rankify">{() => <ComoJogarOutros game="rankify" />}</Route>
+      <Route path="/es/como-jugar/rankify">{() => <ComoJogarOutros game="rankify" />}</Route>
+
+      <Route path="/como-jogar/aproximacao">{() => <ComoJogarOutros game="aproximacao" />}</Route>
+      <Route path="/en/how-to-play/approximation">{() => <ComoJogarOutros game="aproximacao" />}</Route>
+      <Route path="/es/como-jugar/aproximacion">{() => <ComoJogarOutros game="aproximacao" />}</Route>
 
       {/* Legacy redirects — keep old URLs working */}
-      {i18nRoutes("/comojogar", ComoJogar)}
-      {i18nRoutes("/como-jogar", ComoJogar)}
-      {i18nRoutes("/how-to-play", ComoJogar)}
-      {i18nRoutes("/como-jugar", ComoJogar)}
+      <Route path="/como-jogar"><Redirect to="/comojogar" replace /></Route>
+      <Route path="/how-to-play"><Redirect to="/en/how-to-play" replace /></Route>
+      <Route path="/como-jugar"><Redirect to="/es/como-jugar" replace /></Route>
+      <Route path="/how-to-play/impostor-game"><Redirect to="/en/how-to-play/impostor-game" replace /></Route>
+      <Route path="/how-to-play/impostor-drawing-game"><Redirect to="/en/how-to-play/impostor-drawing-game" replace /></Route>
+      <Route path="/how-to-play/sincronia"><Redirect to="/en/how-to-play/sincronia" replace /></Route>
+      <Route path="/how-to-play/word-challenge"><Redirect to="/en/how-to-play/word-challenge" replace /></Route>
+      <Route path="/como-jugar/juego-del-impostor"><Redirect to="/es/como-jugar/juego-del-impostor" replace /></Route>
+      <Route path="/como-jugar/juego-del-impostor-dibujo"><Redirect to="/es/como-jugar/juego-del-impostor-dibujo" replace /></Route>
+      <Route path="/como-jugar/sincronia"><Redirect to="/es/como-jugar/sincronia" replace /></Route>
+      <Route path="/como-jugar/desafio-de-la-palabra"><Redirect to="/es/como-jugar/desafio-de-la-palabra" replace /></Route>
+      <Route path="/en/comojogar"><Redirect to="/en/how-to-play" replace /></Route>
+      <Route path="/es/comojogar"><Redirect to="/es/como-jugar" replace /></Route>
+      <Route path="/en/como-jogar/jogo-do-impostor"><Redirect to="/en/how-to-play/impostor-game" replace /></Route>
+      <Route path="/es/como-jogar/jogo-do-impostor"><Redirect to="/es/como-jugar/juego-del-impostor" replace /></Route>
+      <Route path="/en/como-jogar/jogo-do-impostor-desenho"><Redirect to="/en/how-to-play/impostor-drawing-game" replace /></Route>
+      <Route path="/es/como-jogar/jogo-do-impostor-desenho"><Redirect to="/es/como-jugar/juego-del-impostor-dibujo" replace /></Route>
+      <Route path="/en/como-jogar/sincronia"><Redirect to="/en/how-to-play/sincronia" replace /></Route>
+      <Route path="/es/como-jogar/sincronia"><Redirect to="/es/como-jugar/sincronia" replace /></Route>
+      <Route path="/en/como-jogar/desafio-da-palavra"><Redirect to="/en/how-to-play/word-challenge" replace /></Route>
+      <Route path="/es/como-jogar/desafio-da-palavra"><Redirect to="/es/como-jugar/desafio-de-la-palabra" replace /></Route>
 
       {/* Temas */}
       {i18nRoutes("/temas", Temas)}

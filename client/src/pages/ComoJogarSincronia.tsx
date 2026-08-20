@@ -4,6 +4,7 @@ import { Gamepad2, Rocket, CheckCircle2, HelpCircle, Lightbulb, Trophy, Users } 
 import { MobileNav } from "@/components/MobileNav";
 import { SideAds, BottomAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
+import { setPageSeo } from "@/lib/pageSeo";
 import sincroniaLogo from "@/assets/Sincronia.png";
 
 const CONTENT = {
@@ -179,7 +180,8 @@ export default function ComoJogarSincronia() {
   const c = CONTENT[lang as keyof typeof CONTENT] || CONTENT.pt;
 
   useEffect(() => {
-    document.title = `${c.heroTitle} ${c.heroHighlight} - TikJogos`;
+    const canonical = lang === 'en' ? '/en/how-to-play/sincronia' : lang === 'es' ? '/es/como-jugar/sincronia' : '/como-jogar/sincronia';
+    setPageSeo({ title: `${c.heroTitle} ${c.heroHighlight} | TikJogos`, description: c.heroDesc, canonical: `https://tikjogos.com.br${canonical}` });
     window.scrollTo(0, 0);
   }, [lang]);
 

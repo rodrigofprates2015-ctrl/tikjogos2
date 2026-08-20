@@ -93,7 +93,7 @@ export default function ThemePage({ themeSlug }: ThemePageProps) {
               Todos os Temas
             </Link>
             <span>|</span>
-            <Link href="/como-jogar" className="hover:text-white transition-colors">
+            <Link href="/comojogar" className="hover:text-white transition-colors">
               Como Jogar
             </Link>
           </nav>
@@ -279,7 +279,7 @@ export default function ThemePage({ themeSlug }: ThemePageProps) {
           <div className="flex items-center justify-center gap-4 flex-wrap text-sm">
             <Link href="/" className="text-purple-400 hover:underline">Página Principal</Link>
             <span className="text-slate-600">•</span>
-            <Link href="/como-jogar" className="text-purple-400 hover:underline">Como Jogar</Link>
+            <Link href="/comojogar" className="text-purple-400 hover:underline">Como Jogar</Link>
             <span className="text-slate-600">•</span>
             <Link href="/jogo-do-impostor/temas" className="text-purple-400 hover:underline">Todos os Temas</Link>
             <span className="text-slate-600">•</span>

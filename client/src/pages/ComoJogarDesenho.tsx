@@ -4,6 +4,7 @@ import { Gamepad2, Rocket, CheckCircle2, HelpCircle, Lightbulb, Palette, Users, 
 import { MobileNav } from "@/components/MobileNav";
 import { SideAds, BottomAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
+import { setPageSeo } from "@/lib/pageSeo";
 import logoImpostorArt from "@/assets/logo_impostor_art.png";
 
 const CONTENT = {
@@ -168,7 +169,8 @@ export default function ComoJogarDesenho() {
   const c = CONTENT[lang as keyof typeof CONTENT] || CONTENT.pt;
 
   useEffect(() => {
-    document.title = `${c.heroTitle} ${c.heroHighlight} - TikJogos`;
+    const canonical = lang === 'en' ? '/en/how-to-play/impostor-drawing-game' : lang === 'es' ? '/es/como-jugar/juego-del-impostor-dibujo' : '/como-jogar/jogo-do-impostor-desenho';
+    setPageSeo({ title: `${c.heroTitle} ${c.heroHighlight} | TikJogos`, description: c.heroDesc, canonical: `https://tikjogos.com.br${canonical}` });
     window.scrollTo(0, 0);
   }, [lang]);
 

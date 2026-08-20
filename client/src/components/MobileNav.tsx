@@ -40,6 +40,9 @@ export function MobileNav() {
   const { t, lang, langPath } = useLanguage();
   const { user } = useAuth();
   const playHref = lang === "en" ? "/en/games" : lang === "es" ? "/es/juegos" : "/jogos";
+  const getNavHref = (item: NavItem) => item.labelKey === "nav.howToPlay"
+    ? (lang === "en" ? "/en/how-to-play" : lang === "es" ? "/es/como-jugar" : "/comojogar")
+    : langPath(item.href);
 
   return (
     <nav className="bg-[#242642]/90 backdrop-blur-sm border-b border-[#2f3252] sticky top-0 z-50">
@@ -54,9 +57,9 @@ export function MobileNav() {
           {navItemsDef.map((item) => (
             <Link
               key={item.href}
-              href={langPath(item.href)}
+              href={getNavHref(item)}
               className={`text-sm font-bold flex items-center gap-1.5 transition-colors ${
-                location === item.href
+                location === getNavHref(item)
                   ? "text-white"
                   : "text-slate-400 hover:text-white"
               }`}
@@ -103,10 +106,10 @@ export function MobileNav() {
               {navItemsDef.map((item) => (
                 <Link
                   key={item.href}
-                  href={langPath(item.href)}
+                  href={getNavHref(item)}
                   onClick={() => setOpen(false)}
                   className={`flex items-center gap-3 px-6 py-4 text-base font-semibold transition-colors ${
-                    location === item.href
+                    location === getNavHref(item)
                       ? "bg-purple-600/20 text-purple-400 border-l-4 border-purple-500"
                       : "text-slate-300 hover:bg-[#242642] hover:text-white border-l-4 border-transparent"
                   }`}

@@ -18,14 +18,20 @@ import { MobileNav } from "@/components/MobileNav";
 import { DisplayAd, SideAds, BottomAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
+import { setPageSeo } from "@/lib/pageSeo";
 
 export default function ComoJogar() {
-  const { t, langPath } = useLanguage();
+  const { t, lang, langPath } = useLanguage();
 
   useEffect(() => {
-    document.title = t('howToPlay.title', 'Como Jogar') + " - TikJogos Impostor";
+    const seo = lang === 'en'
+      ? { title: 'How to Play Impostor Game Online | TikJogos', description: 'Learn how to play the Impostor Game online. Rules, tips and strategies to play with friends.', canonical: 'https://tikjogos.com.br/en/how-to-play/impostor-game' }
+      : lang === 'es'
+        ? { title: 'Cómo Jugar al Juego del Impostor Online | TikJogos', description: 'Aprende a jugar al Juego del Impostor online. Reglas, consejos y estrategias para jugar con amigos.', canonical: 'https://tikjogos.com.br/es/como-jugar/juego-del-impostor' }
+        : { title: 'Como Jogar o Jogo do Impostor: Regras e Dicas | TikJogos', description: 'Aprenda como jogar o Jogo do Impostor online, entenda as regras, a votação e as estratégias para tripulantes e impostores.', canonical: 'https://tikjogos.com.br/como-jogar/jogo-do-impostor' };
+    setPageSeo(seo);
     window.scrollTo(0, 0);
-  }, []);
+  }, [lang]);
 
   return (
     <div className="min-h-screen w-full flex flex-col" style={{ backgroundColor: '#1a1b2e' }}>
