@@ -34,6 +34,29 @@ html[data-native-app="true"] .native-web-only {
   display: none !important;
 }
 
+html[data-native-app="true"] .web-ad-only {
+  display: none !important;
+}
+
+.native-app-footer {
+  position: relative;
+  z-index: 20;
+  width: calc(100% - 2rem);
+  max-width: 30rem;
+  margin: 0 auto 1.25rem;
+  padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  color: #94a3b8;
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.native-app-footer strong {
+  color: #e2e8f0;
+  font-weight: 800;
+}
+
 html[data-native-app="true"] body {
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);

@@ -2475,6 +2475,13 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
 
       </div>
 
+      {isNativeApp() && (
+        <div className="native-app-footer" role="contentinfo">
+          <p>Desenvolvido por <strong>Rodrigo Freitas</strong></p>
+          <p>© 2026 TikJogos. Todos os direitos reservados.</p>
+        </div>
+      )}
+
       <section className="native-web-only relative z-20 mx-auto mb-10 max-w-3xl px-6 text-center" aria-label="Sobre o Jogo do Impostor">
         <h1 className="mb-3 text-3xl font-black leading-tight text-white md:text-4xl">
           {lang === 'en' ? 'Free Online Impostor Game' : lang === 'es' ? 'Juego del Impostor Online Gratis' : 'Jogo do Impostor Online Grátis'}

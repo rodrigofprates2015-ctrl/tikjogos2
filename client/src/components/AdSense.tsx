@@ -168,7 +168,7 @@ export const BottomAd = () => {
   if (!isVisible) return null;
 
   return (
-    <div className={`fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300 ${isMinimized ? "translate-y-full" : ""}`}>
+    <div className={`web-ad-only fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300 ${isMinimized ? "translate-y-full" : ""}`}>
       {/* Botão para mostrar quando minimizado */}
       {isMinimized && (
         <button
@@ -340,7 +340,7 @@ export const AnchorMobileAd = () => {
   if (dismissed) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[60] md:hidden">
+    <div className="web-ad-only fixed bottom-0 left-0 right-0 z-[60] md:hidden">
       <div className="relative bg-[#0f172a] border-t border-slate-700/60 shadow-2xl">
         <button
           onClick={() => setDismissed(true)}
