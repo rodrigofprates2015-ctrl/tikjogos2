@@ -1,4 +1,4 @@
-import { Redirect, Switch, Route } from "wouter";
+import { Link, Redirect, Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -17,6 +17,7 @@ import RankMasterGame from "@/pages/RankMasterGame";
 import { useAuth } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { isNativeApp } from "@/lib/nativeApp";
+import { ArrowLeft } from "lucide-react";
 
 // Lazy-loaded pages - reduces initial JS bundle for faster LCP on mobile
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
@@ -140,6 +141,94 @@ function LazyFallback() {
 
 function MergedHome() {
   return <ImpostorGame showSupportContent={!isNativeApp()} />;
+}
+
+const NATIVE_AUXILIARY_ROUTES = [
+  "/comojogar",
+  "/como-jogar",
+  "/how-to-play",
+  "/como-jugar",
+  "/blog",
+  "/temas",
+  "/themes",
+  "/doacoes",
+  "/donations",
+  "/donaciones",
+  "/apoie",
+  "/outros-jogos",
+  "/other-games",
+  "/otros-juegos",
+  "/modos",
+  "/game-modes",
+  "/privacidade",
+  "/privacy",
+  "/termos",
+  "/terms",
+  "/criar-tema",
+  "/create-theme",
+  "/crear-tema",
+  "/oficina",
+  "/personagem",
+  "/personagens",
+  "/skin",
+  "/entrar",
+  "/conta",
+];
+
+function NativeHomeButton() {
+  const [location] = useLocation();
+  if (!isNativeApp()) return null;
+
+  const normalizedPath = location.replace(/^\/(en|es)(?=\/)/, "");
+  const isAuxiliaryPage = NATIVE_AUXILIARY_ROUTES.some(
+    (route) => normalizedPath === route || normalizedPath.startsWith(`${route}/`),
+  );
+
+  if (!isAuxiliaryPage) return null;
+
+  return (
+    <Link
+      href="/"
+      className="native-home-button"
+      aria-label="Voltar para a tela inicial"
+      data-testid="native-home-button"
+    >
+      <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+      <span>Início</span>
+    </Link>
+  );
+}
+
+function NativeAdBlocker() {
+  useEffect(() => {
+    if (!isNativeApp()) return;
+
+    const selectors = [
+      "ins.adsbygoogle",
+      "ins.adsbygoogle-noablate",
+      ".google-auto-placed",
+      "[data-ad-status]",
+      "[data-anchor-status]",
+      "iframe[src*='googlesyndication.com']",
+      "iframe[id^='google_ads_iframe']",
+    ].join(",");
+
+    const removeInjectedAds = () => {
+      document.querySelectorAll<HTMLElement>(selectors).forEach((element) => {
+        const container = element.closest<HTMLElement>(
+          "ins.adsbygoogle-noablate, .google-auto-placed, ins.adsbygoogle",
+        );
+        (container || element).remove();
+      });
+    };
+
+    removeInjectedAds();
+    const observer = new MutationObserver(removeInjectedAds);
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
+  return null;
 }
 
 function AppRouter() {
@@ -460,6 +549,8 @@ function App() {
         <LanguageProvider>
           <VersionManager />
           <SessionTracker />
+          <NativeAdBlocker />
+          <NativeHomeButton />
           <AppRouter />
           <FeedbackController />
           <Toaster />

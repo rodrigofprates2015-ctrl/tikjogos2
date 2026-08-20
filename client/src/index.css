@@ -21,6 +21,11 @@ html[data-native-app="true"] nav,
 html[data-native-app="true"] footer,
 html[data-native-app="true"] .adsense-container,
 html[data-native-app="true"] ins.adsbygoogle,
+html[data-native-app="true"] ins.adsbygoogle-noablate,
+html[data-native-app="true"] .google-auto-placed,
+html[data-native-app="true"] [data-anchor-status],
+html[data-native-app="true"] iframe[src*="googlesyndication.com"],
+html[data-native-app="true"] iframe[id^="google_ads_iframe"],
 html[data-native-app="true"] [aria-label="Publicidade"] {
   display: none !important;
 }
@@ -32,6 +37,33 @@ html[data-native-app="true"] .native-web-only {
 html[data-native-app="true"] body {
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+.native-home-button {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 0.75rem);
+  left: 0.75rem;
+  z-index: 10000;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.9rem;
+  background: rgba(15, 23, 42, 0.92);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.native-home-button:active {
+  transform: translateY(1px);
+  background: rgba(37, 46, 78, 0.96);
 }
 
 /* GT America Compressed Medium Italic - for smaller banner text */
