@@ -5,6 +5,8 @@ node_modules/
 .pnpm-store/
 .pnpm-config/
 .gradle-cache/
+.gradle-admob/
+.android-home/
 android/local.properties
 
 # Build output

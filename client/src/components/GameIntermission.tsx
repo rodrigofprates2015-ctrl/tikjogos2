@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { isNativeApp } from "@/lib/nativeApp";
+import { showNativeInterstitial } from "@/lib/nativeAdMob";
 
 function IntermissionAd() {
   const insRef = useRef<HTMLModElement>(null);
@@ -81,10 +82,22 @@ export function GameIntermissionScreen({
 export function useGameIntermission() {
   const [visible, setVisible] = useState(false);
   const pendingAction = useRef<(() => void) | null>(null);
+  const nativeAdInProgress = useRef(false);
 
   const showIntermission = useCallback((action: () => void) => {
     if (isNativeApp()) {
-      action();
+      if (nativeAdInProgress.current) return;
+      nativeAdInProgress.current = true;
+
+      void showNativeInterstitial()
+        .catch((error) => {
+          // Sem rede ou sem preenchimento, a partida deve continuar normalmente.
+          console.warn("Native interstitial was skipped:", error);
+        })
+        .finally(() => {
+          nativeAdInProgress.current = false;
+          action();
+        });
       return;
     }
     pendingAction.current = action;
