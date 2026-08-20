@@ -44,10 +44,10 @@ export default function CronometroGame() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [now, setNow] = useState(Date.now());
-  const [offset, setOffset] = useState(0);
   const [pressed, setPressed] = useState(false);
   const [localStartedAt, setLocalStartedAt] = useState<number | null>(null);
+  const [displayElapsed, setDisplayElapsed] = useState(0);
+  const localStartedAtRef = useRef<number | null>(null);
   const code = (new URLSearchParams(window.location.search).get("room") || sessionStorage.getItem("cronometro_room_code") || "").toUpperCase();
 
   useEffect(() => { sessionStorage.setItem("cronometro_player_id", playerId.current); document.title = "Jogo do Cronômetro Online | TikJogos"; }, []);
@@ -62,7 +62,7 @@ export default function CronometroGame() {
         const data = await response.json();
         if (!active) return;
         if (!data.players.some((p: any) => p.uid === playerId.current)) throw new Error("Você não está mais nesta sala.");
-        setRoom(data); setOffset(data.serverNow - Date.now()); setError("");
+        setRoom(data); setError("");
       } catch (e: any) { if (active) setError(e.message); }
       finally { if (active) setLoading(false); }
     };
@@ -74,12 +74,22 @@ export default function CronometroGame() {
     setPressed(!!room?.attempts.some(a => a.playerId === playerId.current));
   }, [room?.attempts.length]);
   useEffect(() => {
+    localStartedAtRef.current = null;
     setLocalStartedAt(null);
+    setDisplayElapsed(0);
     setPressed(false);
   }, [room?.round]);
-  useEffect(() => { if (room?.status !== "playing") return; const tick = window.setInterval(() => setNow(Date.now()), 10); return () => window.clearInterval(tick); }, [room?.status]);
-
-  const serverNow = now + offset;
+  useEffect(() => {
+    if (room?.status !== "playing" || localStartedAt === null || pressed) return;
+    let frame = 0;
+    const render = (timestamp: number) => {
+      const startedAt = localStartedAtRef.current;
+      if (startedAt !== null) setDisplayElapsed(Math.max(0, timestamp - startedAt));
+      frame = window.requestAnimationFrame(render);
+    };
+    frame = window.requestAnimationFrame(render);
+    return () => window.cancelAnimationFrame(frame);
+  }, [room?.status, localStartedAt, pressed]);
   const canUseTimer = room?.status === "playing" && !pressed;
   const myAttempt = room?.attempts.find(a => a.playerId === playerId.current);
   const isHost = room?.hostId === playerId.current;
@@ -94,14 +104,19 @@ export default function CronometroGame() {
 
   const handleTimer = useCallback(async () => {
     if (!room || !canUseTimer || busy) return;
-    if (localStartedAt === null) {
-      setLocalStartedAt(performance.now());
+    if (localStartedAtRef.current === null) {
+      const startedAt = performance.now();
+      localStartedAtRef.current = startedAt;
+      setLocalStartedAt(startedAt);
+      setDisplayElapsed(0);
       return;
     }
+    const stoppedAt = performance.now();
+    const elapsedMs = Math.max(0, Math.round(stoppedAt - localStartedAtRef.current));
+    setDisplayElapsed(elapsedMs);
     setPressed(true);
-    const elapsedMs = Math.max(0, Math.round(performance.now() - localStartedAt));
     await act("attempt", { elapsedMs });
-  }, [room, canUseTimer, busy, localStartedAt]);
+  }, [room, canUseTimer, busy]);
 
   useEffect(() => {
     const key = (event: KeyboardEvent) => { if (event.code === "Space" && !event.repeat) { event.preventDefault(); handleTimer(); } };
@@ -137,8 +152,8 @@ export default function CronometroGame() {
 
         {room.status === "playing" && <>
           <section className="text-center"><span className="text-xs font-black uppercase tracking-[.2em] text-cyan-300">Rodada {room.round}</span><h1 className="mt-3 text-3xl font-black">Pare exatamente em</h1><div className="mx-auto mt-5 w-fit rounded-3xl border-2 border-cyan-400 bg-slate-950 px-7 py-5 font-mono text-5xl font-black tracking-wider text-cyan-300 shadow-[0_0_40px_rgba(34,211,238,.2)]">{formatTime(room.targetMs || 0)}</div></section>
-          <button onClick={handleTimer} disabled={!canUseTimer} style={{ backgroundColor: canUseTimer ? "#123653" : "#111827", color: "#ffffff" }} className={`min-h-[300px] w-full touch-manipulation rounded-[2.5rem] border-4 p-8 text-center shadow-xl transition-all ${canUseTimer ? "border-cyan-400 active:scale-[.98]" : "border-slate-600"}`}>
-            {myAttempt ? <><Clock3 className="mx-auto h-16 w-16 text-emerald-400"/><strong className="mt-5 block font-mono text-5xl">{formatTime(myAttempt.elapsedMs)}</strong><span className="mt-3 block font-bold text-slate-300">Diferença de {formatTime(myAttempt.differenceMs)}</span></> : localStartedAt !== null ? <><strong className="block font-mono text-6xl tracking-wider">{room.showTimer ? formatTime(performance.now() - localStartedAt) : "--:--:--"}</strong><span className="mt-6 block text-xl font-black text-red-300">TOQUE PARA PARAR</span><small className="mt-2 block text-slate-300">O cronômetro está rodando. Pressione espaço novamente para parar.</small></> : <><strong className="block font-mono text-6xl tracking-wider">00:00:00</strong><span className="mt-6 block text-xl font-black text-cyan-300">TOQUE PARA INICIAR</span><small className="mt-2 block text-slate-300">No computador, pressione a barra de espaço</small></>}
+          <button onPointerDown={(event) => { event.preventDefault(); handleTimer(); }} onClick={(event) => { if (event.detail === 0) handleTimer(); }} disabled={!canUseTimer} style={{ backgroundColor: canUseTimer ? "#123653" : "#111827", color: "#ffffff" }} className={`min-h-[300px] w-full touch-none rounded-[2.5rem] border-4 p-8 text-center shadow-xl transition-all ${canUseTimer ? "border-cyan-400 active:scale-[.98]" : "border-slate-600"}`}>
+            {myAttempt ? <><Clock3 className="mx-auto h-16 w-16 text-emerald-400"/><strong className="mt-5 block font-mono text-5xl">{formatTime(myAttempt.elapsedMs)}</strong><span className="mt-3 block font-bold text-slate-300">Diferença de {formatTime(myAttempt.differenceMs)}</span></> : localStartedAt !== null ? <><strong className="block font-mono text-6xl tracking-wider">{room.showTimer ? formatTime(displayElapsed) : "??:??:??"}</strong><span className="mt-6 block text-xl font-black text-red-300">TOQUE PARA PARAR</span><small className="mt-2 block text-slate-300">O cronômetro está rodando. Pressione espaço novamente para parar.</small></> : <><strong className="block font-mono text-6xl tracking-wider">00:00:00</strong><span className="mt-6 block text-xl font-black text-cyan-300">TOQUE PARA INICIAR</span><small className="mt-2 block text-slate-300">No computador, pressione a barra de espaço</small></>}
           </button>
           {waiting.length > 0 && <p className="text-center text-sm text-slate-400">Aguardando: {waiting.map(p => p.name).join(", ")}</p>}
         </>}
