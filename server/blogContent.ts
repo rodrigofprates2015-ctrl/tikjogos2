@@ -27,6 +27,93 @@ export interface BlogPostFull {
 
 export const BLOG_POSTS_FULL: BlogPostFull[] = [
   {
+    slug: 'jogo-do-cronometro-percepcao-do-tempo',
+    slugEn: 'timer-game-what-it-reveals-about-time-perception',
+    slugEs: 'juego-del-cronometro-que-revela-sobre-la-percepcion-del-tiempo',
+    title: 'Jogo do Cronômetro: o que esse desafio revela sobre sua percepção do tempo?',
+    titleEn: 'Timer Game: What Does This Challenge Reveal About Your Perception of Time?',
+    titleEs: 'Juego del Cronómetro: ¿Qué Revela Este Desafío Sobre Tu Percepción del Tiempo?',
+    excerpt: 'Entenda como o jogo do cronômetro envolve percepção temporal, atenção, autocontrole e habilidades úteis no dia a dia.',
+    excerptEn: 'Discover how the timer game involves time perception, attention, self-control and useful everyday skills.',
+    excerptEs: 'Descubre cómo el juego del cronómetro involucra percepción temporal, atención, autocontrol y habilidades útiles para el día a día.',
+    image: 'https://images.unsplash.com/photo-1501139083538-0139583c060f?auto=format&fit=crop&q=80&w=1200',
+    date: '20 Ago 2026',
+    authorName: 'Equipe TikJogos',
+    readTime: '7 min',
+    category: 'Tips',
+    content: `**Você consegue parar um cronômetro exatamente no momento em que 10 segundos se completam, sem olhar para o relógio?** Parece uma tarefa simples, mas esse pequeno desafio envolve diferentes habilidades cognitivas, como atenção, percepção temporal e controle dos impulsos.
+
+O chamado jogo do cronômetro transforma uma atividade cotidiana em um teste rápido para avaliar como cada pessoa percebe a passagem do tempo.
+
+### Um desafio simples, mas que exige concentração
+
+Ao iniciar o jogo, o participante precisa acompanhar mentalmente a passagem dos segundos e interromper o cronômetro no momento em que acredita ter atingido o intervalo determinado.
+
+Sem uma referência visual, o cérebro precisa fazer uma estimativa interna da duração. É justamente essa diferença entre o tempo real e a percepção subjetiva que torna cada tentativa interessante.
+
+Algumas pessoas podem parar antes do tempo. Outras podem esperar demais. A diferença entre a estimativa e o resultado mostra como nossa percepção temporal pode variar de acordo com atenção, experiência e contexto.
+
+### O que está por trás da percepção do tempo?
+
+O cérebro utiliza diferentes mecanismos para organizar e estimar a duração dos acontecimentos. Essa capacidade permite perceber se uma atividade parece ter durado poucos segundos, vários minutos ou muito mais tempo.
+
+No jogo do cronômetro, essa habilidade é colocada em evidência porque o participante não pode simplesmente consultar um relógio. Ele precisa confiar na própria percepção.
+
+Além disso, manter a contagem exige atenção contínua. Qualquer distração pode fazer com que a pessoa perca a referência e erre o momento de parar.
+
+### Atenção também entra em jogo
+
+Embora o objetivo seja acertar o tempo, o desafio também exige concentração.
+
+Durante a partida, é necessário manter o foco na tarefa e ignorar estímulos externos. Por isso, o desempenho pode variar bastante dependendo de fatores como distração, ansiedade, cansaço ou simplesmente o nível de atenção naquele momento.
+
+Essa característica faz com que o jogo seja mais do que uma brincadeira de precisão: ele também funciona como um exercício rápido de atenção sustentada.
+
+### Por que algumas pessoas parecem ter uma noção de tempo melhor?
+
+A percepção temporal não é necessariamente igual para todo mundo. Pessoas com diferentes experiências e hábitos podem desenvolver estratégias próprias para estimar intervalos.
+
+Músicos, por exemplo, convivem constantemente com ritmo e duração. Atletas também precisam lidar com intervalos, velocidade e ritmo durante treinamentos e competições.
+
+Já profissionais que fazem apresentações ou trabalham com prazos podem desenvolver uma percepção prática de quanto tempo determinadas atividades costumam consumir.
+
+Isso não significa que essas pessoas sempre acertarão o cronômetro, mas experiências desse tipo podem influenciar a maneira como lidam com o tempo.
+
+### O jogo também testa seu autocontrole
+
+Existe ainda outro detalhe interessante: **saber quando não agir**.
+
+Ao iniciar o cronômetro, pode surgir a vontade de interrompê-lo rapidamente por acreditar que o tempo já passou. Resistir a esse impulso e esperar pelo momento considerado correto exige controle da resposta imediata.
+
+O desafio, portanto, combina percepção temporal com tomada de decisão e autorregulação.
+
+### Uma habilidade útil fora do jogo
+
+Ter uma boa estimativa de tempo pode ser útil em situações comuns do dia a dia.
+
+Na cozinha, por exemplo, muitas pessoas conseguem estimar aproximadamente quando precisam verificar uma receita. Nos estudos e no trabalho, perceber quanto tempo uma tarefa costuma consumir ajuda na organização da rotina.
+
+Em atividades físicas, a percepção de ritmo e duração também pode contribuir para controlar exercícios e períodos de descanso.
+
+### Como melhorar sua precisão?
+
+Uma das formas mais simples de praticar é repetir o desafio regularmente.
+
+Você pode começar tentando identificar intervalos curtos, como 5 segundos, e depois aumentar gradualmente para 10, 15 ou 20 segundos.
+
+Também é possível experimentar diferentes estratégias de contagem mental. Algumas pessoas preferem contar os segundos diretamente, enquanto outras utilizam uma sequência ritmada de palavras.
+
+O mais importante é manter um ritmo consistente e observar seus resultados ao longo das tentativas.
+
+### Um teste rápido que pode dizer mais do que parece
+
+O jogo do cronômetro é simples de entender e leva apenas alguns segundos para ser realizado. Mesmo assim, ele coloca em ação diferentes processos relacionados à percepção temporal, atenção e controle das respostas.
+
+Na próxima vez que encontrar um cronômetro, tente fazer o teste sem olhar para a tela.
+
+**Será que você consegue parar exatamente no tempo certo?**`,
+  },
+  {
     slug: 'jogo-do-impostor-palavras-como-funciona',
     slugEn: 'impostor-game-words-how-it-works',
     slugEs: 'juego-del-impostor-palabras-como-funciona',
