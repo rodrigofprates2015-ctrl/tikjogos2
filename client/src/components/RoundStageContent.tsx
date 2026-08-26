@@ -137,20 +137,15 @@ export function SpeakingOrderWithVotingStage({
   players, 
   serverOrder,
   playerMap,
-  userId,
   isHost,
   onStartVoting,
-  onSubmitVote,
-  isSubmitting,
   onNewRound
 }: SpeakingOrderWithVotingStageProps) {
   const [rotation, setRotation] = useState(0);
   const [isSpinComplete, setIsSpinComplete] = useState(false);
   const [speakingOrder, setSpeakingOrder] = useState<string[]>([]);
   const [showResults, setShowResults] = useState(false);
-  const [selectedVote, setSelectedVote] = useState<string | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [votingUnlocked, setVotingUnlocked] = useState(false);
 
   useEffect(() => {
     if (isSpinComplete) return;
@@ -217,63 +212,18 @@ export function SpeakingOrderWithVotingStage({
       )}
 
       {showResults && displayOrder.length > 0 && (
-        <div className="animate-stage-fade-in w-full space-y-3">
-          <p className="text-center text-gray-400 text-xs font-bold uppercase tracking-wider">
-            Ordem Definida
-          </p>
-
-          {/* Order list — always visible */}
-          <div className="space-y-1.5">
-            {displayOrder.map(({ uid, name }, idx) => {
-              const isMe = uid === userId;
-              const canVote = votingUnlocked && !isMe;
-              const isSelected = selectedVote === uid;
-              
-              return (
-                <button
-                  key={uid}
-                  onClick={() => canVote && setSelectedVote(uid)}
-                  disabled={!votingUnlocked || isMe}
-                  className={cn(
-                    "w-full flex items-center gap-2 px-3 py-2.5 rounded-xl transition-all text-left",
-                    isSelected
-                      ? "bg-white/15 border-2 border-white/40"
-                      : "bg-gray-900/40 border border-gray-700/50",
-                    canVote && !isSelected && "hover:border-white/30",
-                    (!votingUnlocked || isMe) && "opacity-50 cursor-not-allowed"
-                  )}
-                  style={{ animation: `stageSlideIn 0.3s ease-out ${idx * 0.08}s backwards` }}
-                  data-testid={`button-vote-order-${uid}`}
-                >
-                  <div className={cn(
-                    "w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0",
-                    isSelected 
-                      ? "bg-white/30 text-white" 
-                      : "bg-gray-700/40 border border-gray-600"
-                  )}>
-                    <span className={cn(
-                      "font-bold text-xs",
-                      isSelected ? "text-white" : "text-gray-300"
-                    )}>{idx + 1}</span>
-                  </div>
-                  <span className={cn(
-                    "font-medium text-sm flex-1",
-                    isSelected ? "text-white font-semibold" : "text-white"
-                  )}>
-                    {name} {isMe && "(Você)"}
-                  </span>
-                  {idx === 0 && <Crown className="w-4 h-4 text-yellow-600 flex-shrink-0" />}
-                  {isSelected && <Check className="w-4 h-4 text-white flex-shrink-0" />}
-                </button>
-              );
-            })}
+        <div className="animate-stage-fade-in w-full max-w-xl mx-auto space-y-5 text-center">
+          <div className="rounded-2xl border border-emerald-400/25 bg-emerald-400/5 px-5 py-6">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-300">
+              <Check className="h-6 w-6" />
+            </div>
+            <p className="text-white text-lg font-black">Ordem definida!</p>
+            <p className="mt-1 text-sm text-gray-400">
+              Veja a posição de cada participante na lista de jogadores ao lado.
+            </p>
           </div>
 
-          <div className="w-full h-[1px] bg-gray-700/30 my-2"></div>
-
-          {/* Before voting is unlocked — host sees "Iniciar Votação" button, others see waiting message */}
-          {!votingUnlocked && (
-            <div className="space-y-2">
+          <div className="space-y-2">
               {isHost ? (
                 <Button 
                   onClick={() => setShowConfirmDialog(true)}
@@ -299,32 +249,7 @@ export function SpeakingOrderWithVotingStage({
                   <ArrowRight className="mr-2 w-4 h-4" /> Pular para Nova Rodada
                 </Button>
               )}
-            </div>
-          )}
-
-          {/* After voting is unlocked — everyone can vote */}
-          {votingUnlocked && (
-            <div className="space-y-2">
-              <p className="text-center text-[#e9c46a] text-xs font-bold">
-                Vote em quem você acha ser o impostor
-              </p>
-              <Button 
-                onClick={() => {
-                  if (selectedVote) {
-                    onStartVoting();
-                    onSubmitVote(selectedVote);
-                  }
-                }}
-                disabled={!selectedVote || isSubmitting}
-                className="w-full h-11 bg-white text-black font-bold text-sm rounded-xl transition-all disabled:opacity-30"
-                style={{ boxShadow: '0 4px 0 rgba(255, 255, 255, 0.2)' }}
-                data-testid="button-vote-from-order"
-              >
-                <Vote className="mr-2 w-4 h-4" /> 
-                {isSubmitting ? 'Votando...' : selectedVote ? 'Votar no Impostor' : 'Selecione o Impostor'}
-              </Button>
-            </div>
-          )}
+          </div>
 
           {/* Confirmation dialog */}
           {showConfirmDialog && (
@@ -349,7 +274,6 @@ export function SpeakingOrderWithVotingStage({
                     <Button
                       onClick={() => {
                         setShowConfirmDialog(false);
-                        setVotingUnlocked(true);
                         onStartVoting();
                       }}
                       className="flex-1 h-11 bg-[#e9c46a] hover:bg-[#d4a843] text-black font-bold rounded-xl"

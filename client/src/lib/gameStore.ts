@@ -204,12 +204,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   selectMode: (mode: GameModeType) => {
     set({ selectedMode: mode });
-    
-    // If Palavra Secreta, show submode selection first
-    if (mode === 'palavraSecreta') {
-      set({ status: 'submodeSelect' });
-    }
-    // Note: status stays at 'modeSelect' - only changes to 'playing' when game actually starts via WebSocket
+    // Mode and theme selection now share the same dashboard stage.
   },
 
   goToModeSelect: () => {

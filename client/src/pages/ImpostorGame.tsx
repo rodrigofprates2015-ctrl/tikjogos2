@@ -4,6 +4,7 @@ import { useDrawingGameStore } from "@/lib/drawingGameStore";
 import { notifyGameEnded } from "@/hooks/useFeedback";
 import { Link, useLocation } from "wouter";
 import PalavraSuperSecretaSubmodeScreen from "@/pages/PalavraSuperSecretaSubmodeScreen";
+import { PALAVRA_SECRETA_SUBMODES, type PalavraSuperSecretaSubmode } from "@/lib/palavra-secreta-submodes";
 import SupportHome from "@/pages/SupportHome";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import bombaLogo from "@/assets/bomba-logo.png";
@@ -3916,6 +3917,7 @@ const ModeSelectScreen = () => {
   const [isLoadingThemes, setIsLoadingThemes] = useState(false);
   const [selectedThemeCode, setSelectedThemeCode] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubmode, setSelectedSubmode] = useState<PalavraSuperSecretaSubmode>(() => (localStorage.getItem('selectedSubmode') as PalavraSuperSecretaSubmode) || 'classico');
   const [shouldAutoStart, setShouldAutoStart] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
 
@@ -3943,6 +3945,7 @@ const ModeSelectScreen = () => {
     setIsStarting(true);
     
     try {
+      if (selectedMode === 'palavraSecreta') localStorage.setItem('selectedSubmode', selectedSubmode);
       // Se é palavraComunidade, precisa ter um tema selecionado
       if (selectedMode === 'palavraComunidade') {
         if (!selectedThemeCode) {
@@ -4282,8 +4285,10 @@ const ModeSelectScreen = () => {
               </div>
             ) : null}
             
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-              {WORD_CATEGORIES.map(category => <button key={category.id} type="button" onClick={() => setSelectedCategory(category.id)} className={cn("rounded-2xl border p-3 text-left transition", selectedCategory === category.id ? "border-violet-400 bg-violet-500/20 shadow-[0_0_18px_rgba(139,92,246,.14)]" : "border-slate-700 bg-slate-900/70 hover:border-violet-400/40")}><span className="text-2xl">{category.emoji}</span><strong className="mt-2 block text-sm text-white">{category.name}</strong><span className="text-[10px] font-bold uppercase text-slate-500">{category.difficulty}</span></button>)}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {(Object.entries(PALAVRA_SECRETA_SUBMODES) as Array<[PalavraSuperSecretaSubmode, typeof PALAVRA_SECRETA_SUBMODES['classico']]>).map(([submodeId, submode]) => <button key={submodeId} type="button" onClick={() => { setSelectedSubmode(submodeId); setSelectedCategory(submodeId); localStorage.setItem('selectedSubmode', submodeId); }} className={cn("overflow-hidden rounded-2xl border p-3 text-left transition", selectedSubmode === submodeId ? "border-violet-400 bg-violet-500/20 shadow-[0_0_18px_rgba(139,92,246,.14)]" : "border-slate-700 bg-slate-900/70 hover:border-violet-400/40")}>
+                {submode.image && <img src={submode.image} alt="" className="mb-3 h-24 w-full rounded-xl object-cover"/>}<strong className="block text-sm text-white">{submode.title}</strong><span className="mt-1 block text-xs leading-relaxed text-slate-400">{submode.desc}</span><span className="mt-2 inline-block text-[10px] font-bold uppercase text-violet-300">{submode.words.length} palavras</span>
+              </button>)}
             </div>
           </div>
         )}
@@ -5199,6 +5204,7 @@ const GameScreen = () => {
   };
 
   const currentStage = deriveCurrentStage();
+  const compactRoleCard = currentStage !== 'WORD_REVEAL';
 
   if (gameMode === 'perguntasDiferentes') {
     return <PerguntasDiferentesScreen />;
@@ -5649,7 +5655,6 @@ const GameScreen = () => {
         const resultImpostorIds = gameData?.impostorIds || [];
         const resultAllImpostorIds = resultImpostorIds.length > 0 ? resultImpostorIds : (room.impostorId ? [room.impostorId] : []);
         const resultImpostorPlayers = activePlayers.filter(p => resultAllImpostorIds.includes(p.uid));
-        const resultImpostorNames = resultImpostorPlayers.map(p => p.name).join(', ') || 'Desconhecido';
         const resultVotesForImpostors = votes.filter(v => resultAllImpostorIds.includes(v.targetId)).length;
         const crewWins = resultVotesForImpostors > activePlayers.length / 2;
 
@@ -5685,78 +5690,12 @@ const GameScreen = () => {
                   </div>
                 )}
 
-                <div className="mt-4 flex flex-wrap justify-center gap-3">
-                  {resultImpostorPlayers.map(player => (
-                    <div key={player.uid} className="inline-flex items-center gap-2 rounded-2xl border border-rose-400/30 bg-rose-500/15 px-3 py-2">
-                      <CharacterFaceAvatar player={player} className="h-14 w-14" imageClassName="h-24" />
-                      <div className="text-left">
-                        <p className="max-w-[130px] truncate text-sm font-black text-white">{player.name}</p>
-                        <p className="text-[11px] font-black uppercase tracking-wider text-rose-200">Impostor</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <p className="text-white text-base">
-                  {resultImpostorPlayers.length > 1 ? "Os impostores eram" : "O impostor era"}: <span className="text-rose-400 font-bold text-lg">{resultImpostorNames}</span>
+                <p className="mt-3 text-sm text-slate-400">
+                  Confira os votos e {resultImpostorPlayers.length > 1 ? "os impostores" : "o impostor"} na lista de jogadores.
                 </p>
               </div>
             </div>
             
-            <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
-            
-            <div className="space-y-3 p-4 bg-slate-700/20 rounded-2xl border border-slate-600/30">
-              <p className="text-orange-400 text-sm uppercase tracking-widest font-bold text-center">
-                Resultados da Votação
-              </p>
-              
-              <div className="space-y-2 max-h-[140px] overflow-y-auto scrollbar-hide">
-                {activePlayers.map(player => {
-                  const votesReceived = votes.filter(v => v.targetId === player.uid).length;
-                  const isTheImpostor = resultAllImpostorIds.includes(player.uid);
-                  return (
-                    <div 
-                      key={player.uid}
-                      className={cn(
-                        "w-full p-3 rounded-xl flex items-center justify-between gap-3 transition-all",
-                        isTheImpostor 
-                          ? "bg-rose-500/20 border-2 border-rose-500/50 shadow-lg"
-                          : "bg-slate-700/50 border-2 border-slate-600/30"
-                      )}
-                    >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <CharacterFaceAvatar player={player} className="h-12 w-12" imageClassName="h-20" />
-                        <div className="min-w-0">
-                          <div className="flex min-w-0 items-center gap-2">
-                            <span className={cn(
-                              "truncate font-bold text-sm",
-                              isTheImpostor ? "text-rose-300" : "text-slate-200"
-                            )}>
-                              {player.name}
-                            </span>
-                            {isTheImpostor && (
-                              <span className="shrink-0 rounded-md bg-rose-500/25 px-2 py-0.5 text-[10px] font-black uppercase text-rose-100 inline-flex items-center gap-1">
-                                <Skull className="h-3 w-3" />
-                                Impostor
-                              </span>
-                            )}
-                          </div>
-                          <div className="mt-1 inline-flex items-center gap-1 rounded-md bg-amber-400/10 px-2 py-0.5 text-[11px] font-black text-amber-200">
-                            <Trophy className="h-3 w-3" />
-                            {player.impostorWins ?? 0}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-800/50">
-                        <span className="text-orange-400 font-bold text-base">{votesReceived}</span>
-                        <span className="text-slate-400 text-xs">votos</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
             <ResultAd />
 
             {isHost && (
@@ -5808,6 +5747,9 @@ const GameScreen = () => {
   };
 
   const occupiedCharacterIndexes = Array.from(new Set(room.players.map((player, index) => normalizeLobbyCharacterIndex(player.characterIndex ?? index))));
+  const sidebarImpostorIds = gameData?.impostorIds?.length
+    ? gameData.impostorIds
+    : (room.impostorId ? [room.impostorId] : []);
 
   return (
     <div className="w-full max-w-[1480px] min-h-full px-4 py-5 sm:px-6 lg:px-8 lg:py-8 animate-fade-in relative z-10">
@@ -5831,18 +5773,21 @@ const GameScreen = () => {
               const isCurrentUser = player.uid === user?.uid;
               const isCaptain = player.uid === room.hostId;
               const isWaiting = !!player.waitingForGame;
+              const speakingPosition = speakingOrder?.indexOf(player.uid) ?? -1;
+              const votesReceived = votes.filter(vote => vote.targetId === player.uid).length;
+              const isResultImpostor = currentStage === 'ROUND_RESULT' && sidebarImpostorIds.includes(player.uid);
               return (
-                <button type="button" key={player.uid} onClick={() => currentStage === 'VOTING' && player.uid !== user?.uid && setSelectedVote(player.uid)} disabled={currentStage !== 'VOTING' || player.uid === user?.uid || isWaiting} className={cn("flex w-full min-w-0 items-center gap-3 rounded-2xl border p-3 text-left transition", isCurrentUser ? "border-violet-400/45 bg-violet-500/10" : "border-slate-700/70 bg-[#111c32]", isWaiting && "opacity-55", currentStage === 'VOTING' && !isCurrentUser && !isWaiting && "cursor-pointer hover:border-orange-400/60 hover:bg-orange-500/10", selectedVote === player.uid && "border-orange-400 bg-orange-500/15 shadow-[0_0_20px_rgba(249,115,22,.14)]")} data-testid={`vote-sidebar-${player.uid}`}>
-                  <CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-14 w-14 rounded-xl" imageClassName="h-24" />
+                <button type="button" key={player.uid} onClick={() => currentStage === 'VOTING' && player.uid !== user?.uid && setSelectedVote(player.uid)} disabled={currentStage !== 'VOTING' || player.uid === user?.uid || isWaiting} className={cn("flex w-full min-w-0 items-center gap-3 rounded-2xl border p-3 text-left transition", isCurrentUser ? "border-violet-400/45 bg-violet-500/10" : "border-slate-700/70 bg-[#111c32]", isResultImpostor && "border-rose-400/55 bg-rose-500/10", isWaiting && "opacity-55", currentStage === 'VOTING' && !isCurrentUser && !isWaiting && "cursor-pointer hover:border-orange-400/60 hover:bg-orange-500/10", selectedVote === player.uid && "border-orange-400 bg-orange-500/15 shadow-[0_0_20px_rgba(249,115,22,.14)]")} data-testid={`vote-sidebar-${player.uid}`}>
+                  <div className="relative"><CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-14 w-14 rounded-xl" imageClassName="h-24" /><span className={cn("absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-[#111c32]", isWaiting ? "bg-amber-400" : "bg-emerald-400")} /></div>
                   <div className="min-w-0 flex-1">
                     {isCaptain && <span className="mb-1 inline-flex items-center gap-1 rounded-md bg-violet-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-violet-300"><Crown className="h-3 w-3"/> Capitão</span>}
-                    <div className="flex min-w-0 items-center gap-2"><strong className="truncate text-sm text-slate-100">{player.name}</strong>{isCurrentUser && <span className="rounded bg-violet-600 px-1.5 py-0.5 text-[9px] font-black uppercase">Você</span>}</div>
+                    <div className="flex min-w-0 flex-wrap items-center gap-2"><strong className="truncate text-sm text-slate-100">{player.name}</strong>{isCurrentUser && <span className="rounded bg-violet-600 px-1.5 py-0.5 text-[9px] font-black uppercase">Você</span>}{isResultImpostor && <span className="inline-flex items-center gap-1 rounded bg-rose-500/20 px-1.5 py-0.5 text-[9px] font-black uppercase text-rose-200"><Skull className="h-3 w-3"/>Impostor</span>}</div>
                     <div className="mt-1.5 flex items-center gap-2">
                       <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-black uppercase", isWaiting ? "border-amber-400/20 bg-amber-400/10 text-amber-300" : "border-emerald-400/20 bg-emerald-400/10 text-emerald-300")}><Check className="h-3 w-3"/>{isWaiting ? "Aguardando" : "Pronto"}</span>
                       <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/20 bg-amber-400/5 px-2 py-0.5 text-[9px] font-black text-amber-300"><Trophy className="h-3 w-3"/>{player.impostorWins ?? 0}</span>
                     </div>
                   </div>
-                  <span className={cn("h-3 w-3 shrink-0 rounded-full shadow-[0_0_12px_currentColor]", isWaiting ? "bg-amber-400 text-amber-400" : "bg-emerald-400 text-emerald-400")} />
+                  {currentStage === 'ROUND_RESULT' ? <span className="grid min-w-10 place-items-center rounded-xl border border-orange-400/30 bg-orange-500/10 px-2 py-1 text-center"><strong className="text-lg text-orange-300">{votesReceived}</strong><small className="text-[8px] font-black uppercase text-slate-500">votos</small></span> : speakingPosition >= 0 ? <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-violet-400/35 bg-violet-500/15 font-black text-violet-200">{speakingPosition + 1}º</span> : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-700 bg-slate-900 text-slate-600">—</span>}
                   {currentStage === 'VOTING' && selectedVote === player.uid && <Check className="h-5 w-5 shrink-0 text-orange-300"/>}
                 </button>
               );
@@ -5859,7 +5804,7 @@ const GameScreen = () => {
 
         <section className="flex min-h-[720px] flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#111a31]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-6 lg:p-8">
         <div 
-          className="w-full rounded-[1.5rem] p-5 sm:p-6 flex flex-col items-center text-center relative transition-all duration-300 cursor-pointer bg-gradient-to-br from-[#17213b] to-[#10182d] border border-slate-700/80 hover:border-slate-600 shadow-lg"
+          className={cn("w-full rounded-[1.5rem] flex flex-col items-center text-center relative transition-all duration-300 cursor-pointer bg-gradient-to-br from-[#17213b] to-[#10182d] border border-slate-700/80 hover:border-slate-600 shadow-lg", compactRoleCard ? "p-3 sm:p-4" : "p-5 sm:p-6")}
           onClick={() => setIsRevealed(!isRevealed)}
           data-testid="card-reveal"
         >
@@ -5868,7 +5813,7 @@ const GameScreen = () => {
               <div className="flex items-center gap-4 sm:gap-6 w-full">
                 <div 
                   className={cn(
-                    "w-20 h-20 sm:w-28 sm:h-28 rounded-2xl overflow-hidden flex-shrink-0 shadow-xl border-2",
+                    compactRoleCard ? "w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden flex-shrink-0 shadow-lg border-2" : "w-20 h-20 sm:w-28 sm:h-28 rounded-2xl overflow-hidden flex-shrink-0 shadow-xl border-2",
                     isImpostor ? "border-rose-500/50 bg-rose-500/10" : "border-emerald-500/50 bg-emerald-500/10"
                   )}
                 >
@@ -5882,14 +5827,14 @@ const GameScreen = () => {
                 <div className="text-left flex-1">
                   <h2 
                     className={cn(
-                      "text-2xl sm:text-4xl font-black tracking-wider uppercase",
+                      compactRoleCard ? "text-lg sm:text-2xl font-black tracking-wider uppercase" : "text-2xl sm:text-4xl font-black tracking-wider uppercase",
                       isImpostor ? "text-rose-400" : "text-emerald-400"
                     )}
                     data-testid={isImpostor ? "text-role-impostor" : "text-role-crew"}
                   >
                     {isImpostor ? "IMPOSTOR" : "TRIPULANTE"}
                   </h2>
-                  <p className="text-slate-400 text-sm sm:text-lg mt-1">
+                  <p className={cn("text-slate-400 mt-1", compactRoleCard ? "text-xs sm:text-sm" : "text-sm sm:text-lg")}>
                     {isImpostor ? "Engane todos!" : "Descubra o impostor!"}
                   </p>
                 </div>
@@ -5902,7 +5847,7 @@ const GameScreen = () => {
                 </button>
               </div>
 
-              <div className="w-full mt-2 sm:mt-4">
+              <div className={cn("w-full", compactRoleCard ? "mt-2 [&>div]:p-2 [&_h2]:text-xl [&_h3]:text-lg" : "mt-2 sm:mt-4")}>
                 {isImpostor ? renderImpostorContent() : renderCrewContent()}
               </div>
             </div>
