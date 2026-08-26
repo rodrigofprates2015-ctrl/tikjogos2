@@ -3548,20 +3548,17 @@ const LobbyScreen = () => {
     </div>
   ) : isHost ? (
     <div className="w-full space-y-3">
-      <button
+      <Button
         onClick={goToModeSelect}
         disabled={!canStart}
-        className={cn(
-          "mx-auto w-full max-w-sm px-7 py-4 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
-          canStart
-            ? "bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 border-purple-950 text-white hover:brightness-110 active:border-b-0 active:translate-y-1"
-            : "bg-slate-800 border-slate-950 text-slate-500 cursor-not-allowed opacity-70"
-        )}
+        variant={canStart ? "gamePrimary" : "gameSecondary"}
+        size="gameLg"
+        className="mx-auto w-full max-w-sm"
         data-testid="button-start-game"
       >
         <Play size={24} className={canStart ? "fill-current" : "fill-current opacity-60"} />
         {canStart ? "ESCOLHER MODO" : "AGUARDANDO JOGADORES"}
-      </button>
+      </Button>
       {!canStart && (
         <p className="text-center text-sm font-bold text-rose-300">Mínimo de 3 jogadores para iniciar</p>
       )}
@@ -4307,19 +4304,16 @@ const ModeSelectScreen = () => {
 
         {/* CTA Principal */}
         <div className="flex shrink-0 flex-col items-center border-t border-slate-700/70 bg-[#111a31] pt-3 lg:pt-5">
-          <button 
+          <Button
             onClick={handleStartGameWithSorteio}
             disabled={!selectedMode || isStarting || (selectedMode === 'palavraComunidade' && !selectedThemeCode)}
-            className={cn(
-              "w-full md:w-auto md:min-w-[300px] px-6 py-3.5 lg:px-8 lg:py-5 rounded-2xl font-black text-base lg:text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[5px] lg:border-b-[6px] shadow-2xl",
-              selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode)
-                ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
-                : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
-            )}
+            variant={selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode) ? "gameSuccess" : "gameSecondary"}
+            size="gameLg"
+            className="w-full md:w-auto md:min-w-[300px]"
           >
             {isStarting ? <Loader2 size={24} className="animate-spin"/> : <Rocket size={28} className={selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode) ? 'animate-bounce' : ''} />}
             {isStarting ? 'PREPARANDO PARTIDA...' : selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode) ? 'INICIAR PARTIDA' : 'SELECIONE UM MODO'}
-          </button>
+          </Button>
         </div>
         </div>}
       </div>
@@ -5583,7 +5577,7 @@ const GameScreen = () => {
             </div>
             
             <div className="mx-auto max-w-xl rounded-3xl border border-orange-400/25 bg-orange-500/5 p-6 text-center">
-              {selectedVotePlayer ? <><CharacterFaceAvatar player={selectedVotePlayer} className="mx-auto h-24 w-24 rounded-2xl" imageClassName="h-40"/><p className="mt-4 text-sm font-bold text-slate-400">Seu voto está selecionado em</p><h4 className="mt-1 text-3xl font-black text-white">{selectedVotePlayer.name}</h4><Button onClick={() => handleSubmitVote(selectedVotePlayer.uid)} disabled={isSubmittingVote} className="mt-6 flex h-14 w-full min-w-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-2xl border-b-4 border-orange-900 bg-orange-500 px-3 text-sm font-black text-white hover:bg-orange-400 sm:text-lg" data-testid="button-confirm-vote"><Vote className="mr-2 h-5 w-5 shrink-0"/><span className="truncate">{isSubmittingVote ? "CONFIRMANDO..." : "CONFIRMAR VOTO"}</span></Button></> : <><Vote className="mx-auto h-12 w-12 text-orange-300"/><h4 className="mt-4 text-xl font-black text-white"><span className="lg:hidden">Selecione um jogador na lista abaixo</span><span className="hidden lg:inline">Selecione um jogador na coluna esquerda</span></h4><p className="mt-2 text-sm text-slate-400">Depois, confirme seu voto aqui.</p></>}
+              {selectedVotePlayer ? <><CharacterFaceAvatar player={selectedVotePlayer} className="mx-auto h-24 w-24 rounded-2xl" imageClassName="h-40"/><p className="mt-4 text-sm font-bold text-slate-400">Seu voto está selecionado em</p><h4 className="mt-1 text-3xl font-black text-white">{selectedVotePlayer.name}</h4><Button onClick={() => handleSubmitVote(selectedVotePlayer.uid)} disabled={isSubmittingVote} variant="gameDanger" size="gameLg" className="mt-6 w-full min-w-0 overflow-hidden px-3" data-testid="button-confirm-vote"><Vote className="mr-2 h-5 w-5 shrink-0"/><span className="truncate">{isSubmittingVote ? "CONFIRMANDO..." : "CONFIRMAR VOTO"}</span></Button></> : <><Vote className="mx-auto h-12 w-12 text-[#2C7EFC]"/><h4 className="mt-4 text-xl font-black text-white"><span className="lg:hidden">Selecione um jogador na lista abaixo</span><span className="hidden lg:inline">Selecione um jogador na coluna esquerda</span></h4><p className="mt-2 text-sm text-slate-400">Depois, confirme seu voto aqui.</p></>}
             </div>
           </div>
         );
@@ -5718,7 +5712,9 @@ const GameScreen = () => {
             {isHost && (
               <Button 
                 onClick={handleNewRound}
-                className="w-full h-12 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-bold text-sm rounded-2xl shadow-lg border-2 border-purple-400/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                variant="gamePrimary"
+                size="game"
+                className="w-full"
                 data-testid="button-new-round"
               >
                 <RotateCcw className="mr-2 w-5 h-5" /> Nova Rodada

@@ -228,8 +228,9 @@ export function SpeakingOrderWithVotingStage({
               {isHost ? (
                 <Button 
                   onClick={() => setShowConfirmDialog(true)}
-                  className="w-full h-11 bg-[#e9c46a] hover:bg-[#d4a843] text-black font-bold text-sm rounded-xl transition-all"
-                  style={{ boxShadow: '0 4px 0 rgba(233, 196, 106, 0.3)' }}
+                  variant="gameDanger"
+                  size="game"
+                  className="w-full"
                   data-testid="button-host-start-voting"
                 >
                   <Vote className="mr-2 w-4 h-4" /> Iniciar Votação
@@ -277,7 +278,9 @@ export function SpeakingOrderWithVotingStage({
                         setShowConfirmDialog(false);
                         onStartVoting();
                       }}
-                      className="flex-1 h-11 bg-[#e9c46a] hover:bg-[#d4a843] text-black font-bold rounded-xl"
+                      variant="gameDanger"
+                      size="game"
+                      className="flex-1"
                     >
                       Sim, iniciar!
                     </Button>
