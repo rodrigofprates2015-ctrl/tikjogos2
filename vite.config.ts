@@ -6,10 +6,11 @@ import { metaImagesPlugin } from "./vite-plugin-meta-images";
 
 const __dirname = process.cwd();
 const isDev = process.env.NODE_ENV !== "production";
+const isCodexPreview = process.env.CODEX_PREVIEW === "1";
 
 export default defineConfig(async () => {
   // Dev-only plugins — excluded from production builds to reduce bundle overhead
-  const devPlugins = isDev
+  const devPlugins = isDev && !isCodexPreview
     ? [
         (await import("@replit/vite-plugin-dev-banner")).devBanner(),
         (await import("@replit/vite-plugin-runtime-error-modal")).default(),
@@ -19,6 +20,7 @@ export default defineConfig(async () => {
   return {
     plugins: [react(), tailwindcss(), ...devPlugins, metaImagesPlugin()],
     resolve: {
+      preserveSymlinks: isCodexPreview,
       alias: {
         "@": path.resolve(__dirname, "client", "src"),
         "@shared": path.resolve(__dirname, "shared"),
@@ -59,5 +61,8 @@ export default defineConfig(async () => {
       strictPort: true,
       allowedHosts: "all",
     },
+    optimizeDeps: isCodexPreview
+      ? { esbuildOptions: { preserveSymlinks: true } }
+      : undefined,
   };
 });

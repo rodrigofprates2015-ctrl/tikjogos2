@@ -127,6 +127,15 @@ const GAME_MODE_LABELS: Record<string, string> = {
   perguntasDiferentes: 'Perguntas Diferentes',
   palavraComunidade: 'Tema Comunidade',
   'impostor-desenho': 'Impostor Desenho',
+  naoIdentificado: 'Não identificado (registro antigo)',
+  impostor: 'Jogo do Impostor',
+  desenho: 'Impostor Desenho',
+  sincronia: 'Sincronia',
+  desafio: 'Desafio da Palavra',
+  aproximacao: 'Aproximação',
+  cronometroClassico: 'T3:MP:00 — Clássico',
+  cronometroDesafio: 'T3:MP:00 — Desafio',
+  bomba: 'Bomba',
 };
 
 const DEVICE_ICONS: Record<string, any> = { mobile: Smartphone, desktop: Monitor, tablet: Monitor };

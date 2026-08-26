@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 import { z } from "zod";
 import { recordGameSession } from "./db.js";
 import { trackRoomJoin } from "./analyticsMiddleware.js";
+import { trackLobbyGameStart, trackLobbyJoin, trackLobbyLeave } from "./lobbyTracker.js";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const THEMES = [
@@ -152,6 +153,7 @@ export function setupBombaGame(app: Express) {
       }
       bombaRooms.set(code, room);
       trackRoomJoin(req.cookies?.['visitor_id'] || playerId, code, 'bomba', req).catch(() => {});
+      trackLobbyJoin(code, playerId, nickname, true, 'bomba', null, req).catch(() => {});
       res.json(roomResponse(room));
     } catch (error) {
       res.status(400).json({ error: "Não foi possível criar a sala." });
@@ -175,6 +177,7 @@ export function setupBombaGame(app: Express) {
       } else {
         if (room.players.length >= 10) return res.status(409).json({ error: "A sala está cheia." });
         room.players.push({ uid: playerId, name: nickname, connected: true });
+        trackLobbyJoin(code, playerId, nickname, false, 'bomba', null, req).catch(() => {});
       }
       res.json(roomResponse(room));
     } catch {
@@ -224,6 +227,7 @@ export function setupBombaGame(app: Express) {
     room.loserId = null;
     res.json(roomResponse(room));
     recordGameSession('bomba', code, room.players.length).catch(() => {});
+    trackLobbyGameStart(code, 'bomba', room.theme).catch(() => {});
     scheduleBombaBotTurn(room);
   });
 
@@ -307,6 +311,7 @@ export function setupBombaGame(app: Express) {
     if (!room) return res.json({ ok: true });
     const playerId = typeof req.body?.playerId === "string" ? req.body.playerId : "";
     room.players = room.players.filter((player) => player.uid !== playerId);
+    if (playerId) trackLobbyLeave(code, playerId).catch(() => {});
     if (room.players.length === 0) bombaRooms.delete(code);
     else if (room.hostId === playerId) room.hostId = room.players[0].uid;
     res.json({ ok: true });

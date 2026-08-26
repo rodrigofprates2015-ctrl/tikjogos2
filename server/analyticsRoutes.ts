@@ -614,7 +614,11 @@ export function createAnalyticsRouter(verifyAdmin: any) {
           MAX(duration_seconds)::int              AS max_duration,
           MIN(joined_at)                          AS first_join,
           MAX(joined_at)                          AS last_join,
-          MAX(game_mode)                          AS game_mode,
+          COALESCE(
+            MAX(game_mode),
+            (SELECT MAX(gs.game_type) FROM game_sessions gs WHERE gs.room_code = lobby_sessions.room_code),
+            'naoIdentificado'
+          )                                       AS game_mode,
           STRING_AGG(DISTINCT theme_name, ', ')   AS themes,
           BOOL_OR(is_host)                        AS is_host_present
         FROM lobby_sessions
