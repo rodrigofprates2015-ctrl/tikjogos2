@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Check, Clock3, Copy, Crown, Eye, EyeOff, LogOut, Play, RefreshCw, Repeat2, RotateCcw, Settings, ShieldAlert, Skull, Swords, Trophy, UserX, Users } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
-import { VoiceChatJoinButton } from "@/components/InlineVoiceControls";
 import { LobbyAd } from "@/components/AdSense";
 import { Button } from "@/components/ui/button";
 
@@ -172,7 +171,7 @@ export default function CronometroGame() {
       <section className="tj-surface tj-surface--stage order-1 flex min-h-[650px] min-w-0 flex-col overflow-hidden p-3 sm:p-6 lg:order-2 lg:min-h-[760px] lg:p-8">
         <header className="flex min-w-0 flex-col gap-4 border-b-2 border-[#2C334F] pb-5 sm:flex-row sm:items-start sm:justify-between">
           <button onClick={() => navigator.clipboard.writeText(room.code)} className="group text-left"><span className="text-[10px] font-black uppercase tracking-[.22em] text-slate-400">Código da sala</span><span className="mt-1 flex items-center gap-3 font-mono text-3xl font-black tracking-widest text-amber-400">{room.code}<span className="tj-icon-box h-9 w-9 text-slate-400 group-hover:text-amber-300"><Copy className="h-4 w-4"/></span></span></button>
-          <div className="flex min-w-0 flex-col gap-2 sm:w-[390px]"><Button onClick={() => document.getElementById("cronometro-settings")?.scrollIntoView({ behavior: "smooth" })} variant="gameSecondary" size="game" className="w-full" disabled={!isHost || room.status !== "waiting"}><Settings className="h-4 w-4"/> Configurações</Button><VoiceChatJoinButton/></div>
+          <div className="flex min-w-0 flex-col gap-2 sm:w-[390px]"><Button onClick={() => document.getElementById("cronometro-settings")?.scrollIntoView({ behavior: "smooth" })} variant="gameSecondary" size="game" className="w-full" disabled={!isHost || room.status !== "waiting"}><Settings className="h-4 w-4"/> Configurações</Button></div>
         </header>
         <div className="mt-5"><DigitalLogo compact/></div>
         <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center space-y-6 py-5">
