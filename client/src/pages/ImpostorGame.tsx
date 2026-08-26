@@ -3577,24 +3577,24 @@ const LobbyScreen = () => {
   );
 
   const dashboardLobby = (
-    <div className="w-full max-w-[1480px] px-3 py-4 sm:px-5 md:py-6 animate-fade-in relative z-10">
+    <div className="relative z-10 w-full max-w-[1480px] overflow-x-hidden px-2 py-2 sm:px-5 sm:py-4 md:py-6 animate-fade-in">
       <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.12),transparent_32%)]" />
-      <div className="relative z-10 grid items-stretch gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
-        <aside className="order-2 flex flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#0d1529]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.36)] sm:p-5 lg:order-1">
+      <div className="relative z-10 grid min-w-0 grid-cols-1 items-stretch gap-3 sm:gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
+        <aside className="order-2 flex min-w-0 w-full flex-col overflow-hidden rounded-[1.25rem] border border-slate-700/80 bg-[#0d1529]/95 p-3 shadow-[0_24px_70px_rgba(0,0,0,.36)] sm:rounded-[1.75rem] sm:p-5 lg:order-1">
           <button onClick={leaveGame} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 font-black text-slate-300 transition hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-white" data-testid="button-leave-room"><ArrowLeft className="h-5 w-5"/> Sair da Sala</button>
 
-          <div className="mt-6 flex items-center justify-between px-1">
+          <div className="mt-4 flex items-center justify-between px-1 sm:mt-6">
             <h2 className="text-sm font-black uppercase tracking-[.14em] text-slate-300">Jogadores</h2>
             <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-sm font-black text-emerald-300">{players.length} / 10</span>
           </div>
 
-          <div className="mt-4 space-y-2.5">
+          <div className="mt-3 space-y-2 sm:mt-4 sm:space-y-2.5">
             {players.map((player, index) => {
               const isMe = player.uid === user?.uid;
               const isPlayerHost = player.uid === room.hostId;
               const characterIndex = player.characterIndex ?? index;
-              return <article key={player.uid} className={cn("flex min-w-0 items-center gap-3 rounded-2xl border p-3", isMe ? "border-violet-400/45 bg-violet-500/10" : "border-slate-700/70 bg-[#111c32]")} data-testid={`player-${player.uid}`}>
-                <div className="relative"><CharacterFaceAvatar player={{ ...player, characterIndex }} className="h-14 w-14 rounded-xl" imageClassName="h-24"/><div className="absolute -bottom-1 -right-1"><SpeakingIndicator playerId={player.uid} isCurrentUser={isMe}/></div></div>
+              return <article key={player.uid} className={cn("flex min-w-0 items-center gap-2.5 rounded-xl border p-2.5 sm:gap-3 sm:rounded-2xl sm:p-3", isMe ? "border-violet-400/45 bg-violet-500/10" : "border-slate-700/70 bg-[#111c32]")} data-testid={`player-${player.uid}`}>
+                <div className="relative"><CharacterFaceAvatar player={{ ...player, characterIndex }} className="h-12 w-12 rounded-xl sm:h-14 sm:w-14" imageClassName="h-20 sm:h-24"/><div className="absolute -bottom-1 -right-1"><SpeakingIndicator playerId={player.uid} isCurrentUser={isMe}/></div></div>
                 <div className="min-w-0 flex-1">
                   {isPlayerHost && <span className="mb-1 inline-flex items-center gap-1 rounded-md bg-violet-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase text-violet-300"><Crown className="h-3 w-3"/> Capitão da sala</span>}
                   <div className="flex min-w-0 items-center gap-2"><strong className="truncate text-sm text-white">{player.name}</strong>{isMe && <span className="rounded bg-violet-600 px-1.5 py-0.5 text-[9px] font-black uppercase">Você</span>}</div>
@@ -3605,24 +3605,24 @@ const LobbyScreen = () => {
             })}
           </div>
 
-          <div className="mt-5 rounded-2xl border border-slate-700/70 bg-slate-950/25 p-3">
+          <div className="mt-4 rounded-xl border border-slate-700/70 bg-slate-950/25 p-2.5 sm:mt-5 sm:rounded-2xl sm:p-3">
             <p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Escolha seu personagem</p>
-            <div className="mt-3 grid grid-cols-5 gap-2">{DEFAULT_LOBBY_CHARACTERS.map((character, index) => {
+            <div className="mt-2 grid grid-cols-5 gap-1.5 sm:mt-3 sm:gap-2">{DEFAULT_LOBBY_CHARACTERS.map((character, index) => {
               const selected = currentCharacterIndex === index; const taken = takenCharacterIndexes.has(index);
               return <button key={index} type="button" onClick={() => !taken && !selected && selectCharacter(index)} disabled={taken} className={cn("relative aspect-square overflow-hidden rounded-lg border bg-slate-950/80 transition", selected ? "border-amber-300 shadow-[0_0_12px_rgba(251,191,36,.25)]" : taken ? "cursor-not-allowed border-white/5 grayscale opacity-25" : "border-white/10 hover:border-violet-400/50")} aria-label={taken ? "Personagem ocupado" : `Selecionar personagem ${index + 1}`}><img src={character} alt="" className="absolute left-1/2 top-0 h-[155%] w-auto max-w-none -translate-x-1/2 object-contain"/>{selected && <Check className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 p-0.5 text-white"/>}{taken && <span className="absolute inset-x-0 bottom-0 bg-slate-950/90 py-0.5 text-[6px] font-black uppercase">Ocupado</span>}</button>;
             })}</div>
           </div>
         </aside>
 
-        <main className="order-1 flex min-h-[520px] flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#111a31]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.36)] sm:p-6 lg:order-2 lg:min-h-[720px] lg:p-8">
-          <header className="flex flex-col gap-4 border-b border-slate-700/60 pb-6 sm:flex-row sm:items-center sm:justify-between">
-            <button onClick={copyLink} className="group text-left" data-testid="text-room-code"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Código da sala</p><div className="mt-1 flex items-center gap-3"><strong className="font-mono text-4xl font-black tracking-widest text-amber-400 group-hover:text-amber-300">{room.code}</strong><span className="rounded-xl border border-slate-700 bg-slate-900 p-2 text-slate-400 group-hover:text-amber-300"><Copy className="h-5 w-5"/></span></div></button>
-            <div className="flex flex-wrap items-center gap-2">{isHost && <button onClick={() => setShowConfigModal(true)} className="flex h-12 items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 font-black text-slate-300 hover:bg-slate-800"><Settings className="h-5 w-5"/> Configurações</button>}<VoiceChatJoinButton/></div>
+        <main className="order-1 flex min-h-0 min-w-0 w-full flex-col overflow-hidden rounded-[1.25rem] border border-slate-700/80 bg-[#111a31]/95 p-3 shadow-[0_24px_70px_rgba(0,0,0,.36)] sm:min-h-[520px] sm:rounded-[1.75rem] sm:p-6 lg:order-2 lg:min-h-[720px] lg:p-8">
+          <header className="flex min-w-0 flex-col gap-3 border-b border-slate-700/60 pb-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:pb-6">
+            <button onClick={copyLink} className="group min-w-0 text-left" data-testid="text-room-code"><p className="text-[9px] font-black uppercase tracking-[.2em] text-slate-500 sm:text-[10px]">Código da sala</p><div className="mt-1 flex items-center gap-2 sm:gap-3"><strong className="font-mono text-3xl font-black tracking-widest text-amber-400 group-hover:text-amber-300 sm:text-4xl">{room.code}</strong><span className="rounded-lg border border-slate-700 bg-slate-900 p-1.5 text-slate-400 group-hover:text-amber-300 sm:rounded-xl sm:p-2"><Copy className="h-4 w-4 sm:h-5 sm:w-5"/></span></div></button>
+            <div className="grid min-w-0 w-full grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center [&>button]:min-w-0 [&>button]:w-full [&>button]:justify-center [&>button_span]:truncate">{isHost && <button onClick={() => setShowConfigModal(true)} className="flex h-10 items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 text-xs font-black text-slate-300 hover:bg-slate-800 sm:h-12 sm:px-4 sm:text-sm"><Settings className="h-4 w-4 sm:h-5 sm:w-5"/> Configurações</button>}<VoiceChatJoinButton/></div>
           </header>
 
-          <section className="flex flex-1 flex-col items-center justify-center py-8 text-center"><div className="grid h-20 w-20 place-items-center rounded-3xl border border-violet-400/25 bg-violet-500/10 shadow-[0_0_35px_rgba(139,92,246,.15)]"><Users className="h-10 w-10 text-violet-300"/></div><h2 className="mt-5 text-3xl font-black">Sala pronta para jogar</h2><p className="mt-2 max-w-xl text-slate-400">Convide seus amigos pelo código da sala e escolha o modo quando todos estiverem prontos.</p><div className="mt-7 w-full max-w-lg">{actionContent}</div></section>
+          <section className="flex min-w-0 flex-1 flex-col items-center justify-center px-1 py-5 text-center sm:py-8"><div className="grid h-14 w-14 place-items-center rounded-2xl border border-violet-400/25 bg-violet-500/10 shadow-[0_0_35px_rgba(139,92,246,.15)] sm:h-20 sm:w-20 sm:rounded-3xl"><Users className="h-7 w-7 text-violet-300 sm:h-10 sm:w-10"/></div><h2 className="mt-3 max-w-full text-xl font-black leading-tight sm:mt-5 sm:text-3xl">Sala pronta para jogar</h2><p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-400 sm:text-base">Convide seus amigos pelo código da sala e escolha o modo quando todos estiverem prontos.</p><div className="mt-4 w-full min-w-0 max-w-lg sm:mt-7">{actionContent}</div></section>
 
-          <LobbyAd/>
+          <div className="hidden sm:block"><LobbyAd/></div>
         </main>
       </div>
 
