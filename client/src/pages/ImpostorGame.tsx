@@ -5583,7 +5583,7 @@ const GameScreen = () => {
             </div>
             
             <div className="mx-auto max-w-xl rounded-3xl border border-orange-400/25 bg-orange-500/5 p-6 text-center">
-              {selectedVotePlayer ? <><CharacterFaceAvatar player={selectedVotePlayer} className="mx-auto h-24 w-24 rounded-2xl" imageClassName="h-40"/><p className="mt-4 text-sm font-bold text-slate-400">Seu voto está selecionado em</p><h4 className="mt-1 text-3xl font-black text-white">{selectedVotePlayer.name}</h4><Button onClick={() => handleSubmitVote(selectedVotePlayer.uid)} disabled={isSubmittingVote} className="mt-6 h-14 w-full rounded-2xl border-b-4 border-orange-900 bg-orange-500 text-lg font-black text-white hover:bg-orange-400" data-testid="button-confirm-vote"><Vote className="mr-2 h-5 w-5"/>{isSubmittingVote ? "CONFIRMANDO..." : `CONFIRMAR VOTO EM ${selectedVotePlayer.name.toUpperCase()}?`}</Button></> : <><Vote className="mx-auto h-12 w-12 text-orange-300"/><h4 className="mt-4 text-xl font-black text-white"><span className="lg:hidden">Selecione um jogador na lista abaixo</span><span className="hidden lg:inline">Selecione um jogador na coluna esquerda</span></h4><p className="mt-2 text-sm text-slate-400">Depois, confirme seu voto aqui.</p></>}
+              {selectedVotePlayer ? <><CharacterFaceAvatar player={selectedVotePlayer} className="mx-auto h-24 w-24 rounded-2xl" imageClassName="h-40"/><p className="mt-4 text-sm font-bold text-slate-400">Seu voto está selecionado em</p><h4 className="mt-1 text-3xl font-black text-white">{selectedVotePlayer.name}</h4><Button onClick={() => handleSubmitVote(selectedVotePlayer.uid)} disabled={isSubmittingVote} className="mt-6 flex h-14 w-full min-w-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-2xl border-b-4 border-orange-900 bg-orange-500 px-3 text-sm font-black text-white hover:bg-orange-400 sm:text-lg" data-testid="button-confirm-vote"><Vote className="mr-2 h-5 w-5 shrink-0"/><span className="truncate">{isSubmittingVote ? "CONFIRMANDO..." : "CONFIRMAR VOTO"}</span></Button></> : <><Vote className="mx-auto h-12 w-12 text-orange-300"/><h4 className="mt-4 text-xl font-black text-white"><span className="lg:hidden">Selecione um jogador na lista abaixo</span><span className="hidden lg:inline">Selecione um jogador na coluna esquerda</span></h4><p className="mt-2 text-sm text-slate-400">Depois, confirme seu voto aqui.</p></>}
             </div>
           </div>
         );
@@ -5730,27 +5730,11 @@ const GameScreen = () => {
       case 'WORD_REVEAL':
       default:
         return (
-          <div className="animate-stage-fade-in w-full space-y-3">
-            {isHost ? (
-              <>
-                <Button 
-                  onClick={handleStartVoting}
-                  className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold rounded-2xl text-sm shadow-lg border-2 border-orange-400/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  data-testid="button-start-voting"
-                >
-                  <Vote className="mr-2 w-5 h-5" /> Iniciar Votação
-                </Button>
-              </>
-            ) : (
-              <div className="text-center py-4">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-700/50 border border-slate-600/30">
-                  <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></div>
-                  <p className="text-slate-300 text-sm font-medium">
-                    Aguardando o host iniciar a votação...
-                  </p>
-                </div>
-              </div>
-            )}
+          <div className="animate-stage-fade-in w-full py-4 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-500/10 px-4 py-2">
+              <Loader2 className="h-4 w-4 animate-spin text-violet-300"/>
+              <p className="text-sm font-bold text-slate-300">Preparando sorteio da ordem...</p>
+            </div>
           </div>
         );
     }
@@ -5761,7 +5745,7 @@ const GameScreen = () => {
     ? gameData.impostorIds
     : (room.impostorId ? [room.impostorId] : []);
   const mobileRoleLabel = isImpostor
-    ? (unlockedWord ? 'Palavra revelada' : unlockedHint ? 'Dica desbloqueada' : 'Sua missão')
+    ? (unlockedWord ? 'Palavra revelada' : unlockedHint ? 'Dica desbloqueada' : '')
     : gameMode === 'palavras' ? 'Local e função' : gameMode === 'duasFaccoes' ? 'Sua facção' : gameMode === 'categoriaItem' ? 'Categoria e item' : 'Palavra secreta';
   const mobileRoleValue = (() => {
     if (!gameData) return 'Preparando informações...';
@@ -5771,7 +5755,7 @@ const GameScreen = () => {
       const hintsEnabled = gameData.gameConfig?.enableHints === true;
       const firstOnly = gameData.gameConfig?.firstPlayerHintOnly === true;
       const canSeeHint = hintsEnabled && (!firstOnly || speakingOrder?.[0] === user?.uid);
-      return canSeeHint && gameData.hint ? gameData.hint : 'Finja que sabe a palavra';
+      return canSeeHint && gameData.hint ? gameData.hint : '';
     }
     if (gameMode === 'palavras') return `${gameData.location || 'Local'} • ${user?.uid ? gameData.roles?.[user.uid] || 'Função' : 'Função'}`;
     if (gameMode === 'duasFaccoes') return user?.uid ? gameData.factionMap?.[user.uid] || 'Descubra sua facção' : 'Descubra sua facção';
@@ -5791,7 +5775,7 @@ const GameScreen = () => {
       <button type="button" onClick={() => setIsRevealed(!isRevealed)} className={cn("mt-2 shrink-0 rounded-2xl border bg-gradient-to-br from-[#17213b] to-[#10182d] px-3 py-2 text-left", isImpostor ? "border-rose-500/35" : "border-emerald-500/35")}>
         {isRevealed ? <div className="flex min-w-0 items-center gap-2.5">
           <div className={cn("h-10 w-10 shrink-0 overflow-hidden rounded-lg border", isImpostor ? "border-rose-500/50" : "border-emerald-500/50")}><img src={isImpostor ? impostorImg : tripulanteImg} alt="" className="h-full w-full object-cover"/></div>
-          <div className="min-w-0 flex-1"><p className={cn("text-xs font-black uppercase tracking-wider", isImpostor ? "text-rose-300" : "text-emerald-300")}>{isImpostor ? 'Impostor' : 'Tripulante'}</p><p className="mt-1 text-[8px] font-black uppercase tracking-[.22em] text-slate-500">{mobileRoleLabel}</p><p className="mt-0.5 truncate text-base font-black leading-tight text-white">{mobileRoleValue}</p></div>
+          <div className="min-w-0 flex-1"><p className={cn("inline-flex rounded-full border px-2.5 py-1 text-xs font-black uppercase tracking-wider", isImpostor ? "border-rose-400/35 bg-rose-500/15 text-rose-200" : "border-emerald-400/35 bg-emerald-500/15 text-emerald-200")}>{isImpostor ? 'Impostor' : 'Tripulante'}</p>{mobileRoleValue && <><p className="mt-1 text-[8px] font-black uppercase tracking-[.22em] text-slate-500">{mobileRoleLabel}</p><p className="mt-0.5 truncate text-base font-black leading-tight text-white">{mobileRoleValue}</p></>}</div>
           <EyeOff className="h-4 w-4 shrink-0 text-slate-500"/>
         </div> : <div className="flex h-10 items-center justify-center gap-2 text-xs font-black uppercase tracking-wider text-violet-300"><Eye className="h-4 w-4"/>Toque para revelar</div>}
       </button>
@@ -5809,9 +5793,9 @@ const GameScreen = () => {
           const isResultImpostor = currentStage === 'ROUND_RESULT' && sidebarImpostorIds.includes(player.uid);
           const canSelectVote = currentStage === 'VOTING' && !isCurrentUser && !isWaiting;
           return <button type="button" key={player.uid} onClick={() => canSelectVote && setSelectedVote(player.uid)} disabled={!canSelectVote} className={cn("relative flex min-w-0 flex-col items-center rounded-xl border px-1 py-1.5", isCurrentUser ? "border-violet-400 bg-violet-500/10" : "border-slate-700 bg-[#111c32]", canSelectVote && "active:scale-95", selectedVote === player.uid && "border-orange-400 bg-orange-500/20", isResultImpostor && "border-rose-400 bg-rose-500/15")}>
-            <CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-8 w-8 rounded-lg" imageClassName="h-14"/>
+            <div className="relative"><CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-8 w-8 rounded-lg" imageClassName="h-14"/><span className={cn("absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#111c32]", isWaiting ? "bg-amber-400" : "bg-emerald-400")}/></div>
             <strong className="mt-0.5 w-full truncate text-center text-[8px] leading-tight text-slate-200">{player.name}</strong>
-            <span className={cn("absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full px-0.5 text-[7px] font-black", currentStage === 'ROUND_RESULT' ? "bg-orange-500 text-white" : speakingPosition >= 0 ? "bg-violet-500 text-white" : isWaiting ? "bg-amber-400 text-black" : "bg-emerald-400 text-emerald-950")}>{currentStage === 'ROUND_RESULT' ? votesReceived : speakingPosition >= 0 ? speakingPosition + 1 : '•'}</span>
+            {(currentStage === 'ROUND_RESULT' || speakingPosition >= 0) && <span className={cn("absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full px-0.5 text-[7px] font-black", currentStage === 'ROUND_RESULT' ? "bg-orange-500 text-white" : "bg-violet-500 text-white")}>{currentStage === 'ROUND_RESULT' ? votesReceived : speakingPosition + 1}</span>}
             {isResultImpostor && <Skull className="absolute bottom-0.5 left-0.5 h-3 w-3 text-rose-300"/>}
           </button>;
         })}

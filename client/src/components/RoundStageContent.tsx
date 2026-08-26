@@ -219,7 +219,8 @@ export function SpeakingOrderWithVotingStage({
             </div>
             <p className="text-white text-lg font-black">Ordem definida!</p>
             <p className="mt-1 text-sm text-gray-400">
-              Veja a posição de cada participante na lista de jogadores ao lado.
+              <span className="lg:hidden">Veja a posição de cada participante na lista de jogadores abaixo.</span>
+              <span className="hidden lg:inline">Veja a posição de cada participante na lista de jogadores ao lado.</span>
             </p>
           </div>
 
