@@ -59,6 +59,11 @@ body {
   box-shadow: 0 5px 0 var(--purple-dark), 0 14px 28px rgba(0, 0, 0, 0.2);
 }
 .tj-player-card.is-danger { border-color: var(--rose); background: rgba(254, 37, 89, 0.10); }
+.tj-player-card.is-vote-target {
+  border-color: var(--rose);
+  background: rgba(254, 37, 89, 0.14);
+  box-shadow: 0 5px 0 #9f1239, 0 14px 28px rgba(0, 0, 0, 0.2);
+}
 .tj-icon-box {
   display: inline-grid;
   width: 3.25rem;
