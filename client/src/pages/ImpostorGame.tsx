@@ -5708,7 +5708,7 @@ const GameScreen = () => {
               </div>
             </div>
             
-            <ResultAd />
+            <div className="hidden lg:block"><ResultAd /></div>
 
             {isHost && (
               <Button 
@@ -5764,7 +5764,45 @@ const GameScreen = () => {
     : (room.impostorId ? [room.impostorId] : []);
 
   return (
-    <div className="w-full max-w-[1480px] min-h-full px-4 py-5 sm:px-6 lg:px-8 lg:py-8 animate-fade-in relative z-10">
+    <>
+    <div className="fixed inset-0 z-[40] flex h-[100dvh] flex-col overflow-hidden bg-[#080f20] px-2 pb-[max(.5rem,env(safe-area-inset-bottom))] pt-[max(.5rem,env(safe-area-inset-top))] lg:hidden">
+      <header className="flex h-10 shrink-0 items-center justify-between gap-2">
+        <button type="button" onClick={handleBackToLobby} className="flex h-9 items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-3 text-[11px] font-black text-slate-200"><ArrowLeft className="h-4 w-4"/>Lobby</button>
+        <div className="text-center"><p className="text-[8px] font-black uppercase tracking-[.18em] text-slate-500">Sala</p><strong className="text-sm tracking-[.18em] text-amber-300">{room.code}</strong></div>
+        <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-black text-emerald-300">{activePlayers.length}/{room.players.length}</span>
+      </header>
+
+      <div className="mt-1 grid shrink-0 grid-cols-5 gap-1.5">
+        {room.players.slice(0, 10).map((player, index) => {
+          const isCurrentUser = player.uid === user?.uid;
+          const isWaiting = !!player.waitingForGame;
+          const speakingPosition = speakingOrder?.indexOf(player.uid) ?? -1;
+          const votesReceived = votes.filter(vote => vote.targetId === player.uid).length;
+          const isResultImpostor = currentStage === 'ROUND_RESULT' && sidebarImpostorIds.includes(player.uid);
+          const canSelectVote = currentStage === 'VOTING' && !isCurrentUser && !isWaiting;
+          return <button type="button" key={player.uid} onClick={() => canSelectVote && setSelectedVote(player.uid)} disabled={!canSelectVote} className={cn("relative flex min-w-0 flex-col items-center rounded-xl border px-1 py-1.5", isCurrentUser ? "border-violet-400 bg-violet-500/10" : "border-slate-700 bg-[#111c32]", canSelectVote && "active:scale-95", selectedVote === player.uid && "border-orange-400 bg-orange-500/20", isResultImpostor && "border-rose-400 bg-rose-500/15")}>
+            <CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-8 w-8 rounded-lg" imageClassName="h-14"/>
+            <strong className="mt-0.5 w-full truncate text-center text-[8px] leading-tight text-slate-200">{player.name}</strong>
+            <span className={cn("absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full px-0.5 text-[7px] font-black", currentStage === 'ROUND_RESULT' ? "bg-orange-500 text-white" : speakingPosition >= 0 ? "bg-violet-500 text-white" : isWaiting ? "bg-amber-400 text-black" : "bg-emerald-400 text-emerald-950")}>{currentStage === 'ROUND_RESULT' ? votesReceived : speakingPosition >= 0 ? speakingPosition + 1 : '•'}</span>
+            {isResultImpostor && <Skull className="absolute bottom-0.5 left-0.5 h-3 w-3 text-rose-300"/>}
+          </button>;
+        })}
+      </div>
+
+      <button type="button" onClick={() => setIsRevealed(!isRevealed)} className={cn("mt-2 shrink-0 rounded-2xl border bg-gradient-to-br from-[#17213b] to-[#10182d] px-3 py-2 text-left", isImpostor ? "border-rose-500/35" : "border-emerald-500/35")}>
+        {isRevealed ? <div className="flex min-w-0 items-center gap-2.5">
+          <div className={cn("h-10 w-10 shrink-0 overflow-hidden rounded-lg border", isImpostor ? "border-rose-500/50" : "border-emerald-500/50")}><img src={isImpostor ? impostorImg : tripulanteImg} alt="" className="h-full w-full object-cover"/></div>
+          <div className="min-w-0 flex-1"><p className={cn("text-xs font-black uppercase tracking-wider", isImpostor ? "text-rose-300" : "text-emerald-300")}>{isImpostor ? 'Impostor' : 'Tripulante'}</p><div className="mt-0.5 max-h-[58px] overflow-hidden text-[10px] leading-tight [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0 [&_h2]:text-lg [&_h3]:text-base [&_p]:text-[10px]">{isImpostor ? renderImpostorContent() : renderCrewContent()}</div></div>
+          <EyeOff className="h-4 w-4 shrink-0 text-slate-500"/>
+        </div> : <div className="flex h-10 items-center justify-center gap-2 text-xs font-black uppercase tracking-wider text-violet-300"><Eye className="h-4 w-4"/>Toque para revelar</div>}
+      </button>
+
+      <main className="mt-2 min-h-0 flex-1 overflow-hidden rounded-2xl border border-slate-700/80 bg-[#111a31] px-3 py-2 [&_.space-y-6]:space-y-2 [&_.space-y-5]:space-y-2 [&_.space-y-4]:space-y-2 [&_.py-4]:py-1 [&_.p-6]:p-3 [&_.h-20]:h-12 [&_.w-20]:w-12 [&_.h-16]:h-11 [&_.w-16]:w-11 [&_.text-3xl]:text-xl [&_.text-2xl]:text-lg">
+        <div className="mx-auto flex h-full w-full max-w-xl flex-col justify-center">{renderStageContent()}</div>
+      </main>
+    </div>
+
+    <div className="hidden w-full max-w-[1480px] min-h-full px-4 py-5 sm:px-6 lg:block lg:px-8 lg:py-8 animate-fade-in relative z-10">
       {/* Elementos decorativos de fundo */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/15 rounded-full blur-[110px]"></div>
@@ -5883,6 +5921,7 @@ const GameScreen = () => {
       </div>
 
     </div>
+    </>
   );
 };
 
