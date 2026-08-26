@@ -16,7 +16,7 @@ type Room = {
   showTimer: boolean; round: number; createdAt: number;
   challengePhase: "suggesting" | "turn" | "finished" | null; accumulatedMs: number;
   currentPlayerId: string | null; suggesterId: string | null; lastChallengeAttempt: ChallengeAttempt | null;
-  lastResolution: ChallengeResolution | null; winnerId: string | null;
+  lastResolution: ChallengeResolution | null; winnerId: string | null; timerActivePlayerId: string | null;
 };
 
 const rooms = new Map<string, Room>();
@@ -71,7 +71,7 @@ function scheduleClassicBots(room: Room) {
 
 function resetChallengeRound(room: Room, suggesterId: string) {
   room.status = "playing"; room.challengePhase = "suggesting"; room.targetMs = null; room.accumulatedMs = 0;
-  room.currentPlayerId = null; room.suggesterId = suggesterId; room.lastChallengeAttempt = null; room.round += 1;
+  room.currentPlayerId = null; room.suggesterId = suggesterId; room.lastChallengeAttempt = null; room.timerActivePlayerId = null; room.round += 1;
 }
 
 function resolveChallenge(room: Room, challengerId: string) {
@@ -122,7 +122,7 @@ export function setupCronometroGame(app: Express) {
     const parsed = z.object({ playerId: z.string().min(1), nickname: z.string().trim().min(1).max(18), gameMode: z.enum(["classic", "challenge"]).default("classic") }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Digite um apelido válido." });
     const roomCode = code();
-    const room: Room = { code: roomCode, hostId: parsed.data.playerId, status: "waiting", gameMode: parsed.data.gameMode, players: [{ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, eliminated: false }], targetMs: null, startedAt: null, attempts: [], showTimer: false, round: 0, createdAt: Date.now(), challengePhase: null, accumulatedMs: 0, currentPlayerId: null, suggesterId: null, lastChallengeAttempt: null, lastResolution: null, winnerId: null };
+    const room: Room = { code: roomCode, hostId: parsed.data.playerId, status: "waiting", gameMode: parsed.data.gameMode, players: [{ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, eliminated: false }], targetMs: null, startedAt: null, attempts: [], showTimer: false, round: 0, createdAt: Date.now(), challengePhase: null, accumulatedMs: 0, currentPlayerId: null, suggesterId: null, lastChallengeAttempt: null, lastResolution: null, winnerId: null, timerActivePlayerId: null };
     if (parsed.data.nickname.toLowerCase() === "testeadm26") ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"].forEach((name, i) => room.players.push({ uid: `chrono-bot-${roomCode}-${i}`, name, connected: true, eliminated: false }));
     rooms.set(roomCode, room);
     const trackedMode = parsed.data.gameMode === "challenge" ? "cronometroDesafio" : "cronometroClassico";
@@ -209,6 +209,15 @@ export function setupCronometroGame(app: Express) {
     res.json(response(room));
   });
 
+  app.post("/api/cronometro/rooms/:code/timer-state", (req, res) => {
+    const room = rooms.get(req.params.code.toUpperCase());
+    if (!room || room.gameMode !== "challenge" || room.status !== "playing" || room.challengePhase !== "turn") return res.status(409).json({ error: "O cronômetro não está disponível agora." });
+    const parsed = z.object({ playerId: z.string(), running: z.boolean() }).safeParse(req.body);
+    if (!parsed.success || parsed.data.playerId !== room.currentPlayerId) return res.status(403).json({ error: "Apenas o jogador da vez pode usar o cronômetro." });
+    room.timerActivePlayerId = parsed.data.running ? parsed.data.playerId : null;
+    res.json(response(room));
+  });
+
   app.post("/api/cronometro/rooms/:code/attempt", (req, res) => {
     const room = rooms.get(req.params.code.toUpperCase());
     if (!room || room.status !== "playing" || !room.targetMs) return res.status(409).json({ error: "A rodada não está ativa." });
@@ -218,6 +227,7 @@ export function setupCronometroGame(app: Express) {
     if (!player) return res.status(403).json({ error: "Você não está ativo nesta sala." });
     if (room.gameMode === "challenge") {
       if (room.challengePhase !== "turn" || room.currentPlayerId !== player.uid) return res.status(403).json({ error: "Não é a sua vez." });
+      room.timerActivePlayerId = null;
       room.accumulatedMs += parsed.data.elapsedMs;
       room.lastChallengeAttempt = { playerId: player.uid, playerName: player.name, elapsedMs: parsed.data.elapsedMs, accumulatedAfterMs: room.accumulatedMs };
       room.currentPlayerId = nextActiveAfter(room, player.uid)?.uid ?? null;
@@ -249,7 +259,7 @@ export function setupCronometroGame(app: Express) {
     const room = rooms.get(req.params.code.toUpperCase());
     if (!room) return res.status(404).json({ error: "Sala não encontrada." });
     if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o líder pode voltar ao lobby." });
-    room.status = "waiting"; room.targetMs = null; room.startedAt = null; room.attempts = []; room.challengePhase = null; room.accumulatedMs = 0; room.currentPlayerId = null; room.suggesterId = null; room.lastChallengeAttempt = null; room.lastResolution = null; room.winnerId = null;
+    room.status = "waiting"; room.targetMs = null; room.startedAt = null; room.attempts = []; room.challengePhase = null; room.accumulatedMs = 0; room.currentPlayerId = null; room.suggesterId = null; room.lastChallengeAttempt = null; room.lastResolution = null; room.winnerId = null; room.timerActivePlayerId = null;
     room.players.forEach(player => { player.eliminated = false; }); res.json(response(room));
   });
 

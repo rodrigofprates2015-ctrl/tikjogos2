@@ -15,6 +15,7 @@ type Room = {
   currentPlayerId: string | null; suggesterId: string | null;
   lastChallengeAttempt: { playerId: string; playerName: string; elapsedMs: number; accumulatedAfterMs: number } | null;
   lastResolution: Resolution | null; winnerId: string | null;
+  timerActivePlayerId: string | null;
 };
 
 function formatTime(ms: number) {
@@ -118,6 +119,12 @@ export default function CronometroGame() {
   const handleTimer = useCallback(async () => {
     if (!room || !canUseTimer || busy) return;
     if (localStartedAtRef.current === null) {
+      if (room.gameMode === "challenge") {
+        setBusy(true); setError("");
+        try { setRoom(await request(`/api/cronometro/rooms/${room.code}/timer-state`, { playerId: playerId.current, running: true })); }
+        catch (caught: any) { setError(caught.message); setBusy(false); return; }
+        setBusy(false);
+      }
       const startedAt = performance.now(); localStartedAtRef.current = startedAt; setLocalStartedAt(startedAt); setDisplayElapsed(0); return;
     }
     const elapsedMs = Math.max(0, Math.round(performance.now() - localStartedAtRef.current));
@@ -172,7 +179,7 @@ export default function CronometroGame() {
         {room.challengePhase === "turn" && <>
           <p className="text-center text-lg font-black">É a vez de <span className="text-fuchsia-300">{currentPlayer?.name}</span></p>
           {isMyChallengeTurn && room.lastChallengeAttempt && localStartedAt === null && <button onClick={() => act("challenge")} disabled={busy} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-4 border-red-900 bg-red-600 px-6 py-5 text-xl font-black shadow-xl"><ShieldAlert/> DESAFIAR {room.lastChallengeAttempt.playerName.toUpperCase()}</button>}
-          {isMyChallengeTurn ? <TimerPad canUse={canUseTimer} started={localStartedAt !== null} pressed={pressed} showTimer={room.showTimer} displayElapsed={displayElapsed} onTimer={handleTimer}/> : <div className="rounded-3xl border border-slate-700 bg-slate-900/80 p-8 text-center"><Clock3 className="mx-auto h-12 w-12 animate-pulse text-fuchsia-300"/><p className="mt-4 font-bold text-slate-300">Acompanhe mentalmente o tempo acumulado.</p></div>}
+          {isMyChallengeTurn ? <TimerPad canUse={canUseTimer} started={localStartedAt !== null} pressed={pressed} showTimer={false} displayElapsed={displayElapsed} onTimer={handleTimer} challenge/> : <ChallengeTimerSignal running={room.timerActivePlayerId === room.currentPlayerId} playerName={currentPlayer?.name}/>}
           <p className="text-center text-sm text-slate-400">O total permanece oculto e só será revelado quando houver um desafio.</p>
         </>}
       </>}
@@ -186,8 +193,13 @@ export default function CronometroGame() {
   </div>;
 }
 
-function TimerPad({ canUse, started, pressed, showTimer, displayElapsed, attempt, onTimer }: { canUse: boolean; started: boolean; pressed: boolean; showTimer: boolean; displayElapsed: number; attempt?: Room["attempts"][number] | null; onTimer: () => void }) {
-  return <button onPointerDown={event => { event.preventDefault(); onTimer(); }} onClick={event => { if (event.detail === 0) onTimer(); }} disabled={!canUse} className={`min-h-[300px] w-full touch-none rounded-[2.5rem] border-4 p-8 text-center shadow-xl transition-all ${canUse ? "border-cyan-400 bg-[#123653] active:scale-[.98]" : "border-slate-600 bg-[#111827]"}`}>
+function ChallengeTimerSignal({ running, playerName }: { running: boolean; playerName?: string }) {
+  return <div className={`min-h-[300px] w-full rounded-[2.5rem] border-4 p-8 text-center shadow-xl transition-all duration-300 ${running ? "border-emerald-300 bg-emerald-500 shadow-[0_0_45px_rgba(34,197,94,.45)]" : "border-red-400 bg-red-600"}`}><Clock3 className={`mx-auto h-20 w-20 ${running ? "animate-pulse text-white" : "text-red-100"}`}/><strong className="mt-6 block text-3xl font-black">{running ? "CRONÔMETRO LIGADO" : "CRONÔMETRO PARADO"}</strong><span className="mt-3 block text-lg font-bold text-white/85">{running ? `${playerName || "O jogador"} está contando` : `Aguardando ${playerName || "o jogador"} iniciar`}</span><span className="mt-5 block font-mono text-5xl font-black">??:??:??</span></div>;
+}
+
+function TimerPad({ canUse, started, pressed, showTimer, displayElapsed, attempt, onTimer, challenge = false }: { canUse: boolean; started: boolean; pressed: boolean; showTimer: boolean; displayElapsed: number; attempt?: Room["attempts"][number] | null; onTimer: () => void; challenge?: boolean }) {
+  const activeColors = challenge ? (started ? "border-emerald-300 bg-emerald-500 shadow-[0_0_45px_rgba(34,197,94,.45)]" : "border-red-400 bg-red-600") : "border-cyan-400 bg-[#123653]";
+  return <button onPointerDown={event => { event.preventDefault(); onTimer(); }} onClick={event => { if (event.detail === 0) onTimer(); }} disabled={!canUse} className={`min-h-[300px] w-full touch-none rounded-[2.5rem] border-4 p-8 text-center shadow-xl transition-all ${canUse ? `${activeColors} active:scale-[.98]` : "border-slate-600 bg-[#111827]"}`}>
     {attempt ? <><Clock3 className="mx-auto h-16 w-16 text-emerald-400"/><strong className="mt-5 block font-mono text-5xl">{formatTime(attempt.elapsedMs)}</strong><span className="mt-3 block font-bold text-slate-300">Diferença de {formatTime(attempt.differenceMs)}</span></> : started ? <><strong className="block font-mono text-6xl tracking-wider">{showTimer ? formatTime(displayElapsed) : "??:??:??"}</strong><span className="mt-6 block text-xl font-black text-red-300">TOQUE PARA PARAR</span><small className="mt-2 block text-slate-300">Pressione espaço novamente para parar.</small></> : <><strong className="block font-mono text-6xl tracking-wider">00:00:00</strong><span className="mt-6 block text-xl font-black text-cyan-300">TOQUE PARA INICIAR</span><small className="mt-2 block text-slate-300">No computador, pressione a barra de espaço</small></>}
   </button>;
 }
