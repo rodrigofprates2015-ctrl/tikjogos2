@@ -3605,8 +3605,11 @@ const LobbyScreen = () => {
           </div>
 
           <div className="mt-5 rounded-2xl border border-slate-700/70 bg-slate-950/25 p-3">
-            <p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Ocupados (bloqueados)</p>
-            <div className="mt-3 flex flex-wrap gap-2">{Array.from(takenCharacterIndexes).map(index => <CharacterFaceAvatar key={index} player={{ name: 'Ocupado', characterIndex: index }} className="h-10 w-10 rounded-lg grayscale opacity-40" imageClassName="h-16"/>)}</div>
+            <p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Escolha seu personagem</p>
+            <div className="mt-3 grid grid-cols-5 gap-2">{DEFAULT_LOBBY_CHARACTERS.map((character, index) => {
+              const selected = currentCharacterIndex === index; const taken = takenCharacterIndexes.has(index);
+              return <button key={index} type="button" onClick={() => !taken && !selected && selectCharacter(index)} disabled={taken} className={cn("relative aspect-square overflow-hidden rounded-lg border bg-slate-950/80 transition", selected ? "border-amber-300 shadow-[0_0_12px_rgba(251,191,36,.25)]" : taken ? "cursor-not-allowed border-white/5 grayscale opacity-25" : "border-white/10 hover:border-violet-400/50")} aria-label={taken ? "Personagem ocupado" : `Selecionar personagem ${index + 1}`}><img src={character} alt="" className="absolute left-1/2 top-0 h-[155%] w-auto max-w-none -translate-x-1/2 object-contain"/>{selected && <Check className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 p-0.5 text-white"/>}{taken && <span className="absolute inset-x-0 bottom-0 bg-slate-950/90 py-0.5 text-[6px] font-black uppercase">Ocupado</span>}</button>;
+            })}</div>
           </div>
         </aside>
 
@@ -3615,16 +3618,6 @@ const LobbyScreen = () => {
             <button onClick={copyLink} className="group text-left" data-testid="text-room-code"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Código da sala</p><div className="mt-1 flex items-center gap-3"><strong className="font-mono text-4xl font-black tracking-widest text-amber-400 group-hover:text-amber-300">{room.code}</strong><span className="rounded-xl border border-slate-700 bg-slate-900 p-2 text-slate-400 group-hover:text-amber-300"><Copy className="h-5 w-5"/></span></div></button>
             <div className="flex flex-wrap items-center gap-2">{isHost && <button onClick={() => setShowConfigModal(true)} className="flex h-12 items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 font-black text-slate-300 hover:bg-slate-800"><Settings className="h-5 w-5"/> Configurações</button>}<VoiceChatJoinButton/></div>
           </header>
-
-          <section className="mt-6 rounded-[1.5rem] border border-slate-700/70 bg-[#0d1529]/70 p-4 sm:p-6">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-[10px] font-black uppercase tracking-[.18em] text-violet-300">Seu avatar</p><h1 className="mt-1 text-2xl font-black text-white">Escolha seu personagem</h1></div><p className="text-xs font-bold text-slate-500">Personagens ocupados ficam bloqueados</p></div>
-            <div className="mt-5 grid grid-cols-5 gap-2 sm:grid-cols-10" role="radiogroup" aria-label="Escolha seu personagem">
-              {DEFAULT_LOBBY_CHARACTERS.map((character, index) => {
-                const selected = currentCharacterIndex === index; const taken = takenCharacterIndexes.has(index);
-                return <button key={index} type="button" onClick={() => !taken && !selected && selectCharacter(index)} disabled={taken} className={cn("relative aspect-square overflow-hidden rounded-2xl border bg-slate-950/80 transition", selected ? "border-amber-300 shadow-[0_0_0_2px_rgba(251,191,36,.22),0_0_24px_rgba(251,191,36,.16)]" : taken ? "cursor-not-allowed border-white/5 grayscale opacity-25" : "border-white/10 hover:-translate-y-1 hover:border-violet-400/50")} role="radio" aria-checked={selected} data-testid={`button-lobby-character-${index}`}><img src={character} alt="" className="absolute left-1/2 top-0 h-[150%] w-auto max-w-none -translate-x-1/2 object-contain"/>{selected && <span className="absolute right-1 top-1 rounded-full bg-emerald-500 p-0.5"><Check className="h-3.5 w-3.5" strokeWidth={4}/></span>}{taken && <span className="absolute inset-x-1 bottom-1 rounded bg-slate-950/90 py-0.5 text-[7px] font-black uppercase">Ocupado</span>}</button>;
-              })}
-            </div>
-          </section>
 
           <section className="flex flex-1 flex-col items-center justify-center py-8 text-center"><div className="grid h-20 w-20 place-items-center rounded-3xl border border-violet-400/25 bg-violet-500/10 shadow-[0_0_35px_rgba(139,92,246,.15)]"><Users className="h-10 w-10 text-violet-300"/></div><h2 className="mt-5 text-3xl font-black">Sala pronta para jogar</h2><p className="mt-2 max-w-xl text-slate-400">Convide seus amigos pelo código da sala e escolha o modo quando todos estiverem prontos.</p><div className="mt-7 w-full max-w-lg">{actionContent}</div></section>
 
@@ -3916,7 +3909,7 @@ const LobbyScreen = () => {
 };
 
 const ModeSelectScreen = () => {
-  const { room, user, gameModes, selectedMode, selectMode, startGame, startGameWithConfig, gameConfig, backToLobby, fetchGameModes, showSpeakingOrderWheel, speakingOrder, setSpeakingOrder, setShowSpeakingOrderWheel } = useGameStore();
+  const { room, user, gameModes, selectedMode, selectMode, selectCharacter, startGame, startGameWithConfig, gameConfig, backToLobby, fetchGameModes, showSpeakingOrderWheel, speakingOrder, setSpeakingOrder, setShowSpeakingOrderWheel } = useGameStore();
   const { toast } = useToast();
   const [isStarting, setIsStarting] = useState(false);
   const [communityThemes, setCommunityThemes] = useState<PublicTheme[]>([]);
@@ -4092,23 +4085,23 @@ const ModeSelectScreen = () => {
   if (!room) return null;
 
   return (
-    <div className="flex flex-col w-full max-w-6xl h-full py-6 px-4 animate-fade-in relative z-10">
+    <div className="w-full max-w-[1480px] min-h-full px-4 py-5 sm:px-6 lg:px-8 lg:py-8 animate-fade-in relative z-10">
       {/* Elementos decorativos de fundo */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
         <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
       </div>
       
-      <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] relative z-10">
+      <div className="relative z-10 grid items-stretch gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
+      <aside className="flex flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#0d1529]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-5">
+        <button onClick={handleBackClick} className="flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 font-black text-slate-300 hover:bg-slate-800" data-testid="button-back-to-lobby"><ArrowLeft className="h-5 w-5"/> Voltar ao Lobby</button>
+        <div className="mt-6 flex items-center justify-between"><h2 className="text-sm font-black uppercase tracking-[.14em] text-slate-300">Jogadores</h2><span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-sm font-black text-emerald-300">{room.players.length} / 10</span></div>
+        <div className="mt-4 space-y-2.5">{room.players.map((player, index) => <article key={player.uid} className={cn("flex min-w-0 items-center gap-3 rounded-2xl border p-3", player.uid === user?.uid ? "border-violet-400/45 bg-violet-500/10" : "border-slate-700/70 bg-[#111c32]")}><CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-12 w-12 rounded-xl" imageClassName="h-20"/><div className="min-w-0 flex-1"><div className="flex items-center gap-1.5">{player.uid === room.hostId && <Crown className="h-3.5 w-3.5 text-violet-300"/>}<strong className="truncate text-sm">{player.name}</strong></div><div className="mt-1 flex items-center gap-2"><span className="text-[9px] font-black uppercase text-emerald-300">Pronto</span><span className="inline-flex items-center gap-1 text-[9px] font-black text-amber-300"><Trophy className="h-3 w-3"/>{player.impostorWins ?? 0}</span></div></div><span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_currentColor]"/></article>)}</div>
+        <div className="mt-5 rounded-2xl border border-slate-700/70 bg-slate-950/25 p-3"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Escolha seu personagem</p><div className="mt-3 grid grid-cols-5 gap-2">{DEFAULT_LOBBY_CHARACTERS.map((character, index) => { const selected = normalizeLobbyCharacterIndex(room.players.find(player => player.uid === user?.uid)?.characterIndex) === index; const taken = room.players.some(player => player.uid !== user?.uid && normalizeLobbyCharacterIndex(player.characterIndex) === index); return <button key={index} onClick={() => !taken && selectCharacter(index)} disabled={taken} className={cn("relative aspect-square overflow-hidden rounded-lg border bg-slate-950/80", selected ? "border-amber-300" : taken ? "cursor-not-allowed border-white/5 grayscale opacity-25" : "border-white/10 hover:border-violet-400/50")}><img src={character} alt="" className="absolute left-1/2 top-0 h-[155%] w-auto max-w-none -translate-x-1/2"/>{selected && <Check className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 p-0.5"/>}</button>; })}</div></div>
+      </aside>
+
+      <div className="min-w-0 rounded-[1.75rem] border border-slate-700/80 bg-[#111a31]/95 p-5 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-7 lg:p-8">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mb-8 text-center md:text-left">
-          <button 
-            onClick={handleBackClick}
-            className="p-3 bg-slate-800 rounded-2xl hover:bg-slate-700 transition-colors border-b-4 border-slate-950 active:border-b-0 active:translate-y-1 text-slate-400 hover:text-white"
-            data-testid="button-back-to-lobby"
-            title={isHost ? "Voltar ao lobby (todos os jogadores serão levados)" : "Voltar ao lobby"}
-          >
-            <ArrowLeft size={24} strokeWidth={3} />
-          </button>
           <div className="flex-1">
             <h2 className="text-2xl md:text-3xl font-black text-white mb-2">
               Como vamos jogar hoje?
@@ -4289,28 +4282,9 @@ const ModeSelectScreen = () => {
               </div>
             ) : null}
             
-            <button
-              onClick={() => setShowCategoryModal(true)}
-              className="group relative p-6 rounded-2xl border-2 border-dashed border-[#3d4a5c] hover:border-[#6b4ba3] bg-[#16213e]/20 hover:bg-[#16213e]/40 transition-all duration-300 cursor-pointer text-center w-full"
-            >
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#6b4ba3] to-[#4a3070] flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Sparkles className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold text-white group-hover:text-[#6b4ba3] transition-colors">
-                    {selectedCategory ? 'Trocar Categoria' : 'Escolher Categoria'}
-                  </h4>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Selecione uma categoria de palavras para jogar!
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <Play className="w-3 h-3" />
-                  <span>10 categorias disponíveis</span>
-                </div>
-              </div>
-            </button>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+              {WORD_CATEGORIES.map(category => <button key={category.id} type="button" onClick={() => setSelectedCategory(category.id)} className={cn("rounded-2xl border p-3 text-left transition", selectedCategory === category.id ? "border-violet-400 bg-violet-500/20 shadow-[0_0_18px_rgba(139,92,246,.14)]" : "border-slate-700 bg-slate-900/70 hover:border-violet-400/40")}><span className="text-2xl">{category.emoji}</span><strong className="mt-2 block text-sm text-white">{category.name}</strong><span className="text-[10px] font-bold uppercase text-slate-500">{category.difficulty}</span></button>)}
+            </div>
           </div>
         )}
 
@@ -4331,12 +4305,8 @@ const ModeSelectScreen = () => {
           </button>
         </div>
       </div>
+      </div>
 
-      <PalavraSecretaCategoryModal 
-        isOpen={showCategoryModal}
-        onClose={() => setShowCategoryModal(false)}
-        onSelectCategory={(categoryId) => setSelectedCategory(categoryId)}
-      />
     </div>
   );
 };
@@ -5127,6 +5097,7 @@ const GameScreen = () => {
   const [pixCopied, setPixCopied] = useState(false);
   const [unlockedHint, setUnlockedHint] = useState<string | null>(null);
   const [unlockedWord, setUnlockedWord] = useState<string | null>(null);
+  const [selectedVote, setSelectedVote] = useState<string | null>(null);
 
   // Poll PIX payment status for impostor unlock
   useEffect(() => {
@@ -5573,6 +5544,7 @@ const GameScreen = () => {
         );
 
       case 'VOTING':
+        const selectedVotePlayer = activePlayers.find(player => player.uid === selectedVote);
         return (
           <div className="animate-stage-fade-in w-full space-y-5">
             <div className="text-center space-y-3">
@@ -5587,14 +5559,9 @@ const GameScreen = () => {
               </div>
             </div>
             
-            <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
-            
-            <VotingPlayerList
-              activePlayers={activePlayers}
-              userId={user?.uid || ''}
-              onSubmitVote={handleSubmitVote}
-              isSubmitting={isSubmittingVote}
-            />
+            <div className="mx-auto max-w-xl rounded-3xl border border-orange-400/25 bg-orange-500/5 p-6 text-center">
+              {selectedVotePlayer ? <><CharacterFaceAvatar player={selectedVotePlayer} className="mx-auto h-24 w-24 rounded-2xl" imageClassName="h-40"/><p className="mt-4 text-sm font-bold text-slate-400">Seu voto está selecionado em</p><h4 className="mt-1 text-3xl font-black text-white">{selectedVotePlayer.name}</h4><Button onClick={() => handleSubmitVote(selectedVotePlayer.uid)} disabled={isSubmittingVote} className="mt-6 h-14 w-full rounded-2xl border-b-4 border-orange-900 bg-orange-500 text-lg font-black text-white hover:bg-orange-400" data-testid="button-confirm-vote"><Vote className="mr-2 h-5 w-5"/>{isSubmittingVote ? "CONFIRMANDO..." : `CONFIRMAR VOTO EM ${selectedVotePlayer.name.toUpperCase()}?`}</Button></> : <><Vote className="mx-auto h-12 w-12 text-orange-300"/><h4 className="mt-4 text-xl font-black text-white">Selecione um jogador na coluna esquerda</h4><p className="mt-2 text-sm text-slate-400">Depois, confirme seu voto aqui.</p></>}
+            </div>
           </div>
         );
 
@@ -5865,7 +5832,7 @@ const GameScreen = () => {
               const isCaptain = player.uid === room.hostId;
               const isWaiting = !!player.waitingForGame;
               return (
-                <article key={player.uid} className={cn("flex min-w-0 items-center gap-3 rounded-2xl border p-3 transition", isCurrentUser ? "border-violet-400/45 bg-violet-500/10" : "border-slate-700/70 bg-[#111c32]", isWaiting && "opacity-55")}>
+                <button type="button" key={player.uid} onClick={() => currentStage === 'VOTING' && player.uid !== user?.uid && setSelectedVote(player.uid)} disabled={currentStage !== 'VOTING' || player.uid === user?.uid || isWaiting} className={cn("flex w-full min-w-0 items-center gap-3 rounded-2xl border p-3 text-left transition", isCurrentUser ? "border-violet-400/45 bg-violet-500/10" : "border-slate-700/70 bg-[#111c32]", isWaiting && "opacity-55", currentStage === 'VOTING' && !isCurrentUser && !isWaiting && "cursor-pointer hover:border-orange-400/60 hover:bg-orange-500/10", selectedVote === player.uid && "border-orange-400 bg-orange-500/15 shadow-[0_0_20px_rgba(249,115,22,.14)]")} data-testid={`vote-sidebar-${player.uid}`}>
                   <CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-14 w-14 rounded-xl" imageClassName="h-24" />
                   <div className="min-w-0 flex-1">
                     {isCaptain && <span className="mb-1 inline-flex items-center gap-1 rounded-md bg-violet-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-violet-300"><Crown className="h-3 w-3"/> Capitão</span>}
@@ -5876,7 +5843,8 @@ const GameScreen = () => {
                     </div>
                   </div>
                   <span className={cn("h-3 w-3 shrink-0 rounded-full shadow-[0_0_12px_currentColor]", isWaiting ? "bg-amber-400 text-amber-400" : "bg-emerald-400 text-emerald-400")} />
-                </article>
+                  {currentStage === 'VOTING' && selectedVote === player.uid && <Check className="h-5 w-5 shrink-0 text-orange-300"/>}
+                </button>
               );
             })}
           </div>
