@@ -214,7 +214,7 @@ export function SpeakingOrderWithVotingStage({
       {showResults && displayOrder.length > 0 && (
         <div className="animate-stage-fade-in w-full max-w-xl mx-auto space-y-5 text-center">
           <div className="rounded-2xl border border-emerald-400/25 bg-emerald-400/5 px-5 py-6">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-300">
+            <div className="tj-icon-box tj-icon-box--success mx-auto mb-3">
               <Check className="h-6 w-6" />
             </div>
             <p className="text-white text-lg font-black">Ordem definida!</p>
@@ -228,7 +228,7 @@ export function SpeakingOrderWithVotingStage({
               {isHost ? (
                 <Button 
                   onClick={() => setShowConfirmDialog(true)}
-                  variant="gameDanger"
+                  variant="gamePrimary"
                   size="game"
                   className="w-full"
                   data-testid="button-host-start-voting"
@@ -258,7 +258,7 @@ export function SpeakingOrderWithVotingStage({
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
               <div className="bg-[#1a1b2e] border-2 border-gray-600 rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl animate-stage-fade-in">
                 <div className="text-center space-y-4">
-                  <div className="w-14 h-14 rounded-full bg-[#e9c46a]/20 border-2 border-[#e9c46a]/40 flex items-center justify-center mx-auto">
+                  <div className="tj-icon-box tj-icon-box--lg mx-auto border-violet-400/40 bg-violet-500/15">
                     <Vote className="w-7 h-7 text-[#e9c46a]" />
                   </div>
                   <h3 className="text-white font-black text-lg">Quer mesmo iniciar a votação?</h3>
@@ -278,7 +278,7 @@ export function SpeakingOrderWithVotingStage({
                         setShowConfirmDialog(false);
                         onStartVoting();
                       }}
-                      variant="gameDanger"
+                      variant="gamePrimary"
                       size="game"
                       className="flex-1"
                     >
@@ -376,7 +376,7 @@ export function VotingFeedbackStage({ activePlayers, votes, userId, isHost, onRe
   return (
     <div className="animate-stage-fade-in w-full space-y-4 py-4">
       <div className="text-center space-y-3">
-        <div className="w-14 h-14 rounded-full bg-[#3d8b5f]/20 border-2 border-[#3d8b5f] flex items-center justify-center mx-auto">
+        <div className="tj-icon-box tj-icon-box--lg tj-icon-box--success mx-auto">
           <Check className="w-7 h-7 text-[#3d8b5f]" />
         </div>
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#3d8b5f]/10 border border-[#3d8b5f]/30">
@@ -429,8 +429,9 @@ export function VotingFeedbackStage({ activePlayers, votes, userId, isHost, onRe
       {isHost && allVoted && (
         <Button 
           onClick={onRevealImpostor}
-          className="w-full h-12 bg-[#c44536] hover:bg-[#c44536]/80 text-white font-bold text-base rounded-xl transition-all"
-          style={{ boxShadow: '0 4px 0 rgba(196, 69, 54, 0.4)' }}
+          variant="gamePrimary"
+          size="game"
+          className="w-full"
           data-testid="button-reveal-impostor"
         >
           <Skull className="mr-2 w-5 h-5" /> Revelar o Impostor

@@ -3590,7 +3590,7 @@ const LobbyScreen = () => {
               const isMe = player.uid === user?.uid;
               const isPlayerHost = player.uid === room.hostId;
               const characterIndex = player.characterIndex ?? index;
-              return <article key={player.uid} className={cn("flex min-w-0 items-center gap-2.5 rounded-xl border p-2.5 sm:gap-3 sm:rounded-2xl sm:p-3", isMe ? "border-violet-400/45 bg-violet-500/10" : "border-slate-700/70 bg-[#111c32]")} data-testid={`player-${player.uid}`}>
+              return <article key={player.uid} className={cn("tj-player-card flex min-w-0 items-center gap-2.5 p-2.5 sm:gap-3 sm:p-3", isMe && "is-current")} data-testid={`player-${player.uid}`}>
                 <div className="relative"><CharacterFaceAvatar player={{ ...player, characterIndex }} className="h-12 w-12 rounded-xl sm:h-14 sm:w-14" imageClassName="h-20 sm:h-24"/><div className="absolute -bottom-1 -right-1"><SpeakingIndicator playerId={player.uid} isCurrentUser={isMe}/></div></div>
                 <div className="min-w-0 flex-1">
                   {isPlayerHost && <span className="mb-1 inline-flex items-center gap-1 rounded-md bg-violet-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase text-violet-300"><Crown className="h-3 w-3"/> Capitão da sala</span>}
@@ -4147,10 +4147,8 @@ const ModeSelectScreen = () => {
                   }
                 }}
                 className={cn(
-                  "relative p-3 sm:p-5 rounded-2xl sm:rounded-3xl cursor-pointer transition-all duration-200 flex flex-col gap-2 sm:gap-4 h-full border-2 sm:border-4",
-                  isSelected 
-                    ? `${colors.bg} ${colors.border} -translate-y-2 shadow-[0_10px_0_0_rgba(0,0,0,0.2)]` 
-                    : 'bg-slate-800 border-slate-900 hover:bg-slate-750 hover:-translate-y-1 hover:border-slate-700 shadow-lg'
+                  "tj-selection-card relative flex h-full cursor-pointer flex-col gap-2 p-3 sm:gap-4 sm:p-5",
+                  isSelected && "is-selected"
                 )}
               >
                 {/* Badge Recomendado */}
@@ -4162,7 +4160,7 @@ const ModeSelectScreen = () => {
 
                 {/* Check Icon */}
                 {isSelected && (
-                  <div className="absolute -top-3 -right-3 bg-white text-green-600 rounded-full p-1 border-4 border-green-600 shadow-sm animate-in zoom-in spin-in-12 duration-300">
+                  <div className="absolute -right-2 -top-2 grid h-9 w-9 place-items-center rounded-xl border-2 border-violet-300 bg-violet-600 text-white shadow-[0_4px_0_#5F2FC2] animate-in zoom-in duration-300">
                     <Check size={20} strokeWidth={4} />
                   </div>
                 )}
@@ -4170,15 +4168,15 @@ const ModeSelectScreen = () => {
                 {/* Header do Card */}
                 <div className="flex justify-between items-start">
                   <div className={cn(
-                    "p-3 rounded-2xl border-2 border-black/10",
-                    isSelected ? 'bg-white/20 text-white' : `${colors.bg} text-white`
+                    "tj-icon-box text-white",
+                    colors.bg
                   )}>
                     <Icon size={32} strokeWidth={2.5} />
                   </div>
                   
                   <div className={cn(
                     "text-xs font-bold px-3 py-1 rounded-full border-2 border-black/10",
-                    isSelected ? 'bg-black/20 text-white' : 'bg-slate-900 text-slate-400'
+                    'bg-slate-900 text-slate-400'
                   )}>
                     {difficulty.toUpperCase()}
                   </div>
@@ -4188,13 +4186,13 @@ const ModeSelectScreen = () => {
                 <div className="flex flex-col gap-1">
                   <h3 className={cn(
                     "font-black text-xl leading-tight",
-                    isSelected ? 'text-white' : 'text-slate-100'
+                    'text-slate-100'
                   )}>
                     {mode.title}
                   </h3>
                   <p className={cn(
                     "text-sm font-medium leading-relaxed",
-                    isSelected ? 'text-white/90' : 'text-slate-400'
+                    'text-slate-400'
                   )}>
                     {mode.desc}
                   </p>
@@ -4983,8 +4981,9 @@ const PerguntasDiferentesScreen = () => {
         {isHost && allVoted && (
           <Button 
             onClick={handleRevealImpostor}
-            className="w-full h-14 bg-[#c44536] hover:bg-[#c44536]/80 text-white font-bold text-lg rounded-lg transition-all"
-            style={{ boxShadow: '0 4px 0 rgba(196, 69, 54, 0.5)' }}
+            variant="gamePrimary"
+            size="gameLg"
+            className="w-full"
           >
             <Skull className="mr-2 w-5 h-5" /> Revelar o Impostor
           </Button>
@@ -5577,7 +5576,7 @@ const GameScreen = () => {
             </div>
             
             <div className="mx-auto max-w-xl rounded-3xl border border-orange-400/25 bg-orange-500/5 p-6 text-center">
-              {selectedVotePlayer ? <><CharacterFaceAvatar player={selectedVotePlayer} className="mx-auto h-24 w-24 rounded-2xl" imageClassName="h-40"/><p className="mt-4 text-sm font-bold text-slate-400">Seu voto está selecionado em</p><h4 className="mt-1 text-3xl font-black text-white">{selectedVotePlayer.name}</h4><Button onClick={() => handleSubmitVote(selectedVotePlayer.uid)} disabled={isSubmittingVote} variant="gameDanger" size="gameLg" className="mt-6 w-full min-w-0 overflow-hidden px-3" data-testid="button-confirm-vote"><Vote className="mr-2 h-5 w-5 shrink-0"/><span className="truncate">{isSubmittingVote ? "CONFIRMANDO..." : "CONFIRMAR VOTO"}</span></Button></> : <><Vote className="mx-auto h-12 w-12 text-[#2C7EFC]"/><h4 className="mt-4 text-xl font-black text-white"><span className="lg:hidden">Selecione um jogador na lista abaixo</span><span className="hidden lg:inline">Selecione um jogador na coluna esquerda</span></h4><p className="mt-2 text-sm text-slate-400">Depois, confirme seu voto aqui.</p></>}
+              {selectedVotePlayer ? <><CharacterFaceAvatar player={selectedVotePlayer} className="mx-auto h-24 w-24 rounded-2xl" imageClassName="h-40"/><p className="mt-4 text-sm font-bold text-slate-400">Seu voto está selecionado em</p><h4 className="mt-1 text-3xl font-black text-white">{selectedVotePlayer.name}</h4><Button onClick={() => handleSubmitVote(selectedVotePlayer.uid)} disabled={isSubmittingVote} variant="gamePrimary" size="gameLg" className="mt-6 w-full min-w-0 overflow-hidden px-3" data-testid="button-confirm-vote"><Vote className="mr-2 h-5 w-5 shrink-0"/><span className="truncate">{isSubmittingVote ? "CONFIRMANDO..." : "CONFIRMAR VOTO"}</span></Button></> : <><div className="tj-icon-box tj-icon-box--lg mx-auto bg-blue-500/15 text-[#2C7EFC]"><Vote className="h-7 w-7"/></div><h4 className="mt-4 text-xl font-black text-white"><span className="lg:hidden">Selecione um jogador na lista abaixo</span><span className="hidden lg:inline">Selecione um jogador na coluna esquerda</span></h4><p className="mt-2 text-sm text-slate-400">Depois, confirme seu voto aqui.</p></>}
             </div>
           </div>
         );
@@ -5645,8 +5644,9 @@ const GameScreen = () => {
             {isHost && allVoted && (
               <Button 
                 onClick={handleRevealImpostor}
-                className="w-full h-11 bg-[#c44536] hover:bg-[#c44536]/80 text-white font-bold text-sm rounded-xl transition-all"
-                style={{ boxShadow: '0 4px 0 rgba(196, 69, 54, 0.4)' }}
+                variant="gamePrimary"
+                size="game"
+                className="w-full"
                 data-testid="button-reveal-impostor"
               >
                 <Skull className="mr-2 w-4 h-4" /> Revelar o Impostor
@@ -5788,7 +5788,7 @@ const GameScreen = () => {
           const votesReceived = votes.filter(vote => vote.targetId === player.uid).length;
           const isResultImpostor = currentStage === 'ROUND_RESULT' && sidebarImpostorIds.includes(player.uid);
           const canSelectVote = currentStage === 'VOTING' && !isCurrentUser && !isWaiting;
-          return <button type="button" key={player.uid} onClick={() => canSelectVote && setSelectedVote(player.uid)} disabled={!canSelectVote} className={cn("relative flex min-w-0 flex-col items-center rounded-xl border px-1 py-1.5", isCurrentUser ? "border-violet-400 bg-violet-500/10" : "border-slate-700 bg-[#111c32]", canSelectVote && "active:scale-95", selectedVote === player.uid && "border-orange-400 bg-orange-500/20", isResultImpostor && "border-rose-400 bg-rose-500/15")}>
+          return <button type="button" key={player.uid} onClick={() => canSelectVote && setSelectedVote(player.uid)} disabled={!canSelectVote} className={cn("tj-player-card relative flex min-w-0 flex-col items-center px-1 py-1.5", isCurrentUser && "is-current", canSelectVote && "active:scale-95", selectedVote === player.uid && "is-selected", isResultImpostor && "is-danger")}>
             <div className="relative"><CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-8 w-8 rounded-lg" imageClassName="h-14"/><span className={cn("absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#111c32]", isWaiting ? "bg-amber-400" : "bg-emerald-400")}/></div>
             <strong className="mt-0.5 w-full truncate text-center text-[8px] leading-tight text-slate-200">{player.name}</strong>
             {(currentStage === 'ROUND_RESULT' || speakingPosition >= 0) && <span className={cn("absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full px-0.5 text-[7px] font-black", currentStage === 'ROUND_RESULT' ? "bg-orange-500 text-white" : "bg-violet-500 text-white")}>{currentStage === 'ROUND_RESULT' ? votesReceived : speakingPosition + 1}</span>}
@@ -5823,7 +5823,7 @@ const GameScreen = () => {
               const votesReceived = votes.filter(vote => vote.targetId === player.uid).length;
               const isResultImpostor = currentStage === 'ROUND_RESULT' && sidebarImpostorIds.includes(player.uid);
               return (
-                <button type="button" key={player.uid} onClick={() => currentStage === 'VOTING' && player.uid !== user?.uid && setSelectedVote(player.uid)} disabled={currentStage !== 'VOTING' || player.uid === user?.uid || isWaiting} className={cn("flex w-full min-w-0 items-center gap-3 rounded-2xl border p-3 text-left transition", isCurrentUser ? "border-violet-400/45 bg-violet-500/10" : "border-slate-700/70 bg-[#111c32]", isResultImpostor && "border-rose-400/55 bg-rose-500/10", isWaiting && "opacity-55", currentStage === 'VOTING' && !isCurrentUser && !isWaiting && "cursor-pointer hover:border-orange-400/60 hover:bg-orange-500/10", selectedVote === player.uid && "border-orange-400 bg-orange-500/15 shadow-[0_0_20px_rgba(249,115,22,.14)]")} data-testid={`vote-sidebar-${player.uid}`}>
+                <button type="button" key={player.uid} onClick={() => currentStage === 'VOTING' && player.uid !== user?.uid && setSelectedVote(player.uid)} disabled={currentStage !== 'VOTING' || player.uid === user?.uid || isWaiting} className={cn("tj-player-card flex w-full min-w-0 items-center gap-3 p-3 text-left", isCurrentUser && "is-current", isResultImpostor && "is-danger", isWaiting && "opacity-55", currentStage === 'VOTING' && !isCurrentUser && !isWaiting && "cursor-pointer", selectedVote === player.uid && "is-selected")} data-testid={`vote-sidebar-${player.uid}`}>
                   <div className="relative"><CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-14 w-14 rounded-xl" imageClassName="h-24" /><span className={cn("absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-[#111c32]", isWaiting ? "bg-amber-400" : "bg-emerald-400")} /></div>
                   <div className="min-w-0 flex-1">
                     {isCaptain && <span className="mb-1 inline-flex items-center gap-1 rounded-md bg-violet-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-violet-300"><Crown className="h-3 w-3"/> Capitão</span>}
