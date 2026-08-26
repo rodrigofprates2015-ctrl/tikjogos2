@@ -5757,14 +5757,6 @@ const GameScreen = () => {
                 >
                   <Vote className="mr-2 w-5 h-5" /> Iniciar Votação
                 </Button>
-                <Button 
-                  onClick={handleNewRound}
-                  variant="ghost"
-                  className="w-full h-10 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-xl text-sm transition-all"
-                  data-testid="button-return-lobby"
-                >
-                  <ArrowLeft className="mr-2 w-4 h-4" /> Nova Rodada
-                </Button>
               </>
             ) : (
               <div className="text-center py-4">
@@ -5781,28 +5773,67 @@ const GameScreen = () => {
     }
   };
 
+  const occupiedCharacterIndexes = Array.from(new Set(room.players.map((player, index) => normalizeLobbyCharacterIndex(player.characterIndex ?? index))));
+
   return (
-    <div className="flex flex-col items-center w-full max-w-2xl min-h-full py-6 px-4 animate-fade-in space-y-4 relative z-10">
+    <div className="w-full max-w-[1480px] min-h-full px-4 py-5 sm:px-6 lg:px-8 lg:py-8 animate-fade-in relative z-10">
       {/* Elementos decorativos de fundo */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/15 rounded-full blur-[110px]"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/15 rounded-full blur-[110px]"></div>
       </div>
 
-      <GameNavButtons onBackToLobby={handleBackToLobby} isImpostor={isImpostor} />
+      <div className="relative z-10 grid items-stretch gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
+        <aside className="flex flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#0d1529]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-5">
+          <GameNavButtons onBackToLobby={handleBackToLobby} isImpostor={isImpostor} />
 
-      <div className="w-full bg-[#242642] rounded-[3rem] p-6 md:p-8 shadow-2xl border-4 border-[#2f3252] relative z-10 space-y-6">
+          <div className="mt-6 flex items-center justify-between px-1">
+            <div><p className="text-[11px] font-black uppercase tracking-[.18em] text-slate-500">Sala {room.code}</p><h2 className="mt-1 text-sm font-black uppercase tracking-[.12em] text-slate-300">Jogadores</h2></div>
+            <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-sm font-black text-emerald-300">{activePlayers.length} / {room.players.length}</span>
+          </div>
+
+          <div className="mt-4 space-y-2.5">
+            {room.players.map((player, index) => {
+              const isCurrentUser = player.uid === user?.uid;
+              const isCaptain = player.uid === room.hostId;
+              const isWaiting = !!player.waitingForGame;
+              return (
+                <article key={player.uid} className={cn("flex min-w-0 items-center gap-3 rounded-2xl border p-3 transition", isCurrentUser ? "border-violet-400/45 bg-violet-500/10" : "border-slate-700/70 bg-[#111c32]", isWaiting && "opacity-55")}>
+                  <CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-14 w-14 rounded-xl" imageClassName="h-24" />
+                  <div className="min-w-0 flex-1">
+                    {isCaptain && <span className="mb-1 inline-flex items-center gap-1 rounded-md bg-violet-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-violet-300"><Crown className="h-3 w-3"/> Capitão</span>}
+                    <div className="flex min-w-0 items-center gap-2"><strong className="truncate text-sm text-slate-100">{player.name}</strong>{isCurrentUser && <span className="rounded bg-violet-600 px-1.5 py-0.5 text-[9px] font-black uppercase">Você</span>}</div>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-black uppercase", isWaiting ? "border-amber-400/20 bg-amber-400/10 text-amber-300" : "border-emerald-400/20 bg-emerald-400/10 text-emerald-300")}><Check className="h-3 w-3"/>{isWaiting ? "Aguardando" : "Pronto"}</span>
+                      <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/20 bg-amber-400/5 px-2 py-0.5 text-[9px] font-black text-amber-300"><Trophy className="h-3 w-3"/>{player.impostorWins ?? 0}</span>
+                    </div>
+                  </div>
+                  <span className={cn("h-3 w-3 shrink-0 rounded-full shadow-[0_0_12px_currentColor]", isWaiting ? "bg-amber-400 text-amber-400" : "bg-emerald-400 text-emerald-400")} />
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-slate-700/70 bg-slate-950/25 p-3">
+            <p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Ocupados (bloqueados)</p>
+            <div className="mt-3 flex flex-wrap gap-2">{occupiedCharacterIndexes.map(index => <div key={index} className="relative"><CharacterFaceAvatar player={{ name: 'Ocupado', characterIndex: index }} className="h-10 w-10 rounded-lg grayscale opacity-45" imageClassName="h-16"/><span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded bg-slate-950/90 px-1 text-[7px] font-black uppercase text-slate-500">Ocupado</span></div>)}</div>
+          </div>
+
+          {isHost && <Button onClick={handleNewRound} variant="ghost" className="mt-5 h-12 w-full rounded-xl border border-slate-700 bg-slate-900/60 text-slate-400 hover:bg-slate-800 hover:text-white" data-testid="button-return-lobby"><ArrowLeft className="mr-2 h-4 w-4"/> Nova Rodada</Button>}
+        </aside>
+
+        <section className="flex min-h-[720px] flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#111a31]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-6 lg:p-8">
         <div 
-          className="w-full rounded-2xl p-6 flex flex-col items-center text-center relative transition-all duration-300 cursor-pointer bg-gradient-to-br from-[#2f3252] to-[#1e2036] border-2 border-[#3d4a5c] hover:border-[#4a5568] shadow-lg"
+          className="w-full rounded-[1.5rem] p-5 sm:p-6 flex flex-col items-center text-center relative transition-all duration-300 cursor-pointer bg-gradient-to-br from-[#17213b] to-[#10182d] border border-slate-700/80 hover:border-slate-600 shadow-lg"
           onClick={() => setIsRevealed(!isRevealed)}
           data-testid="card-reveal"
         >
           {isRevealed ? (
             <div className="flex flex-col items-center gap-4 animate-fade-in w-full">
-              <div className="flex items-center gap-4 w-full">
+              <div className="flex items-center gap-4 sm:gap-6 w-full">
                 <div 
                   className={cn(
-                    "w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 shadow-xl border-4",
+                    "w-20 h-20 sm:w-28 sm:h-28 rounded-2xl overflow-hidden flex-shrink-0 shadow-xl border-2",
                     isImpostor ? "border-rose-500/50 bg-rose-500/10" : "border-emerald-500/50 bg-emerald-500/10"
                   )}
                 >
@@ -5816,14 +5847,14 @@ const GameScreen = () => {
                 <div className="text-left flex-1">
                   <h2 
                     className={cn(
-                      "text-2xl sm:text-3xl font-black tracking-wider uppercase",
+                      "text-2xl sm:text-4xl font-black tracking-wider uppercase",
                       isImpostor ? "text-rose-400" : "text-emerald-400"
                     )}
                     data-testid={isImpostor ? "text-role-impostor" : "text-role-crew"}
                   >
                     {isImpostor ? "IMPOSTOR" : "TRIPULANTE"}
                   </h2>
-                  <p className="text-slate-400 text-xs mt-1">
+                  <p className="text-slate-400 text-sm sm:text-lg mt-1">
                     {isImpostor ? "Engane todos!" : "Descubra o impostor!"}
                   </p>
                 </div>
@@ -5836,9 +5867,7 @@ const GameScreen = () => {
                 </button>
               </div>
 
-              <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
-
-              <div className="w-full">
+              <div className="w-full mt-2 sm:mt-4">
                 {isImpostor ? renderImpostorContent() : renderCrewContent()}
               </div>
             </div>
@@ -5855,9 +5884,10 @@ const GameScreen = () => {
           )}
         </div>
 
-        <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
+        <div className="my-6 w-full h-px bg-gradient-to-r from-transparent via-slate-600/50 to-transparent"></div>
 
-        {renderStageContent()}
+        <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center">{renderStageContent()}</div>
+        </section>
       </div>
 
     </div>
@@ -5956,7 +5986,7 @@ function ImpostorGameInner({ showSupportContent = false }: { showSupportContent?
 
   return (
     <div 
-      className="min-h-screen w-full flex items-center justify-center font-poppins text-white overflow-hidden relative"
+      className={cn("min-h-screen w-full flex justify-center font-poppins text-white relative", status === 'playing' ? "items-start overflow-y-auto" : "items-center overflow-hidden")}
       style={{
         backgroundColor: '#1C202C'
       }}

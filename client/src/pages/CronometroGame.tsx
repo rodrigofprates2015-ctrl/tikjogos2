@@ -59,6 +59,7 @@ export default function CronometroGame() {
   const [displayElapsed, setDisplayElapsed] = useState(0);
   const [suggestedSeconds, setSuggestedSeconds] = useState("4,00");
   const localStartedAtRef = useRef<number | null>(null);
+  const timerSignalPromiseRef = useRef<Promise<Room> | null>(null);
   const code = (new URLSearchParams(window.location.search).get("room") || sessionStorage.getItem("cronometro_room_code") || "").toUpperCase();
 
   useEffect(() => { sessionStorage.setItem("cronometro_player_id", playerId.current); document.title = "Jogo do Cronômetro Online | TikJogos"; }, []);
@@ -82,7 +83,7 @@ export default function CronometroGame() {
 
   const turnKey = room?.gameMode === "challenge" ? `${room.round}:${room.challengePhase}:${room.currentPlayerId}` : `${room?.round}`;
   useEffect(() => {
-    localStartedAtRef.current = null; setLocalStartedAt(null); setDisplayElapsed(0); setPressed(false);
+    localStartedAtRef.current = null; timerSignalPromiseRef.current = null; setLocalStartedAt(null); setDisplayElapsed(0); setPressed(false);
   }, [turnKey]);
   useEffect(() => {
     if (room?.gameMode === "classic") setPressed(!!room.attempts.some(attempt => attempt.playerId === playerId.current));
@@ -119,16 +120,24 @@ export default function CronometroGame() {
   const handleTimer = useCallback(async () => {
     if (!room || !canUseTimer || busy) return;
     if (localStartedAtRef.current === null) {
+      const startedAt = performance.now(); localStartedAtRef.current = startedAt; setLocalStartedAt(startedAt); setDisplayElapsed(0);
       if (room.gameMode === "challenge") {
-        setBusy(true); setError("");
-        try { setRoom(await request(`/api/cronometro/rooms/${room.code}/timer-state`, { playerId: playerId.current, running: true })); }
-        catch (caught: any) { setError(caught.message); setBusy(false); return; }
-        setBusy(false);
+        setError("");
+        const signal = request(`/api/cronometro/rooms/${room.code}/timer-state`, { playerId: playerId.current, running: true });
+        timerSignalPromiseRef.current = signal;
+        signal.then(setRoom).catch((caught: any) => {
+          localStartedAtRef.current = null; timerSignalPromiseRef.current = null; setLocalStartedAt(null); setDisplayElapsed(0); setPressed(false); setError(caught.message);
+        });
       }
-      const startedAt = performance.now(); localStartedAtRef.current = startedAt; setLocalStartedAt(startedAt); setDisplayElapsed(0); return;
+      return;
     }
     const elapsedMs = Math.max(0, Math.round(performance.now() - localStartedAtRef.current));
-    setDisplayElapsed(elapsedMs); setPressed(true); await act("attempt", { elapsedMs });
+    setDisplayElapsed(elapsedMs); setPressed(true);
+    if (timerSignalPromiseRef.current) {
+      try { await timerSignalPromiseRef.current; } catch { return; }
+      timerSignalPromiseRef.current = null;
+    }
+    await act("attempt", { elapsedMs });
   }, [room, canUseTimer, busy]);
 
   useEffect(() => {
@@ -178,7 +187,7 @@ export default function CronometroGame() {
         {room.challengePhase === "suggesting" && (room.suggesterId === playerId.current ? <section className="rounded-3xl border-2 border-fuchsia-400/60 bg-fuchsia-400/10 p-6 text-center"><Swords className="mx-auto h-10 w-10 text-fuchsia-300"/><h2 className="mt-3 text-2xl font-black">Sua vez de sugerir</h2><p className="mt-2 text-slate-300">Escolha o limite acumulado da nova rodada.</p><div className="mx-auto mt-5 flex max-w-sm gap-3"><input value={suggestedSeconds} onChange={event => setSuggestedSeconds(event.target.value)} inputMode="decimal" className="min-w-0 flex-1 rounded-xl border-2 border-fuchsia-400/50 bg-slate-950 px-4 py-3 text-center text-xl font-black"/><button onClick={submitSuggestion} disabled={busy} className="rounded-xl bg-fuchsia-500 px-5 font-black">SUGERIR</button></div><small className="mt-2 block text-slate-400">Tempo em segundos, por exemplo: 4,00</small></section> : <p className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5 text-center font-bold text-slate-300">{suggester?.name} está escolhendo o próximo tempo...</p>)}
         {room.challengePhase === "turn" && <>
           <p className="text-center text-lg font-black">É a vez de <span className="text-fuchsia-300">{currentPlayer?.name}</span></p>
-          {isMyChallengeTurn && room.lastChallengeAttempt && localStartedAt === null && <button onClick={() => act("challenge")} disabled={busy} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-4 border-red-900 bg-red-600 px-6 py-5 text-xl font-black shadow-xl"><ShieldAlert/> DESAFIAR {room.lastChallengeAttempt.playerName.toUpperCase()}</button>}
+          {isMyChallengeTurn && room.lastChallengeAttempt && <button onClick={() => act("challenge")} disabled={busy || localStartedAt !== null || pressed} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-4 border-red-900 bg-red-600 px-6 py-5 text-xl font-black shadow-xl transition disabled:border-slate-700 disabled:bg-slate-600 disabled:text-slate-300 disabled:shadow-none"><ShieldAlert/> DESAFIAR {room.lastChallengeAttempt.playerName.toUpperCase()}</button>}
           {isMyChallengeTurn ? <TimerPad canUse={canUseTimer} started={localStartedAt !== null} pressed={pressed} showTimer={false} displayElapsed={displayElapsed} onTimer={handleTimer} challenge/> : <ChallengeTimerSignal running={room.timerActivePlayerId === room.currentPlayerId} playerName={currentPlayer?.name}/>}
           <p className="text-center text-sm text-slate-400">O total permanece oculto e só será revelado quando houver um desafio.</p>
         </>}
