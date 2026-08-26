@@ -387,7 +387,7 @@ export const ResultAd = () => {
   }, []);
 
   return (
-    <div className="w-full flex flex-col items-center gap-1 py-3">
+    <div className="tj-ad-frame my-3 flex w-full flex-col items-center gap-1 p-3">
       <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Publicidade</span>
       <ins
         ref={insRef}
@@ -423,7 +423,7 @@ export const LobbyAd = () => {
   }, []);
 
   return (
-    <div className="w-full flex flex-col items-center gap-1 pt-5 pb-2">
+    <div className="tj-ad-frame mt-5 flex w-full flex-col items-center gap-1 px-3 pb-3 pt-3">
       <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Publicidade</span>
       <ins
         ref={insRef}

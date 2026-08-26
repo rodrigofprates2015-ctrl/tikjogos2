@@ -104,7 +104,7 @@ export function SpeakingOrderStage({ players, serverOrder, playerMap, onComplete
             {displayOrder.map((name, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-3 px-4 py-3 bg-gray-900/40 border border-gray-700/50 rounded-xl"
+                className="tj-player-card flex items-center gap-3 px-4 py-3"
                 style={{ animation: `stageSlideIn 0.4s ease-out ${idx * 0.1}s backwards` }}
               >
                 <div className="w-8 h-8 rounded-full bg-gray-700/40 border border-gray-600 flex items-center justify-center">
@@ -213,7 +213,7 @@ export function SpeakingOrderWithVotingStage({
 
       {showResults && displayOrder.length > 0 && (
         <div className="animate-stage-fade-in w-full max-w-xl mx-auto space-y-5 text-center">
-          <div className="rounded-2xl border border-emerald-400/25 bg-emerald-400/5 px-5 py-6">
+          <div className="tj-inset px-5 py-6">
             <div className="tj-icon-box tj-icon-box--success mx-auto mb-3">
               <Check className="h-6 w-6" />
             </div>
@@ -256,7 +256,7 @@ export function SpeakingOrderWithVotingStage({
           {/* Confirmation dialog */}
           {showConfirmDialog && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-              <div className="bg-[#1a1b2e] border-2 border-gray-600 rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl animate-stage-fade-in">
+              <div className="tj-surface mx-4 w-full max-w-sm p-6 animate-stage-fade-in">
                 <div className="text-center space-y-4">
                   <div className="tj-icon-box tj-icon-box--lg mx-auto border-violet-400/40 bg-violet-500/15">
                     <Vote className="w-7 h-7 text-[#e9c46a]" />
@@ -319,16 +319,16 @@ export function VotingStage({ activePlayers, userId, onSubmitVote, isSubmitting 
       
       <div className="w-full h-[1px] bg-[#3d4a5c]"></div>
       
-      <div className="space-y-2 max-h-[280px] overflow-y-auto scrollbar-hide">
+      <div className="tj-inset max-h-[280px] space-y-2 overflow-y-auto p-3 scrollbar-hide">
         {activePlayers.filter(p => p.uid !== userId).map(player => (
           <button
             key={player.uid}
             onClick={() => setSelectedVote(player.uid)}
             className={cn(
-              "w-full p-3 rounded-xl border-2 transition-all text-left flex items-center gap-3",
+              "tj-player-card w-full p-3 text-left flex items-center gap-3",
               selectedVote === player.uid
-                ? "bg-[#e9c46a]/15 border-[#e9c46a] text-[#e9c46a]"
-                : "bg-[#16213e]/50 border-[#3d4a5c] text-gray-300 hover:border-[#e9c46a]/50"
+                ? "is-vote-target text-rose-200"
+                : "text-gray-300"
             )}
             data-testid={`button-vote-${player.uid}`}
           >
@@ -391,7 +391,7 @@ export function VotingFeedbackStage({ activePlayers, votes, userId, isHost, onRe
       
       <div className="w-full h-[1px] bg-[#3d4a5c]"></div>
       
-      <div className="space-y-3">
+      <div className="tj-inset space-y-3 p-4">
         <div className="flex items-center justify-center gap-2">
           <Users className="w-5 h-5 text-[#4a90a4]" />
           <p className="text-gray-300">

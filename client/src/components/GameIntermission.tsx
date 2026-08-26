@@ -56,7 +56,7 @@ export function GameIntermissionScreen({
       aria-modal="true"
       aria-label="Publicidade entre partidas"
     >
-      <div className="w-full max-w-[380px] overflow-hidden rounded-3xl border border-white/10 bg-[#1a1b2e] shadow-2xl">
+      <div className="tj-surface w-full max-w-[380px] overflow-hidden">
         <header className="flex items-center justify-between border-b border-white/10 px-4 py-3">
           <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
             Pausa rápida — Publicidade

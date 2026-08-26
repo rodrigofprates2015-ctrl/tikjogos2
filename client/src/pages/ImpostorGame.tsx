@@ -3539,7 +3539,7 @@ const LobbyScreen = () => {
   const getPlayerAccent = (index?: number) => characterAccents[normalizeLobbyCharacterIndex(index)];
 
   const actionContent = isWaitingForNextRound ? (
-    <div className="w-full text-center py-5 flex flex-col items-center gap-3 rounded-2xl bg-amber-500/10 border border-amber-400/25">
+    <div className="tj-inset flex w-full flex-col items-center gap-3 border-amber-400/45 py-5 text-center">
       <Clock className="w-7 h-7 text-amber-300 animate-pulse" />
       <div>
         <p className="text-amber-300 font-black text-base">Aguardando próxima rodada...</p>
@@ -3564,7 +3564,7 @@ const LobbyScreen = () => {
       )}
     </div>
   ) : (
-    <div className="w-full text-center py-5 flex flex-col items-center gap-3 rounded-2xl bg-blue-500/10 border border-blue-400/25">
+    <div className="tj-inset flex w-full flex-col items-center gap-3 border-blue-400/45 py-5 text-center">
       <Crown className="w-7 h-7 text-blue-300 animate-pulse" />
       <div>
         <p className="text-blue-300 font-black text-base">Aguardando o capitão...</p>
@@ -3577,7 +3577,7 @@ const LobbyScreen = () => {
     <div className="relative z-10 w-full max-w-[1480px] overflow-x-hidden px-2 py-2 sm:px-5 sm:py-4 md:py-6 animate-fade-in">
       <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.12),transparent_32%)]" />
       <div className="relative z-10 grid min-w-0 grid-cols-1 items-stretch gap-3 sm:gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
-        <aside className="order-2 flex min-w-0 w-full flex-col overflow-hidden rounded-[1.25rem] border border-slate-700/80 bg-[#0d1529]/95 p-3 shadow-[0_24px_70px_rgba(0,0,0,.36)] sm:rounded-[1.75rem] sm:p-5 lg:order-1">
+        <aside className="tj-surface order-2 flex min-w-0 w-full flex-col overflow-hidden p-3 sm:p-5 lg:order-1">
           <button onClick={leaveGame} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 font-black text-slate-300 transition hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-white" data-testid="button-leave-room"><ArrowLeft className="h-5 w-5"/> Sair da Sala</button>
 
           <div className="mt-4 flex items-center justify-between px-1 sm:mt-6">
@@ -3602,7 +3602,7 @@ const LobbyScreen = () => {
             })}
           </div>
 
-          <div className="mt-4 rounded-xl border border-slate-700/70 bg-slate-950/25 p-2.5 sm:mt-5 sm:rounded-2xl sm:p-3">
+          <div className="tj-inset mt-4 p-2.5 sm:mt-5 sm:p-3">
             <p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Escolha seu personagem</p>
             <div className="mt-2 grid grid-cols-5 gap-1.5 sm:mt-3 sm:gap-2">{DEFAULT_LOBBY_CHARACTERS.map((character, index) => {
               const selected = currentCharacterIndex === index; const taken = takenCharacterIndexes.has(index);
@@ -3611,7 +3611,7 @@ const LobbyScreen = () => {
           </div>
         </aside>
 
-        <main className="order-1 flex min-h-0 min-w-0 w-full flex-col overflow-hidden rounded-[1.25rem] border border-slate-700/80 bg-[#111a31]/95 p-3 shadow-[0_24px_70px_rgba(0,0,0,.36)] sm:min-h-[520px] sm:rounded-[1.75rem] sm:p-6 lg:order-2 lg:min-h-[720px] lg:p-8">
+        <main className="tj-surface tj-surface--stage order-1 flex min-h-0 min-w-0 w-full flex-col overflow-hidden p-3 sm:min-h-[520px] sm:p-6 lg:order-2 lg:min-h-[720px] lg:p-8">
           <header className="flex min-w-0 flex-col gap-3 border-b border-slate-700/60 pb-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:pb-6">
             <button onClick={copyLink} className="group min-w-0 text-left" data-testid="text-room-code"><p className="text-[9px] font-black uppercase tracking-[.2em] text-slate-500 sm:text-[10px]">Código da sala</p><div className="mt-1 flex items-center gap-2 sm:gap-3"><strong className="font-mono text-3xl font-black tracking-widest text-amber-400 group-hover:text-amber-300 sm:text-4xl">{room.code}</strong><span className="rounded-lg border border-slate-700 bg-slate-900 p-1.5 text-slate-400 group-hover:text-amber-300 sm:rounded-xl sm:p-2"><Copy className="h-4 w-4 sm:h-5 sm:w-5"/></span></div></button>
             <div className="grid min-w-0 w-full grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center [&>button]:min-w-0 [&>button]:w-full [&>button]:justify-center [&>button_span]:truncate">{isHost && <button onClick={() => setShowConfigModal(true)} className="flex h-10 items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3 text-xs font-black text-slate-300 hover:bg-slate-800 sm:h-12 sm:px-4 sm:text-sm"><Settings className="h-4 w-4 sm:h-5 sm:w-5"/> Configurações</button>}<VoiceChatJoinButton/></div>
@@ -4093,14 +4093,14 @@ const ModeSelectScreen = () => {
       </div>
       
       <div className="relative z-10 grid h-full items-stretch gap-5 lg:h-auto lg:grid-cols-[350px_minmax(0,1fr)]">
-      <aside className="hidden flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#0d1529]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-5 lg:flex">
+      <aside className="tj-surface hidden flex-col p-4 sm:p-5 lg:flex">
         <button onClick={handleBackClick} className="flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 font-black text-slate-300 hover:bg-slate-800" data-testid="button-back-to-lobby"><ArrowLeft className="h-5 w-5"/> Voltar ao Lobby</button>
         <div className="mt-6 flex items-center justify-between"><h2 className="text-sm font-black uppercase tracking-[.14em] text-slate-300">Jogadores</h2><span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-sm font-black text-emerald-300">{room.players.length} / 10</span></div>
         <div className="mt-4 space-y-2.5">{room.players.map((player, index) => <article key={player.uid} className={cn("tj-player-card flex min-w-0 items-center gap-3 p-3", player.uid === user?.uid && "is-current")}><CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-12 w-12 rounded-xl" imageClassName="h-20"/><div className="min-w-0 flex-1"><div className="flex items-center gap-1.5">{player.uid === room.hostId && <Crown className="h-3.5 w-3.5 text-violet-300"/>}<strong className="truncate text-sm">{player.name}</strong></div><div className="mt-1 flex items-center gap-2"><span className="text-[9px] font-black uppercase text-emerald-300">Pronto</span><span className="inline-flex items-center gap-1 text-[9px] font-black text-amber-300"><Trophy className="h-3 w-3"/>{player.impostorWins ?? 0}</span></div></div><span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_currentColor]"/></article>)}</div>
-        <div className="mt-5 rounded-2xl border border-slate-700/70 bg-slate-950/25 p-3"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Escolha seu personagem</p><div className="mt-3 grid grid-cols-5 gap-2">{DEFAULT_LOBBY_CHARACTERS.map((character, index) => { const selected = normalizeLobbyCharacterIndex(room.players.find(player => player.uid === user?.uid)?.characterIndex) === index; const taken = room.players.some(player => player.uid !== user?.uid && normalizeLobbyCharacterIndex(player.characterIndex) === index); return <button key={index} onClick={() => !taken && selectCharacter(index)} disabled={taken} className={cn("relative aspect-square overflow-hidden rounded-lg border bg-slate-950/80", selected ? "border-amber-300" : taken ? "cursor-not-allowed border-white/5 grayscale opacity-25" : "border-white/10 hover:border-violet-400/50")}><img src={character} alt="" className="absolute left-1/2 top-0 h-[155%] w-auto max-w-none -translate-x-1/2"/>{selected && <Check className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 p-0.5"/>}</button>; })}</div></div>
+        <div className="tj-inset mt-5 p-3"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Escolha seu personagem</p><div className="mt-3 grid grid-cols-5 gap-2">{DEFAULT_LOBBY_CHARACTERS.map((character, index) => { const selected = normalizeLobbyCharacterIndex(room.players.find(player => player.uid === user?.uid)?.characterIndex) === index; const taken = room.players.some(player => player.uid !== user?.uid && normalizeLobbyCharacterIndex(player.characterIndex) === index); return <button key={index} onClick={() => !taken && selectCharacter(index)} disabled={taken} className={cn("relative aspect-square overflow-hidden rounded-lg border bg-slate-950/80", selected ? "border-violet-400" : taken ? "cursor-not-allowed border-white/5 grayscale opacity-25" : "border-white/10 hover:border-violet-400/50")}><img src={character} alt="" className="absolute left-1/2 top-0 h-[155%] w-auto max-w-none -translate-x-1/2"/>{selected && <Check className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded bg-violet-600 p-0.5"/>}</button>; })}</div></div>
       </aside>
 
-      <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[1.25rem] border border-slate-700/80 bg-[#111a31]/95 p-3 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-5 lg:h-[min(820px,calc(100vh-64px))] lg:min-h-[720px] lg:rounded-[1.75rem] lg:p-8">
+      <div className="tj-surface tj-surface--stage flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-3 sm:p-5 lg:h-[min(820px,calc(100vh-64px))] lg:min-h-[720px] lg:p-8">
         <div className="mb-3 flex shrink-0 items-start gap-3 text-left lg:mb-8">
           <button onClick={handleBackClick} className="flex h-10 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-900/80 px-3 font-black text-slate-300 lg:hidden" data-testid="button-mobile-back-to-lobby"><ArrowLeft className="h-4 w-4"/></button>
           <div className="flex-1">
@@ -4114,7 +4114,7 @@ const ModeSelectScreen = () => {
           {selectedMode && <button type="button" onClick={() => { useGameStore.setState({ selectedMode: null }); setSelectedCategory(null); }} className="shrink-0 rounded-xl border border-slate-600 bg-slate-900/70 px-3 py-2 text-[10px] font-black text-slate-300 transition hover:border-violet-400/50 hover:text-white sm:text-sm"><ArrowLeft className="mr-1 inline h-4 w-4"/><span className="hidden sm:inline">Trocar </span>modo</button>}
         </div>
 
-        {!selectedMode && <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto overscroll-contain rounded-2xl border border-slate-600/80 bg-slate-950/25 p-3 pr-2 scrollbar-thin sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        {!selectedMode && <div className="tj-inset grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto overscroll-contain p-3 pr-2 scrollbar-thin sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {gameModes
             .filter(mode => mode.id !== 'palavraComunidade') // Esconde modo de temas customizados
             .map((mode, index) => {
@@ -4203,7 +4203,7 @@ const ModeSelectScreen = () => {
         </div>}
 
         {selectedMode && <div className="flex min-h-0 flex-1 flex-col">
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-slate-600/80 bg-slate-950/25 p-3 pr-2 scrollbar-thin">
+        <div className="tj-inset min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 pr-2 scrollbar-thin">
         
         {selectedMode === 'palavraComunidade' && (
           <div className="pt-1">
@@ -4213,9 +4213,9 @@ const ModeSelectScreen = () => {
             </h3>
             
             {selectedThemeCode ? (
-              <div className="p-4 rounded-2xl border-2 border-[#6b4ba3] bg-[#6b4ba3]/10 mb-3">
+              <div className="tj-theme-card is-selected mb-3 p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6b4ba3] to-[#4a3070] flex items-center justify-center">
+                  <div className="tj-icon-box bg-violet-600 text-white">
                     <Check className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
@@ -4233,9 +4233,9 @@ const ModeSelectScreen = () => {
             ) : null}
             
             <Link href="/temas">
-              <div className="group relative p-6 rounded-2xl border-2 border-dashed border-[#3d4a5c] hover:border-[#6b4ba3] bg-[#16213e]/20 hover:bg-[#16213e]/40 transition-all duration-300 cursor-pointer text-center">
+              <div className="tj-theme-card group relative cursor-pointer p-6 text-center">
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#6b4ba3] to-[#4a3070] flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="tj-icon-box tj-icon-box--lg bg-violet-600 text-white transition-transform group-hover:scale-105">
                     <Sparkles className="w-8 h-8 text-white" />
                   </div>
                   <div>
@@ -4264,9 +4264,9 @@ const ModeSelectScreen = () => {
             </h3>
             
             {selectedCategory ? (
-              <div className="p-4 rounded-2xl border-2 border-[#6b4ba3] bg-[#6b4ba3]/10 mb-3">
+              <div className="tj-theme-card is-selected mb-3 p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6b4ba3] to-[#4a3070] flex items-center justify-center">
+                  <div className="tj-icon-box bg-violet-600 text-white">
                     <Check className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
@@ -4286,7 +4286,7 @@ const ModeSelectScreen = () => {
             ) : null}
             
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-              {(Object.entries(PALAVRA_SECRETA_SUBMODES) as Array<[PalavraSuperSecretaSubmode, typeof PALAVRA_SECRETA_SUBMODES['classico']]>).map(([submodeId, submode]) => <button key={submodeId} type="button" onClick={() => { setSelectedSubmode(submodeId); setSelectedCategory(submodeId); localStorage.setItem('selectedSubmode', submodeId); }} className={cn("overflow-hidden rounded-2xl border p-3 text-left transition", selectedSubmode === submodeId ? "border-violet-400 bg-violet-500/20 shadow-[0_0_18px_rgba(139,92,246,.14)]" : "border-slate-700 bg-slate-900/70 hover:border-violet-400/40")}>
+              {(Object.entries(PALAVRA_SECRETA_SUBMODES) as Array<[PalavraSuperSecretaSubmode, typeof PALAVRA_SECRETA_SUBMODES['classico']]>).map(([submodeId, submode]) => <button key={submodeId} type="button" onClick={() => { setSelectedSubmode(submodeId); setSelectedCategory(submodeId); localStorage.setItem('selectedSubmode', submodeId); }} className={cn("tj-theme-card overflow-hidden p-3 text-left", selectedSubmode === submodeId && "is-selected")}>
                 {submode.image && <img src={submode.image} alt="" className="mb-3 h-24 w-full rounded-xl object-cover"/>}<strong className="block text-sm text-white">{submode.title}</strong><span className="mt-1 block text-xs leading-relaxed text-slate-400">{submode.desc}</span><span className="mt-2 inline-block text-[10px] font-bold uppercase text-violet-300">{submode.words.length} palavras</span>
               </button>)}
             </div>
@@ -4294,7 +4294,7 @@ const ModeSelectScreen = () => {
         )}
 
         {selectedMode !== 'palavraSecreta' && selectedMode !== 'palavraComunidade' && (
-          <div className="grid h-full min-h-[260px] place-items-center rounded-3xl border border-violet-400/20 bg-violet-500/5 p-8 text-center">
+          <div className="tj-inset grid h-full min-h-[260px] place-items-center p-8 text-center">
             <div><Check className="mx-auto h-12 w-12 rounded-full bg-emerald-500/15 p-3 text-emerald-300"/><p className="mt-4 text-xl font-black text-white">Modo selecionado</p><p className="mt-2 text-sm text-slate-400">Este modo não precisa de uma escolha adicional de tema.</p></div>
           </div>
         )}
@@ -4343,7 +4343,7 @@ const QuestionRevealedOverlay = ({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#16213e]/95 backdrop-blur-sm animate-fade-in">
       <div className="w-full max-w-md space-y-6">
-        <div className="w-full bg-gradient-to-br from-gray-700/20 to-gray-700/5 rounded-2xl p-6 border border-gray-600/30 space-y-4">
+        <div className="tj-inset w-full space-y-4 p-6">
           <div className="text-center space-y-2">
             <div className="w-16 h-16 mx-auto rounded-xl border-2 border-gray-600 flex items-center justify-center mb-4"
                  style={{ boxShadow: '0 4px 0 rgba(128, 128, 128, 0.2)' }}>
@@ -4631,7 +4631,7 @@ const PerguntasDiferentesScreen = () => {
         <div className="absolute inset-0 bg-[#0a1628]/90 -z-10 rounded-2xl"></div>
         
         <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
-        <div className="w-full bg-[#16213e]/80 rounded-2xl p-6 border border-[#3d4a5c] space-y-6">
+        <div className="tj-inset w-full space-y-6 p-6">
           <div className="text-center space-y-2">
             <p className="text-[#4a90a4] text-sm uppercase tracking-widest font-bold">Sua Pergunta</p>
             <h2 className="text-lg text-white font-bold leading-relaxed">"{myQuestion}"</h2>
@@ -4668,7 +4668,7 @@ const PerguntasDiferentesScreen = () => {
         
         <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
         
-        <div className="w-full bg-[#16213e]/80 rounded-2xl p-6 border border-[#3d4a5c] space-y-6">
+        <div className="tj-inset w-full space-y-6 p-6">
           <div className="text-center space-y-2">
             <div className="w-16 h-16 rounded-full bg-[#3d8b5f]/20 border-2 border-[#3d8b5f] flex items-center justify-center mx-auto mb-4">
               <Check className="w-8 h-8 text-[#3d8b5f]" />
@@ -4805,7 +4805,7 @@ const PerguntasDiferentesScreen = () => {
         
         <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
         
-        <div className="w-full bg-gradient-to-br from-gray-700/20 to-gray-700/5 rounded-2xl p-6 border border-gray-600/30 space-y-4">
+        <div className="tj-inset w-full space-y-4 p-6">
           <div className="text-center space-y-2">
             <p className="text-gray-400 text-xs uppercase tracking-widest font-bold">Pergunta dos Tripulantes</p>
             <p className="text-xl text-white font-bold leading-relaxed">"{crewQuestion}"</p>
@@ -4875,7 +4875,7 @@ const PerguntasDiferentesScreen = () => {
         
         <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
         
-        <div className="w-full bg-[#16213e]/80 rounded-2xl p-6 border border-[#3d4a5c] space-y-6">
+        <div className="tj-inset w-full space-y-6 p-6">
           <div className="text-center space-y-2">
             <Vote className="w-12 h-12 text-[#e9c46a] mx-auto" />
             <p className="text-[#e9c46a] text-sm uppercase tracking-widest font-bold">Hora de Votar!</p>
@@ -4931,7 +4931,7 @@ const PerguntasDiferentesScreen = () => {
         
         <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
         
-        <div className="w-full bg-[#16213e]/80 rounded-2xl p-6 border border-[#3d4a5c] space-y-6">
+        <div className="tj-inset w-full space-y-6 p-6">
           <div className="text-center space-y-2">
             <div className="w-16 h-16 rounded-full bg-[#3d8b5f]/20 border-2 border-[#3d8b5f] flex items-center justify-center mx-auto mb-4">
               <Check className="w-8 h-8 text-[#3d8b5f]" />
@@ -5014,7 +5014,7 @@ const PerguntasDiferentesScreen = () => {
         <div className="w-full bg-[#0a1628]/95 rounded-2xl p-6 space-y-6">
           <GameNavButtons onBackToLobby={handleNewRound} isImpostor={false} />
           
-          <div className="w-full rounded-2xl p-6 border-2 space-y-6 text-center bg-gradient-to-br from-gray-700/20 to-gray-700/5 border-gray-600">
+          <div className="tj-inset w-full space-y-6 p-6 text-center">
             <div className="space-y-4">
               <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto bg-gray-600">
                 {crewWins ? (
@@ -5273,7 +5273,7 @@ const GameScreen = () => {
     switch (gameMode) {
       case 'palavraSecreta':
         return (
-          <div className="space-y-3 text-center p-4 bg-emerald-500/5 rounded-2xl border-2 border-emerald-500/20">
+          <div className="tj-inset space-y-3 border-emerald-500/45 p-4 text-center">
             <p className="text-emerald-400 text-xs uppercase tracking-[0.3em] font-bold">Palavra Secreta</p>
             <h2 className="text-3xl sm:text-4xl text-white font-black tracking-tight">{gameData.word}</h2>
             <p className="text-slate-400 text-sm">Dê dicas sutis sobre a palavra!</p>
@@ -5283,7 +5283,7 @@ const GameScreen = () => {
       case 'palavras':
         const myRole = user?.uid ? gameData.roles?.[user.uid] : null;
         return (
-          <div className="space-y-4 text-center p-4 bg-emerald-500/5 rounded-2xl border-2 border-emerald-500/20">
+          <div className="tj-inset space-y-4 border-emerald-500/45 p-4 text-center">
             <div className="space-y-2">
               <p className="text-emerald-400 text-xs uppercase tracking-[0.3em] font-bold">Local</p>
               <h2 className="text-2xl sm:text-3xl text-white font-black">{gameData.location}</h2>
@@ -5403,7 +5403,7 @@ const GameScreen = () => {
         const pixWord = unlockedWord;
 
         return (
-          <div className="space-y-3 text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+          <div className="tj-inset space-y-3 border-rose-500/55 p-4 text-center">
             {/* Already unlocked via PIX */}
             {pixWord ? (
               <>
@@ -5491,7 +5491,7 @@ const GameScreen = () => {
       
       case 'palavras':
         return (
-          <div className="text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+          <div className="tj-inset border-rose-500/55 p-4 text-center">
             <p className="text-slate-300 text-sm font-medium leading-relaxed">
               Você não sabe o local! Tente descobrir através das dicas.
             </p>
@@ -5500,7 +5500,7 @@ const GameScreen = () => {
       
       case 'duasFaccoes':
         return (
-          <div className="text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+          <div className="tj-inset border-rose-500/55 p-4 text-center">
             <p className="text-slate-300 text-sm font-medium leading-relaxed">
               Duas palavras no jogo! Você não sabe nenhuma.
             </p>
@@ -5509,7 +5509,7 @@ const GameScreen = () => {
       
       case 'categoriaItem':
         return (
-          <div className="space-y-3 text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+          <div className="tj-inset space-y-3 border-rose-500/55 p-4 text-center">
             <div className="space-y-2">
               <p className="text-rose-400 text-xs uppercase tracking-[0.3em] font-bold">Categoria</p>
               <h3 className="text-xl sm:text-2xl text-white font-bold">{gameData.category}</h3>
@@ -5522,7 +5522,7 @@ const GameScreen = () => {
       
       case 'palavraComunidade':
         return (
-          <div className="text-center p-4 bg-rose-500/5 rounded-2xl border-2 border-rose-500/20">
+          <div className="tj-inset border-rose-500/55 p-4 text-center">
             <p className="text-slate-300 text-sm font-medium leading-relaxed">
               Finja que você sabe a palavra! Engane a todos.
             </p>
@@ -5564,19 +5564,19 @@ const GameScreen = () => {
         return (
           <div className="animate-stage-fade-in w-full space-y-5">
             <div className="text-center space-y-3">
-              <div className="w-16 h-16 rounded-2xl bg-orange-500/10 border-2 border-orange-500/30 flex items-center justify-center mx-auto">
+              <div className="tj-icon-box tj-icon-box--lg mx-auto border-orange-500/40 bg-orange-500/10">
                 <Vote className="w-8 h-8 text-orange-400" />
               </div>
               <div>
                 <h3 className="text-2xl font-black text-white uppercase tracking-wider mb-1">
                   Hora de Votar!
                 </h3>
-                <p className="text-slate-400 text-sm">Quem você acha que é o impostor?</p>
+                <p className="text-slate-400 text-sm">Selecione o jogador que acha que é o impostor.</p>
               </div>
             </div>
             
-            <div className="mx-auto max-w-xl rounded-3xl border border-orange-400/25 bg-orange-500/5 p-6 text-center">
-              {selectedVotePlayer ? <><CharacterFaceAvatar player={selectedVotePlayer} className="mx-auto h-24 w-24 rounded-2xl" imageClassName="h-40"/><p className="mt-4 text-sm font-bold text-slate-400">Seu voto está selecionado em</p><h4 className="mt-1 text-3xl font-black text-white">{selectedVotePlayer.name}</h4><Button onClick={() => handleSubmitVote(selectedVotePlayer.uid)} disabled={isSubmittingVote} variant="gamePrimary" size="gameLg" className="mt-6 w-full min-w-0 overflow-hidden px-3" data-testid="button-confirm-vote"><Vote className="mr-2 h-5 w-5 shrink-0"/><span className="truncate">{isSubmittingVote ? "CONFIRMANDO..." : "CONFIRMAR VOTO"}</span></Button></> : <><div className="tj-icon-box tj-icon-box--lg mx-auto bg-blue-500/15 text-[#2C7EFC]"><Vote className="h-7 w-7"/></div><h4 className="mt-4 text-xl font-black text-white"><span className="lg:hidden">Selecione um jogador na lista abaixo</span><span className="hidden lg:inline">Selecione um jogador na coluna esquerda</span></h4><p className="mt-2 text-sm text-slate-400">Depois, confirme seu voto aqui.</p></>}
+            <div className="tj-inset mx-auto max-w-xl p-6 text-center">
+              {selectedVotePlayer ? <><CharacterFaceAvatar player={selectedVotePlayer} className="mx-auto h-24 w-24 rounded-2xl" imageClassName="h-40"/><p className="mt-4 text-sm font-bold text-slate-400">Seu voto está selecionado em</p><h4 className="mt-1 text-3xl font-black text-white">{selectedVotePlayer.name}</h4><Button onClick={() => handleSubmitVote(selectedVotePlayer.uid)} disabled={isSubmittingVote} variant="gamePrimary" size="gameLg" className="mt-6 w-full min-w-0 overflow-hidden px-3" data-testid="button-confirm-vote"><Vote className="mr-2 h-5 w-5 shrink-0"/><span className="truncate">{isSubmittingVote ? "CONFIRMANDO..." : "CONFIRMAR VOTO"}</span></Button></> : <p className="text-sm font-bold text-slate-400">Escolha um jogador na lista para confirmar seu voto.</p>}
             </div>
           </div>
         );
@@ -5590,7 +5590,7 @@ const GameScreen = () => {
         return (
           <div className="animate-stage-fade-in w-full space-y-5">
             <div className="text-center space-y-3">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/30 flex items-center justify-center mx-auto">
+              <div className="tj-icon-box tj-icon-box--lg tj-icon-box--success mx-auto">
                 <Check className="w-8 h-8 text-emerald-400" />
               </div>
               <div>
@@ -5605,7 +5605,7 @@ const GameScreen = () => {
             
             <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-slate-600/30 to-transparent"></div>
             
-            <div className="space-y-4 p-4 bg-slate-700/20 rounded-2xl border border-slate-600/30">
+            <div className="tj-inset space-y-4 p-4">
               <div className="flex items-center justify-center gap-2">
                 <Users className="w-5 h-5 text-blue-400" />
                 <p className="text-white text-base font-medium">
@@ -5620,10 +5620,10 @@ const GameScreen = () => {
                     <div 
                       key={player.uid}
                       className={cn(
-                        "px-2.5 py-1.5 rounded-xl text-sm font-medium transition-all inline-flex items-center gap-2",
+                        "tj-player-card inline-flex items-center gap-2 px-2.5 py-1.5 text-sm font-medium",
                         hasVoted 
-                          ? "bg-emerald-500/20 text-emerald-300 border-2 border-emerald-500/40"
-                          : "bg-slate-700/50 text-slate-400 border-2 border-slate-600/30"
+                          ? "border-emerald-500/50 text-emerald-300"
+                          : "text-slate-400"
                       )}
                     >
                       <CharacterFaceAvatar player={player} className="h-8 w-8 rounded-lg" imageClassName="h-12" />
@@ -5673,7 +5673,7 @@ const GameScreen = () => {
           <div className="animate-stage-fade-in w-full space-y-6">
             <div className="text-center space-y-4">
               <div className={cn(
-                "w-20 h-20 rounded-2xl flex items-center justify-center mx-auto shadow-2xl border-4",
+                "tj-icon-box tj-icon-box--xl mx-auto border-2",
                 crewWins 
                   ? "bg-gradient-to-br from-emerald-500 to-emerald-600 border-emerald-400/50" 
                   : "bg-gradient-to-br from-rose-500 to-rose-600 border-rose-400/50"
@@ -5768,7 +5768,7 @@ const GameScreen = () => {
         <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-black text-emerald-300">{activePlayers.length}/{room.players.length}</span>
       </header>
 
-      <button type="button" onClick={() => setIsRevealed(!isRevealed)} className={cn("mt-2 shrink-0 rounded-2xl border bg-gradient-to-br from-[#17213b] to-[#10182d] px-3 py-2 text-left", isImpostor ? "border-rose-500/35" : "border-emerald-500/35")}>
+      <button type="button" onClick={() => setIsRevealed(!isRevealed)} className={cn("tj-inset mt-2 shrink-0 px-3 py-2 text-left", isImpostor ? "border-rose-500/60" : "border-emerald-500/60")}>
         {isRevealed ? <div className="flex min-w-0 items-center gap-2.5">
           <div className={cn("h-10 w-10 shrink-0 overflow-hidden rounded-lg border", isImpostor ? "border-rose-500/50" : "border-emerald-500/50")}><img src={isImpostor ? impostorImg : tripulanteImg} alt="" className="h-full w-full object-cover"/></div>
           <div className="min-w-0 flex-1"><p className={cn("inline-flex rounded-full border px-2.5 py-1 text-xs font-black uppercase tracking-wider", isImpostor ? "border-rose-400/35 bg-rose-500/15 text-rose-200" : "border-emerald-400/35 bg-emerald-500/15 text-emerald-200")}>{isImpostor ? 'Impostor' : 'Tripulante'}</p>{mobileRoleValue && <><p className="mt-1 text-[8px] font-black uppercase tracking-[.22em] text-slate-500">{mobileRoleLabel}</p><p className="mt-0.5 truncate text-base font-black leading-tight text-white">{mobileRoleValue}</p></>}</div>
@@ -5776,11 +5776,11 @@ const GameScreen = () => {
         </div> : <div className="flex h-10 items-center justify-center gap-2 text-xs font-black uppercase tracking-wider text-violet-300"><Eye className="h-4 w-4"/>Toque para revelar</div>}
       </button>
 
-      <main className="mt-2 min-h-0 flex-1 overflow-hidden rounded-2xl border border-slate-700/80 bg-[#111a31] px-3 py-2 [&_.space-y-6]:space-y-2 [&_.space-y-5]:space-y-2 [&_.space-y-4]:space-y-2 [&_.py-4]:py-1 [&_.p-6]:p-3 [&_.h-20]:h-12 [&_.w-20]:w-12 [&_.h-16]:h-11 [&_.w-16]:w-11 [&_.text-3xl]:text-xl [&_.text-2xl]:text-lg">
+      <main className="tj-surface tj-surface--stage mt-2 min-h-0 flex-1 overflow-hidden px-3 py-2 [&_.space-y-6]:space-y-2 [&_.space-y-5]:space-y-2 [&_.space-y-4]:space-y-2 [&_.py-4]:py-1 [&_.p-6]:p-3 [&_.h-20]:h-12 [&_.w-20]:w-12 [&_.h-16]:h-11 [&_.w-16]:w-11 [&_.text-3xl]:text-xl [&_.text-2xl]:text-lg">
         <div className="mx-auto flex h-full w-full max-w-xl flex-col justify-center">{renderStageContent()}</div>
       </main>
 
-      <div className="mt-2 grid shrink-0 grid-cols-5 gap-1.5 rounded-2xl border border-slate-700/70 bg-[#0d1529] p-1.5">
+      <div className="tj-inset mt-2 grid shrink-0 grid-cols-5 gap-1.5 p-1.5">
         {room.players.slice(0, 10).map((player, index) => {
           const isCurrentUser = player.uid === user?.uid;
           const isWaiting = !!player.waitingForGame;
@@ -5791,7 +5791,7 @@ const GameScreen = () => {
           return <button type="button" key={player.uid} onClick={() => canSelectVote && setSelectedVote(player.uid)} disabled={!canSelectVote} className={cn("tj-player-card relative flex min-w-0 flex-col items-center px-1 py-1.5", isCurrentUser && "is-current", canSelectVote && "active:scale-95", selectedVote === player.uid && "is-vote-target", isResultImpostor && "is-danger")}>
             <div className="relative"><CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-8 w-8 rounded-lg" imageClassName="h-14"/><span className={cn("absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#111c32]", isWaiting ? "bg-amber-400" : "bg-emerald-400")}/></div>
             <strong className="mt-0.5 w-full truncate text-center text-[8px] leading-tight text-slate-200">{player.name}</strong>
-            {(currentStage === 'ROUND_RESULT' || speakingPosition >= 0) && <span className={cn("absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full px-0.5 text-[7px] font-black", currentStage === 'ROUND_RESULT' ? "bg-orange-500 text-white" : "bg-violet-500 text-white")}>{currentStage === 'ROUND_RESULT' ? votesReceived : speakingPosition + 1}</span>}
+            {(currentStage === 'ROUND_RESULT' || speakingPosition >= 0) && <span className="absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-violet-500 px-0.5 text-[7px] font-black text-white">{currentStage === 'ROUND_RESULT' ? votesReceived : speakingPosition + 1}</span>}
             {isResultImpostor && <Skull className="absolute bottom-0.5 left-0.5 h-3 w-3 text-rose-300"/>}
           </button>;
         })}
@@ -5806,7 +5806,7 @@ const GameScreen = () => {
       </div>
 
       <div className="relative z-10 grid items-stretch gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
-        <aside className="flex flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#0d1529]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-5">
+        <aside className="tj-surface flex flex-col p-4 sm:p-5">
           <GameNavButtons onBackToLobby={handleBackToLobby} isImpostor={isImpostor} />
 
           <div className="mt-6 flex items-center justify-between px-1">
@@ -5833,14 +5833,14 @@ const GameScreen = () => {
                       <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/20 bg-amber-400/5 px-2 py-0.5 text-[9px] font-black text-amber-300"><Trophy className="h-3 w-3"/>{player.impostorWins ?? 0}</span>
                     </div>
                   </div>
-                  {currentStage === 'ROUND_RESULT' ? <span className="grid min-w-10 place-items-center rounded-xl border border-orange-400/30 bg-orange-500/10 px-2 py-1 text-center"><strong className="text-lg text-orange-300">{votesReceived}</strong><small className="text-[8px] font-black uppercase text-slate-500">votos</small></span> : speakingPosition >= 0 ? <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-violet-400/35 bg-violet-500/15 font-black text-violet-200">{speakingPosition + 1}º</span> : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-700 bg-slate-900 text-slate-600">—</span>}
-                  {currentStage === 'VOTING' && selectedVote === player.uid && <Check className="h-5 w-5 shrink-0 text-orange-300"/>}
+                  {currentStage === 'ROUND_RESULT' ? <span className="grid min-w-10 place-items-center rounded-xl border border-violet-400/35 bg-violet-500/15 px-2 py-1 text-center"><strong className="text-lg text-violet-200">{votesReceived}</strong><small className="text-[8px] font-black uppercase text-slate-500">votos</small></span> : speakingPosition >= 0 ? <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-violet-400/35 bg-violet-500/15 font-black text-violet-200">{speakingPosition + 1}º</span> : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-700 bg-slate-900 text-slate-600">—</span>}
+                  {currentStage === 'VOTING' && selectedVote === player.uid && <Check className="h-5 w-5 shrink-0 text-rose-300"/>}
                 </button>
               );
             })}
           </div>
 
-          <div className="mt-5 rounded-2xl border border-slate-700/70 bg-slate-950/25 p-3">
+          <div className="tj-inset mt-5 p-3">
             <p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Ocupados (bloqueados)</p>
             <div className="mt-3 flex flex-wrap gap-2">{occupiedCharacterIndexes.map(index => <div key={index} className="relative"><CharacterFaceAvatar player={{ name: 'Ocupado', characterIndex: index }} className="h-10 w-10 rounded-lg grayscale opacity-45" imageClassName="h-16"/><span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded bg-slate-950/90 px-1 text-[7px] font-black uppercase text-slate-500">Ocupado</span></div>)}</div>
           </div>
@@ -5848,9 +5848,9 @@ const GameScreen = () => {
           {isHost && <Button onClick={handleNewRound} variant="ghost" className="mt-5 h-12 w-full rounded-xl border border-slate-700 bg-slate-900/60 text-slate-400 hover:bg-slate-800 hover:text-white" data-testid="button-return-lobby"><ArrowLeft className="mr-2 h-4 w-4"/> Nova Rodada</Button>}
         </aside>
 
-        <section className="flex min-h-[720px] flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#111a31]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-6 lg:p-8">
+        <section className="tj-surface tj-surface--stage flex min-h-[720px] flex-col p-4 sm:p-6 lg:p-8">
         <div 
-          className={cn("w-full rounded-[1.5rem] flex flex-col items-center text-center relative transition-all duration-300 cursor-pointer bg-gradient-to-br from-[#17213b] to-[#10182d] border border-slate-700/80 hover:border-slate-600 shadow-lg", compactRoleCard ? "p-3 sm:p-4" : "p-5 sm:p-6")}
+          className={cn("tj-inset relative flex w-full cursor-pointer flex-col items-center text-center transition-all duration-300", compactRoleCard ? "p-3 sm:p-4" : "p-5 sm:p-6")}
           onClick={() => setIsRevealed(!isRevealed)}
           data-testid="card-reveal"
         >
@@ -5899,7 +5899,7 @@ const GameScreen = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3 py-8">
-              <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border-2 border-purple-500/30 flex items-center justify-center">
+              <div className="tj-icon-box tj-icon-box--lg bg-purple-500/10 text-purple-400">
                 <Eye className="w-8 h-8 text-purple-400" />
               </div>
               <h3 className="text-lg font-bold text-white uppercase tracking-wider">
