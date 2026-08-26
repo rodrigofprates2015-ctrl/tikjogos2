@@ -3575,6 +3575,73 @@ const LobbyScreen = () => {
     </div>
   );
 
+  const dashboardLobby = (
+    <div className="w-full max-w-[1480px] px-3 py-4 sm:px-5 md:py-6 animate-fade-in relative z-10">
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.12),transparent_32%)]" />
+      <div className="relative z-10 grid items-stretch gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
+        <aside className="flex flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#0d1529]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.36)] sm:p-5">
+          <button onClick={leaveGame} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 font-black text-slate-300 transition hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-white" data-testid="button-leave-room"><ArrowLeft className="h-5 w-5"/> Sair da Sala</button>
+
+          <div className="mt-6 flex items-center justify-between px-1">
+            <h2 className="text-sm font-black uppercase tracking-[.14em] text-slate-300">Jogadores</h2>
+            <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-sm font-black text-emerald-300">{players.length} / 10</span>
+          </div>
+
+          <div className="mt-4 space-y-2.5">
+            {players.map((player, index) => {
+              const isMe = player.uid === user?.uid;
+              const isPlayerHost = player.uid === room.hostId;
+              const characterIndex = player.characterIndex ?? index;
+              return <article key={player.uid} className={cn("flex min-w-0 items-center gap-3 rounded-2xl border p-3", isMe ? "border-violet-400/45 bg-violet-500/10" : "border-slate-700/70 bg-[#111c32]")} data-testid={`player-${player.uid}`}>
+                <div className="relative"><CharacterFaceAvatar player={{ ...player, characterIndex }} className="h-14 w-14 rounded-xl" imageClassName="h-24"/><div className="absolute -bottom-1 -right-1"><SpeakingIndicator playerId={player.uid} isCurrentUser={isMe}/></div></div>
+                <div className="min-w-0 flex-1">
+                  {isPlayerHost && <span className="mb-1 inline-flex items-center gap-1 rounded-md bg-violet-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase text-violet-300"><Crown className="h-3 w-3"/> Capitão da sala</span>}
+                  <div className="flex min-w-0 items-center gap-2"><strong className="truncate text-sm text-white">{player.name}</strong>{isMe && <span className="rounded bg-violet-600 px-1.5 py-0.5 text-[9px] font-black uppercase">Você</span>}</div>
+                  <div className="mt-1.5 flex items-center gap-2"><span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-0.5 text-[9px] font-black uppercase text-emerald-300"><Check className="h-3 w-3"/>{player.waitingForGame ? "Aguardando" : "Pronto"}</span><span className="inline-flex items-center gap-1 rounded-full border border-amber-400/20 bg-amber-400/5 px-2 py-0.5 text-[9px] font-black text-amber-300"><Trophy className="h-3 w-3"/>{player.impostorWins ?? 0}</span></div>
+                </div>
+                <div className="flex flex-col items-center gap-1"><span className="h-3 w-3 rounded-full bg-emerald-400 text-emerald-400 shadow-[0_0_12px_currentColor]"/><VoiceControlButton playerId={player.uid} isCurrentUser={isMe}/>{isHost && !isMe && <button onClick={() => kickPlayer(player.uid)} className="rounded-lg border border-slate-700 bg-slate-900 p-1.5 text-slate-500 hover:border-rose-400/30 hover:text-rose-300" data-testid={`button-kick-${player.uid}`}><UserX className="h-4 w-4"/></button>}</div>
+              </article>;
+            })}
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-slate-700/70 bg-slate-950/25 p-3">
+            <p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Ocupados (bloqueados)</p>
+            <div className="mt-3 flex flex-wrap gap-2">{Array.from(takenCharacterIndexes).map(index => <CharacterFaceAvatar key={index} player={{ name: 'Ocupado', characterIndex: index }} className="h-10 w-10 rounded-lg grayscale opacity-40" imageClassName="h-16"/>)}</div>
+          </div>
+        </aside>
+
+        <main className="flex min-h-[720px] flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#111a31]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.36)] sm:p-6 lg:p-8">
+          <header className="flex flex-col gap-4 border-b border-slate-700/60 pb-6 sm:flex-row sm:items-center sm:justify-between">
+            <button onClick={copyLink} className="group text-left" data-testid="text-room-code"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Código da sala</p><div className="mt-1 flex items-center gap-3"><strong className="font-mono text-4xl font-black tracking-widest text-amber-400 group-hover:text-amber-300">{room.code}</strong><span className="rounded-xl border border-slate-700 bg-slate-900 p-2 text-slate-400 group-hover:text-amber-300"><Copy className="h-5 w-5"/></span></div></button>
+            <div className="flex flex-wrap items-center gap-2">{isHost && <button onClick={() => setShowConfigModal(true)} className="flex h-12 items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 font-black text-slate-300 hover:bg-slate-800"><Settings className="h-5 w-5"/> Configurações</button>}<VoiceChatJoinButton/></div>
+          </header>
+
+          <section className="mt-6 rounded-[1.5rem] border border-slate-700/70 bg-[#0d1529]/70 p-4 sm:p-6">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-[10px] font-black uppercase tracking-[.18em] text-violet-300">Seu avatar</p><h1 className="mt-1 text-2xl font-black text-white">Escolha seu personagem</h1></div><p className="text-xs font-bold text-slate-500">Personagens ocupados ficam bloqueados</p></div>
+            <div className="mt-5 grid grid-cols-5 gap-2 sm:grid-cols-10" role="radiogroup" aria-label="Escolha seu personagem">
+              {DEFAULT_LOBBY_CHARACTERS.map((character, index) => {
+                const selected = currentCharacterIndex === index; const taken = takenCharacterIndexes.has(index);
+                return <button key={index} type="button" onClick={() => !taken && !selected && selectCharacter(index)} disabled={taken} className={cn("relative aspect-square overflow-hidden rounded-2xl border bg-slate-950/80 transition", selected ? "border-amber-300 shadow-[0_0_0_2px_rgba(251,191,36,.22),0_0_24px_rgba(251,191,36,.16)]" : taken ? "cursor-not-allowed border-white/5 grayscale opacity-25" : "border-white/10 hover:-translate-y-1 hover:border-violet-400/50")} role="radio" aria-checked={selected} data-testid={`button-lobby-character-${index}`}><img src={character} alt="" className="absolute left-1/2 top-0 h-[150%] w-auto max-w-none -translate-x-1/2 object-contain"/>{selected && <span className="absolute right-1 top-1 rounded-full bg-emerald-500 p-0.5"><Check className="h-3.5 w-3.5" strokeWidth={4}/></span>}{taken && <span className="absolute inset-x-1 bottom-1 rounded bg-slate-950/90 py-0.5 text-[7px] font-black uppercase">Ocupado</span>}</button>;
+              })}
+            </div>
+          </section>
+
+          <section className="flex flex-1 flex-col items-center justify-center py-8 text-center"><div className="grid h-20 w-20 place-items-center rounded-3xl border border-violet-400/25 bg-violet-500/10 shadow-[0_0_35px_rgba(139,92,246,.15)]"><Users className="h-10 w-10 text-violet-300"/></div><h2 className="mt-5 text-3xl font-black">Sala pronta para jogar</h2><p className="mt-2 max-w-xl text-slate-400">Convide seus amigos pelo código da sala e escolha o modo quando todos estiverem prontos.</p><div className="mt-7 w-full max-w-lg">{actionContent}</div></section>
+
+          <LobbyAd/>
+        </main>
+      </div>
+
+      <LobbyChat/>
+      {showConfigModal && (
+        <GameConfigModal isOpen={showConfigModal} onClose={() => setShowConfigModal(false)}/>
+      )}
+    </div>
+  );
+
+  return dashboardLobby;
+
+  /* Legacy lobby markup kept temporarily while the new dashboard layout is reviewed. */
   return (
     <div className="w-full max-w-7xl px-3 sm:px-5 py-4 md:py-6 animate-fade-in relative z-10">
       <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.14),transparent_32%)]" />
