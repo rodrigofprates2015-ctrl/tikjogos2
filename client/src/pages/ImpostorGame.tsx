@@ -4103,19 +4103,20 @@ const ModeSelectScreen = () => {
         <div className="mt-5 rounded-2xl border border-slate-700/70 bg-slate-950/25 p-3"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Escolha seu personagem</p><div className="mt-3 grid grid-cols-5 gap-2">{DEFAULT_LOBBY_CHARACTERS.map((character, index) => { const selected = normalizeLobbyCharacterIndex(room.players.find(player => player.uid === user?.uid)?.characterIndex) === index; const taken = room.players.some(player => player.uid !== user?.uid && normalizeLobbyCharacterIndex(player.characterIndex) === index); return <button key={index} onClick={() => !taken && selectCharacter(index)} disabled={taken} className={cn("relative aspect-square overflow-hidden rounded-lg border bg-slate-950/80", selected ? "border-amber-300" : taken ? "cursor-not-allowed border-white/5 grayscale opacity-25" : "border-white/10 hover:border-violet-400/50")}><img src={character} alt="" className="absolute left-1/2 top-0 h-[155%] w-auto max-w-none -translate-x-1/2"/>{selected && <Check className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 p-0.5"/>}</button>; })}</div></div>
       </aside>
 
-      <div className="min-w-0 rounded-[1.75rem] border border-slate-700/80 bg-[#111a31]/95 p-5 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-7 lg:p-8">
+      <div className="flex min-h-[720px] min-w-0 flex-col overflow-hidden rounded-[1.75rem] border border-slate-700/80 bg-[#111a31]/95 p-5 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-7 lg:h-[min(820px,calc(100vh-64px))] lg:p-8">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mb-8 text-center md:text-left">
           <div className="flex-1">
             <h2 className="text-2xl md:text-3xl font-black text-white mb-2">
-              Como vamos jogar hoje?
+              {selectedMode ? 'Escolha o tema da partida' : 'Como vamos jogar hoje?'}
             </h2>
             <p className="text-slate-400 font-medium text-base md:text-lg max-w-2xl">
-              Selecione o modo que mais combina com a sua galera. O Impostor está pronto...
+              {selectedMode ? 'O modo já está definido. Agora escolha um tema para começar.' : 'Selecione o modo que mais combina com a sua galera. O Impostor está pronto...'}
             </p>
           </div>
+          {selectedMode && <button type="button" onClick={() => { useGameStore.setState({ selectedMode: null }); setSelectedCategory(null); }} className="shrink-0 rounded-xl border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm font-black text-slate-300 transition hover:border-violet-400/50 hover:text-white"><ArrowLeft className="mr-2 inline h-4 w-4"/>Trocar modo</button>}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+        {!selectedMode && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 overflow-y-auto pr-2 scrollbar-thin">
           {gameModes
             .filter(mode => mode.id !== 'palavraComunidade') // Esconde modo de temas customizados
             .map((mode, index) => {
@@ -4203,10 +4204,13 @@ const ModeSelectScreen = () => {
               </div>
             );
           })}
-        </div>
+        </div>}
+
+        {selectedMode && <div className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 scrollbar-thin">
         
         {selectedMode === 'palavraComunidade' && (
-          <div className="mt-4 pt-4 border-t border-[#3d4a5c]">
+          <div className="pt-1">
             <h3 className="text-white font-bold mb-3 flex items-center gap-2">
               <Users className="w-4 h-4 text-[#4a90a4]" />
               Temas da Comunidade
@@ -4257,7 +4261,7 @@ const ModeSelectScreen = () => {
         )}
 
         {selectedMode === 'palavraSecreta' && (
-          <div className="mt-4 pt-4 border-t border-[#3d4a5c]">
+          <div className="pt-1">
             <h3 className="text-white font-bold mb-3 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#4a90a4]" />
               Categorias de Palavras
@@ -4285,7 +4289,7 @@ const ModeSelectScreen = () => {
               </div>
             ) : null}
             
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {(Object.entries(PALAVRA_SECRETA_SUBMODES) as Array<[PalavraSuperSecretaSubmode, typeof PALAVRA_SECRETA_SUBMODES['classico']]>).map(([submodeId, submode]) => <button key={submodeId} type="button" onClick={() => { setSelectedSubmode(submodeId); setSelectedCategory(submodeId); localStorage.setItem('selectedSubmode', submodeId); }} className={cn("overflow-hidden rounded-2xl border p-3 text-left transition", selectedSubmode === submodeId ? "border-violet-400 bg-violet-500/20 shadow-[0_0_18px_rgba(139,92,246,.14)]" : "border-slate-700 bg-slate-900/70 hover:border-violet-400/40")}>
                 {submode.image && <img src={submode.image} alt="" className="mb-3 h-24 w-full rounded-xl object-cover"/>}<strong className="block text-sm text-white">{submode.title}</strong><span className="mt-1 block text-xs leading-relaxed text-slate-400">{submode.desc}</span><span className="mt-2 inline-block text-[10px] font-bold uppercase text-violet-300">{submode.words.length} palavras</span>
               </button>)}
@@ -4293,8 +4297,15 @@ const ModeSelectScreen = () => {
           </div>
         )}
 
+        {selectedMode !== 'palavraSecreta' && selectedMode !== 'palavraComunidade' && (
+          <div className="grid h-full min-h-[260px] place-items-center rounded-3xl border border-violet-400/20 bg-violet-500/5 p-8 text-center">
+            <div><Check className="mx-auto h-12 w-12 rounded-full bg-emerald-500/15 p-3 text-emerald-300"/><p className="mt-4 text-xl font-black text-white">Modo selecionado</p><p className="mt-2 text-sm text-slate-400">Este modo não precisa de uma escolha adicional de tema.</p></div>
+          </div>
+        )}
+        </div>
+
         {/* CTA Principal */}
-        <div className="flex flex-col items-center">
+        <div className="shrink-0 border-t border-slate-700/70 bg-[#111a31] pt-5 flex flex-col items-center">
           <button 
             onClick={handleStartGameWithSorteio}
             disabled={!selectedMode || isStarting || (selectedMode === 'palavraComunidade' && !selectedThemeCode)}
@@ -4309,6 +4320,7 @@ const ModeSelectScreen = () => {
             {selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode) ? 'INICIAR PARTIDA' : 'SELECIONE UM MODO'}
           </button>
         </div>
+        </div>}
       </div>
       </div>
 
