@@ -5583,7 +5583,7 @@ const GameScreen = () => {
             </div>
             
             <div className="mx-auto max-w-xl rounded-3xl border border-orange-400/25 bg-orange-500/5 p-6 text-center">
-              {selectedVotePlayer ? <><CharacterFaceAvatar player={selectedVotePlayer} className="mx-auto h-24 w-24 rounded-2xl" imageClassName="h-40"/><p className="mt-4 text-sm font-bold text-slate-400">Seu voto está selecionado em</p><h4 className="mt-1 text-3xl font-black text-white">{selectedVotePlayer.name}</h4><Button onClick={() => handleSubmitVote(selectedVotePlayer.uid)} disabled={isSubmittingVote} className="mt-6 h-14 w-full rounded-2xl border-b-4 border-orange-900 bg-orange-500 text-lg font-black text-white hover:bg-orange-400" data-testid="button-confirm-vote"><Vote className="mr-2 h-5 w-5"/>{isSubmittingVote ? "CONFIRMANDO..." : `CONFIRMAR VOTO EM ${selectedVotePlayer.name.toUpperCase()}?`}</Button></> : <><Vote className="mx-auto h-12 w-12 text-orange-300"/><h4 className="mt-4 text-xl font-black text-white">Selecione um jogador na coluna esquerda</h4><p className="mt-2 text-sm text-slate-400">Depois, confirme seu voto aqui.</p></>}
+              {selectedVotePlayer ? <><CharacterFaceAvatar player={selectedVotePlayer} className="mx-auto h-24 w-24 rounded-2xl" imageClassName="h-40"/><p className="mt-4 text-sm font-bold text-slate-400">Seu voto está selecionado em</p><h4 className="mt-1 text-3xl font-black text-white">{selectedVotePlayer.name}</h4><Button onClick={() => handleSubmitVote(selectedVotePlayer.uid)} disabled={isSubmittingVote} className="mt-6 h-14 w-full rounded-2xl border-b-4 border-orange-900 bg-orange-500 text-lg font-black text-white hover:bg-orange-400" data-testid="button-confirm-vote"><Vote className="mr-2 h-5 w-5"/>{isSubmittingVote ? "CONFIRMANDO..." : `CONFIRMAR VOTO EM ${selectedVotePlayer.name.toUpperCase()}?`}</Button></> : <><Vote className="mx-auto h-12 w-12 text-orange-300"/><h4 className="mt-4 text-xl font-black text-white"><span className="lg:hidden">Selecione um jogador na lista abaixo</span><span className="hidden lg:inline">Selecione um jogador na coluna esquerda</span></h4><p className="mt-2 text-sm text-slate-400">Depois, confirme seu voto aqui.</p></>}
             </div>
           </div>
         );
@@ -5760,6 +5760,24 @@ const GameScreen = () => {
   const sidebarImpostorIds = gameData?.impostorIds?.length
     ? gameData.impostorIds
     : (room.impostorId ? [room.impostorId] : []);
+  const mobileRoleLabel = isImpostor
+    ? (unlockedWord ? 'Palavra revelada' : unlockedHint ? 'Dica desbloqueada' : 'Sua missão')
+    : gameMode === 'palavras' ? 'Local e função' : gameMode === 'duasFaccoes' ? 'Sua facção' : gameMode === 'categoriaItem' ? 'Categoria e item' : 'Palavra secreta';
+  const mobileRoleValue = (() => {
+    if (!gameData) return 'Preparando informações...';
+    if (isImpostor) {
+      if (unlockedWord) return unlockedWord;
+      if (unlockedHint) return unlockedHint;
+      const hintsEnabled = gameData.gameConfig?.enableHints === true;
+      const firstOnly = gameData.gameConfig?.firstPlayerHintOnly === true;
+      const canSeeHint = hintsEnabled && (!firstOnly || speakingOrder?.[0] === user?.uid);
+      return canSeeHint && gameData.hint ? gameData.hint : 'Finja que sabe a palavra';
+    }
+    if (gameMode === 'palavras') return `${gameData.location || 'Local'} • ${user?.uid ? gameData.roles?.[user.uid] || 'Função' : 'Função'}`;
+    if (gameMode === 'duasFaccoes') return user?.uid ? gameData.factionMap?.[user.uid] || 'Descubra sua facção' : 'Descubra sua facção';
+    if (gameMode === 'categoriaItem') return `${gameData.category || 'Categoria'} • ${gameData.item || 'Item'}`;
+    return gameData.word || 'Aguardando palavra...';
+  })();
 
   return (
     <>
@@ -5773,7 +5791,7 @@ const GameScreen = () => {
       <button type="button" onClick={() => setIsRevealed(!isRevealed)} className={cn("mt-2 shrink-0 rounded-2xl border bg-gradient-to-br from-[#17213b] to-[#10182d] px-3 py-2 text-left", isImpostor ? "border-rose-500/35" : "border-emerald-500/35")}>
         {isRevealed ? <div className="flex min-w-0 items-center gap-2.5">
           <div className={cn("h-10 w-10 shrink-0 overflow-hidden rounded-lg border", isImpostor ? "border-rose-500/50" : "border-emerald-500/50")}><img src={isImpostor ? impostorImg : tripulanteImg} alt="" className="h-full w-full object-cover"/></div>
-          <div className="min-w-0 flex-1"><p className={cn("text-xs font-black uppercase tracking-wider", isImpostor ? "text-rose-300" : "text-emerald-300")}>{isImpostor ? 'Impostor' : 'Tripulante'}</p><div className="mt-0.5 max-h-[58px] overflow-hidden text-[10px] leading-tight [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0 [&_h2]:text-lg [&_h3]:text-base [&_p]:text-[10px]">{isImpostor ? renderImpostorContent() : renderCrewContent()}</div></div>
+          <div className="min-w-0 flex-1"><p className={cn("text-xs font-black uppercase tracking-wider", isImpostor ? "text-rose-300" : "text-emerald-300")}>{isImpostor ? 'Impostor' : 'Tripulante'}</p><p className="mt-1 text-[8px] font-black uppercase tracking-[.22em] text-slate-500">{mobileRoleLabel}</p><p className="mt-0.5 truncate text-base font-black leading-tight text-white">{mobileRoleValue}</p></div>
           <EyeOff className="h-4 w-4 shrink-0 text-slate-500"/>
         </div> : <div className="flex h-10 items-center justify-center gap-2 text-xs font-black uppercase tracking-wider text-violet-300"><Eye className="h-4 w-4"/>Toque para revelar</div>}
       </button>
