@@ -6,7 +6,7 @@ import { trackRoomJoin } from "./analyticsMiddleware.js";
 import { trackLobbyGameStart, trackLobbyJoin, trackLobbyLeave } from "./lobbyTracker.js";
 
 type GameMode = "classic" | "challenge";
-type Player = { uid: string; name: string; connected: boolean; eliminated: boolean };
+type Player = { uid: string; name: string; connected: boolean; eliminated: boolean; wins: number };
 type Attempt = { playerId: string; playerName: string; elapsedMs: number; differenceMs: number };
 type ChallengeAttempt = { playerId: string; playerName: string; elapsedMs: number; accumulatedAfterMs: number };
 type ChallengeResolution = { challengerId: string; challengerName: string; challengedId: string; challengedName: string; loserId: string; loserName: string; wasOver: boolean; accumulatedMs: number; targetMs: number };
@@ -49,12 +49,17 @@ function nextActiveAfter(room: Room, playerId: string) {
 }
 
 function response(room: Room) {
+  room.players.forEach(player => { player.wins ??= 0; });
   const sorted = room.gameMode === "classic" ? [...room.attempts].sort((a, b) => a.differenceMs - b.differenceMs || a.elapsedMs - b.elapsedMs) : room.attempts;
   return { ...room, attempts: sorted, serverNow: Date.now(), winnerIds: room.gameMode === "classic" && sorted.length ? sorted.filter(a => a.differenceMs === sorted[0].differenceMs).map(a => a.playerId) : room.winnerId ? [room.winnerId] : [] };
 }
 
 function maybeFinishClassic(room: Room) {
-  if (room.gameMode === "classic" && room.status === "playing" && room.players.length > 0 && room.attempts.length >= room.players.length) room.status = "results";
+  if (room.gameMode !== "classic" || room.status !== "playing" || room.players.length === 0 || room.attempts.length < room.players.length) return;
+  room.status = "results";
+  const bestDifference = Math.min(...room.attempts.map(attempt => attempt.differenceMs));
+  const winnerIds = new Set(room.attempts.filter(attempt => attempt.differenceMs === bestDifference).map(attempt => attempt.playerId));
+  room.players.forEach(player => { if (winnerIds.has(player.uid)) player.wins = (player.wins ?? 0) + 1; });
 }
 
 function scheduleClassicBots(room: Room) {
@@ -85,6 +90,7 @@ function resolveChallenge(room: Room, challengerId: string) {
   const survivors = activePlayers(room);
   if (survivors.length <= 1) {
     room.status = "results"; room.challengePhase = "finished"; room.winnerId = survivors[0]?.uid ?? null; room.currentPlayerId = null; room.suggesterId = null;
+    if (survivors[0]) survivors[0].wins = (survivors[0].wins ?? 0) + 1;
     return;
   }
   const nextSuggester = nextActiveAfter(room, loser.uid) ?? survivors[0];
@@ -122,8 +128,8 @@ export function setupCronometroGame(app: Express) {
     const parsed = z.object({ playerId: z.string().min(1), nickname: z.string().trim().min(1).max(18), gameMode: z.enum(["classic", "challenge"]).default("classic") }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Digite um apelido válido." });
     const roomCode = code();
-    const room: Room = { code: roomCode, hostId: parsed.data.playerId, status: "waiting", gameMode: parsed.data.gameMode, players: [{ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, eliminated: false }], targetMs: null, startedAt: null, attempts: [], showTimer: false, round: 0, createdAt: Date.now(), challengePhase: null, accumulatedMs: 0, currentPlayerId: null, suggesterId: null, lastChallengeAttempt: null, lastResolution: null, winnerId: null, timerActivePlayerId: null };
-    if (parsed.data.nickname.toLowerCase() === "testeadm26") ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"].forEach((name, i) => room.players.push({ uid: `chrono-bot-${roomCode}-${i}`, name, connected: true, eliminated: false }));
+    const room: Room = { code: roomCode, hostId: parsed.data.playerId, status: "waiting", gameMode: parsed.data.gameMode, players: [{ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, eliminated: false, wins: 0 }], targetMs: null, startedAt: null, attempts: [], showTimer: false, round: 0, createdAt: Date.now(), challengePhase: null, accumulatedMs: 0, currentPlayerId: null, suggesterId: null, lastChallengeAttempt: null, lastResolution: null, winnerId: null, timerActivePlayerId: null };
+    if (parsed.data.nickname.toLowerCase() === "testeadm26") ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"].forEach((name, i) => room.players.push({ uid: `chrono-bot-${roomCode}-${i}`, name, connected: true, eliminated: false, wins: 0 }));
     rooms.set(roomCode, room);
     const trackedMode = parsed.data.gameMode === "challenge" ? "cronometroDesafio" : "cronometroClassico";
     trackLobbyJoin(roomCode, parsed.data.playerId, parsed.data.nickname, true, trackedMode, null, req).catch(() => {});
@@ -139,7 +145,7 @@ export function setupCronometroGame(app: Express) {
     if (!parsed.success) return res.status(400).json({ error: "Dados inválidos." });
     const existing = room.players.find(p => p.uid === parsed.data.playerId);
     if (existing) { existing.name = parsed.data.nickname; existing.connected = true; }
-    else if (room.players.length < 12) room.players.push({ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, eliminated: false });
+    else if (room.players.length < 12) room.players.push({ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, eliminated: false, wins: 0 });
     else return res.status(409).json({ error: "A sala está cheia." });
     const trackedMode = room.gameMode === "challenge" ? "cronometroDesafio" : "cronometroClassico";
     if (!existing) trackLobbyJoin(room.code, parsed.data.playerId, parsed.data.nickname, false, trackedMode, null, req).catch(() => {});
