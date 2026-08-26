@@ -4088,35 +4088,36 @@ const ModeSelectScreen = () => {
   if (!room) return null;
 
   return (
-    <div className="w-full max-w-[1480px] min-h-full px-4 py-5 sm:px-6 lg:px-8 lg:py-8 animate-fade-in relative z-10">
+    <div className="fixed inset-0 z-[40] h-[100dvh] w-full overflow-hidden bg-[#080f20] p-2 lg:relative lg:z-10 lg:h-auto lg:min-h-full lg:max-w-[1480px] lg:bg-transparent lg:px-8 lg:py-8 animate-fade-in">
       {/* Elementos decorativos de fundo */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse"></div>
         <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
       </div>
       
-      <div className="relative z-10 grid items-stretch gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
-      <aside className="flex flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#0d1529]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-5">
+      <div className="relative z-10 grid h-full items-stretch gap-5 lg:h-auto lg:grid-cols-[350px_minmax(0,1fr)]">
+      <aside className="hidden flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#0d1529]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-5 lg:flex">
         <button onClick={handleBackClick} className="flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 font-black text-slate-300 hover:bg-slate-800" data-testid="button-back-to-lobby"><ArrowLeft className="h-5 w-5"/> Voltar ao Lobby</button>
         <div className="mt-6 flex items-center justify-between"><h2 className="text-sm font-black uppercase tracking-[.14em] text-slate-300">Jogadores</h2><span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-sm font-black text-emerald-300">{room.players.length} / 10</span></div>
         <div className="mt-4 space-y-2.5">{room.players.map((player, index) => <article key={player.uid} className={cn("flex min-w-0 items-center gap-3 rounded-2xl border p-3", player.uid === user?.uid ? "border-violet-400/45 bg-violet-500/10" : "border-slate-700/70 bg-[#111c32]")}><CharacterFaceAvatar player={{ ...player, characterIndex: player.characterIndex ?? index }} className="h-12 w-12 rounded-xl" imageClassName="h-20"/><div className="min-w-0 flex-1"><div className="flex items-center gap-1.5">{player.uid === room.hostId && <Crown className="h-3.5 w-3.5 text-violet-300"/>}<strong className="truncate text-sm">{player.name}</strong></div><div className="mt-1 flex items-center gap-2"><span className="text-[9px] font-black uppercase text-emerald-300">Pronto</span><span className="inline-flex items-center gap-1 text-[9px] font-black text-amber-300"><Trophy className="h-3 w-3"/>{player.impostorWins ?? 0}</span></div></div><span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_currentColor]"/></article>)}</div>
         <div className="mt-5 rounded-2xl border border-slate-700/70 bg-slate-950/25 p-3"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Escolha seu personagem</p><div className="mt-3 grid grid-cols-5 gap-2">{DEFAULT_LOBBY_CHARACTERS.map((character, index) => { const selected = normalizeLobbyCharacterIndex(room.players.find(player => player.uid === user?.uid)?.characterIndex) === index; const taken = room.players.some(player => player.uid !== user?.uid && normalizeLobbyCharacterIndex(player.characterIndex) === index); return <button key={index} onClick={() => !taken && selectCharacter(index)} disabled={taken} className={cn("relative aspect-square overflow-hidden rounded-lg border bg-slate-950/80", selected ? "border-amber-300" : taken ? "cursor-not-allowed border-white/5 grayscale opacity-25" : "border-white/10 hover:border-violet-400/50")}><img src={character} alt="" className="absolute left-1/2 top-0 h-[155%] w-auto max-w-none -translate-x-1/2"/>{selected && <Check className="absolute right-0.5 top-0.5 h-3.5 w-3.5 rounded-full bg-emerald-500 p-0.5"/>}</button>; })}</div></div>
       </aside>
 
-      <div className="flex min-h-[720px] min-w-0 flex-col overflow-hidden rounded-[1.75rem] border border-slate-700/80 bg-[#111a31]/95 p-5 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-7 lg:h-[min(820px,calc(100vh-64px))] lg:p-8">
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-4 mb-8 text-center md:text-left">
+      <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-[1.25rem] border border-slate-700/80 bg-[#111a31]/95 p-3 shadow-[0_24px_70px_rgba(0,0,0,.32)] sm:p-5 lg:h-[min(820px,calc(100vh-64px))] lg:min-h-[720px] lg:rounded-[1.75rem] lg:p-8">
+        <div className="mb-3 flex shrink-0 items-start gap-3 text-left lg:mb-8">
+          <button onClick={handleBackClick} className="flex h-10 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-900/80 px-3 font-black text-slate-300 lg:hidden" data-testid="button-mobile-back-to-lobby"><ArrowLeft className="h-4 w-4"/></button>
           <div className="flex-1">
-            <h2 className="text-2xl md:text-3xl font-black text-white mb-2">
+            <h2 className="mb-1 text-lg font-black text-white sm:text-2xl lg:mb-2 lg:text-3xl">
               {selectedMode ? 'Escolha o tema da partida' : 'Como vamos jogar hoje?'}
             </h2>
-            <p className="text-slate-400 font-medium text-base md:text-lg max-w-2xl">
+            <p className="max-w-2xl text-xs font-medium text-slate-400 sm:text-base lg:text-lg">
               {selectedMode ? 'O modo já está definido. Agora escolha um tema para começar.' : 'Selecione o modo que mais combina com a sua galera. O Impostor está pronto...'}
             </p>
           </div>
-          {selectedMode && <button type="button" onClick={() => { useGameStore.setState({ selectedMode: null }); setSelectedCategory(null); }} className="shrink-0 rounded-xl border border-slate-600 bg-slate-900/70 px-4 py-2 text-sm font-black text-slate-300 transition hover:border-violet-400/50 hover:text-white"><ArrowLeft className="mr-2 inline h-4 w-4"/>Trocar modo</button>}
+          {selectedMode && <button type="button" onClick={() => { useGameStore.setState({ selectedMode: null }); setSelectedCategory(null); }} className="shrink-0 rounded-xl border border-slate-600 bg-slate-900/70 px-3 py-2 text-[10px] font-black text-slate-300 transition hover:border-violet-400/50 hover:text-white sm:text-sm"><ArrowLeft className="mr-1 inline h-4 w-4"/><span className="hidden sm:inline">Trocar </span>modo</button>}
         </div>
 
-        {!selectedMode && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 overflow-y-auto pr-2 scrollbar-thin">
+        {!selectedMode && <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto overscroll-contain rounded-2xl border border-slate-600/80 bg-slate-950/25 p-3 pr-2 scrollbar-thin sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
           {gameModes
             .filter(mode => mode.id !== 'palavraComunidade') // Esconde modo de temas customizados
             .map((mode, index) => {
@@ -4149,7 +4150,7 @@ const ModeSelectScreen = () => {
                   }
                 }}
                 className={cn(
-                  "relative p-5 rounded-3xl cursor-pointer transition-all duration-200 flex flex-col gap-4 h-full border-4",
+                  "relative p-3 sm:p-5 rounded-2xl sm:rounded-3xl cursor-pointer transition-all duration-200 flex flex-col gap-2 sm:gap-4 h-full border-2 sm:border-4",
                   isSelected 
                     ? `${colors.bg} ${colors.border} -translate-y-2 shadow-[0_10px_0_0_rgba(0,0,0,0.2)]` 
                     : 'bg-slate-800 border-slate-900 hover:bg-slate-750 hover:-translate-y-1 hover:border-slate-700 shadow-lg'
@@ -4207,7 +4208,7 @@ const ModeSelectScreen = () => {
         </div>}
 
         {selectedMode && <div className="flex min-h-0 flex-1 flex-col">
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 scrollbar-thin">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl border border-slate-600/80 bg-slate-950/25 p-3 pr-2 scrollbar-thin">
         
         {selectedMode === 'palavraComunidade' && (
           <div className="pt-1">
@@ -4305,19 +4306,19 @@ const ModeSelectScreen = () => {
         </div>
 
         {/* CTA Principal */}
-        <div className="shrink-0 border-t border-slate-700/70 bg-[#111a31] pt-5 flex flex-col items-center">
+        <div className="flex shrink-0 flex-col items-center border-t border-slate-700/70 bg-[#111a31] pt-3 lg:pt-5">
           <button 
             onClick={handleStartGameWithSorteio}
             disabled={!selectedMode || isStarting || (selectedMode === 'palavraComunidade' && !selectedThemeCode)}
             className={cn(
-              "w-full md:w-auto md:min-w-[300px] px-8 py-5 rounded-2xl font-black text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[6px] shadow-2xl",
+              "w-full md:w-auto md:min-w-[300px] px-6 py-3.5 lg:px-8 lg:py-5 rounded-2xl font-black text-base lg:text-xl tracking-wide flex items-center justify-center gap-3 transition-all duration-300 border-b-[5px] lg:border-b-[6px] shadow-2xl",
               selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode)
                 ? 'bg-gradient-to-r from-green-500 to-emerald-500 border-green-800 text-white hover:brightness-110 active:border-b-0 active:translate-y-2' 
                 : 'bg-slate-700 border-slate-900 text-slate-500 cursor-not-allowed opacity-50'
             )}
           >
-            <Rocket size={28} className={selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode) ? 'animate-bounce' : ''} />
-            {selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode) ? 'INICIAR PARTIDA' : 'SELECIONE UM MODO'}
+            {isStarting ? <Loader2 size={24} className="animate-spin"/> : <Rocket size={28} className={selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode) ? 'animate-bounce' : ''} />}
+            {isStarting ? 'PREPARANDO PARTIDA...' : selectedMode && !(selectedMode === 'palavraComunidade' && !selectedThemeCode) ? 'INICIAR PARTIDA' : 'SELECIONE UM MODO'}
           </button>
         </div>
         </div>}
@@ -5115,6 +5116,7 @@ const GameScreen = () => {
   const [unlockedHint, setUnlockedHint] = useState<string | null>(null);
   const [unlockedWord, setUnlockedWord] = useState<string | null>(null);
   const [selectedVote, setSelectedVote] = useState<string | null>(null);
+  const automaticOrderTriggered = useRef(false);
 
   // Poll PIX payment status for impostor unlock
   useEffect(() => {
@@ -5174,9 +5176,12 @@ const GameScreen = () => {
     });
   };
 
-  const handleStartSorteio = () => {
-    triggerSpeakingOrderWheel();
-  };
+  useEffect(() => {
+    if (!room || room.hostId !== user?.uid || automaticOrderTriggered.current || showSpeakingOrderWheel || speakingOrder?.length) return;
+    automaticOrderTriggered.current = true;
+    const timer = window.setTimeout(() => triggerSpeakingOrderWheel(), 450);
+    return () => window.clearTimeout(timer);
+  }, [room, user?.uid, showSpeakingOrderWheel, speakingOrder, triggerSpeakingOrderWheel]);
 
   const handleSpeakingOrderComplete = (order: string[]) => {
     setSpeakingOrder(order);
@@ -5729,13 +5734,6 @@ const GameScreen = () => {
             {isHost ? (
               <>
                 <Button 
-                  onClick={handleStartSorteio}
-                  className="w-full h-12 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-2xl font-bold text-sm shadow-lg border-2 border-purple-400/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  data-testid="button-sorteio"
-                >
-                  <Zap className="mr-2 w-5 h-5" /> Sortear Ordem de Fala
-                </Button>
-                <Button 
                   onClick={handleStartVoting}
                   className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold rounded-2xl text-sm shadow-lg border-2 border-orange-400/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
                   data-testid="button-start-voting"
@@ -5772,7 +5770,19 @@ const GameScreen = () => {
         <span className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-black text-emerald-300">{activePlayers.length}/{room.players.length}</span>
       </header>
 
-      <div className="mt-1 grid shrink-0 grid-cols-5 gap-1.5">
+      <button type="button" onClick={() => setIsRevealed(!isRevealed)} className={cn("mt-2 shrink-0 rounded-2xl border bg-gradient-to-br from-[#17213b] to-[#10182d] px-3 py-2 text-left", isImpostor ? "border-rose-500/35" : "border-emerald-500/35")}>
+        {isRevealed ? <div className="flex min-w-0 items-center gap-2.5">
+          <div className={cn("h-10 w-10 shrink-0 overflow-hidden rounded-lg border", isImpostor ? "border-rose-500/50" : "border-emerald-500/50")}><img src={isImpostor ? impostorImg : tripulanteImg} alt="" className="h-full w-full object-cover"/></div>
+          <div className="min-w-0 flex-1"><p className={cn("text-xs font-black uppercase tracking-wider", isImpostor ? "text-rose-300" : "text-emerald-300")}>{isImpostor ? 'Impostor' : 'Tripulante'}</p><div className="mt-0.5 max-h-[58px] overflow-hidden text-[10px] leading-tight [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0 [&_h2]:text-lg [&_h3]:text-base [&_p]:text-[10px]">{isImpostor ? renderImpostorContent() : renderCrewContent()}</div></div>
+          <EyeOff className="h-4 w-4 shrink-0 text-slate-500"/>
+        </div> : <div className="flex h-10 items-center justify-center gap-2 text-xs font-black uppercase tracking-wider text-violet-300"><Eye className="h-4 w-4"/>Toque para revelar</div>}
+      </button>
+
+      <main className="mt-2 min-h-0 flex-1 overflow-hidden rounded-2xl border border-slate-700/80 bg-[#111a31] px-3 py-2 [&_.space-y-6]:space-y-2 [&_.space-y-5]:space-y-2 [&_.space-y-4]:space-y-2 [&_.py-4]:py-1 [&_.p-6]:p-3 [&_.h-20]:h-12 [&_.w-20]:w-12 [&_.h-16]:h-11 [&_.w-16]:w-11 [&_.text-3xl]:text-xl [&_.text-2xl]:text-lg">
+        <div className="mx-auto flex h-full w-full max-w-xl flex-col justify-center">{renderStageContent()}</div>
+      </main>
+
+      <div className="mt-2 grid shrink-0 grid-cols-5 gap-1.5 rounded-2xl border border-slate-700/70 bg-[#0d1529] p-1.5">
         {room.players.slice(0, 10).map((player, index) => {
           const isCurrentUser = player.uid === user?.uid;
           const isWaiting = !!player.waitingForGame;
@@ -5788,18 +5798,6 @@ const GameScreen = () => {
           </button>;
         })}
       </div>
-
-      <button type="button" onClick={() => setIsRevealed(!isRevealed)} className={cn("mt-2 shrink-0 rounded-2xl border bg-gradient-to-br from-[#17213b] to-[#10182d] px-3 py-2 text-left", isImpostor ? "border-rose-500/35" : "border-emerald-500/35")}>
-        {isRevealed ? <div className="flex min-w-0 items-center gap-2.5">
-          <div className={cn("h-10 w-10 shrink-0 overflow-hidden rounded-lg border", isImpostor ? "border-rose-500/50" : "border-emerald-500/50")}><img src={isImpostor ? impostorImg : tripulanteImg} alt="" className="h-full w-full object-cover"/></div>
-          <div className="min-w-0 flex-1"><p className={cn("text-xs font-black uppercase tracking-wider", isImpostor ? "text-rose-300" : "text-emerald-300")}>{isImpostor ? 'Impostor' : 'Tripulante'}</p><div className="mt-0.5 max-h-[58px] overflow-hidden text-[10px] leading-tight [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0 [&_h2]:text-lg [&_h3]:text-base [&_p]:text-[10px]">{isImpostor ? renderImpostorContent() : renderCrewContent()}</div></div>
-          <EyeOff className="h-4 w-4 shrink-0 text-slate-500"/>
-        </div> : <div className="flex h-10 items-center justify-center gap-2 text-xs font-black uppercase tracking-wider text-violet-300"><Eye className="h-4 w-4"/>Toque para revelar</div>}
-      </button>
-
-      <main className="mt-2 min-h-0 flex-1 overflow-hidden rounded-2xl border border-slate-700/80 bg-[#111a31] px-3 py-2 [&_.space-y-6]:space-y-2 [&_.space-y-5]:space-y-2 [&_.space-y-4]:space-y-2 [&_.py-4]:py-1 [&_.p-6]:p-3 [&_.h-20]:h-12 [&_.w-20]:w-12 [&_.h-16]:h-11 [&_.w-16]:w-11 [&_.text-3xl]:text-xl [&_.text-2xl]:text-lg">
-        <div className="mx-auto flex h-full w-full max-w-xl flex-col justify-center">{renderStageContent()}</div>
-      </main>
     </div>
 
     <div className="hidden w-full max-w-[1480px] min-h-full px-4 py-5 sm:px-6 lg:block lg:px-8 lg:py-8 animate-fade-in relative z-10">
