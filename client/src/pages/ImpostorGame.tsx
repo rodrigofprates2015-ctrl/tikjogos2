@@ -3580,7 +3580,7 @@ const LobbyScreen = () => {
     <div className="w-full max-w-[1480px] px-3 py-4 sm:px-5 md:py-6 animate-fade-in relative z-10">
       <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.12),transparent_32%)]" />
       <div className="relative z-10 grid items-stretch gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
-        <aside className="flex flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#0d1529]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.36)] sm:p-5">
+        <aside className="order-2 flex flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#0d1529]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.36)] sm:p-5 lg:order-1">
           <button onClick={leaveGame} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/80 font-black text-slate-300 transition hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-white" data-testid="button-leave-room"><ArrowLeft className="h-5 w-5"/> Sair da Sala</button>
 
           <div className="mt-6 flex items-center justify-between px-1">
@@ -3614,7 +3614,7 @@ const LobbyScreen = () => {
           </div>
         </aside>
 
-        <main className="flex min-h-[720px] flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#111a31]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.36)] sm:p-6 lg:p-8">
+        <main className="order-1 flex min-h-[520px] flex-col rounded-[1.75rem] border border-slate-700/80 bg-[#111a31]/95 p-4 shadow-[0_24px_70px_rgba(0,0,0,.36)] sm:p-6 lg:order-2 lg:min-h-[720px] lg:p-8">
           <header className="flex flex-col gap-4 border-b border-slate-700/60 pb-6 sm:flex-row sm:items-center sm:justify-between">
             <button onClick={copyLink} className="group text-left" data-testid="text-room-code"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Código da sala</p><div className="mt-1 flex items-center gap-3"><strong className="font-mono text-4xl font-black tracking-widest text-amber-400 group-hover:text-amber-300">{room.code}</strong><span className="rounded-xl border border-slate-700 bg-slate-900 p-2 text-slate-400 group-hover:text-amber-300"><Copy className="h-5 w-5"/></span></div></button>
             <div className="flex flex-wrap items-center gap-2">{isHost && <button onClick={() => setShowConfigModal(true)} className="flex h-12 items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 font-black text-slate-300 hover:bg-slate-800"><Settings className="h-5 w-5"/> Configurações</button>}<VoiceChatJoinButton/></div>
