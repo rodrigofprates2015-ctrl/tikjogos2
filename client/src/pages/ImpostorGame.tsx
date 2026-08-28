@@ -5040,7 +5040,31 @@ const PerguntasDiferentesScreen = () => {
                 {crewWins ? "TRIPULACAO VENCEU!" : (impostorPlayers.length > 1 ? "IMPOSTORES VENCERAM!" : "IMPOSTOR VENCEU!")}
               </h2>
               
-              <p className="text-rose-300 text-xl font-black">{impostorNames}</p>
+              <p className={cn(
+                "text-xl font-black",
+                crewWins ? "text-emerald-300" : "text-rose-300"
+              )}>
+                {impostorPlayers.length > 1
+                  ? `${impostorNames} eram os impostores`
+                  : `${impostorNames} era o impostor`}
+              </p>
+
+              {gameData?.word && (
+                <div className={cn(
+                  "mx-auto mt-3 rounded-xl border-2 px-4 py-3",
+                  crewWins
+                    ? "border-emerald-500/35 bg-emerald-500/10"
+                    : "border-rose-500/35 bg-rose-500/10"
+                )}>
+                  <p className={cn(
+                    "mb-1 text-xs font-bold uppercase tracking-wider",
+                    crewWins ? "text-emerald-300" : "text-rose-300"
+                  )}>
+                    A palavra secreta era
+                  </p>
+                  <p className="text-2xl font-black text-white">{gameData.word}</p>
+                </div>
+              )}
             </div>
             
             <div className="w-full h-[1px] bg-gray-700"></div>
@@ -5707,16 +5731,28 @@ const GameScreen = () => {
                   {crewWins ? "Tripulação Venceu!" : (resultImpostorPlayers.length > 1 ? "Impostores Venceram!" : "Impostor Venceu!")}
                 </h2>
 
-                {!crewWins && (
-                  <p className="text-xl font-black text-rose-300">
-                    {resultImpostorPlayers.map(player => player.name).join(', ') || 'Impostor'}
-                  </p>
-                )}
-                
-                {/* Impostor sees the secret word; crew sees who the impostor was */}
-                {isImpostor && gameData?.word && (
-                  <div className="mt-2 mb-1 px-4 py-3 rounded-xl bg-purple-500/20 border-2 border-purple-500/40">
-                    <p className="text-purple-300 text-xs font-bold uppercase tracking-wider mb-1">A palavra secreta era:</p>
+                <p className={cn(
+                  "text-xl font-black",
+                  crewWins ? "text-emerald-300" : "text-rose-300"
+                )}>
+                  {resultImpostorPlayers.length > 1
+                    ? `${resultImpostorPlayers.map(player => player.name).join(', ') || 'Eles'} eram os impostores`
+                    : `${resultImpostorPlayers[0]?.name || 'O jogador'} era o impostor`}
+                </p>
+
+                {gameData?.word && (
+                  <div className={cn(
+                    "mt-3 mb-1 rounded-xl border-2 px-4 py-3",
+                    crewWins
+                      ? "border-emerald-500/35 bg-emerald-500/10"
+                      : "border-rose-500/35 bg-rose-500/10"
+                  )}>
+                    <p className={cn(
+                      "mb-1 text-xs font-bold uppercase tracking-wider",
+                      crewWins ? "text-emerald-300" : "text-rose-300"
+                    )}>
+                      A palavra secreta era
+                    </p>
                     <p className="text-white text-2xl font-black">{gameData.word}</p>
                   </div>
                 )}
