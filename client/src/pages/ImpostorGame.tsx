@@ -9,7 +9,7 @@ import SupportHome from "@/pages/SupportHome";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import bombaLogo from "@/assets/bomba-logo.png";
 import bombaIcon from "@/assets/bomba-icon.png";
-import tempoLogo from "@assets/t3mp00-logo.png";
+import tempoLogo from "../../../attached_assets/t3mp00-logo.png";
 
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
 import { LobbyChat } from "@/components/LobbyChat";
