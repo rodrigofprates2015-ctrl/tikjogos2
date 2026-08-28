@@ -7,6 +7,7 @@
     "dev:client": "vite dev --port 5000",
     "dev": "NODE_ENV=development node_modules/.bin/tsx server/index.ts",
     "build": "tsx script/build.ts",
+    "prestart": "node script/ensure-production-build.cjs",
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
     "android:sync": "cap sync android",
