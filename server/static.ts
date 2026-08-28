@@ -4,8 +4,8 @@ import path from "path";
 import { getSeoForPath, injectSeoIntoHtml } from "./seo";
 
 export function serveStatic(app: Express) {
-  // esbuild bundles everything into dist/, so __dirname is /app/dist
-  const distPath = __dirname;
+  // Works both when the server is bundled and when Render starts the TS source.
+  const distPath = path.resolve(process.cwd(), "dist");
   
   const indexPath = path.join(distPath, "index.html");
   if (!fs.existsSync(indexPath)) {
