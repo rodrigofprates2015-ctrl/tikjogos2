@@ -11,7 +11,7 @@
     "check": "tsc",
     "android:sync": "cap sync android",
     "android:open": "cap open android",
-    "db:push": "drizzle-kit push",
+    "db:push": "node script/db-push.cjs",
     "bump-version": "tsx script/bump-version.ts"
   },
   "dependencies": {
