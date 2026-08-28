@@ -7,10 +7,15 @@ import { isNativeApp } from "@/lib/nativeApp";
 
 const ANDROID_TEST_INTERSTITIAL_ID =
   "ca-app-pub-3940256099942544/1033173712";
+const ANDROID_PRODUCTION_INTERSTITIAL_ID =
+  "ca-app-pub-9625268096387834/3880003398";
 
 const configuredInterstitialId = import.meta.env.VITE_ADMOB_INTERSTITIAL_ID?.trim();
-const interstitialId = configuredInterstitialId || ANDROID_TEST_INTERSTITIAL_ID;
-const isTesting = !configuredInterstitialId;
+const isTesting = !import.meta.env.PROD && !configuredInterstitialId;
+const interstitialId = configuredInterstitialId
+  || (import.meta.env.PROD
+    ? ANDROID_PRODUCTION_INTERSTITIAL_ID
+    : ANDROID_TEST_INTERSTITIAL_ID);
 
 let initialization: Promise<void> | null = null;
 

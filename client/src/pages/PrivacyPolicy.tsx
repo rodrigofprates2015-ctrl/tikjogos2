@@ -31,7 +31,7 @@ export default function PrivacyPolicy() {
             <h1 className="text-5xl md:text-7xl text-white font-black mb-4">
               Política de <span className="text-blue-500">Privacidade</span>
             </h1>
-            <p className="text-slate-500 font-bold uppercase tracking-widest">Última atualização: 04/02/2026</p>
+            <p className="text-slate-500 font-bold uppercase tracking-widest">Última atualização: 27/08/2026</p>
           </header>
 
           <div className="bg-[#242642] rounded-[3rem] p-8 md:p-12 border-4 border-[#2f3252] shadow-2xl space-y-10">
@@ -92,6 +92,18 @@ export default function PrivacyPolicy() {
             <section className="space-y-4">
               <h2 className="text-2xl font-black text-white flex items-center gap-3">
                 <span className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-sm">6</span>
+                Exclusão de Dados
+              </h2>
+              <p className="text-slate-400 text-lg leading-relaxed">
+                Para solicitar a exclusão dos dados associados ao uso do TikJogos, envie um email para
+                {' '}<a href="mailto:rodrigo.f.prates2033@gmail.com" className="text-blue-400 font-bold hover:underline">rodrigo.f.prates2033@gmail.com</a>{' '}
+                com o assunto <strong>Exclusão de dados TikJogos</strong> e informe o apelido utilizado e, se disponível, o código da sala e a data aproximada da partida. Excluiremos os identificadores de visitante, registros de acesso, métricas de uso, informações de dispositivo e dados de partidas que puderem ser associados às informações fornecidas. O pedido será processado em até 30 dias. Registros estritamente necessários para segurança, prevenção de fraude ou cumprimento de obrigação legal poderão ser mantidos pelo prazo exigido por lei.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-2xl font-black text-white flex items-center gap-3">
+                <span className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-sm">7</span>
                 Contato
               </h2>
               <p className="text-slate-400 text-lg leading-relaxed">
@@ -103,7 +115,7 @@ export default function PrivacyPolicy() {
 
             <section className="space-y-4">
               <h2 className="text-2xl font-black text-white flex items-center gap-3">
-                <span className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-sm">7</span>
+                <span className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-sm">8</span>
                 Alterações nesta Política
               </h2>
               <p className="text-slate-400 text-lg leading-relaxed">
