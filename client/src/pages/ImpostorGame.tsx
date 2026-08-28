@@ -9,6 +9,7 @@ import SupportHome from "@/pages/SupportHome";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import bombaLogo from "@/assets/bomba-logo.png";
 import bombaIcon from "@/assets/bomba-icon.png";
+import tempoLogo from "@assets/t3mp00-logo.png";
 
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
 import { LobbyChat } from "@/components/LobbyChat";
@@ -1650,7 +1651,7 @@ const CronometroGameCard = () => {
     finally { setBusy(false); }
   };
   return <div className="space-y-3">
-    <div className="text-center"><div className="mx-auto w-fit rounded-xl border-2 border-cyan-400/40 bg-[#080d19] px-4 py-2 font-mono text-2xl font-black tracking-wider text-cyan-300 shadow-[0_0_20px_rgba(34,211,238,.16)]"><span className="text-slate-400">T3:</span>MP:00</div><p className="mt-2 text-xs font-semibold text-slate-400">Pare o cronômetro no tempo exato.</p></div>
+    <div className="text-center"><img src={tempoLogo} alt="T3:MP:00" className="mx-auto h-[76px] w-auto max-w-full object-contain drop-shadow-[0_10px_24px_rgba(34,211,238,.3)]"/><p className="mt-2 text-xs font-semibold text-slate-400">Pare o cronômetro no tempo exato.</p></div>
     <div className="grid grid-cols-2 gap-2 rounded-2xl border border-slate-700 bg-slate-950/50 p-2">
       <button type="button" onClick={() => setGameMode('classic')} className={cn('rounded-xl border-2 px-3 py-3 text-sm font-black transition', gameMode === 'classic' ? 'border-cyan-400 bg-cyan-400/15 text-cyan-200' : 'border-transparent text-slate-400')}>CLÁSSICO</button>
       <button type="button" onClick={() => setGameMode('challenge')} className={cn('rounded-xl border-2 px-3 py-3 text-sm font-black transition', gameMode === 'challenge' ? 'border-fuchsia-400 bg-fuchsia-400/15 text-fuchsia-200' : 'border-transparent text-slate-400')}>DESAFIO</button>
@@ -2219,7 +2220,7 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
               className={cn("relative flex-none w-[23%] cursor-pointer snap-start rounded-2xl border-2 p-2 transition-all duration-300", selectedGame === 'cronometro' ? "scale-105 border-cyan-400 bg-[#2f3252] shadow-lg shadow-cyan-400/20" : "border-transparent bg-[#1a1c2e] opacity-50 hover:border-[#4a6a8a] hover:opacity-80")}
               data-testid="tab-cronometro"
             >
-              <div className="flex h-12 items-center justify-center rounded-lg bg-[#080d19] font-mono text-[11px] font-black text-cyan-300 md:h-16 md:text-sm"><span className="text-slate-400">T3:</span>MP:00</div>
+              <div className="flex h-12 items-center justify-center rounded-lg bg-[#080d19] px-1 md:h-16"><img src={tempoLogo} alt="T3:MP:00" className="h-auto max-h-[80%] w-full object-contain"/></div>
               <span className="absolute -right-1 -top-2 rounded-full bg-cyan-500 px-1.5 py-0.5 text-[9px] font-black leading-none text-slate-950">NOVO</span>
             </button>
 

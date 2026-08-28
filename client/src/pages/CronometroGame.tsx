@@ -4,6 +4,7 @@ import { ArrowLeft, Check, Clock3, Copy, Crown, Eye, EyeOff, LogOut, Play, Refre
 import { MobileNav } from "@/components/MobileNav";
 import { LobbyAd } from "@/components/AdSense";
 import { Button } from "@/components/ui/button";
+import tempoLogo from "@assets/t3mp00-logo.png";
 
 type GameMode = "classic" | "challenge";
 type Player = { uid: string; name: string; connected: boolean; eliminated: boolean; wins: number };
@@ -38,7 +39,7 @@ async function request(url: string, body: unknown) {
 }
 
 function DigitalLogo({ compact = false }: { compact?: boolean }) {
-  return <div className={`tj-theme-card mx-auto w-fit px-5 py-3 font-mono font-black tracking-[.12em] text-violet-300 ${compact ? "text-xl" : "text-3xl md:text-4xl"}`}><span className="text-slate-400">T3:</span>MP:00</div>;
+  return <img src={tempoLogo} alt="T3:MP:00" className={`mx-auto w-auto max-w-full object-contain drop-shadow-[0_10px_24px_rgba(34,211,238,.3)] ${compact ? "h-10" : "h-14 md:h-16"}`}/>;
 }
 
 function ResolutionCard({ resolution }: { resolution: Resolution }) {
