@@ -5016,21 +5016,31 @@ const PerguntasDiferentesScreen = () => {
           
           <div className="tj-inset w-full space-y-6 p-6 text-center">
             <div className="space-y-4">
-              <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto bg-gray-600">
-                {crewWins ? (
+              {crewWins ? (
+                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto bg-emerald-600">
                   <Trophy className="w-10 h-10 text-white" />
-                ) : (
-                  <Skull className="w-10 h-10 text-white" />
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="flex justify-center -space-x-3">
+                  {impostorPlayers.map((player, index) => (
+                    <CharacterFaceAvatar
+                      key={player.uid}
+                      player={{ ...player, characterIndex: player.characterIndex ?? index }}
+                      className="h-20 w-20 rounded-2xl border-2 border-rose-400 bg-rose-950/40 shadow-[0_0_24px_rgba(244,63,94,.35)]"
+                      imageClassName="h-32"
+                    />
+                  ))}
+                </div>
+              )}
               
-              <h2 className="text-3xl font-bold text-white">
+              <h2 className={cn(
+                "text-3xl font-black uppercase tracking-wider",
+                crewWins ? "text-emerald-400" : "text-rose-400"
+              )}>
                 {crewWins ? "TRIPULACAO VENCEU!" : (impostorPlayers.length > 1 ? "IMPOSTORES VENCERAM!" : "IMPOSTOR VENCEU!")}
               </h2>
               
-              <p className="text-gray-300 text-lg">
-                {impostorPlayers.length > 1 ? "Os impostores eram" : "O impostor era"}: <span className="text-gray-400 font-bold">{impostorNames}</span>
-              </p>
+              <p className="text-rose-300 text-xl font-black">{impostorNames}</p>
             </div>
             
             <div className="w-full h-[1px] bg-gray-700"></div>
@@ -5672,18 +5682,22 @@ const GameScreen = () => {
         return (
           <div className="animate-stage-fade-in w-full space-y-6">
             <div className="text-center space-y-4">
-              <div className={cn(
-                "tj-icon-box tj-icon-box--xl mx-auto border-2",
-                crewWins 
-                  ? "bg-gradient-to-br from-emerald-500 to-emerald-600 border-emerald-400/50" 
-                  : "bg-gradient-to-br from-rose-500 to-rose-600 border-rose-400/50"
-              )}>
-                {crewWins ? (
+              {crewWins ? (
+                <div className="tj-icon-box tj-icon-box--xl mx-auto border-2 bg-gradient-to-br from-emerald-500 to-emerald-600 border-emerald-400/50">
                   <Trophy className="w-10 h-10 text-white" />
-                ) : (
-                  <Skull className="w-10 h-10 text-white" />
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="flex justify-center -space-x-3">
+                  {resultImpostorPlayers.map((player, index) => (
+                    <CharacterFaceAvatar
+                      key={player.uid}
+                      player={{ ...player, characterIndex: player.characterIndex ?? index }}
+                      className="h-20 w-20 rounded-2xl border-2 border-rose-400 bg-rose-950/40 shadow-[0_0_24px_rgba(244,63,94,.35)]"
+                      imageClassName="h-32"
+                    />
+                  ))}
+                </div>
+              )}
               
               <div>
                 <h2 className={cn(
@@ -5692,6 +5706,12 @@ const GameScreen = () => {
                 )}>
                   {crewWins ? "Tripulação Venceu!" : (resultImpostorPlayers.length > 1 ? "Impostores Venceram!" : "Impostor Venceu!")}
                 </h2>
+
+                {!crewWins && (
+                  <p className="text-xl font-black text-rose-300">
+                    {resultImpostorPlayers.map(player => player.name).join(', ') || 'Impostor'}
+                  </p>
+                )}
                 
                 {/* Impostor sees the secret word; crew sees who the impostor was */}
                 {isImpostor && gameData?.word && (
@@ -5701,9 +5721,11 @@ const GameScreen = () => {
                   </div>
                 )}
 
-                <p className="mt-3 text-sm text-slate-400">
-                  Confira os votos e {resultImpostorPlayers.length > 1 ? "os impostores" : "o impostor"} na lista de jogadores.
-                </p>
+                {crewWins && (
+                  <p className="mt-3 text-sm text-slate-400">
+                    Confira os votos e {resultImpostorPlayers.length > 1 ? "os impostores" : "o impostor"} na lista de jogadores.
+                  </p>
+                )}
               </div>
             </div>
             
