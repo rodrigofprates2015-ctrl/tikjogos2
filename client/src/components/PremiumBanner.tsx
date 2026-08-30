@@ -29,7 +29,7 @@ export const PremiumBanner = () => {
           >
             <div className="flex flex-col items-start leading-none">
               <span className="text-xs font-bold opacity-80">APENAS</span>
-              <span className="text-lg md:text-xl">R$ 3,00</span>
+              <span className="text-lg md:text-xl">R$ 5,00</span>
             </div>
             <Plus className="w-6 h-6 md:w-7 md:h-7 group-hover:rotate-90 transition-transform" strokeWidth={3} />
           </div>

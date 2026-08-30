@@ -3087,7 +3087,10 @@ export async function registerRoutes(
             const accessCode = existingTheme.accessCode || cryptoRandomBytes(3).toString('hex').toUpperCase();
             existingTheme = await storage.updateTheme(existingTheme.id, {
               paymentStatus: 'approved',
-              approved: true,
+              // Pagamento e moderação são etapas independentes. O código já
+              // funciona, mas temas públicos só entram na galeria após a
+              // aprovação manual no dashboard.
+              approved: false,
               accessCode
             });
             console.log('[Webhook] Updated theme to approved:', existingTheme?.id, 'accessCode:', accessCode);
@@ -3193,7 +3196,7 @@ export async function registerRoutes(
             const accessCode = cryptoRandomBytes(3).toString('hex').toUpperCase();
             existingTheme = await storage.updateTheme(existingTheme.id, {
               paymentStatus: 'approved',
-              approved: true,
+              approved: false,
               accessCode
             });
             console.log('[Payment Status] Updated theme to approved:', existingTheme?.id, 'accessCode:', accessCode);
@@ -3397,6 +3400,13 @@ export async function registerRoutes(
   app.post("/api/admin/themes/:id/approve", verifyAdmin, async (req, res) => {
     try {
       const { id } = req.params;
+      const theme = await storage.getTheme(id);
+      if (!theme) {
+        return res.status(404).json({ error: "Tema não encontrado" });
+      }
+      if (theme.paymentStatus !== 'approved') {
+        return res.status(409).json({ error: "O pagamento deste tema ainda não foi confirmado" });
+      }
       await storage.updateTheme(id, { approved: true });
       console.log(`[Admin] Theme ${id} approved`);
       res.json({ success: true });

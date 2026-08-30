@@ -25,7 +25,7 @@ type PaymentState = {
 
 const MIN_PALAVRAS = 7;
 const TOTAL_PALAVRAS = 25;
-const THEME_PRICE = "3,00";
+const THEME_PRICE = "5,00";
 
 export default function CriarTema() {
   const { toast } = useToast();
@@ -221,7 +221,7 @@ export default function CriarTema() {
              </div>
              <p className={`font-black text-lg ${isPublic ? 'text-white' : 'text-slate-400'}`}>Galeria Pública</p>
              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-               Seu tema aparecerá na lista geral para todos os jogadores do site usarem.
+               Após a aprovação, seu tema entra na galeria para todos os jogadores usarem.
              </p>
           </button>
 
@@ -287,11 +287,11 @@ export default function CriarTema() {
           </div>
           <div>
             <h4 className="text-red-400 font-black text-lg">LEIA COM ATENÇÃO</h4>
-            <p className="text-red-200/70 text-sm leading-relaxed">
-              Palavras de baixo calão, racismo, homofobia ou qualquer discurso de ódio resultarão no <strong>banimento imediato</strong> do tema.
+            <p className="text-red-100/80 text-sm leading-relaxed">
+              Temas públicos passam por moderação antes de aparecer na galeria. Conteúdo ofensivo, ilegal, discriminatório ou inadequado será rejeitado ou removido.
             </p>
-            <p className="text-red-400 font-bold text-sm mt-2 uppercase">
-              Não haverá reembolso do valor pago.
+            <p className="text-red-300 font-bold text-sm mt-2">
+              O pagamento cobre a criação do tema e não garante sua publicação na galeria pública. Mesmo aguardando análise, você poderá usá-lo pelo código de acesso.
             </p>
           </div>
         </div>
@@ -308,7 +308,7 @@ export default function CriarTema() {
             <Check className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 pointer-events-none" strokeWidth={4} />
           </div>
           <span className="text-sm font-medium text-slate-300 pt-0.5 select-none">
-            Li e concordo que perderei meu dinheiro se violar as regras.
+            Li e concordo com as regras de conteúdo e com a moderação dos temas públicos.
           </span>
         </label>
       </div>
@@ -431,7 +431,7 @@ export default function CriarTema() {
         <h2 className="text-4xl font-black text-white">Tudo Pronto!</h2>
         <p className="text-slate-400 text-lg max-w-md mx-auto">
           {isPublic 
-            ? "Seu tema foi publicado e já está disponível na Galeria Pública."
+            ? "Seu tema foi criado e enviado para aprovação. Enquanto isso, você já pode usá-lo pelo código de acesso."
             : "Seu tema privado foi criado. Guarde o código abaixo!"}
         </p>
       </div>
@@ -445,7 +445,7 @@ export default function CriarTema() {
            <div className="text-left">
              <p className="text-white font-bold">{titulo || "Novo Tema"}</p>
              <p className="text-slate-500 text-xs font-bold uppercase">
-               {TOTAL_PALAVRAS} Palavras • {isPublic ? "Público" : "Privado"}
+               {validPalavrasCount} Palavras • {isPublic ? "Aguardando aprovação" : "Privado"}
              </p>
            </div>
            <div className="ml-auto">
@@ -483,7 +483,7 @@ export default function CriarTema() {
               <Copy size={20} className="text-purple-500/50 group-hover:text-purple-500" />
             </button>
             <p className="text-slate-500 text-xs mt-2">
-              Você também pode encontrar seu tema na galeria pública.
+              Depois da aprovação, ele também aparecerá na galeria pública.
             </p>
           </div>
         )}
@@ -503,7 +503,7 @@ export default function CriarTema() {
             data-testid="button-go-play"
           >
             <Rocket size={20} />
-            {isPublic ? "IR PARA GALERIA" : "ENTRAR NA SALA"}
+            JOGAR AGORA
           </button>
         </Link>
       </div>

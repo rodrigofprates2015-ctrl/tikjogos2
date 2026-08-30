@@ -89,7 +89,7 @@ export const translations = {
       addWord: 'Adicionar Palavra',
       isPublic: 'Tornar Público',
       isPrivate: 'Privado',
-      price: 'R$ 3,00',
+      price: 'R$ 5,00',
       acceptTerms: 'Aceito os termos e condições',
       create: 'Criar Tema',
       paymentPending: 'Aguardando Pagamento',

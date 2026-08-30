@@ -2004,18 +2004,6 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
         <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1000ms' }}></div>
       </div>
 
-      {/* Hero Banner - Oficina de Temas - TEMPORARIAMENTE DESABILITADO */}
-      {/* <Link 
-        href="/criar-tema"
-        className="hero-banner"
-        data-testid="hero-banner-theme-workshop"
-      >
-        <div className="hero-banner-overlay">
-          <p className="hero-banner-text-small">Divirta-se com os amigos</p>
-          <p className="hero-banner-text-main">Crie seu próprio tema por apenas R$ 1,50</p>
-        </div>
-      </Link> */}
-
       {/* Character images - change based on selected game (desktop only) */}
       {selectedGame === 'impostor' && (
         <>
@@ -2089,10 +2077,30 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
         {/* Mobile action buttons - above the card */}
         <MobileActionButtons onDonateClick={() => setIsDonationOpen(true)} />
 
-        {/* Square banner ad before game form - mobile only */}
-        <div className="block md:hidden w-full">
-          <InArticleAd />
-        </div>
+        {/* Destaque da Oficina de Temas — ocupa o antigo espaço publicitário */}
+        <Link
+          href="/criar-tema"
+          className="group mt-4 block w-[90%] max-w-md overflow-hidden rounded-[2rem] border-2 border-violet-400/70 bg-gradient-to-br from-violet-700 via-purple-700 to-fuchsia-600 p-1 shadow-[0_8px_0_#3b176b,0_18px_45px_rgba(124,58,237,.28)] transition hover:-translate-y-0.5 hover:brightness-110 active:translate-y-1 active:shadow-[0_3px_0_#3b176b] md:mt-10"
+          data-testid="banner-create-custom-theme"
+        >
+          <div className="flex items-center gap-4 rounded-[1.65rem] bg-[#171b34]/55 px-5 py-4 backdrop-blur-sm">
+            <div className="tj-icon-box tj-icon-box--lg shrink-0 bg-gradient-to-br from-amber-300 to-orange-500 text-slate-950 shadow-lg shadow-orange-950/30">
+              <Sparkles className="h-7 w-7" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="inline-flex rounded-full bg-amber-300 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-950">
+                Novidade
+              </span>
+              <h2 className="mt-1 text-lg font-black leading-tight text-white">Não encontrou seu tema?</h2>
+              <p className="mt-1 text-xs leading-relaxed text-violet-100">
+                Crie sua série, anime, jogo ou piada interna por <strong className="text-white">R$ 5</strong>.
+              </p>
+            </div>
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/20 bg-white/10 text-white transition-transform group-hover:translate-x-1">
+              <ArrowLeft className="h-5 w-5 rotate-180" />
+            </div>
+          </div>
+        </Link>
 
         {/* Game selector card */}
         <div className="bg-[#242642] rounded-[3rem] p-6 md:p-10 shadow-2xl border-4 border-[#2f3252] w-[90%] max-w-md animate-fade-in mb-6 md:mb-24 mt-4 md:mt-12">
@@ -4287,6 +4295,26 @@ const ModeSelectScreen = () => {
             ) : null}
             
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <Link
+                href="/criar-tema"
+                className="tj-theme-card is-selected group relative overflow-hidden p-4 text-left sm:col-span-2 xl:col-span-3"
+                data-testid="card-create-custom-theme"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-600/20 via-fuchsia-500/10 to-transparent" />
+                <div className="relative flex items-center gap-4">
+                  <div className="tj-icon-box tj-icon-box--lg shrink-0 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-950/40">
+                    <Plus className="h-7 w-7" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] font-black uppercase tracking-[.16em] text-amber-300">Seu tema por R$ 5</span>
+                    <strong className="mt-0.5 block text-base text-white">Não encontrou o assunto que queria?</strong>
+                    <span className="mt-1 block text-xs leading-relaxed text-slate-300">
+                      Crie um tema de série, anime, jogo, família ou piadas que só sua turma entende. Use por código e, se for público, envie para a galeria da comunidade.
+                    </span>
+                  </div>
+                  <ArrowLeft className="h-5 w-5 shrink-0 rotate-180 text-violet-200 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
               {(Object.entries(PALAVRA_SECRETA_SUBMODES) as Array<[PalavraSuperSecretaSubmode, typeof PALAVRA_SECRETA_SUBMODES['classico']]>).map(([submodeId, submode]) => <button key={submodeId} type="button" onClick={() => { setSelectedSubmode(submodeId); setSelectedCategory(submodeId); localStorage.setItem('selectedSubmode', submodeId); }} className={cn("tj-theme-card overflow-hidden p-3 text-left", selectedSubmode === submodeId && "is-selected")}>
                 {submode.image && <img src={submode.image} alt="" className="mb-3 h-24 w-full rounded-xl object-cover"/>}<strong className="block text-sm text-white">{submode.title}</strong><span className="mt-1 block text-xs leading-relaxed text-slate-400">{submode.desc}</span><span className="mt-2 inline-block text-[10px] font-bold uppercase text-violet-300">{submode.words.length} palavras</span>
               </button>)}
