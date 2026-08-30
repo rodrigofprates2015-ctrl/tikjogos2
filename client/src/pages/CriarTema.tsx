@@ -10,7 +10,11 @@ import {
   Globe,
   EyeOff,
   Wallet,
-  Rocket
+  Rocket,
+  Gamepad2,
+  Heart,
+  Sparkles,
+  Users
 } from "lucide-react";
 import logoImpostor from "@assets/logo site impostor.png";
 
@@ -169,6 +173,44 @@ export default function CriarTema() {
         </Link>
         <h2 className="text-2xl font-black text-white">Novo Tema</h2>
       </div>
+
+      {/* Value proposition */}
+      <section className="relative overflow-hidden rounded-[2rem] border-2 border-violet-400/60 bg-gradient-to-br from-violet-700 via-purple-700 to-fuchsia-600 p-1 shadow-[0_8px_0_#3b176b,0_18px_45px_rgba(124,58,237,.25)]">
+        <div className="relative overflow-hidden rounded-[1.65rem] bg-[#171b34]/80 px-5 py-7 text-center backdrop-blur-sm sm:px-8">
+          <Sparkles className="absolute -right-5 -top-5 h-28 w-28 text-white/5" aria-hidden="true" />
+          <span className="inline-flex rounded-full bg-amber-300 px-3 py-1 text-[10px] font-black uppercase tracking-[.16em] text-slate-950">
+            Uma partida criada por você
+          </span>
+          <h1 className="mx-auto mt-4 max-w-xl text-3xl font-black leading-tight text-white sm:text-4xl">
+            Crie o tema perfeito para sua galera
+          </h1>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-violet-100 sm:text-base">
+            Transforme sua série favorita, personagens, jogos, memes ou aquelas piadas internas que só seus amigos entendem em uma partida única do Jogo do Impostor.
+          </p>
+
+          <div className="mt-6 grid grid-cols-1 gap-3 text-left sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+              <Gamepad2 className="h-6 w-6 text-cyan-300" />
+              <strong className="mt-2 block text-sm text-white">Jogue na hora</strong>
+              <span className="mt-1 block text-xs leading-relaxed text-violet-100/75">Receba um código e convide seus amigos.</span>
+            </div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+              <Users className="h-6 w-6 text-amber-300" />
+              <strong className="mt-2 block text-sm text-white">Do seu jeito</strong>
+              <span className="mt-1 block text-xs leading-relaxed text-violet-100/75">Escolha até 25 palavras e decida se será público ou privado.</span>
+            </div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+              <Heart className="h-6 w-6 fill-pink-400 text-pink-400" />
+              <strong className="mt-2 block text-sm text-white">Apoie o TikJogos</strong>
+              <span className="mt-1 block text-xs leading-relaxed text-violet-100/75">Seu apelido entra no mural de apoiadores da home.</span>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 px-4 py-3 text-sm leading-relaxed text-emerald-100">
+            Ao criar seu tema, você também ajuda a manter os jogos gratuitos e apoia o desenvolvimento de novas experiências no TikJogos.
+          </div>
+        </div>
+      </section>
 
       {/* Main Inputs */}
       <div className="bg-[#242642] p-6 rounded-[2rem] border-4 border-[#2f3252] shadow-xl space-y-4">

@@ -2091,9 +2091,9 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
               <span className="inline-flex rounded-full bg-amber-300 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-950">
                 Novidade
               </span>
-              <h2 className="mt-1 text-lg font-black leading-tight text-white">Não encontrou seu tema?</h2>
+              <h2 className="mt-1 text-lg font-black leading-tight text-white">Tem uma ideia divertida? Coloque no jogo!</h2>
               <p className="mt-1 text-xs leading-relaxed text-violet-100">
-                Crie sua série, anime, jogo ou piada interna por <strong className="text-white">R$ 5</strong>.
+                Crie um tema com sua série favorita, personagens ou piadas internas da turma por <strong className="text-white">R$ 5</strong>.
               </p>
             </div>
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/20 bg-white/10 text-white transition-transform group-hover:translate-x-1">
@@ -4307,9 +4307,9 @@ const ModeSelectScreen = () => {
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="text-[10px] font-black uppercase tracking-[.16em] text-amber-300">Seu tema por R$ 5</span>
-                    <strong className="mt-0.5 block text-base text-white">Não encontrou o assunto que queria?</strong>
+                    <strong className="mt-0.5 block text-base text-white">Tem uma ideia divertida? Coloque no jogo!</strong>
                     <span className="mt-1 block text-xs leading-relaxed text-slate-300">
-                      Crie um tema de série, anime, jogo, família ou piadas que só sua turma entende. Use por código e, se for público, envie para a galeria da comunidade.
+                      Crie um tema com sua série favorita, personagens, memes ou piadas internas da turma. Use por código e, se for público, envie para a galeria.
                     </span>
                   </div>
                   <ArrowLeft className="h-5 w-5 shrink-0 rotate-180 text-violet-200 transition-transform group-hover:translate-x-1" />

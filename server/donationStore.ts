@@ -46,6 +46,7 @@ export async function updateDonationStatus(paymentId: string | number, status: s
 export async function getSupportSummary() {
   let approvedAmount = 0;
   let approvedNames: string[] = [];
+  let themeCreatorNames: string[] = [];
 
   if (!pool) {
     const approved = Array.from(memoryDonations.values()).filter((item) => item.status === "approved");
@@ -62,6 +63,16 @@ export async function getSupportSummary() {
     );
     approvedAmount = Number(totalResult.rows[0]?.total_cents ?? 0) / 100;
     approvedNames = namesResult.rows.map((row: { instagram: string }) => row.instagram);
+
+    // Criadores de temas pagos também apoiam o desenvolvimento do TikJogos.
+    // A compra não entra na meta específica de doações, mas o nome do autor
+    // passa a fazer parte do mural de apoiadores da home.
+    const themeCreatorsResult = await (pool as any).query(
+      `SELECT DISTINCT autor FROM themes
+       WHERE payment_status = 'approved' AND autor IS NOT NULL AND autor <> ''
+       ORDER BY autor ASC`,
+    );
+    themeCreatorNames = themeCreatorsResult.rows.map((row: { autor: string }) => row.autor);
   }
 
   const raised = SUPPORT_BASE_AMOUNT + approvedAmount;
@@ -70,6 +81,6 @@ export async function getSupportSummary() {
     raised,
     remaining: Math.max(SUPPORT_GOAL - raised, 0),
     percentage: Math.min(Math.round((raised / SUPPORT_GOAL) * 100), 100),
-    supporters: Array.from(new Set([...SUPPORT_BASE_NAMES, ...approvedNames])),
+    supporters: Array.from(new Set([...SUPPORT_BASE_NAMES, ...approvedNames, ...themeCreatorNames])),
   };
 }
