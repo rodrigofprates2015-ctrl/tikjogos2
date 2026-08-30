@@ -86,6 +86,24 @@ async function runMigrations() {
     console.log('[Migration] payment_id column ensured');
 
     await db.execute(sql`
+      ALTER TABLE themes ADD COLUMN IF NOT EXISTS owner_user_id VARCHAR
+    `);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_themes_owner_user ON themes (owner_user_id)`);
+
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS user_theme_library (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id VARCHAR NOT NULL,
+        theme_id VARCHAR NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE (user_id, theme_id)
+      )
+    `);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_user_theme_library_user ON user_theme_library (user_id)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_user_theme_library_theme ON user_theme_library (theme_id)`);
+    console.log('[Migration] theme ownership and user library ready');
+
+    await db.execute(sql`
       CREATE TABLE IF NOT EXISTS analytics_events (
         id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
         visitor_id VARCHAR(36) NOT NULL,

@@ -2823,7 +2823,7 @@ export async function registerRoutes(
     isPublic: z.boolean().optional().default(true)
   });
 
-  app.post("/api/payments/create", async (req, res) => {
+  app.post("/api/payments/create", isAuthenticated, async (req, res) => {
     try {
       const validatedData = createPaymentSchema.parse(req.body);
       
@@ -2853,6 +2853,7 @@ export async function registerRoutes(
             isPublic: validatedData.isPublic,
             paymentStatus: 'pending',
             paymentId: String(paymentResult.paymentId),
+            ownerUserId: (req.user as any).id,
             approved: false
           });
           console.log('[Payment] Saved pending theme to DB with paymentId:', paymentResult.paymentId, 'themeId:', pendingTheme.id);
@@ -3328,6 +3329,62 @@ export async function registerRoutes(
     } catch (error) {
       console.error("[Admin Stats] Error:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Themes permanently attached to the signed-in user's account.
+  app.get("/api/themes/mine", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).id as string;
+      const userThemes = (await storage.getThemesForUser(userId))
+        .filter(theme => theme.paymentStatus === 'approved')
+        .map(theme => ({
+          id: theme.id,
+          titulo: theme.titulo,
+          autor: theme.autor,
+          palavrasCount: theme.palavras.length,
+          accessCode: theme.accessCode,
+          isPublic: theme.isPublic,
+          approved: theme.approved,
+          isOwner: theme.ownerUserId === userId,
+          createdAt: theme.createdAt,
+        }));
+      res.json(userThemes);
+    } catch (error) {
+      console.error('[Themes] Error fetching user library:', error);
+      res.status(500).json({ error: "Erro ao buscar seus temas" });
+    }
+  });
+
+  // Redeem a private or legacy access code once and keep it in the account.
+  app.post("/api/themes/redeem", isAuthenticated, async (req, res) => {
+    try {
+      const { accessCode } = z.object({
+        accessCode: z.string().trim().min(4).max(20),
+      }).parse(req.body);
+      const theme = await storage.getThemeByAccessCode(accessCode.toUpperCase());
+      if (!theme || theme.paymentStatus !== 'approved') {
+        return res.status(404).json({ error: "Código de tema inválido ou indisponível" });
+      }
+      const userId = (req.user as any).id as string;
+      await storage.addThemeToUserLibrary(userId, theme.id);
+      res.json({
+        id: theme.id,
+        titulo: theme.titulo,
+        autor: theme.autor,
+        palavrasCount: theme.palavras.length,
+        accessCode: theme.accessCode,
+        isPublic: theme.isPublic,
+        approved: theme.approved,
+        isOwner: theme.ownerUserId === userId,
+        createdAt: theme.createdAt,
+      });
+    } catch (error: any) {
+      if (error?.name === 'ZodError') {
+        return res.status(400).json({ error: "Digite um código de tema válido" });
+      }
+      console.error('[Themes] Error redeeming code:', error);
+      res.status(500).json({ error: "Erro ao adicionar o tema à sua conta" });
     }
   });
 

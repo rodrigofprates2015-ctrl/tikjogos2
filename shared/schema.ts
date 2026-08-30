@@ -139,9 +139,24 @@ export const themes = pgTable("themes", {
   accessCode: varchar("access_code"),
   paymentStatus: varchar("payment_status").notNull().default("pending"),
   paymentId: varchar("payment_id"),
+  ownerUserId: varchar("owner_user_id"),
   approved: boolean("approved").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+export const userThemeLibrary = pgTable(
+  "user_theme_library",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id").notNull(),
+    themeId: varchar("theme_id").notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => [
+    index("idx_user_theme_library_user").on(table.userId),
+    index("idx_user_theme_library_theme").on(table.themeId),
+  ],
+);
 
 export const posts = pgTable("posts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

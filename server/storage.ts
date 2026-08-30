@@ -1,6 +1,6 @@
-import { type Player, type GameData, type User, type UpsertUser, users, type Theme, type InsertTheme, themes, type Post, type InsertPost, posts, rooms as roomsTable } from "@shared/schema";
+import { type Player, type GameData, type User, type UpsertUser, users, type Theme, type InsertTheme, themes, userThemeLibrary, type Post, type InsertPost, posts, rooms as roomsTable } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 
 export type Room = {
   code: string;
@@ -34,6 +34,8 @@ export interface IStorage {
   getThemeByPaymentMetadata(titulo: string, autor: string): Promise<Theme | undefined>;
   getThemeByPaymentId(paymentId: string): Promise<Theme | undefined>;
   getPublicApprovedThemes(): Promise<Theme[]>;
+  getThemesForUser(userId: string): Promise<Theme[]>;
+  addThemeToUserLibrary(userId: string, themeId: string): Promise<void>;
   getAllThemes(): Promise<Theme[]>;
   updateTheme(id: string, updates: Partial<InsertTheme>): Promise<Theme | undefined>;
   deleteTheme(id: string): Promise<void>;
@@ -47,6 +49,7 @@ export class MemoryStorage implements IStorage {
   private rooms: Map<string, Room> = new Map();
   private usersMap: Map<string, User> = new Map();
   private themesMap: Map<string, Theme> = new Map();
+  private userThemeLibraryMap: Map<string, Set<string>> = new Map();
   private postsMap: Map<string, Post> = new Map();
   private themeIdCounter: number = 1;
   private postIdCounter: number = 1;
@@ -186,6 +189,7 @@ export class MemoryStorage implements IStorage {
       accessCode: themeData.accessCode ?? null,
       paymentStatus: themeData.paymentStatus ?? "pending",
       paymentId: themeData.paymentId ?? null,
+      ownerUserId: themeData.ownerUserId ?? null,
       approved: themeData.approved ?? false,
       createdAt: new Date(),
     };
@@ -226,6 +230,19 @@ export class MemoryStorage implements IStorage {
       }
     }
     return result;
+  }
+
+  async getThemesForUser(userId: string): Promise<Theme[]> {
+    const libraryIds = this.userThemeLibraryMap.get(userId) ?? new Set<string>();
+    return Array.from(this.themesMap.values()).filter(theme =>
+      theme.ownerUserId === userId || libraryIds.has(theme.id)
+    );
+  }
+
+  async addThemeToUserLibrary(userId: string, themeId: string): Promise<void> {
+    const library = this.userThemeLibraryMap.get(userId) ?? new Set<string>();
+    library.add(themeId);
+    this.userThemeLibraryMap.set(userId, library);
   }
 
   async getAllThemes(): Promise<Theme[]> {
@@ -401,6 +418,24 @@ export class DatabaseStorage implements IStorage {
       and(eq(themes.isPublic, true), eq(themes.approved, true))
     );
     return result;
+  }
+
+  async getThemesForUser(userId: string): Promise<Theme[]> {
+    if (!db) throw new Error("Database not initialized");
+    const owned = await db.select().from(themes).where(eq(themes.ownerUserId, userId));
+    const libraryRows = await db.select({ themeId: userThemeLibrary.themeId })
+      .from(userThemeLibrary)
+      .where(eq(userThemeLibrary.userId, userId));
+    if (libraryRows.length === 0) return owned;
+    const shared = await db.select().from(themes).where(inArray(themes.id, libraryRows.map(row => row.themeId)));
+    return Array.from(new Map([...owned, ...shared].map(theme => [theme.id, theme])).values());
+  }
+
+  async addThemeToUserLibrary(userId: string, themeId: string): Promise<void> {
+    if (!db) throw new Error("Database not initialized");
+    await db.insert(userThemeLibrary)
+      .values({ userId, themeId })
+      .onConflictDoNothing();
   }
 
   async getAllThemes(): Promise<Theme[]> {

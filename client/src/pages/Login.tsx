@@ -6,6 +6,8 @@ import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
 
 export default function Login() {
   const [, navigate] = useLocation();
+  const requestedReturnTo = new URLSearchParams(window.location.search).get("returnTo") || "/conta";
+  const returnTo = requestedReturnTo.startsWith("/") && !requestedReturnTo.startsWith("//") ? requestedReturnTo : "/conta";
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -27,7 +29,7 @@ export default function Login() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Não foi possível continuar.");
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      navigate("/conta");
+      navigate(returnTo);
     } catch (err: any) { setError(err.message); } finally { setLoading(false); }
   }
 
@@ -36,7 +38,7 @@ export default function Login() {
       <Link href="/" className="mb-8 flex justify-center"><img src={logoTikjogos} alt="TikJogos" className="h-12 w-auto" /></Link>
       <div className="rounded-[2rem] border-4 border-[#2f3252] bg-[#242642] p-6 shadow-2xl sm:p-8">
         <div className="text-center"><UserRound className="mx-auto h-10 w-10 text-purple-400" /><h1 className="mt-3 text-3xl font-black">{mode === "login" ? "Entrar" : "Criar conta"}</h1><p className="mt-2 text-sm text-slate-400">Salve suas preferências e vincule seus apoios.</p></div>
-        <a href="/api/auth/google" className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl border-2 border-slate-600 bg-white px-4 py-3 font-black text-slate-900 hover:bg-slate-100"><span className="text-xl font-bold text-blue-600">G</span> Continuar com Google</a>
+        <a href={`/api/auth/google?returnTo=${encodeURIComponent(returnTo)}`} className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl border-2 border-slate-600 bg-white px-4 py-3 font-black text-slate-900 hover:bg-slate-100"><span className="text-xl font-bold text-blue-600">G</span> Continuar com Google</a>
         <div className="my-5 flex items-center gap-3 text-xs font-bold text-slate-500"><span className="h-px flex-1 bg-slate-700" />OU<span className="h-px flex-1 bg-slate-700" /></div>
         <form onSubmit={submit} className="space-y-3">
           {mode === "register" && <label className="block"><span className="mb-1 block text-sm font-bold text-slate-300">Nome</span><div className="relative"><UserRound className="absolute left-3 top-3.5 h-5 w-5 text-slate-500"/><input value={name} onChange={e=>setName(e.target.value)} className="w-full rounded-xl border-2 border-slate-600 bg-[#1a1b2e] py-3 pl-11 pr-3 outline-none focus:border-purple-400" required /></div></label>}

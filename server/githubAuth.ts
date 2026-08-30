@@ -115,6 +115,10 @@ export async function setupAuth(app: Express) {
     if (!googleClientId || !googleClientSecret) return res.redirect("/entrar?google=unavailable");
     const state = randomBytes(24).toString("hex");
     (req.session as any).googleOAuthState = state;
+    const requestedReturnTo = String(req.query.returnTo ?? "");
+    (req.session as any).googleOAuthReturnTo = requestedReturnTo.startsWith("/") && !requestedReturnTo.startsWith("//")
+      ? requestedReturnTo
+      : "/conta";
     const params = new URLSearchParams({ client_id: googleClientId, redirect_uri: googleCallback, response_type: "code", scope: "openid email profile", state, prompt: "select_account" });
     res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
   });
@@ -122,6 +126,8 @@ export async function setupAuth(app: Express) {
     try {
       if (!googleClientId || !googleClientSecret || req.query.state !== (req.session as any).googleOAuthState) return res.redirect("/entrar?google=error");
       delete (req.session as any).googleOAuthState;
+      const returnTo = (req.session as any).googleOAuthReturnTo || "/conta";
+      delete (req.session as any).googleOAuthReturnTo;
       const tokenResponse = await fetch("https://oauth2.googleapis.com/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ code: String(req.query.code ?? ""), client_id: googleClientId, client_secret: googleClientSecret, redirect_uri: googleCallback, grant_type: "authorization_code" }) });
       if (!tokenResponse.ok) return res.redirect("/entrar?google=error");
       const tokens: any = await tokenResponse.json();
@@ -129,7 +135,7 @@ export async function setupAuth(app: Express) {
       const profile: any = await profileResponse.json();
       if (!profile.email || !profile.email_verified) return res.redirect("/entrar?google=unverified");
       const user = await saveOAuthUser({ googleId: profile.sub, email: profile.email.toLowerCase(), firstName: profile.given_name, lastName: profile.family_name, picture: profile.picture });
-      req.login(safeUser(user), (error) => error ? next(error) : res.redirect("/conta"));
+      req.login(safeUser(user), (error) => error ? next(error) : res.redirect(returnTo));
     } catch (error) { next(error); }
   });
 

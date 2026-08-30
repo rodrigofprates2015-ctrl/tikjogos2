@@ -19,6 +19,7 @@ import { useVoiceChatContext, VoiceChatProvider } from "@/hooks/VoiceChatContext
 import { PremiumBanner } from "@/components/PremiumBanner";
 import { MobileNav } from "@/components/MobileNav";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
 // Discord icon inline — avoids loading the full react-icons/si bundle
 const SiDiscord = () => (
   <svg role="img" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4" aria-hidden="true">
@@ -2659,6 +2660,9 @@ type PublicTheme = {
   plays?: number;
   likes?: number;
   isHot?: boolean;
+  isPublic?: boolean;
+  approved?: boolean;
+  isOwner?: boolean;
 };
 
 const CommunityThemesModal = ({ isOpen, onClose, onSelectTheme }: { isOpen: boolean; onClose: () => void; onSelectTheme: (themeId: string) => void }) => {
@@ -3918,8 +3922,12 @@ const LobbyScreen = () => {
 const ModeSelectScreen = () => {
   const { room, user, gameModes, selectedMode, selectMode, selectCharacter, startGame, startGameWithConfig, gameConfig, backToLobby, fetchGameModes, showSpeakingOrderWheel, speakingOrder, setSpeakingOrder, setShowSpeakingOrderWheel } = useGameStore();
   const { toast } = useToast();
+  const { user: accountUser, isLoading: isAuthLoading } = useAuth();
   const [isStarting, setIsStarting] = useState(false);
   const [communityThemes, setCommunityThemes] = useState<PublicTheme[]>([]);
+  const [myThemes, setMyThemes] = useState<PublicTheme[]>([]);
+  const [redeemCode, setRedeemCode] = useState('');
+  const [isRedeemingTheme, setIsRedeemingTheme] = useState(false);
   const [isLoadingThemes, setIsLoadingThemes] = useState(false);
   const [selectedThemeCode, setSelectedThemeCode] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -3942,6 +3950,52 @@ const ModeSelectScreen = () => {
       toast({ title: "Erro", description: "Falha ao carregar temas", variant: "destructive" });
     } finally {
       setIsLoadingThemes(false);
+    }
+  };
+
+  const loadMyThemes = async () => {
+    if (!accountUser) {
+      setMyThemes([]);
+      return;
+    }
+    try {
+      const res = await fetch('/api/themes/mine');
+      if (res.ok) setMyThemes(await res.json());
+    } catch (err) {
+      console.error('Failed to load personal themes:', err);
+    }
+  };
+
+  const selectCustomTheme = (theme: PublicTheme) => {
+    setSelectedThemeCode(theme.accessCode);
+    setSelectedCategory(`custom:${theme.id}`);
+    toast({ title: 'Tema selecionado!', description: `“${theme.titulo}” está pronto para jogar.` });
+  };
+
+  const handleRedeemTheme = async () => {
+    const accessCode = redeemCode.trim().toUpperCase();
+    if (!accountUser) {
+      window.location.href = `/entrar?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+      return;
+    }
+    if (!accessCode) return;
+    setIsRedeemingTheme(true);
+    try {
+      const res = await fetch('/api/themes/redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessCode })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Código inválido ou tema indisponível.');
+      setMyThemes(current => current.some(theme => theme.id === data.id) ? current : [data, ...current]);
+      setRedeemCode('');
+      selectCustomTheme(data);
+      toast({ title: 'Tema salvo na sua conta', description: 'Você não precisará digitar este código novamente.' });
+    } catch (err: any) {
+      toast({ title: 'Não foi possível adicionar', description: err.message, variant: 'destructive' });
+    } finally {
+      setIsRedeemingTheme(false);
     }
   };
 
@@ -4022,8 +4076,9 @@ const ModeSelectScreen = () => {
   useEffect(() => {
     const autoStart = sessionStorage.getItem('autoStartGame');
     
-    if (selectedMode === 'palavraComunidade') {
+    if (selectedMode === 'palavraComunidade' || selectedMode === 'palavraSecreta') {
       loadCommunityThemes();
+      loadMyThemes();
       
       // Check if theme code is already in sessionStorage (from gallery)
       const themeCodeFromStorage = sessionStorage.getItem('selectedThemeCode');
@@ -4069,15 +4124,18 @@ const ModeSelectScreen = () => {
           })
           .catch(err => console.error('Failed to load selected theme:', err));
       }
-    } else if (selectedMode === 'palavraSecreta' && autoStart === 'true' && isHost) {
-      // Auto-start for palavra secreta from gallery
-      setShouldAutoStart(true);
-      sessionStorage.removeItem('selectedGameMode');
-      sessionStorage.removeItem('selectedCategory');
     } else {
       setSelectedThemeCode(null);
     }
-  }, [selectedMode, isHost, toast, selectedThemeCode]);
+  }, [selectedMode, isHost, toast, selectedThemeCode, accountUser]);
+
+  useEffect(() => {
+    if (selectedMode === 'palavraSecreta' && sessionStorage.getItem('autoStartGame') === 'true' && isHost) {
+      setShouldAutoStart(true);
+      sessionStorage.removeItem('selectedGameMode');
+      sessionStorage.removeItem('selectedCategory');
+    }
+  }, [selectedMode, isHost]);
 
   // Auto-start game when ready
   useEffect(() => {
@@ -4092,6 +4150,13 @@ const ModeSelectScreen = () => {
   }, [shouldAutoStart, selectedThemeCode, isHost]);
 
   if (!room) return null;
+
+  const availableCustomThemes = [...myThemes, ...communityThemes].filter(
+    (theme, index, all) => all.findIndex(candidate => candidate.id === theme.id) === index
+  );
+  const selectedCustomTheme = selectedThemeCode
+    ? availableCustomThemes.find(theme => theme.accessCode === selectedThemeCode)
+    : undefined;
 
   return (
     <div className="fixed inset-0 z-[40] h-[100dvh] w-full overflow-hidden bg-[#080f20] p-2 lg:relative lg:z-10 lg:h-auto lg:min-h-full lg:max-w-[1480px] lg:bg-transparent lg:px-8 lg:py-8 animate-fade-in">
@@ -4281,7 +4346,7 @@ const ModeSelectScreen = () => {
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-[#6b4ba3]">Categoria Selecionada</p>
                     <p className="text-xs text-gray-300 capitalize">
-                      {WORD_CATEGORIES.find(c => c.id === selectedCategory)?.name || selectedCategory}
+                      {selectedCustomTheme?.titulo || WORD_CATEGORIES.find(c => c.id === selectedCategory)?.name || selectedCategory}
                     </p>
                   </div>
                   <button
@@ -4315,7 +4380,45 @@ const ModeSelectScreen = () => {
                   <ArrowLeft className="h-5 w-5 shrink-0 rotate-180 text-violet-200 transition-transform group-hover:translate-x-1" />
                 </div>
               </Link>
-              {(Object.entries(PALAVRA_SECRETA_SUBMODES) as Array<[PalavraSuperSecretaSubmode, typeof PALAVRA_SECRETA_SUBMODES['classico']]>).map(([submodeId, submode]) => <button key={submodeId} type="button" onClick={() => { setSelectedSubmode(submodeId); setSelectedCategory(submodeId); localStorage.setItem('selectedSubmode', submodeId); }} className={cn("tj-theme-card overflow-hidden p-3 text-left", selectedSubmode === submodeId && "is-selected")}>
+              <section className="tj-theme-card p-4 sm:col-span-2 xl:col-span-3" data-testid="theme-account-library">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-[.16em] text-violet-300">Sua biblioteca</span>
+                    <strong className="mt-1 block text-base text-white">Meus temas</strong>
+                    <p className="mt-1 text-xs text-slate-400">Os temas que você criou ou adicionou ficam salvos na sua conta.</p>
+                  </div>
+                  {!isAuthLoading && !accountUser && <Link href={`/entrar?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`} className="shrink-0 rounded-xl border border-violet-400/40 bg-violet-500/15 px-4 py-2 text-xs font-black text-violet-200">Entrar na conta</Link>}
+                </div>
+
+                {accountUser && myThemes.length > 0 && <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {myThemes.map(theme => <button key={theme.id} type="button" onClick={() => selectCustomTheme(theme)} className={cn("tj-theme-card p-3 text-left", selectedThemeCode === theme.accessCode && "is-selected")}>
+                    <strong className="block truncate text-sm text-white">{theme.titulo}</strong>
+                    <span className="mt-1 block text-[10px] text-slate-400">{theme.palavrasCount} palavras · {theme.isPublic ? 'Público' : 'Privado'}</span>
+                    {theme.isOwner && <span className="mt-1 block text-[9px] font-black uppercase text-violet-300">Criado por você</span>}
+                  </button>)}
+                </div>}
+                {accountUser && myThemes.length === 0 && !isLoadingThemes && <p className="mt-3 rounded-xl bg-slate-950/35 px-3 py-2 text-xs text-slate-400">Sua biblioteca ainda está vazia.</p>}
+
+                <div className="mt-4 flex gap-2">
+                  <Input value={redeemCode} onChange={event => setRedeemCode(event.target.value.toUpperCase())} onKeyDown={event => event.key === 'Enter' && handleRedeemTheme()} placeholder="CÓDIGO DO TEMA" maxLength={12} className="h-11 border-slate-600 bg-slate-950/60 font-black uppercase tracking-widest text-white" />
+                  <Button type="button" onClick={handleRedeemTheme} disabled={isRedeemingTheme || !redeemCode.trim()} variant="gameSecondary" className="h-11 shrink-0 px-4">
+                    {isRedeemingTheme ? <Loader2 className="h-4 w-4 animate-spin"/> : <Plus className="h-4 w-4"/>}<span className="hidden sm:inline">Adicionar</span>
+                  </Button>
+                </div>
+              </section>
+
+              {communityThemes.filter(theme => !myThemes.some(mine => mine.id === theme.id)).length > 0 && <section className="sm:col-span-2 xl:col-span-3">
+                <h4 className="mb-2 text-xs font-black uppercase tracking-[.14em] text-slate-300">Temas públicos da comunidade</h4>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {communityThemes.filter(theme => !myThemes.some(mine => mine.id === theme.id)).map(theme => <button key={theme.id} type="button" onClick={() => selectCustomTheme(theme)} className={cn("tj-theme-card p-3 text-left", selectedThemeCode === theme.accessCode && "is-selected")}>
+                    <strong className="block truncate text-sm text-white">{theme.titulo}</strong>
+                    <span className="mt-1 block text-[10px] text-slate-400">por {theme.autor} · {theme.palavrasCount} palavras</span>
+                  </button>)}
+                </div>
+              </section>}
+
+              <h4 className="pt-1 text-xs font-black uppercase tracking-[.14em] text-slate-300 sm:col-span-2 xl:col-span-3">Temas TikJogos</h4>
+              {(Object.entries(PALAVRA_SECRETA_SUBMODES) as Array<[PalavraSuperSecretaSubmode, typeof PALAVRA_SECRETA_SUBMODES['classico']]>).map(([submodeId, submode]) => <button key={submodeId} type="button" onClick={() => { setSelectedThemeCode(null); setSelectedSubmode(submodeId); setSelectedCategory(submodeId); localStorage.setItem('selectedSubmode', submodeId); }} className={cn("tj-theme-card overflow-hidden p-3 text-left", !selectedThemeCode && selectedSubmode === submodeId && "is-selected")}>
                 {submode.image && <img src={submode.image} alt="" className="mb-3 h-24 w-full rounded-xl object-cover"/>}<strong className="block text-sm text-white">{submode.title}</strong><span className="mt-1 block text-xs leading-relaxed text-slate-400">{submode.desc}</span><span className="mt-2 inline-block text-[10px] font-bold uppercase text-violet-300">{submode.words.length} palavras</span>
               </button>)}
             </div>

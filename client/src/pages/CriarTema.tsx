@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   ArrowLeft,
   Loader2,
@@ -33,6 +34,8 @@ const THEME_PRICE = "5,00";
 
 export default function CriarTema() {
   const { toast } = useToast();
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const [, navigate] = useLocation();
   
   const [titulo, setTitulo] = useState('');
   const [autor, setAutor] = useState('');
@@ -40,6 +43,16 @@ export default function CriarTema() {
   const [isPublic, setIsPublic] = useState(true);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [payment, setPayment] = useState<PaymentState>({ status: 'idle' });
+
+  useEffect(() => {
+    if (!isAuthLoading && !user) navigate('/entrar?returnTo=%2Fcriar-tema');
+  }, [isAuthLoading, user, navigate]);
+
+  useEffect(() => {
+    if (user && !autor) {
+      setAutor([user.firstName, user.lastName].filter(Boolean).join(' ') || user.email?.split('@')[0] || 'Jogador');
+    }
+  }, [user, autor]);
 
   useEffect(() => {
     if (payment.status !== 'awaiting_payment' || !payment.paymentId) return;
@@ -119,12 +132,14 @@ export default function CriarTema() {
         })
       });
       
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Falha ao criar pagamento');
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        navigate('/entrar?returnTo=%2Fcriar-tema');
+        throw new Error('Entre na sua conta para criar um tema.');
       }
-      
-      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || data.message || 'Falha ao criar pagamento');
+      }
       setPayment({
         status: 'awaiting_payment',
         paymentId: data.paymentId,
@@ -578,7 +593,9 @@ export default function CriarTema() {
           </div>
 
           {/* Render current screen based on payment status */}
-          {payment.status === 'idle' || payment.status === 'loading' || payment.status === 'error' ? (
+          {isAuthLoading || !user ? (
+            <div className="grid min-h-[40vh] place-items-center"><Loader2 className="h-10 w-10 animate-spin text-violet-400" /></div>
+          ) : payment.status === 'idle' || payment.status === 'loading' || payment.status === 'error' ? (
             renderFormScreen()
           ) : payment.status === 'awaiting_payment' ? (
             renderPaymentScreen()
