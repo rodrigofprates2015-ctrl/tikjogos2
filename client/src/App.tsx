@@ -29,6 +29,7 @@ const ComoJogarDesafioPalavra = lazy(() => import("@/pages/ComoJogarDesafioPalav
 const ComoJogarHub = lazy(() => import("@/pages/ComoJogarHub"));
 const ComoJogarOutros = lazy(() => import("@/pages/ComoJogarOutros"));
 const ComoJogarCronometro = lazy(() => import("@/pages/ComoJogarCronometro"));
+const JogosDoTikTok = lazy(() => import("@/pages/JogosDoTikTok"));
 const CriarTema = lazy(() => import("@/pages/CriarTema"));
 const Doacoes = lazy(() => import("@/pages/Doacoes"));
 const OutrosJogos = lazy(() => import("@/pages/OutrosJogos"));
@@ -241,6 +242,8 @@ function AppRouter() {
       <Route path="/" component={MergedHome} />
       <Route path="/en" component={MergedHome} />
       <Route path="/es" component={MergedHome} />
+
+      <Route path="/jogos-do-tiktok" component={JogosDoTikTok} />
 
       <Route path="/jogos"><Redirect to="/" replace /></Route>
       <Route path="/en/games"><Redirect to="/en" replace /></Route>

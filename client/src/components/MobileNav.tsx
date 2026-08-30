@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Home, Gamepad2, BookOpen, Gift, Newspaper } from "lucide-react";
+import { Menu, X, Home, Gamepad2, BookOpen, Gift, Newspaper, Sparkles } from "lucide-react";
 // Discord icon inline — avoids loading the full react-icons/si bundle
 const SiDiscord = () => (
   <svg role="img" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5" aria-hidden="true">
@@ -29,6 +29,7 @@ interface NavItem {
 
 const navItemsDef: NavItem[] = [
   { href: "/", labelKey: "nav.home", icon: <Home className="w-5 h-5" /> },
+  { href: "/jogos-do-tiktok", labelKey: "Jogos do TikTok", icon: <Sparkles className="w-5 h-5" /> },
   { href: "/blog", labelKey: "nav.blog", icon: <Newspaper className="w-5 h-5" /> },
   { href: "/comojogar", labelKey: "nav.howToPlay", icon: <BookOpen className="w-5 h-5" /> },
   { href: "/outros-jogos", labelKey: "nav.otherGames", icon: <Gamepad2 className="w-5 h-5" /> },
@@ -44,6 +45,7 @@ export function MobileNav() {
   const playHref = lang === "en" ? "/en/games" : lang === "es" ? "/es/juegos" : "/jogos";
   const getNavHref = (item: NavItem) => item.labelKey === "nav.howToPlay"
     ? (lang === "en" ? "/en/how-to-play" : lang === "es" ? "/es/como-jugar" : "/comojogar")
+    : item.href === "/jogos-do-tiktok" ? item.href
     : langPath(item.href);
 
   return (
@@ -56,7 +58,7 @@ export function MobileNav() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-4">
-          {navItemsDef.map((item) => (
+          {navItemsDef.filter((item) => item.href !== "/jogos-do-tiktok" || lang === "pt").map((item) => (
             <Link
               key={item.href}
               href={getNavHref(item)}
@@ -67,7 +69,7 @@ export function MobileNav() {
               }`}
             >
               {item.icon}
-              {t(item.labelKey)}
+              {item.labelKey === "Jogos do TikTok" ? item.labelKey : t(item.labelKey)}
             </Link>
           ))}
           <Link
@@ -105,7 +107,7 @@ export function MobileNav() {
             </SheetHeader>
             
             <div className="flex flex-col py-4">
-              {navItemsDef.map((item) => (
+              {navItemsDef.filter((item) => item.href !== "/jogos-do-tiktok" || lang === "pt").map((item) => (
                 <Link
                   key={item.href}
                   href={getNavHref(item)}
@@ -117,7 +119,7 @@ export function MobileNav() {
                   }`}
                 >
                   {item.icon}
-                  {t(item.labelKey)}
+                  {item.labelKey === "Jogos do TikTok" ? item.labelKey : t(item.labelKey)}
                 </Link>
               ))}
 

@@ -7,7 +7,11 @@ node_modules/
 .gradle-cache/
 .gradle-admob/
 .android-home/
+.android-user/
 android/local.properties
+android/*.jks
+android/*.keystore
+android/gradle-project-cache/
 
 # Build output
 dist/

@@ -125,6 +125,8 @@ function generateMainSitemap(): string {
     entries.push(urlEntry(`${BASE_URL}${path}`, { priority: '0.9', changefreq: 'weekly' }));
   }
 
+  entries.push(urlEntry(`${BASE_URL}/jogos-do-tiktok`, { priority: '0.9', changefreq: 'weekly' }));
+
   entries.push(urlEntry(`${BASE_URL}/personagem`, { priority: '0.6', changefreq: 'monthly' }));
 
   return `<?xml version="1.0" encoding="UTF-8"?>
