@@ -45,10 +45,6 @@ export default function CriarTema() {
   const [payment, setPayment] = useState<PaymentState>({ status: 'idle' });
 
   useEffect(() => {
-    if (!isAuthLoading && !user) navigate('/entrar?returnTo=%2Fcriar-tema');
-  }, [isAuthLoading, user, navigate]);
-
-  useEffect(() => {
     if (user && !autor) {
       setAutor([user.firstName, user.lastName].filter(Boolean).join(' ') || user.email?.split('@')[0] || 'Jogador');
     }
@@ -175,6 +171,44 @@ export default function CriarTema() {
     setTermsAccepted(false);
     setPayment({ status: 'idle' });
   };
+
+  const renderLandingScreen = () => (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex items-center gap-4">
+        <Link href="/"><button className="rounded-xl border-b-4 border-slate-900 bg-slate-800 p-3 text-slate-400 transition-all hover:text-white active:translate-y-1 active:border-b-0"><ArrowLeft size={24} strokeWidth={3}/></button></Link>
+        <span className="text-sm font-black uppercase tracking-[.16em] text-violet-300">Tema personalizado</span>
+      </div>
+
+      <section className="relative overflow-hidden rounded-[2rem] border-2 border-violet-400/60 bg-gradient-to-br from-violet-700 via-purple-700 to-fuchsia-600 p-1 shadow-[0_8px_0_#3b176b,0_18px_45px_rgba(124,58,237,.25)]">
+        <div className="relative overflow-hidden rounded-[1.65rem] bg-[#171b34]/85 px-5 py-8 text-center sm:px-8">
+          <Sparkles className="absolute -right-5 -top-5 h-28 w-28 text-white/5" aria-hidden="true"/>
+          <span className="inline-flex rounded-full bg-amber-300 px-3 py-1 text-[10px] font-black uppercase tracking-[.16em] text-slate-950">Uma partida criada por você</span>
+          <h1 className="mx-auto mt-4 max-w-xl text-3xl font-black leading-tight text-white sm:text-4xl">Crie o tema perfeito para sua galera</h1>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-violet-100 sm:text-base">Transforme sua série favorita, personagens, jogos, memes ou aquelas piadas internas que só seus amigos entendem em uma partida única do Jogo do Impostor.</p>
+          <div className="mt-6 grid grid-cols-1 gap-3 text-left sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><Gamepad2 className="h-6 w-6 text-cyan-300"/><strong className="mt-2 block text-sm text-white">Crie do seu jeito</strong><span className="mt-1 block text-xs text-violet-100/75">Escolha de 7 a 25 palavras para a partida.</span></div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><EyeOff className="h-6 w-6 text-emerald-300"/><strong className="mt-2 block text-sm text-white">Público ou privado</strong><span className="mt-1 block text-xs text-violet-100/75">Publique na galeria ou compartilhe apenas com código.</span></div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><Heart className="h-6 w-6 fill-pink-400 text-pink-400"/><strong className="mt-2 block text-sm text-white">Apoie o TikJogos</strong><span className="mt-1 block text-xs text-violet-100/75">Seu apelido fica no mural de apoiadores.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-[2rem] border-4 border-[#2f3252] bg-[#242642] p-6 shadow-xl">
+        <h2 className="text-2xl font-black text-white">Como funciona?</h2>
+        <div className="mt-5 space-y-4">
+          {[
+            ['1', 'Entre na sua conta', 'Assim o tema ficará salvo para sempre na sua biblioteca.'],
+            ['2', 'Monte seu tema', 'Dê um nome, escolha as palavras e decida se ele será público ou privado.'],
+            ['3', 'Contribua com R$ 5', 'O pagamento libera seu tema e ajuda a manter o TikJogos gratuito.'],
+            ['4', 'Jogue e compartilhe', 'Use imediatamente e envie o código para seus amigos.']
+          ].map(([number, title, description]) => <div key={number} className="flex gap-3 rounded-2xl border border-slate-700 bg-[#1a1b2e] p-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-violet-600 font-black text-white">{number}</span><div><strong className="text-white">{title}</strong><p className="mt-1 text-sm leading-relaxed text-slate-400">{description}</p></div></div>)}
+        </div>
+        <div className="mt-6 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4 text-sm leading-relaxed text-emerald-100">Temas públicos passam por moderação. Temas privados ficam disponíveis somente para quem tiver o código.</div>
+        <Link href="/entrar?returnTo=%2Fcriar-tema" className="mt-6 flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-violet-900 bg-gradient-to-r from-violet-600 to-fuchsia-500 px-5 py-4 text-lg font-black text-white shadow-xl transition hover:brightness-110 active:translate-y-1 active:border-b-0" data-testid="button-login-to-create-theme"><Rocket className="h-6 w-6"/> ENTRAR E CRIAR MEU TEMA</Link>
+        <p className="mt-3 text-center text-xs text-slate-500">Você só preencherá o formulário e fará o pagamento depois de entrar.</p>
+      </section>
+    </div>
+  );
 
   // Form Screen
   const renderFormScreen = () => (
@@ -593,8 +627,10 @@ export default function CriarTema() {
           </div>
 
           {/* Render current screen based on payment status */}
-          {isAuthLoading || !user ? (
+          {isAuthLoading ? (
             <div className="grid min-h-[40vh] place-items-center"><Loader2 className="h-10 w-10 animate-spin text-violet-400" /></div>
+          ) : !user ? (
+            renderLandingScreen()
           ) : payment.status === 'idle' || payment.status === 'loading' || payment.status === 'error' ? (
             renderFormScreen()
           ) : payment.status === 'awaiting_payment' ? (
