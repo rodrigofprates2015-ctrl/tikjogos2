@@ -1659,6 +1659,31 @@ const CronometroGameCard = () => {
   </div>;
 };
 
+const StopGameCard = () => {
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const [name, setName] = useState(() => localStorage.getItem('tikjogos_nickname') || localStorage.getItem('tikjogos_saved_nickname') || '');
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const getPlayerId = () => { const current = sessionStorage.getItem('stop_player_id') || crypto.randomUUID(); sessionStorage.setItem('stop_player_id', current); return current; };
+  const enter = async (mode: 'create' | 'join') => {
+    const nickname = name.trim();
+    if (!nickname) return toast({ title: 'Digite seu apelido', variant: 'destructive' });
+    if (mode === 'join' && code.length !== 3) return toast({ title: 'Digite o código de 3 letras', variant: 'destructive' });
+    setBusy(true);
+    try {
+      localStorage.setItem('tikjogos_nickname', nickname);
+      const response = await fetch(mode === 'create' ? '/api/stop/rooms' : `/api/stop/rooms/${code.toUpperCase()}/join`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ playerId: getPlayerId(), nickname }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Não foi possível entrar na sala.');
+      sessionStorage.setItem('stop_room_code', data.code);
+      navigate(`/stop?room=${data.code}`);
+    } catch (e: any) { toast({ title: e.message, variant: 'destructive' }); }
+    finally { setBusy(false); }
+  };
+  return <div className="space-y-3"><div className="text-center"><div className="mx-auto grid h-[76px] w-[150px] place-items-center rounded-2xl border-2 border-violet-400/50 bg-violet-500/15 text-4xl font-black tracking-widest text-white shadow-[0_10px_24px_rgba(139,92,246,.3)]">STOP</div><p className="mt-2 text-xs font-semibold text-slate-400">Uma categoria por vez. Complete tudo e pare a rodada.</p></div><input className="input-dark" value={name} onChange={e=>setName(e.target.value)} placeholder="Seu nickname" maxLength={18}/><button onClick={()=>enter('create')} disabled={busy} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-violet-900 bg-violet-500 px-8 py-5 text-xl font-black text-white shadow-[0_12px_28px_rgba(139,92,246,.28)] active:translate-y-2 active:border-b-0 disabled:opacity-50"><Flag size={27}/>CRIAR SALA</button><div className="flex items-center gap-3"><div className="h-px flex-1 bg-slate-700"/><span className="text-xs font-black text-slate-500">OU</span><div className="h-px flex-1 bg-slate-700"/></div><div className="flex gap-2"><input className="input-code min-w-0 flex-1" value={code} onChange={e=>setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3))} onKeyDown={e=>e.key==='Enter'&&enter('join')} placeholder="CÓDIGO" maxLength={3}/><button onClick={()=>enter('join')} disabled={busy} className="rounded-2xl border-b-[6px] border-green-800 bg-green-500 px-6 font-black text-white active:translate-y-2 active:border-b-0 disabled:opacity-50">ENTRAR</button></div></div>;
+};
+
 const AproximacaoGameCard = () => {
   const { setUser, createRoom, joinRoom, isLoading, loadSavedNickname, saveNickname } = useAproximacaoStore();
   const [, navigate] = useLocation();
@@ -1790,7 +1815,7 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
   const [saveNicknameChecked, setSaveNicknameChecked] = useState(false);
   const [isDonationOpen, setIsDonationOpen] = useState(false);
   const [isThemeWorkshopOpen, setIsThemeWorkshopOpen] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia' | 'desafio' | 'aproximacao' | 'rankmaster' | 'bomba' | 'cronometro'>('impostor');
+  const [selectedGame, setSelectedGame] = useState<'impostor' | 'desenho' | 'sincronia' | 'desafio' | 'aproximacao' | 'rankmaster' | 'bomba' | 'cronometro' | 'stop'>('impostor');
   const carouselRef = useRef<HTMLDivElement>(null);
   const carouselDrag = useRef({ active: false, startX: 0, scrollLeft: 0, moved: false });
   const [carouselAtStart, setCarouselAtStart] = useState(true);
@@ -2311,6 +2336,20 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
                 onDragStart={(e) => e.preventDefault()}
               />
             </button>
+
+            {/* STOP sequencial — beta */}
+            <button
+              onClick={() => { if (!carouselDrag.current.moved) setSelectedGame('stop'); carouselDrag.current.moved = false; }}
+              className={cn(
+                "flex-none w-[23%] rounded-2xl p-2 transition-all duration-300 border-2 cursor-pointer snap-start",
+                selectedGame === 'stop'
+                  ? "border-violet-400 bg-[#2f3252] shadow-lg shadow-violet-500/20 scale-105"
+                  : "border-transparent bg-[#1a1c2e] opacity-50 hover:opacity-80 hover:border-[#4a6a8a]"
+              )}
+              data-testid="tab-stop"
+            >
+              <div className="flex h-12 w-full items-center justify-center rounded-xl bg-violet-500/15 text-xl font-black tracking-widest text-white md:h-16">STOP</div>
+            </button>
           </div>{/* end scroll track */}
           </div>{/* end overflow-hidden wrapper */}
 
@@ -2324,7 +2363,8 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
                 selectedGame === 'bomba' && "left-[40%] bg-gradient-to-r from-red-500 to-rose-600",
                 selectedGame === 'sincronia' && "left-[60%] bg-gradient-to-r from-[#43065c] to-[#6b21a8]",
                 selectedGame === 'aproximacao' && "left-[80%] bg-gradient-to-r from-cyan-500 to-teal-500",
-                selectedGame === 'desafio' && "left-[80%] bg-gradient-to-r from-violet-500 to-purple-600"
+                selectedGame === 'desafio' && "left-[80%] bg-gradient-to-r from-violet-500 to-purple-600",
+                selectedGame === 'stop' && "left-[80%] bg-gradient-to-r from-violet-400 to-fuchsia-500"
               )}
             />
           </div>
@@ -2482,6 +2522,7 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
             </div>
           )}
           {selectedGame === 'cronometro' && <div className="animate-fade-in"><CronometroGameCard /></div>}
+          {selectedGame === 'stop' && <div className="animate-fade-in"><StopGameCard /></div>}
         </div>
 
       </div>

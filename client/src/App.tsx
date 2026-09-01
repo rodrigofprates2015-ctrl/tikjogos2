@@ -48,6 +48,7 @@ const Temas = lazy(() => import("@/pages/Temas"));
 const GameModes = lazy(() => import("@/pages/GameModes"));
 const BombaGame = lazy(() => import("@/pages/BombaGame"));
 const CronometroGame = lazy(() => import("@/pages/CronometroGame"));
+const StopGame = lazy(() => import("@/pages/StopGame"));
 const DesenhoImpostor = lazy(() => import("@/pages/DesenhoImpostor"));
 const RespostasEmComum = lazy(() => import("@/pages/RespostasEmComum"));
 const SincBrGame = lazy(() => import("@/pages/SincBrGame"));
@@ -271,6 +272,7 @@ function AppRouter() {
       {/* Bomba */}
       <Route path="/bomba" component={BombaGame} />
       <Route path="/cronometro" component={CronometroGame} />
+      <Route path="/stop" component={StopGame} />
 
       {/* Criar tema */}
       {i18nRoutes("/criar-tema", CriarTema)}

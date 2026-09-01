@@ -22,6 +22,7 @@ export type IdentityPlayer = {
   score?: number;
   vidas?: number;
   ordem?: number;
+  finished?: boolean;
 };
 
 export function GameIdentityAvatar({ player, index, className }: { player: IdentityPlayer; index: number; className?: string }) {

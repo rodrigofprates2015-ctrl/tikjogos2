@@ -1297,6 +1297,7 @@ import { setupRCGame, getRCRoomStats } from './rcGame.js';
 import { setupSincBR, getBRRoomStats } from './sincBrGame.js';
 import { setupBombaGame, getBombaRoomStats } from './bombaGame.js';
 import { setupCronometroGame } from './cronometroGame.js';
+import { setupStopGame } from './stopGame.js';
 
 export async function registerRoutes(
   httpServer: Server,
@@ -1312,6 +1313,7 @@ export async function registerRoutes(
   // Setup Bomba game rooms and turn flow
   setupBombaGame(app);
   setupCronometroGame(app);
+  setupStopGame(app);
 
   // Serve version info
   app.get("/api/version", (_req, res) => {
