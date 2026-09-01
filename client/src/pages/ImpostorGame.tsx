@@ -72,7 +72,8 @@ import {
   Paintbrush,
   BookOpen,
   ChevronDown,
-  Bomb
+  Bomb,
+  Flag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
