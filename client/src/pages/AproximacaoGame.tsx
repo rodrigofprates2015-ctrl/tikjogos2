@@ -3,15 +3,43 @@ import { AnchorMobileAd, ResultAd } from "@/components/AdSense";
 import { useGameIntermission } from "@/components/GameIntermission";
 import { useAproximacaoStore } from "@/lib/aproximacaoStore";
 import { cn } from "@/lib/utils";
+import lobbyCharacter1 from "@assets/character (1).png";
+import lobbyCharacter2 from "@assets/character (2).png";
+import lobbyCharacter3 from "@assets/character (3).png";
+import lobbyCharacter4 from "@assets/character (4).png";
+import lobbyCharacter5 from "@assets/character (5).png";
+import lobbyCharacter6 from "@assets/character (6).png";
+import lobbyCharacter7 from "@assets/character (7).png";
+import lobbyCharacter8 from "@assets/character (8).png";
+import lobbyCharacter9 from "@assets/character (9).png";
+import lobbyCharacter10 from "@assets/character (10).png";
 import { useToast } from "@/hooks/use-toast";
 import { MobileNav } from "@/components/MobileNav";
 import {
   Copy, LogOut, Play, Crown, Loader2, Users, Zap,
   Heart, HeartOff, Trophy, Target, ArrowLeft, ChevronRight,
-  CheckCircle, Clock, TrendingDown, Minus,
+  CheckCircle, Clock,
   Flame, Send
 } from "lucide-react";
 const logoAprox = "/aproximacao-logo.webp";
+const aproximacaoCharacters = [
+  lobbyCharacter1, lobbyCharacter2, lobbyCharacter3, lobbyCharacter4, lobbyCharacter5,
+  lobbyCharacter6, lobbyCharacter7, lobbyCharacter8, lobbyCharacter9, lobbyCharacter10,
+];
+
+function AproximacaoAvatar({ index, name, className }: { index: number; name: string; className?: string }) {
+  return (
+    <div className={cn("relative shrink-0 overflow-hidden rounded-xl border border-white/10 bg-[#11172a]", className)}>
+      <div className="absolute inset-x-2 bottom-1 h-3 rounded-full bg-cyan-400/30 blur-sm" />
+      <img
+        src={aproximacaoCharacters[Math.abs(index) % aproximacaoCharacters.length]}
+        alt={`Personagem de ${name}`}
+        className="absolute left-1/2 top-0 h-[150%] w-auto max-w-none -translate-x-1/2 object-contain"
+        draggable={false}
+      />
+    </div>
+  );
+}
 
 function NotificationCenter() {
   const { notifications, removeNotification } = useAproximacaoStore();
@@ -490,94 +518,90 @@ function PlayingScreen() {
         <MobileNav />
         <div className="flex-1 flex flex-col items-center px-4 py-6 gap-4 relative z-10">
 
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-5xl">
             {/* Round number */}
             <div className="text-center mb-4">
               <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Rodada {gameData.roundNumber} — Resultado</span>
             </div>
 
-            {/* Question recap */}
-            <div className={cn(cardClass, "mb-4 text-center")}>
-              <p className="text-slate-400 text-sm mb-2">{gameData.question.text}</p>
-              <p className="text-3xl font-black text-cyan-400">
-                {correctAnswer.toLocaleString('pt-BR')} <span className="text-lg font-semibold text-slate-400">{gameData.question.unit}</span>
-              </p>
-            </div>
-
-            {/* Ranking */}
-            <div className={cn(cardClass, "mb-4")}>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">Ranking de Aproximação</p>
-              {result ? (
-                <div className="space-y-2">
-                  {result.allGuesses.map((g, idx) => {
-                    const diff = Math.abs(g.value - correctAnswer);
-                    const pct = correctAnswer !== 0 ? Math.round((diff / correctAnswer) * 100) : 0;
-                    const isClosest = result.closestIds.includes(g.playerId);
-                    const isFarthest = result.farthestIds.includes(g.playerId) && result.closestIds[0] !== result.farthestIds[0];
-                    return (
-                      <div key={g.playerId} className={cn(
-                        "flex items-center gap-3 p-3 rounded-xl border",
-                        isClosest ? "bg-cyan-900/20 border-cyan-500/30" :
-                        isFarthest ? "bg-red-900/20 border-red-500/40" :
-                        "bg-[#1a1c2e] border-[#2f3252]"
-                      )}>
-                        <div className={cn(
-                          "w-7 h-7 rounded-full flex items-center justify-center text-sm font-black",
-                          isClosest ? "bg-cyan-600 text-white" :
-                          isFarthest ? "bg-red-500 text-white" :
-                          "bg-[#2f3252] text-slate-300"
+            {result ? (
+              <div className="mb-4 grid gap-4 md:grid-cols-[0.9fr_1.1fr] md:items-start">
+                {/* Jogadores — mesma linguagem visual do lobby do Impostor */}
+                <section className="rounded-[2rem] border-2 border-[#2f3252] bg-[#242642] p-4 shadow-2xl">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Jogadores</p>
+                    <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2 py-1 text-[10px] font-black text-cyan-300">
+                      {room.players.filter(p => !p.eliminated).length} restantes
+                    </span>
+                  </div>
+                  <div className="space-y-2.5">
+                    {room.players.map((p, playerIndex) => {
+                      const lostHeart = result.farthestIds.includes(p.uid) && result.closestIds[0] !== result.farthestIds[0];
+                      const roundWinner = result.closestIds.includes(p.uid) && !lostHeart;
+                      return (
+                        <article key={p.uid} className={cn(
+                          "relative flex min-w-0 items-center gap-3 rounded-2xl border-2 p-2.5 transition-colors",
+                          roundWinner ? "border-cyan-400 bg-cyan-400/10 shadow-[0_0_20px_rgba(34,211,238,.12)]" :
+                          lostHeart ? "border-red-500/70 bg-red-500/10" : "border-[#343858] bg-[#1a1c2e]",
+                          p.eliminated && "opacity-55"
                         )}>
-                          {idx + 1}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white text-sm font-bold truncate">{g.playerName}</p>
-                          <p className="text-slate-400 text-xs">
-                            Palpite: <span className="font-mono text-white">{g.value.toLocaleString('pt-BR')}</span>
-                            <span className="ml-2 text-slate-500">({diff > 0 ? '+' : ''}{(g.value - correctAnswer).toLocaleString('pt-BR')} / {pct}% de diferença)</span>
-                          </p>
-                        </div>
-                        <div className="flex-shrink-0">
-                          {isClosest && !isFarthest && <span className="text-cyan-400 text-xs font-bold">MELHOR</span>}
-                          {isFarthest && <TrendingDown className="w-5 h-5 text-red-400" />}
-                          {!isClosest && !isFarthest && <Minus className="w-5 h-5 text-slate-600" />}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className="text-slate-500 text-sm text-center">Nenhum palpite foi enviado nesta rodada.</p>
-              )}
-            </div>
+                          <AproximacaoAvatar index={playerIndex} name={p.name} className="h-12 w-12" />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <strong className="truncate text-sm text-white">{p.name}</strong>
+                              {p.uid === user.uid && <span className="rounded bg-violet-500 px-1.5 py-0.5 text-[8px] font-black uppercase text-white">você</span>}
+                            </div>
+                            <div className="mt-1 flex items-center gap-2">
+                              <HeartDisplay count={p.hearts} eliminated={p.eliminated} />
+                              {roundWinner && <span className="text-[9px] font-black uppercase text-cyan-300">mais perto</span>}
+                              {lostHeart && <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase text-red-300"><HeartOff className="h-3 w-3" /> perdeu 1</span>}
+                            </div>
+                          </div>
+                          {roundWinner && <Trophy className="h-5 w-5 shrink-0 text-cyan-300" />}
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
 
-            {/* Hearts update */}
-            {result && (
-              <div className={cn(cardClass, "mb-4")}>
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-3">Corações após esta rodada</p>
-                <div className="space-y-2">
-                  {room.players.map(p => (
-                    <div key={p.uid} className={cn(
-                      "flex items-center gap-3 p-2 rounded-xl",
-                      p.eliminated ? "opacity-50" : ""
-                    )}>
-                      <div className={cn(
-                        "w-7 h-7 rounded-full flex items-center justify-center text-sm font-black",
-                        p.eliminated ? "bg-red-900 text-red-400" :
-                        result.closestIds.includes(p.uid) ? "bg-cyan-700 text-white" :
-                        "bg-[#2f3252] text-slate-300"
-                      )}>
-                        {p.name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="flex-1 text-white text-sm font-bold truncate">
-                        {p.name}
-                        {p.uid === user.uid && <span className="text-cyan-400 text-xs ml-1">(você)</span>}
-                        {p.eliminated && <span className="text-red-400 text-xs ml-1">eliminado</span>}
-                      </span>
-                      <HeartDisplay count={p.hearts} eliminated={p.eliminated} />
-                    </div>
-                  ))}
-                </div>
+                {/* Resposta e palpites, sem diferença absoluta ou percentual */}
+                <section className="rounded-[2rem] border-2 border-[#2f3252] bg-[#242642] p-4 shadow-2xl">
+                  <div className="rounded-2xl border border-cyan-400/25 bg-gradient-to-br from-cyan-500/15 to-teal-500/5 p-4 text-center">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">Resposta correta</p>
+                    <p className="mt-2 text-4xl font-black leading-none text-white">
+                      {correctAnswer.toLocaleString('pt-BR')}
+                    </p>
+                    <p className="mt-1 text-sm font-bold text-cyan-300">{gameData.question.unit}</p>
+                    <p className="mt-3 text-sm leading-snug text-slate-300">{gameData.question.text}</p>
+                  </div>
+
+                  <p className="mb-2 mt-4 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Respostas da rodada</p>
+                  <div className="space-y-2">
+                    {result.allGuesses.map((g, guessIndex) => {
+                      const playerIndex = room.players.findIndex(p => p.uid === g.playerId);
+                      const lostHeart = result.farthestIds.includes(g.playerId) && result.closestIds[0] !== result.farthestIds[0];
+                      const roundWinner = result.closestIds.includes(g.playerId) && !lostHeart;
+                      return (
+                        <div key={g.playerId} className={cn(
+                          "flex items-center gap-3 rounded-xl border px-3 py-2",
+                          roundWinner ? "border-cyan-400/50 bg-cyan-400/10" :
+                          lostHeart ? "border-red-500/40 bg-red-500/10" : "border-[#343858] bg-[#1a1c2e]"
+                        )}>
+                          <AproximacaoAvatar index={playerIndex >= 0 ? playerIndex : guessIndex} name={g.playerName} className="h-9 w-9 rounded-lg" />
+                          <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-200">{g.playerName}</span>
+                          <strong className={cn("font-mono text-base", roundWinner ? "text-cyan-300" : lostHeart ? "text-red-300" : "text-white")}>
+                            {g.value.toLocaleString('pt-BR')}
+                          </strong>
+                          {roundWinner && <span className="rounded-full bg-cyan-400 px-2 py-1 text-[8px] font-black uppercase text-[#102236]">venceu</span>}
+                          {lostHeart && <span className="text-xs font-black text-red-300">−1 ♥</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
               </div>
+            ) : (
+              <div className={cn(cardClass, "mb-4 text-center text-sm text-slate-500")}>Nenhum palpite foi enviado nesta rodada.</div>
             )}
 
             {/* Host controls */}

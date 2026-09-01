@@ -13,6 +13,7 @@ import { recordGameSession, getGameSessionStats } from "./db";
 import { trackLobbyJoin, trackLobbyLeave, trackLobbyGameStart } from "./lobbyTracker";
 import { trackRoomJoin } from "./analyticsMiddleware";
 import { getSupportSummary, savePendingDonation, updateDonationStatus } from "./donationStore";
+import { APROXIMACAO_QUESTIONS_2026 } from "./aproximacaoQuestions2026";
 import agoraToken from 'agora-token';
 const { RtcTokenBuilder, RtcRole } = agoraToken;
 
@@ -4837,6 +4838,7 @@ export async function registerRoutes(
     { text: "Quantos alunos existem no Brasil?", answer: 47300000, unit: "alunos" },
     { text: "Quantos km de estradas existem no Brasil?", answer: 1700000, unit: "km" },
     { text: "Quantos filmes são produzidos por ano nos EUA?", answer: 700, unit: "filmes/ano" },
+    ...APROXIMACAO_QUESTIONS_2026,
   ];
 
   const aproximacaoRooms = new Map<string, AproximacaoRoom>();
