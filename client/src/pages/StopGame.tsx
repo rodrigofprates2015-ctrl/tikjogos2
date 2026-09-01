@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ChevronLeft, ChevronRight, Clock3, Copy, Flag, Forward, Home,
-  LogOut, Play, RotateCcw, Settings, SkipForward, Sparkles, Trophy,
+  Clock3, Copy, Flag, Forward, Home, LogOut, Play, RotateCcw,
+  Settings, SkipForward, Sparkles, Trophy, X,
 } from "lucide-react";
 import {
   GameIdentityAvatar, GameIdentityCharacterPicker, GameIdentityLayout,
@@ -18,6 +18,10 @@ type Room = {
   letter: string;
   players: Player[];
   votes: Record<string, Record<string, boolean>>;
+  prevalidation: Record<string, boolean>;
+  voteCategoryIndex: number;
+  voteEndsAt?: number;
+  votingComplete: boolean;
   settings: { durationSeconds: number; excludedLetters: string[] };
   revealAt?: number;
   endAt?: number;
@@ -25,7 +29,7 @@ type Room = {
   stopAt?: number;
 };
 
-const LETTERS = "ABCMPRST".split("");
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 function formatTime(milliseconds: number) {
   const seconds = Math.max(0, Math.ceil(milliseconds / 1000));
@@ -41,8 +45,8 @@ export default function StopGame() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [now, setNow] = useState(Date.now());
-  const [voteCategory, setVoteCategory] = useState(0);
   const [rollingLetter, setRollingLetter] = useState("A");
+  const [showSettings, setShowSettings] = useState(false);
   sessionStorage.setItem("stop_player_id", playerId.current);
 
   const request = useCallback(async (path: string, body?: object) => {
@@ -121,19 +125,20 @@ export default function StopGame() {
   const progress = room.settings?.durationSeconds
     ? Math.max(0, Math.min(100, (remaining / (room.settings.durationSeconds * 1000)) * 100))
     : 100;
+  const voteCategory = room.voteCategoryIndex || 0;
   const categories = me.answers.map(answer => answer.category);
   const categoryAnswers = room.players.map(player => ({ player, answer: player.answers[voteCategory] }))
     .filter((item): item is { player: Player; answer: Answer } => Boolean(item.answer));
   const ranking = [...room.players].sort((a, b) => b.score - a.score);
 
-  const sidebarHeader = <div className="space-y-2">
-    <button onClick={() => navigator.clipboard.writeText(room.code)} className="tj-inset flex w-full items-center justify-between p-3 text-left">
-      <span><small className="block text-[9px] font-black uppercase tracking-[.18em] text-slate-500">Código da sala</small><strong className="font-mono text-2xl tracking-[.18em] text-amber-300">{room.code}</strong></span>
-      <Copy className="h-4 w-4 text-amber-300"/>
+  const sidebarHeader = <div className="space-y-3">
+    <button onClick={() => navigator.clipboard.writeText(room.code)} className="group flex w-full items-center justify-between rounded-xl border border-slate-700 bg-[#111a30] px-4 py-3 text-left shadow-[0_4px_0_#080d1b] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400/60 hover:bg-[#17213a] hover:shadow-[0_6px_0_#080d1b] active:translate-y-1 active:shadow-none">
+      <span><small className="block text-[10px] font-black uppercase tracking-[.2em] text-slate-400">Código da sala</small><strong className="mt-0.5 block text-2xl font-black tracking-[.22em] text-amber-300">{room.code}</strong></span>
+      <Copy className="h-5 w-5 text-slate-500 transition group-hover:scale-110 group-hover:text-amber-300"/>
     </button>
     <div className="grid grid-cols-2 gap-2">
-      {room.status !== "waiting" && isHost && <button onClick={() => act("lobby", { playerId: me.uid })} className="tj-inset h-10 text-[10px] font-black uppercase text-slate-300"><Home className="mr-1 inline h-4 w-4"/> Lobby</button>}
-      <button onClick={leave} className={cn("tj-inset h-10 text-[10px] font-black uppercase text-rose-300", !(room.status !== "waiting" && isHost) && "col-span-2")}><LogOut className="mr-1 inline h-4 w-4"/> Sair</button>
+      {room.status !== "waiting" && isHost && <button onClick={() => act("lobby", { playerId: me.uid })} className="h-11 rounded-xl border border-slate-700 bg-[#111a30] text-[11px] font-black uppercase text-slate-300 shadow-[0_3px_0_#080d1b] transition-all hover:-translate-y-0.5 hover:border-violet-400 hover:bg-violet-500/10 hover:text-white active:translate-y-1 active:shadow-none"><Home className="mr-1.5 inline h-4 w-4"/> Lobby</button>}
+      <button onClick={leave} className={cn("h-11 rounded-xl border border-rose-400/30 bg-rose-500/10 text-[11px] font-black uppercase text-rose-200 shadow-[0_3px_0_#080d1b] transition-all hover:-translate-y-0.5 hover:border-rose-400 hover:bg-rose-500/20 hover:text-white active:translate-y-1 active:shadow-none", !(room.status !== "waiting" && isHost) && "col-span-2")}><LogOut className="mr-1.5 inline h-4 w-4"/> Sair da sala</button>
     </div>
   </div>;
 
@@ -160,19 +165,15 @@ export default function StopGame() {
         <h1 className="mt-2 text-4xl font-black sm:text-5xl">STOP em sequência</h1>
         <p className="mt-3 max-w-xl text-slate-400">Responda rápido, complete sua cartela e seja o primeiro a bater o STOP.</p>
 
-        <div className="tj-inset mt-7 w-full max-w-2xl p-5 text-left">
-          <div className="mb-4 flex items-center gap-2"><Settings className="h-5 w-5 text-violet-300"/><strong>Configurações da rodada</strong></div>
-          <label className="text-[10px] font-black uppercase tracking-[.16em] text-slate-500">Tempo total</label>
-          <div className="mt-2 grid grid-cols-5 gap-2">{[60, 90, 120, 180, 300].map(seconds => <button key={seconds} disabled={!isHost} onClick={() => act("settings", { playerId: me.uid, durationSeconds: seconds, excludedLetters: room.settings.excludedLetters })} className={cn("h-11 rounded-xl border font-black", room.settings.durationSeconds === seconds ? "border-violet-400 bg-violet-500/25 text-violet-200" : "border-slate-700 bg-slate-950 text-slate-500")}>{seconds < 60 ? `${seconds}s` : `${seconds / 60}m`}</button>)}</div>
-          <label className="mt-5 block text-[10px] font-black uppercase tracking-[.16em] text-slate-500">Excluir letras do sorteio</label>
-          <div className="mt-2 flex flex-wrap gap-2">{LETTERS.map(letter => { const excluded = room.settings.excludedLetters.includes(letter); return <button key={letter} disabled={!isHost} onClick={() => act("settings", { playerId: me.uid, durationSeconds: room.settings.durationSeconds, excludedLetters: excluded ? room.settings.excludedLetters.filter(item => item !== letter) : [...room.settings.excludedLetters, letter] })} className={cn("grid h-10 w-10 place-items-center rounded-xl border-2 font-black", excluded ? "border-rose-400 bg-rose-500/20 text-rose-300 line-through" : "border-emerald-400/40 bg-emerald-500/10 text-emerald-300")}>{letter}</button>; })}</div>
-          {!isHost && <p className="mt-3 text-xs text-slate-500">O capitão está configurando a partida.</p>}
-        </div>
+        {isHost && <button onClick={() => setShowSettings(true)} className="mt-7 flex h-12 items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-5 text-sm font-black text-slate-300 shadow-[0_4px_0_#090e1d] transition-all hover:-translate-y-0.5 hover:border-violet-400 hover:bg-slate-800 hover:text-white active:translate-y-1 active:shadow-none"><Settings className="h-5 w-5"/>Configurações</button>}
+        {!isHost && <p className="mt-6 text-sm font-bold text-slate-500">Partida de {room.settings.durationSeconds / 60} minutos</p>}
         {isHost ? <button onClick={() => act("start", { playerId: me.uid })} disabled={busy || room.players.length < 2 || room.settings.excludedLetters.length >= LETTERS.length} className="mt-6 h-16 w-full max-w-2xl rounded-2xl border-b-4 border-violet-800 bg-violet-500 text-lg font-black disabled:opacity-40"><Play className="mr-2 inline h-5 w-5 fill-current"/>SORTEAR LETRA E COMEÇAR</button> : <div className="tj-inset mt-6 w-full max-w-2xl py-5 font-black text-violet-300">Aguardando o capitão...</div>}
       </section>}
 
+      {showSettings && room.status === "waiting" && <div className="fixed inset-0 z-[120] grid place-items-center bg-slate-950/80 p-4 backdrop-blur-sm" onMouseDown={() => setShowSettings(false)}><div onMouseDown={event => event.stopPropagation()} className="w-full max-w-xl rounded-3xl border border-violet-400/30 bg-[#151d34] p-6 shadow-[0_24px_90px_rgba(0,0,0,.55)]"><header className="flex items-center justify-between border-b border-slate-700 pb-4"><div><p className="text-[10px] font-black uppercase tracking-[.2em] text-violet-300">STOP em sequência</p><h2 className="mt-1 text-2xl font-black">Configurações da partida</h2></div><button onClick={() => setShowSettings(false)} className="grid h-10 w-10 place-items-center rounded-xl border border-slate-700 bg-slate-900 text-slate-400 transition hover:border-rose-400 hover:text-white"><X className="h-5 w-5"/></button></header><div className="mt-5"><label className="text-[10px] font-black uppercase tracking-[.16em] text-slate-400">Tempo total</label><div className="mt-2 grid grid-cols-5 gap-2">{[120, 180, 300, 480, 600].map(seconds => <button key={seconds} onClick={() => act("settings", { playerId: me.uid, durationSeconds: seconds, excludedLetters: room.settings.excludedLetters })} className={cn("h-11 rounded-xl border font-black transition hover:-translate-y-0.5", room.settings.durationSeconds === seconds ? "border-violet-400 bg-violet-500 text-white shadow-[0_4px_0_#4c1d95]" : "border-slate-700 bg-slate-950 text-slate-400 hover:border-violet-400/60")}>{seconds / 60} min</button>)}</div><label className="mt-6 block text-[10px] font-black uppercase tracking-[.16em] text-slate-400">Letras fora do sorteio</label><p className="mt-1 text-xs text-slate-500">Toque nas letras difíceis que sua turma não quer jogar.</p><div className="mt-3 grid grid-cols-7 gap-2 sm:grid-cols-9">{LETTERS.map(letter => { const excluded = room.settings.excludedLetters.includes(letter); return <button key={letter} onClick={() => act("settings", { playerId: me.uid, durationSeconds: room.settings.durationSeconds, excludedLetters: excluded ? room.settings.excludedLetters.filter(item => item !== letter) : [...room.settings.excludedLetters, letter] })} className={cn("grid aspect-square place-items-center rounded-lg border font-black transition hover:scale-105", excluded ? "border-rose-400 bg-rose-500/20 text-rose-300 line-through" : "border-slate-700 bg-slate-950 text-slate-300 hover:border-violet-400")}>{letter}</button>; })}</div></div><button onClick={() => setShowSettings(false)} className="mt-6 h-12 w-full rounded-xl border-b-4 border-violet-800 bg-violet-500 font-black">SALVAR CONFIGURAÇÕES</button></div></div>}
+
       {room.status === "rolling" && <section className="grid flex-1 place-items-center py-10 text-center">
-        <div><p className="text-[11px] font-black uppercase tracking-[.28em] text-violet-300">A letra da rodada será...</p><div className="relative mx-auto mt-8 grid h-64 w-64 place-items-center rounded-full border-[10px] border-dashed border-violet-400 bg-gradient-to-br from-violet-500/40 to-cyan-500/20 shadow-[0_0_80px_rgba(139,92,246,.35)] animate-spin"><span className="-rotate-12 text-9xl font-black">{rollingLetter}</span></div><p className="mt-10 animate-pulse font-black text-slate-400">Preparar...</p></div>
+        <div><p className="text-[11px] font-black uppercase tracking-[.28em] text-violet-300">A letra da rodada será...</p><div className={cn("relative mx-auto mt-8 grid h-64 w-64 place-items-center rounded-full border-[10px] bg-gradient-to-br from-violet-500/40 to-cyan-500/20 transition-all duration-500", room.revealAt && room.revealAt - now <= 1500 ? "scale-110 border-solid border-amber-300 shadow-[0_0_100px_rgba(251,191,36,.55)]" : "animate-pulse border-dashed border-violet-400 shadow-[0_0_80px_rgba(139,92,246,.35)]")}><span className={cn("text-9xl font-black transition-all", room.revealAt && room.revealAt - now <= 1500 && "scale-110 text-amber-200")}>{room.revealAt && room.revealAt - now <= 1500 ? room.letter : rollingLetter}</span>{room.revealAt && room.revealAt - now <= 1500 && <Sparkles className="absolute -right-6 -top-6 h-14 w-14 text-amber-300"/>}</div><p className="mt-10 font-black text-slate-300">{room.revealAt && room.revealAt - now <= 1500 ? `A letra é ${room.letter}!` : "Sorteando..."}</p></div>
       </section>}
 
       {room.status === "playing" && <section className="flex flex-1 flex-col py-4">
@@ -193,17 +194,17 @@ export default function StopGame() {
       </section>}
 
       {room.status === "voting" && <section className="flex flex-1 flex-col py-5">
-        {room.stopAt && now - room.stopAt < 2600 && <div className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/85 backdrop-blur-sm"><div className="animate-bounce text-center"><div className="mx-auto grid h-48 w-48 rotate-6 place-items-center rounded-[3rem] border-8 border-white bg-rose-600 shadow-[0_20px_0_#7f1d1d]"><strong className="text-5xl font-black">STOP!</strong></div><p className="mt-8 text-2xl font-black">{room.stopBy ? `${room.stopBy} parou a rodada!` : "O tempo acabou!"}</p></div></div>}
-        <div className="text-center"><p className="text-[10px] font-black uppercase tracking-[.24em] text-violet-300">Validação da mesa</p><h1 className="mt-2 text-3xl font-black">{categories[voteCategory]}</h1><p className="mt-2 text-slate-400">Toque numa resposta para alternar entre <span className="text-emerald-300">válida</span> e <span className="text-rose-300">inválida</span>.</p></div>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">{categoryAnswers.map(({ player, answer }) => { const key = `${player.uid}:${voteCategory}`; const vote = room.votes[key]?.[me.uid]; const own = player.uid === me.uid; return <button key={player.uid} disabled={own} onClick={() => act("vote", { voterId: me.uid, playerId: player.uid, categoryIndex: voteCategory, valid: vote !== true })} className={cn("flex min-h-24 items-center gap-3 rounded-2xl border-2 p-4 text-left transition", vote === true ? "border-emerald-400 bg-emerald-500/15 shadow-[0_8px_0_#064e3b]" : vote === false ? "border-rose-400 bg-rose-500/15 shadow-[0_8px_0_#881337]" : "border-slate-700 bg-slate-950/50 shadow-[0_8px_0_#0b1020] hover:border-violet-400", own && "cursor-default opacity-80")}><GameIdentityAvatar player={player} index={player.characterIndex}/><span className="min-w-0 flex-1"><small className="block truncate font-bold text-slate-400">{player.name}{own ? " · você" : ""}</small><strong className={cn("block truncate text-lg", answer.status === "noAnswer" ? "text-amber-300" : "text-white")}>{answer.status === "noAnswer" ? "Não existe" : answer.value || "Sem resposta"}</strong></span><span className={cn("grid h-9 w-9 place-items-center rounded-full border font-black", vote === true ? "border-emerald-300 bg-emerald-400 text-emerald-950" : vote === false ? "border-rose-300 bg-rose-400 text-rose-950" : "border-slate-600 text-slate-500")}>{vote === true ? "✓" : vote === false ? "×" : "?"}</span></button>; })}</div>
-        <div className="mt-6 flex items-center justify-center gap-4"><button onClick={() => setVoteCategory(index => Math.max(0, index - 1))} disabled={voteCategory === 0} className="grid h-11 w-11 place-items-center rounded-xl border border-slate-700 bg-slate-950 disabled:opacity-30"><ChevronLeft/></button><div className="flex gap-1.5">{categories.map((_, index) => <button key={index} onClick={() => setVoteCategory(index)} className={cn("h-2.5 rounded-full transition-all", index === voteCategory ? "w-8 bg-violet-400" : "w-2.5 bg-slate-700")}/>)}</div><button onClick={() => setVoteCategory(index => Math.min(categories.length - 1, index + 1))} disabled={voteCategory === categories.length - 1} className="grid h-11 w-11 place-items-center rounded-xl border border-slate-700 bg-slate-950 disabled:opacity-30"><ChevronRight/></button></div>
-        {isHost ? <button onClick={() => act("finish", { playerId: me.uid })} className="mt-6 h-16 rounded-2xl border-b-4 border-violet-800 bg-violet-500 text-lg font-black">ENCERRAR VOTAÇÃO E VER PÓDIO</button> : <p className="tj-inset mt-6 py-4 text-center font-bold text-slate-400">O capitão encerrará a votação.</p>}
+        {room.stopAt && now - room.stopAt < 4200 && <div className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/90 backdrop-blur-sm"><div className="text-center"><div className="mx-auto grid h-52 w-52 animate-[bounce_.7s_ease-in-out_infinite] rotate-6 place-items-center rounded-[3rem] border-8 border-white bg-rose-600 shadow-[0_22px_0_#7f1d1d,0_35px_90px_rgba(244,63,94,.45)]"><strong className="text-5xl font-black">STOP!</strong></div><p className="mt-10 text-3xl font-black">{room.stopBy ? `${room.stopBy} bateu STOP!` : "O tempo acabou!"}</p><p className="mt-2 font-bold text-rose-200">Canetas na mesa. Hora de conferir!</p></div></div>}
+        <div className="text-center"><div className="mx-auto flex w-fit items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-4 py-2"><Clock3 className="h-4 w-4 text-violet-300"/><strong className="font-mono text-violet-200">{room.votingComplete ? "Concluído" : formatTime(Math.max(0, (room.voteEndsAt || now) - now))}</strong></div><p className="mt-5 text-[10px] font-black uppercase tracking-[.24em] text-violet-300">Categoria {voteCategory + 1} de {categories.length}</p><h1 className="mt-2 text-4xl font-black">{categories[voteCategory]}</h1><p className="mt-2 text-slate-400">As respostas já foram analisadas. Toque em uma delas apenas se quiser corrigir.</p></div>
+        <div className="mt-7 grid gap-3 sm:grid-cols-2">{categoryAnswers.map(({ player, answer }) => { const key = `${player.uid}:${voteCategory}`; const selected = room.votes[key]?.[me.uid] ?? room.prevalidation[key] ?? false; return <button key={player.uid} disabled={room.votingComplete} onClick={() => act("vote", { voterId: me.uid, playerId: player.uid, categoryIndex: voteCategory, valid: !selected })} className={cn("flex min-h-24 items-center gap-3 rounded-2xl border-2 p-4 text-left shadow-[0_6px_0_#080d1b] transition-all hover:-translate-y-0.5 active:translate-y-1 active:shadow-none", selected ? "border-emerald-400 bg-emerald-500/15 hover:bg-emerald-500/25" : "border-rose-400 bg-rose-500/15 hover:bg-rose-500/25")}><GameIdentityAvatar player={player} index={player.characterIndex}/><span className="min-w-0 flex-1"><small className="block truncate font-bold text-slate-300">{player.name}{player.uid === me.uid ? " · você" : ""}</small><strong className="block truncate text-lg text-white">{answer.status === "noAnswer" ? "Não existe" : answer.value || "Sem resposta"}</strong></span><span className={cn("grid h-10 w-10 place-items-center rounded-full font-black", selected ? "bg-emerald-400 text-emerald-950" : "bg-rose-400 text-rose-950")}>{selected ? "✓" : "×"}</span></button>; })}</div>
+        <div className="mt-7 flex justify-center gap-1.5">{categories.map((_, index) => <span key={index} className={cn("h-2.5 rounded-full transition-all", index < voteCategory || room.votingComplete ? "w-2.5 bg-emerald-400" : index === voteCategory ? "w-8 bg-violet-400" : "w-2.5 bg-slate-700")}/>)}</div>
+        {room.votingComplete && isHost ? <button onClick={() => act("finish", { playerId: me.uid })} className="mt-6 h-16 rounded-2xl border-b-4 border-violet-800 bg-violet-500 text-lg font-black">VER RESULTADO DA RODADA</button> : room.votingComplete ? <p className="tj-inset mt-6 py-4 text-center font-bold text-slate-400">Aguardando o capitão mostrar o resultado.</p> : <p className="mt-5 text-center text-xs font-bold text-slate-500">A próxima categoria aparece automaticamente quando o tempo acabar.</p>}
       </section>}
 
       {room.status === "results" && <section className="flex flex-1 flex-col items-center justify-center py-6 text-center">
-        <Trophy className="h-14 w-14 text-amber-300"/><p className="mt-3 text-[10px] font-black uppercase tracking-[.24em] text-amber-300">Pódio da rodada</p><h1 className="mt-2 text-4xl font-black">Mandaram bem!</h1>
-        <div className="mt-8 flex w-full max-w-2xl items-end justify-center gap-3">{ranking.slice(0, 3).map((player, index) => { const heights = ["h-64", "h-52", "h-44"]; const colors = ["from-amber-400/35", "from-slate-300/25", "from-orange-500/25"]; return <article key={player.uid} style={{ order: index === 0 ? 1 : index === 1 ? 0 : 2 }} className={cn("flex flex-1 flex-col items-center justify-center rounded-t-3xl border border-white/10 bg-gradient-to-b to-slate-950 p-3", heights[index], colors[index])}><span className="text-3xl font-black text-amber-300">#{index + 1}</span><GameIdentityAvatar player={player} index={player.characterIndex}/><strong className="mt-2 max-w-full truncate">{player.name}</strong><span className="mt-1 font-black text-violet-300">{player.score} pts</span></article>; })}</div>
-        {ranking.length > 3 && <div className="mt-4 grid w-full max-w-2xl gap-2 sm:grid-cols-2">{ranking.slice(3).map((player, index) => <div key={player.uid} className="tj-player-card flex items-center gap-3 p-3"><GameIdentityAvatar player={player} index={player.characterIndex}/><strong className="min-w-0 flex-1 truncate text-left">#{index + 4} {player.name}</strong><span className="font-black text-violet-300">{player.score}</span></div>)}</div>}
+        <div className="grid h-20 w-20 place-items-center rounded-3xl border border-amber-300/40 bg-amber-400/10 shadow-[0_0_35px_rgba(251,191,36,.2)]"><Trophy className="h-10 w-10 text-amber-300"/></div><p className="mt-4 text-[10px] font-black uppercase tracking-[.24em] text-amber-300">Resultado da rodada</p><h1 className="mt-2 text-4xl font-black">{ranking[0]?.name} venceu!</h1>
+        {ranking[0] && <article className="mt-7 flex w-full max-w-2xl items-center gap-5 rounded-3xl border-2 border-amber-300/50 bg-[#202943] p-5 text-left shadow-[0_8px_0_#11182b,0_18px_45px_rgba(251,191,36,.12)]"><div className="relative"><GameIdentityAvatar player={ranking[0]} index={ranking[0].characterIndex} className="h-24 w-24"/><span className="absolute -right-2 -top-2 grid h-9 w-9 place-items-center rounded-full bg-amber-300 text-lg font-black text-amber-950">1</span></div><div className="min-w-0 flex-1"><small className="font-black uppercase tracking-[.16em] text-amber-300">Campeão da rodada</small><strong className="mt-1 block truncate text-2xl">{ranking[0].name}</strong><span className="mt-1 block text-lg font-black text-violet-300">{ranking[0].score} pontos</span></div></article>}
+        <div className="mt-4 grid w-full max-w-2xl gap-2">{ranking.slice(1).map((player, index) => <div key={player.uid} className="tj-player-card flex items-center gap-4 p-4"><span className="grid h-9 w-9 place-items-center rounded-xl border border-slate-600 bg-slate-900 font-black text-slate-300">{index + 2}</span><GameIdentityAvatar player={player} index={player.characterIndex} className="h-14 w-14"/><strong className="min-w-0 flex-1 truncate text-left text-base">{player.name}</strong><span className="font-black text-violet-300">{player.score} pts</span></div>)}</div>
         {isHost ? <button onClick={() => act("lobby", { playerId: me.uid })} className="mt-7 h-16 w-full max-w-2xl rounded-2xl border-b-4 border-violet-800 bg-violet-500 text-lg font-black"><RotateCcw className="mr-2 inline h-5 w-5"/>NOVA PARTIDA</button> : <p className="tj-inset mt-7 w-full max-w-2xl py-4 font-bold text-slate-400">Aguardando o capitão...</p>}
       </section>}
 

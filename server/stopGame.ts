@@ -3,7 +3,7 @@ import { randomBytes } from "crypto";
 import { z } from "zod";
 
 const CATEGORIES = ["Nome", "Animal", "Comida", "Cidade ou país", "Filme ou série", "Profissão", "Objeto", "Marca"];
-const LETTERS = "ABCMPRST".split("");
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const BOT_ANSWERS: Record<string, string[]> = {
   A: ["Ana", "Arara", "Arroz", "Argentina", "Avatar", "Arquiteto", "Agulha", "Adidas"],
   B: ["Bruno", "Baleia", "Bolo", "Brasil", "Barbie", "Bombeiro", "Bola", "Brastemp"],
@@ -18,18 +18,40 @@ const BOT_ANSWERS: Record<string, string[]> = {
 type AnswerStatus = "pending" | "skipped" | "answered" | "noAnswer";
 type StopAnswer = { category: string; value: string; status: AnswerStatus };
 type StopPlayer = { uid: string; name: string; connected: boolean; characterIndex: number; answers: StopAnswer[]; currentIndex: number; finished: boolean; score: number };
-type StopRoom = { code: string; hostId: string; status: "waiting" | "rolling" | "playing" | "voting" | "results"; letter: string; players: StopPlayer[]; votes: Record<string, Record<string, boolean>>; settings: { durationSeconds: number; excludedLetters: string[] }; revealAt: number | null; endAt: number | null; stopBy: string | null; stopAt: number | null; createdAt: number };
+type StopRoom = { code: string; hostId: string; status: "waiting" | "rolling" | "playing" | "voting" | "results"; letter: string; players: StopPlayer[]; votes: Record<string, Record<string, boolean>>; prevalidation: Record<string, boolean>; voteCategoryIndex: number; voteEndsAt: number | null; votingComplete: boolean; settings: { durationSeconds: number; excludedLetters: string[] }; revealAt: number | null; endAt: number | null; stopBy: string | null; stopAt: number | null; createdAt: number };
 const rooms = new Map<string, StopRoom>();
 
 function code() { let value = ""; do value = randomBytes(2).toString("hex").slice(0, 3).toUpperCase(); while (rooms.has(value)); return value; }
 function blankAnswers(): StopAnswer[] { return CATEGORIES.map(category => ({ category, value: "", status: "pending" })); }
 function isBot(player: StopPlayer) { return player.uid.startsWith("stop-bot-"); }
+function looksValid(value: string, letter: string) {
+  const clean = value.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z -]/g, "");
+  if (clean.length < 3 || clean.charAt(0).toUpperCase() !== letter) return false;
+  if (/(.)\1\1/i.test(clean) || !/[aeiouy]/i.test(clean)) return false;
+  const lettersOnly = clean.replace(/[^a-z]/gi, "");
+  return !/[bcdfghjklmnpqrstvwxyz]{5,}/i.test(lettersOnly);
+}
+function prevalidate(room: StopRoom) {
+  room.prevalidation = {};
+  room.players.forEach(player => player.answers.forEach((answer, index) => {
+    room.prevalidation[`${player.uid}:${index}`] = answer.status === "answered" && looksValid(answer.value, room.letter);
+  }));
+}
 function addBotVotes(room: StopRoom) {
   const reviewable = room.players.flatMap(owner => owner.answers.map((answer, index) => ({ owner, answer, index }))).filter(item => item.answer.status === "answered" || item.answer.status === "noAnswer");
-  reviewable.forEach(({ owner, index }) => room.players.filter(voter => isBot(voter) && voter.uid !== owner.uid).forEach(voter => { const key = `${owner.uid}:${index}`; room.votes[key] ||= {}; room.votes[key][voter.uid] = true; }));
+  reviewable.forEach(({ owner, index }) => room.players.filter(voter => isBot(voter) && voter.uid !== owner.uid).forEach(voter => { const key = `${owner.uid}:${index}`; room.votes[key] ||= {}; room.votes[key][voter.uid] = room.prevalidation[key]; }));
 }
-function beginVoting(room: StopRoom, stoppedBy?: string) { room.status = "voting"; room.endAt = null; room.stopBy = stoppedBy || null; room.stopAt = Date.now(); addBotVotes(room); }
-function refreshRoom(room: StopRoom) { const now = Date.now(); if (room.status === "rolling" && room.revealAt && now >= room.revealAt) room.status = "playing"; if (room.status === "playing" && room.endAt && now >= room.endAt) beginVoting(room); return room; }
+function beginVoting(room: StopRoom, stoppedBy?: string) { room.status = "voting"; room.endAt = null; room.stopBy = stoppedBy || null; room.stopAt = Date.now(); room.voteCategoryIndex = 0; room.voteEndsAt = Date.now() + 20_000; room.votingComplete = false; prevalidate(room); addBotVotes(room); }
+function refreshRoom(room: StopRoom) {
+  const now = Date.now();
+  if (room.status === "rolling" && room.revealAt && now >= room.revealAt) room.status = "playing";
+  if (room.status === "playing" && room.endAt && now >= room.endAt) beginVoting(room);
+  if (room.status === "voting" && room.voteEndsAt && now >= room.voteEndsAt) {
+    if (room.voteCategoryIndex < CATEGORIES.length - 1) { room.voteCategoryIndex += 1; room.voteEndsAt = now + 20_000; }
+    else { room.votingComplete = true; room.voteEndsAt = null; }
+  }
+  return room;
+}
 function publicRoom(room: StopRoom) { refreshRoom(room); return { ...room, serverNow: Date.now() }; }
 function initial(value: string) { return value.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toUpperCase(); }
 function nextIndex(answers: StopAnswer[], current: number) {
@@ -49,7 +71,7 @@ export function setupStopGame(app: Express) {
     const parsed = z.object({ playerId: z.string().min(1), nickname: z.string().trim().min(1).max(18) }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Digite um apelido válido." });
     const roomCode = code();
-    const room: StopRoom = { code: roomCode, hostId: parsed.data.playerId, status: "waiting", letter: "", players: [{ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, characterIndex: 0, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }], votes: {}, settings: { durationSeconds: 120, excludedLetters: [] }, revealAt: null, endAt: null, stopBy: null, stopAt: null, createdAt: Date.now() };
+    const room: StopRoom = { code: roomCode, hostId: parsed.data.playerId, status: "waiting", letter: "", players: [{ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, characterIndex: 0, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }], votes: {}, prevalidation: {}, voteCategoryIndex: 0, voteEndsAt: null, votingComplete: false, settings: { durationSeconds: 180, excludedLetters: [] }, revealAt: null, endAt: null, stopBy: null, stopAt: null, createdAt: Date.now() };
     if (parsed.data.nickname.toLocaleLowerCase("pt-BR") === "testeadm26") {
       ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"].forEach((name, index) => room.players.push({ uid: `stop-bot-${roomCode}-${index}`, name, connected: true, characterIndex: index + 1, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }));
     }
@@ -78,7 +100,7 @@ export function setupStopGame(app: Express) {
 
   app.post("/api/stop/rooms/:code/settings", (req, res) => {
     const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.status(404).json({ error: "Sala não encontrada." });
-    const parsed = z.object({ playerId: z.string(), durationSeconds: z.number().int().min(30).max(300), excludedLetters: z.array(z.string().length(1)).max(18) }).safeParse(req.body);
+    const parsed = z.object({ playerId: z.string(), durationSeconds: z.number().int().min(120).max(600), excludedLetters: z.array(z.string().length(1)).max(25) }).safeParse(req.body);
     if (!parsed.success || parsed.data.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode configurar." });
     if (room.status !== "waiting") return res.status(409).json({ error: "Configure antes de iniciar." });
     room.settings = { durationSeconds: parsed.data.durationSeconds, excludedLetters: Array.from(new Set(parsed.data.excludedLetters.map(letter => letter.toUpperCase()).filter(letter => LETTERS.includes(letter)))) };
@@ -90,8 +112,8 @@ export function setupStopGame(app: Express) {
     if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode iniciar." });
     if (room.players.length < 2) return res.status(409).json({ error: "Entre com pelo menos 2 jogadores." });
     const availableLetters = LETTERS.filter(letter => !room.settings.excludedLetters.includes(letter)); if (!availableLetters.length) return res.status(409).json({ error: "Deixe pelo menos uma letra disponível." });
-    room.status = "rolling"; room.letter = availableLetters[Math.floor(Math.random() * availableLetters.length)]; room.votes = {}; room.revealAt = Date.now() + 2800; room.endAt = room.revealAt + room.settings.durationSeconds * 1000; room.stopBy = null; room.stopAt = null;
-    room.players.forEach(player => { player.answers = blankAnswers(); player.currentIndex = 0; player.finished = false; player.score = 0; if (isBot(player)) { player.answers = CATEGORIES.map((category,index) => ({ category, value: BOT_ANSWERS[room.letter][index], status: "answered" as const })); player.finished = true; } }); res.json(publicRoom(room));
+    room.status = "rolling"; room.letter = availableLetters[Math.floor(Math.random() * availableLetters.length)]; room.votes = {}; room.prevalidation = {}; room.voteCategoryIndex = 0; room.voteEndsAt = null; room.votingComplete = false; room.revealAt = Date.now() + 4200; room.endAt = room.revealAt + room.settings.durationSeconds * 1000; room.stopBy = null; room.stopAt = null;
+    room.players.forEach(player => { player.answers = blankAnswers(); player.currentIndex = 0; player.finished = false; player.score = 0; if (isBot(player)) { const bank = BOT_ANSWERS[room.letter]; player.answers = CATEGORIES.map((category,index) => ({ category, value: bank?.[index] || `${room.letter}${["na", "nimal", "omida", "idade", "ilme", "rofissional", "bjeto", "arca"][index]}`, status: "answered" as const })); player.finished = true; } }); res.json(publicRoom(room));
   });
 
   app.post("/api/stop/rooms/:code/answer", (req, res) => {
@@ -113,21 +135,18 @@ export function setupStopGame(app: Express) {
   });
 
   app.post("/api/stop/rooms/:code/vote", (req, res) => {
-    const room = rooms.get(req.params.code.toUpperCase()); if (!room || room.status !== "voting") return res.status(409).json({ error: "Votação indisponível." });
-    const parsed = z.object({ voterId: z.string(), playerId: z.string(), categoryIndex: z.number().int().min(0).max(CATEGORIES.length - 1), valid: z.boolean() }).safeParse(req.body); if (!parsed.success || parsed.data.voterId === parsed.data.playerId) return res.status(400).json({ error: "Voto inválido." });
+    const room = rooms.get(req.params.code.toUpperCase()); if (!room || refreshRoom(room).status !== "voting" || room.votingComplete) return res.status(409).json({ error: "Votação indisponível." });
+    const parsed = z.object({ voterId: z.string(), playerId: z.string(), categoryIndex: z.number().int().min(0).max(CATEGORIES.length - 1), valid: z.boolean() }).safeParse(req.body); if (!parsed.success || parsed.data.categoryIndex !== room.voteCategoryIndex) return res.status(400).json({ error: "Voto inválido." });
     const key = `${parsed.data.playerId}:${parsed.data.categoryIndex}`; room.votes[key] ||= {}; room.votes[key][parsed.data.voterId] = parsed.data.valid; res.json(publicRoom(room));
   });
 
   app.post("/api/stop/rooms/:code/finish", (req, res) => {
-    const room = rooms.get(req.params.code.toUpperCase()); if (!room || room.status !== "voting") return res.status(409).json({ error: "Votação indisponível." });
+    const room = rooms.get(req.params.code.toUpperCase()); if (!room || refreshRoom(room).status !== "voting" || !room.votingComplete) return res.status(409).json({ error: "Conclua todas as categorias antes de ver o resultado." });
     if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode encerrar." });
-    const reviewable = room.players.flatMap(player => player.answers.map((answer, index) => ({ player, answer, index }))).filter(item => item.answer.status === "answered" || item.answer.status === "noAnswer");
-    const missingVote = reviewable.some(item => room.players.some(voter => voter.uid !== item.player.uid) && Object.keys(room.votes[`${item.player.uid}:${item.index}`] || {}).length === 0);
-    if (missingVote) return res.status(409).json({ error: "Ainda existem respostas sem nenhum voto da mesa." });
-    room.players.forEach(player => { player.score = player.answers.reduce((total, answer, index) => { if (answer.status !== "answered") return total; const votes = Object.values(room.votes[`${player.uid}:${index}`] || {}); const valid = votes.length === 0 || votes.filter(Boolean).length >= Math.ceil(votes.length / 2); if (!valid) return total; const duplicated = room.players.some(other => other.uid !== player.uid && other.answers[index].value.trim().toLocaleLowerCase("pt-BR") === answer.value.trim().toLocaleLowerCase("pt-BR")); return total + (duplicated ? 5 : 10); }, 0); });
+    room.players.forEach(player => { player.score = player.answers.reduce((total, answer, index) => { if (answer.status !== "answered") return total; const key = `${player.uid}:${index}`; const votes = Object.values(room.votes[key] || {}); const valid = votes.length ? votes.filter(Boolean).length >= Math.ceil(votes.length / 2) : room.prevalidation[key]; if (!valid) return total; const duplicated = room.players.some(other => other.uid !== player.uid && other.answers[index].value.trim().toLocaleLowerCase("pt-BR") === answer.value.trim().toLocaleLowerCase("pt-BR")); return total + (duplicated ? 5 : 10); }, 0); });
     room.status = "results"; res.json(publicRoom(room));
   });
 
-  app.post("/api/stop/rooms/:code/lobby", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.status(404).json({ error: "Sala não encontrada." }); if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode voltar ao lobby." }); room.status = "waiting"; room.letter = ""; room.revealAt = null; room.endAt = null; room.stopBy = null; room.stopAt = null; res.json(publicRoom(room)); });
+  app.post("/api/stop/rooms/:code/lobby", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.status(404).json({ error: "Sala não encontrada." }); if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode voltar ao lobby." }); room.status = "waiting"; room.letter = ""; room.revealAt = null; room.endAt = null; room.stopBy = null; room.stopAt = null; room.voteEndsAt = null; room.votingComplete = false; res.json(publicRoom(room)); });
   app.post("/api/stop/rooms/:code/leave", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.json({ ok: true }); room.players = room.players.filter(player => player.uid !== req.body?.playerId); if (!room.players.length) rooms.delete(room.code); else if (room.hostId === req.body?.playerId) room.hostId = room.players[0].uid; res.json({ ok: true }); });
 }
