@@ -7,12 +7,19 @@ import { useLocation } from 'wouter';
 import { Loader2, Copy, Users, Crown, LogOut, Play, Send, Clock, Trophy, X, Settings, Sparkles, Star, ArrowLeft, Home, UserX, Info, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useGameIntermission } from '@/components/GameIntermission';
-import { GameIdentityLayout } from '@/components/GameIdentityLayout';
+import { GameIdentityLayout as SharedGameIdentityLayout, type GameIdentityLayoutProps } from '@/components/GameIdentityLayout';
 const sincroniaLogo = "/sincronia-logo.webp";
 import jogosCover from '@/assets/jogos_cover.png';
 import animesCover from '@/assets/submode-animes.png';
 import marvelCover from '@/assets/submode-marvel.png';
 import desenhoAnimadoCover from '@/assets/cover-desenho-animado.jpg';
+
+function GameIdentityLayout(props: GameIdentityLayoutProps) {
+  const phase = useRCGameStore(state => state.phase);
+  const returnToLobby = useRCGameStore(state => state.returnToLobby);
+  const leaveGame = useRCGameStore(state => state.leaveGame);
+  return <SharedGameIdentityLayout {...props} onBackToLobby={phase === 'lobby' || phase === 'themeSelect' ? undefined : returnToLobby} onExit={phase === 'lobby' ? undefined : leaveGame} />;
+}
 
 
 

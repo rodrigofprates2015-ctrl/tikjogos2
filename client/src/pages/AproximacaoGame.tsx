@@ -462,6 +462,13 @@ function PlayingScreen() {
 
   const cardClass = "w-full max-w-md bg-[#242642] rounded-[2rem] p-5 shadow-2xl border-2 border-[#2f3252]";
 
+  const gameNavigation = (
+    <nav className="mb-4 grid grid-cols-2 gap-2 border-b border-slate-700/60 pb-4 sm:flex sm:justify-end">
+      <button onClick={returnToLobby} className="h-11 rounded-xl border border-slate-700 bg-slate-900 px-4 text-xs font-black text-slate-300 hover:border-violet-400/50 hover:text-white"><ArrowLeft className="mr-2 inline h-4 w-4" />Voltar ao lobby</button>
+      <button onClick={handleLeave} className="h-11 rounded-xl border border-rose-400/25 bg-rose-500/10 px-4 text-xs font-black text-rose-200 hover:bg-rose-500/20"><LogOut className="mr-2 inline h-4 w-4" />Sair para a home</button>
+    </nav>
+  );
+
   // Guessing phase
   if (gameData.phase === 'guessing') {
     const guessingDashboard = (
@@ -470,6 +477,7 @@ function PlayingScreen() {
         <div className="relative grid min-w-0 grid-cols-1 items-stretch gap-3 sm:gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
           <div className="order-2 lg:order-1"><AproximacaoPlayersSidebar room={room} userId={user.uid} /></div>
           <main className="tj-surface tj-surface--stage order-1 flex min-h-[600px] min-w-0 flex-col p-4 sm:p-6 lg:order-2 lg:min-h-[720px] lg:p-8">
+            {gameNavigation}
             <header className="flex items-center justify-between border-b border-slate-700/60 pb-5">
               <div><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Sala {room.code}</p><h1 className="mt-1 text-xl font-black text-white">Rodada {gameData.roundNumber}</h1></div>
               <div className="flex items-center gap-3"><span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-xs font-black text-cyan-300">{guessCount}/{totalActivePlayers} palpites</span><button onClick={handleLeave} className="rounded-xl border border-slate-700 bg-slate-900 p-3 text-slate-400 hover:text-rose-300"><LogOut className="h-5 w-5" /></button></div>
@@ -623,6 +631,7 @@ function PlayingScreen() {
           <div className="relative grid min-w-0 grid-cols-1 items-stretch gap-3 sm:gap-5 lg:grid-cols-[350px_minmax(0,1fr)]">
             <div className="order-2 lg:order-1"><AproximacaoPlayersSidebar room={room} userId={user.uid} /></div>
             <main className="tj-surface tj-surface--stage order-1 flex min-h-[600px] min-w-0 flex-col p-4 sm:p-6 lg:order-2 lg:min-h-[720px] lg:p-8">
+              {gameNavigation}
               <header className="border-b border-slate-700/60 pb-5"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Rodada {gameData.roundNumber}</p><h1 className="mt-1 text-xl font-black">Resultado</h1></header>
               <section className="flex-1 py-6">
                 <div className="tj-inset border-cyan-400/35 p-5 text-center sm:p-7">

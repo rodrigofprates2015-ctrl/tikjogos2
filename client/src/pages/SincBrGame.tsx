@@ -244,7 +244,7 @@ function ResultOverlay({ result, myUid, pointsGained }: { result: import('@/lib/
 
 // ── Match End Overlay ──
 
-function MatchEndOverlay({ leaderboard, myUid }: { leaderboard: BRLeaderboardEntry[]; myUid: string }) {
+function MatchEndOverlay({ leaderboard, myUid, onLobby, onExit }: { leaderboard: BRLeaderboardEntry[]; myUid: string; onLobby: () => void; onExit: () => void }) {
   const top5 = leaderboard.slice(0, 5);
   const myEntry = leaderboard.find(e => e.uid === myUid);
   const myRank = myEntry?.rank || 0;
@@ -301,6 +301,8 @@ function MatchEndOverlay({ leaderboard, myUid }: { leaderboard: BRLeaderboardEnt
 
         <ResultAd />
 
+        <div className="grid grid-cols-2 gap-2"><button onClick={onLobby} className="h-11 rounded-xl border border-slate-600 bg-slate-900 text-sm font-black text-slate-200"><ArrowLeft className="mr-1 inline h-4 w-4"/>Lobby</button><button onClick={onExit} className="h-11 rounded-xl border border-rose-400/25 bg-rose-500/10 text-sm font-black text-rose-200"><LogOut className="mr-1 inline h-4 w-4"/>Home</button></div>
+
         <div className="pt-2">
           <div className="w-6 h-6 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-white/30 text-xs mt-2">Reiniciando...</p>
@@ -326,8 +328,13 @@ function GameScreen() {
     }
   }, [showingResult, hasSubmitted, questionNumber, showingMatchEnd]);
 
+  const exitToHome = () => {
+    leaveRoom();
+    window.location.href = '/';
+  };
+
   if (showingMatchEnd) {
-    return <MatchEndOverlay leaderboard={matchEndLeaderboard} myUid={uid} />;
+    return <MatchEndOverlay leaderboard={matchEndLeaderboard} myUid={uid} onLobby={leaveRoom} onExit={exitToHome} />;
   }
 
   const handleSubmit = (e?: React.FormEvent) => {
@@ -348,9 +355,7 @@ function GameScreen() {
 
       {/* Header */}
       <div className="bg-[#242642] border-b border-[#2f3252] px-4 py-2 flex items-center justify-between">
-        <button onClick={leaveRoom} className="text-white/50 hover:text-white transition-colors flex items-center gap-1 text-sm">
-          <LogOut size={16} /> Sair
-        </button>
+        <div className="flex items-center gap-3"><button onClick={leaveRoom} className="flex items-center gap-1 text-sm text-white/50 transition-colors hover:text-white"><ArrowLeft size={16} /> Lobby</button><button onClick={exitToHome} className="flex items-center gap-1 text-sm text-rose-300/80 transition-colors hover:text-rose-200"><LogOut size={16} /> Home</button></div>
         <div className="text-center flex items-center gap-3">
           <span className="text-amber-400 font-bold text-sm">{currentRoomLabel}</span>
           <span className="text-white/30 text-xs">#{questionNumber}</span>

@@ -5,13 +5,20 @@ import { useDesafioStore } from '@/lib/desafioStore';
 import { notifyGameEnded } from '@/hooks/useFeedback';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { GameIdentityLayout } from '@/components/GameIdentityLayout';
+import { GameIdentityLayout as SharedGameIdentityLayout, type GameIdentityLayoutProps } from '@/components/GameIdentityLayout';
 import {
   Zap, Loader2, Heart, Swords, ArrowLeft,
   Users, Copy, Share2, Trophy, RotateCcw, Crown,
   LogOut, Home, AlertTriangle, Delete,
 } from 'lucide-react';
 const logoDesafio = "/palavra-logo.webp";
+
+function GameIdentityLayout(props: GameIdentityLayoutProps) {
+  const status = useDesafioStore(state => state.status);
+  const returnToLobby = useDesafioStore(state => state.returnToLobby);
+  const leaveGame = useDesafioStore(state => state.leaveGame);
+  return <SharedGameIdentityLayout {...props} onBackToLobby={status === 'lobby' ? undefined : returnToLobby} onExit={status === 'lobby' ? undefined : leaveGame} />;
+}
 import logoTikjogos from '@assets/logo_nova_tikjogos (1).png';
 
 const KEYBOARD_ROWS = [

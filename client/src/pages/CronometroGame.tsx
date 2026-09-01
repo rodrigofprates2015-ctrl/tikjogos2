@@ -170,6 +170,10 @@ export default function CronometroGame() {
       </aside>
 
       <section className="tj-surface tj-surface--stage order-1 flex min-h-[620px] min-w-0 flex-col overflow-hidden p-3 sm:p-5 lg:order-2 lg:h-[calc(100vh-4rem)] lg:min-h-[620px] lg:p-6">
+        <nav className="mb-3 grid grid-cols-2 gap-2 border-b border-slate-700/60 pb-3 sm:flex sm:justify-end">
+          {room.status !== "waiting" && <Button onClick={() => act("lobby")} variant="gameSecondary" size="game"><ArrowLeft className="h-4 w-4"/> Voltar ao lobby</Button>}
+          <Button onClick={leave} variant="gameSecondary" size="game" className="border-rose-400/25 bg-rose-500/10 text-rose-200"><LogOut className="h-4 w-4"/> Sair para a home</Button>
+        </nav>
         <header className="flex min-w-0 flex-col gap-3 border-b-2 border-[#2C334F] pb-3 sm:flex-row sm:items-start sm:justify-between">
           <button onClick={() => navigator.clipboard.writeText(room.code)} className="group text-left"><span className="text-[10px] font-black uppercase tracking-[.22em] text-slate-400">Código da sala</span><span className="mt-1 flex items-center gap-3 font-mono text-3xl font-black tracking-widest text-amber-400">{room.code}<span className="tj-icon-box h-9 w-9 text-slate-400 group-hover:text-amber-300"><Copy className="h-4 w-4"/></span></span></button>
         </header>

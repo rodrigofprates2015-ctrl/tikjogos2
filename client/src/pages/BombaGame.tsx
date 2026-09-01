@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, Bomb, Check, Copy, Crown, Play, Plus, RotateCcw, Settings, Shuffle, Trash2, Users, Volume2, X } from "lucide-react";
+import { ArrowLeft, Bomb, Check, Copy, Crown, LogOut, Play, Plus, RotateCcw, Settings, Shuffle, Trash2, Users, Volume2, X } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 import { useGameIntermission } from "@/components/GameIntermission";
 import bombaLogo from "@/assets/bomba-logo.png";
@@ -324,6 +324,16 @@ export default function BombaGame() {
     window.location.href = "/";
   };
 
+  const returnOnlineLobby = async () => {
+    if (!onlineRoom) return;
+    setOnlineBusy(true); setOnlineError("");
+    try {
+      setOnlineRoom(await onlineRequest(`/api/bomba/rooms/${onlineRoom.code}/lobby`, { playerId: playerIdRef.current }));
+      setOnlineLetter(null); setOnlineAnswer("");
+    } catch (error: any) { setOnlineError(error.message); }
+    finally { setOnlineBusy(false); }
+  };
+
   if (!isLocalMode && !onlineRoom) {
     return (
       <div className="bomba-page bomba-page--setup">
@@ -415,7 +425,7 @@ export default function BombaGame() {
     return (
       <div className={`bomba-page bomba-page--game ${onlineRoom.status === "exploded" ? "is-exploded" : ""}`}>
         <header className="bomba-game-header">
-          <button onClick={leaveOnlineRoom}><ArrowLeft size={18} /> Sair</button>
+          <div className="flex gap-2">{isHost && <button onClick={returnOnlineLobby} disabled={onlineBusy}><ArrowLeft size={18} /> Lobby</button>}<button onClick={leaveOnlineRoom}><LogOut size={18} /> Home</button></div>
           <img className="bomba-game-logo-image" src={bombaLogo} alt="Bomba" />
           <span>SALA {onlineRoom.code}</span>
         </header>
@@ -569,7 +579,7 @@ export default function BombaGame() {
   return (
     <div className={`bomba-page bomba-page--game ${phase === "exploded" ? "is-exploded" : ""}`}>
       <header className="bomba-game-header">
-        <button onClick={() => setPhase("setup")}><ArrowLeft size={18} /> Sair</button>
+        <div className="flex gap-2"><button onClick={() => setPhase("setup")}><ArrowLeft size={18} /> Lobby</button><Link href="/"><LogOut size={18} /> Home</Link></div>
         <img className="bomba-game-logo-image" src={bombaLogo} alt="Bomba" />
         <span><Volume2 size={17} /> Som</span>
       </header>

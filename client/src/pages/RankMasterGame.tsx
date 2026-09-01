@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { MobileNav } from "@/components/MobileNav";
 import { useGameIntermission } from "@/components/GameIntermission";
-import { GameIdentityLayout } from "@/components/GameIdentityLayout";
+import { GameIdentityLayout as SharedGameIdentityLayout, type GameIdentityLayoutProps } from "@/components/GameIdentityLayout";
 import {
   Copy, LogOut, Play, Crown, Loader2, Users, Zap,
   Trophy, ArrowLeft, CheckCircle, Clock,
@@ -30,6 +30,13 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+
+function GameIdentityLayout(props: GameIdentityLayoutProps) {
+  const phase = useRankMasterStore(state => state.phase);
+  const returnToLobby = useRankMasterStore(state => state.returnToLobby);
+  const leaveGame = useRankMasterStore(state => state.leaveGame);
+  return <SharedGameIdentityLayout {...props} onBackToLobby={phase === 'lobby' ? undefined : returnToLobby} onExit={phase === 'lobby' ? undefined : leaveGame} />;
+}
 
 function NotificationCenter() {
   const { notifications, removeNotification } = useRankMasterStore();

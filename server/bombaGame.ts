@@ -305,6 +305,23 @@ export function setupBombaGame(app: Express) {
     scheduleBombaBotTurn(room);
   });
 
+  app.post("/api/bomba/rooms/:code/lobby", (req, res) => {
+    const code = req.params.code.toUpperCase();
+    const room = bombaRooms.get(code);
+    if (!room) return res.status(404).json({ error: "Sala não encontrada." });
+    const parsed = z.object({ playerId: z.string() }).safeParse(req.body);
+    if (!parsed.success || parsed.data.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o líder pode voltar ao lobby." });
+    room.status = "waiting";
+    room.theme = "";
+    room.usedLetters = [...room.settings.bannedLetters];
+    room.answers = [];
+    room.currentPlayerIndex = 0;
+    room.selectedLetter = null;
+    room.endAt = null;
+    room.loserId = null;
+    res.json(roomResponse(room));
+  });
+
   app.post("/api/bomba/rooms/:code/leave", (req, res) => {
     const code = req.params.code.toUpperCase();
     const room = bombaRooms.get(code);
