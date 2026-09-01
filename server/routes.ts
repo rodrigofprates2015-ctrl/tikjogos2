@@ -4626,6 +4626,7 @@ export async function registerRoutes(
   type AproximacaoPlayer = {
     uid: string;
     name: string;
+    characterIndex?: number;
     connected?: boolean;
     hearts: number;
     eliminated?: boolean;
@@ -5095,7 +5096,7 @@ export async function registerRoutes(
       hostId,
       status: 'waiting',
       gameData: null,
-      players: [{ uid: hostId, name: playerName, connected: true, hearts: 3 }],
+      players: [{ uid: hostId, name: playerName, characterIndex: 0, connected: true, hearts: 3 }],
       createdAt: new Date().toISOString(),
     };
     aproximacaoRooms.set(code, room);
@@ -5106,9 +5107,9 @@ export async function registerRoutes(
     if (playerName === "testeadm26") {
       console.log(`[Aproximação Bot] Admin detected — adding 4 bots to room ${code}`);
       const botNames = ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"];
-      for (const botName of botNames) {
+      for (const [botIndex, botName] of botNames.entries()) {
         const botId = `aprox-bot-${Math.random().toString(36).substr(2, 8)}`;
-        room.players.push({ uid: botId, name: botName, connected: true, hearts: 3 });
+        room.players.push({ uid: botId, name: botName, characterIndex: botIndex + 1, connected: true, hearts: 3 });
         console.log(`[Aproximação Bot] Added ${botName} (${botId})`);
       }
     }
@@ -5129,7 +5130,9 @@ export async function registerRoutes(
       existing.connected = true;
       existing.name = playerName;
     } else {
-      room.players.push({ uid: playerId, name: playerName, connected: true, hearts: 3 });
+      const occupied = new Set(room.players.map(p => p.characterIndex ?? 0));
+      const characterIndex = Array.from({ length: 10 }, (_, index) => index).find(index => !occupied.has(index)) ?? room.players.length % 10;
+      room.players.push({ uid: playerId, name: playerName, characterIndex, connected: true, hearts: 3 });
     }
 
     broadcastToAproximacaoRoom(code, { type: 'aproximacao-room-update', room });
@@ -5201,6 +5204,20 @@ export async function registerRoutes(
           // Mark player connected
           const player = room.players.find(p => p.uid === data.playerId);
           if (player) player.connected = true;
+          broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
+        }
+
+        if (data.type === 'aproximacao-select-character' && data.roomCode && data.playerId) {
+          const roomCode = (data.roomCode as string).toUpperCase();
+          const room = aproximacaoRooms.get(roomCode);
+          if (!room || room.status !== 'waiting') return;
+          const characterIndex = Number(data.characterIndex);
+          if (!Number.isInteger(characterIndex) || characterIndex < 0 || characterIndex > 9) return;
+          const taken = room.players.some(p => p.uid !== data.playerId && p.characterIndex === characterIndex);
+          if (taken) return;
+          const player = room.players.find(p => p.uid === data.playerId);
+          if (!player) return;
+          player.characterIndex = characterIndex;
           broadcastToAproximacaoRoom(roomCode, { type: 'aproximacao-room-update', room });
         }
 

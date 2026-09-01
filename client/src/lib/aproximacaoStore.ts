@@ -3,6 +3,7 @@ import { create } from 'zustand';
 export type AproximacaoPlayer = {
   uid: string;
   name: string;
+  characterIndex?: number;
   connected?: boolean;
   hearts: number;
   eliminated?: boolean;
@@ -62,6 +63,7 @@ export type AproximacaoState = {
   joinRoom: (code: string) => Promise<boolean>;
   connectWebSocket: (code: string) => void;
   startGame: () => void;
+  selectCharacter: (characterIndex: number) => void;
   submitGuess: (value: number) => void;
   revealResults: () => void;
   nextRound: () => void;
@@ -237,6 +239,12 @@ export const useAproximacaoStore = create<AproximacaoState>((set, get) => ({
     const { ws, room, user } = get();
     if (!ws || !room || !user) return;
     ws.send(JSON.stringify({ type: 'aproximacao-start', roomCode: room.code, playerId: user.uid }));
+  },
+
+  selectCharacter: (characterIndex: number) => {
+    const { ws, room, user } = get();
+    if (!ws || !room || !user) return;
+    ws.send(JSON.stringify({ type: 'aproximacao-select-character', roomCode: room.code, playerId: user.uid, characterIndex }));
   },
 
   submitGuess: (value: number) => {
