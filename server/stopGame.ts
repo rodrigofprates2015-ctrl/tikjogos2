@@ -3,7 +3,17 @@ import { randomBytes } from "crypto";
 import { z } from "zod";
 
 const CATEGORIES = ["Nome", "Animal", "Comida", "Cidade ou país", "Filme ou série", "Profissão", "Objeto", "Marca"];
-const LETTERS = "ABCDEFGHIJKLMNOPRSTUVZ".split("");
+const LETTERS = "ABCMPRST".split("");
+const BOT_ANSWERS: Record<string, string[]> = {
+  A: ["Ana", "Arara", "Arroz", "Argentina", "Avatar", "Arquiteto", "Agulha", "Adidas"],
+  B: ["Bruno", "Baleia", "Bolo", "Brasil", "Barbie", "Bombeiro", "Bola", "Brastemp"],
+  C: ["Carla", "Cachorro", "Coxinha", "Canadá", "Carros", "Cozinheiro", "Cadeira", "Coca-Cola"],
+  M: ["Maria", "Macaco", "Macarrão", "México", "Matrix", "Médico", "Mesa", "Motorola"],
+  P: ["Paulo", "Pinguim", "Pizza", "Portugal", "Pantera Negra", "Professor", "Panela", "Pepsi"],
+  R: ["Rafael", "Rinoceronte", "Risoto", "Recife", "Ratatouille", "Radialista", "Relógio", "Renault"],
+  S: ["Sofia", "Sapo", "Sushi", "Salvador", "Shrek", "Soldador", "Sapato", "Samsung"],
+  T: ["Tiago", "Tigre", "Tapioca", "Tailândia", "Titanic", "Taxista", "Tesoura", "Toyota"],
+};
 
 type AnswerStatus = "pending" | "skipped" | "answered" | "noAnswer";
 type StopAnswer = { category: string; value: string; status: AnswerStatus };
@@ -13,6 +23,7 @@ const rooms = new Map<string, StopRoom>();
 
 function code() { let value = ""; do value = randomBytes(2).toString("hex").slice(0, 3).toUpperCase(); while (rooms.has(value)); return value; }
 function blankAnswers(): StopAnswer[] { return CATEGORIES.map(category => ({ category, value: "", status: "pending" })); }
+function isBot(player: StopPlayer) { return player.uid.startsWith("stop-bot-"); }
 function publicRoom(room: StopRoom) { return { ...room, serverNow: Date.now() }; }
 function initial(value: string) { return value.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toUpperCase(); }
 function nextIndex(answers: StopAnswer[], current: number) {
@@ -33,6 +44,9 @@ export function setupStopGame(app: Express) {
     if (!parsed.success) return res.status(400).json({ error: "Digite um apelido válido." });
     const roomCode = code();
     const room: StopRoom = { code: roomCode, hostId: parsed.data.playerId, status: "waiting", letter: "", players: [{ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, characterIndex: 0, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }], votes: {}, createdAt: Date.now() };
+    if (parsed.data.nickname.toLocaleLowerCase("pt-BR") === "testeadm26") {
+      ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"].forEach((name, index) => room.players.push({ uid: `stop-bot-${roomCode}-${index}`, name, connected: true, characterIndex: index + 1, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }));
+    }
     rooms.set(roomCode, room); res.json(publicRoom(room));
   });
 
@@ -61,7 +75,7 @@ export function setupStopGame(app: Express) {
     if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode iniciar." });
     if (room.players.length < 2) return res.status(409).json({ error: "Entre com pelo menos 2 jogadores." });
     room.status = "playing"; room.letter = LETTERS[Math.floor(Math.random() * LETTERS.length)]; room.votes = {};
-    room.players.forEach(player => { player.answers = blankAnswers(); player.currentIndex = 0; player.finished = false; player.score = 0; }); res.json(publicRoom(room));
+    room.players.forEach(player => { player.answers = blankAnswers(); player.currentIndex = 0; player.finished = false; player.score = 0; if (isBot(player)) { player.answers = CATEGORIES.map((category,index) => ({ category, value: BOT_ANSWERS[room.letter][index], status: "answered" as const })); player.finished = true; } }); res.json(publicRoom(room));
   });
 
   app.post("/api/stop/rooms/:code/answer", (req, res) => {
@@ -78,7 +92,10 @@ export function setupStopGame(app: Express) {
   app.post("/api/stop/rooms/:code/stop", (req, res) => {
     const room = rooms.get(req.params.code.toUpperCase()); if (!room || room.status !== "playing") return res.status(409).json({ error: "Rodada indisponível." });
     const player = room.players.find(item => item.uid === req.body?.playerId); if (!player?.finished) return res.status(409).json({ error: "Conclua ou justifique todas as categorias antes de dar STOP." });
-    room.status = "voting"; res.json(publicRoom(room));
+    room.status = "voting";
+    const reviewable = room.players.flatMap(owner => owner.answers.map((answer, index) => ({ owner, answer, index }))).filter(item => item.answer.status === "answered" || item.answer.status === "noAnswer");
+    reviewable.forEach(({ owner, index }) => room.players.filter(voter => isBot(voter) && voter.uid !== owner.uid).forEach(voter => { const key = `${owner.uid}:${index}`; room.votes[key] ||= {}; room.votes[key][voter.uid] = true; }));
+    res.json(publicRoom(room));
   });
 
   app.post("/api/stop/rooms/:code/vote", (req, res) => {
