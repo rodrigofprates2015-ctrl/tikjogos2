@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { MobileNav } from "@/components/MobileNav";
 import { useGameIntermission } from "@/components/GameIntermission";
+import { GameIdentityLayout } from "@/components/GameIdentityLayout";
 import {
   Copy, LogOut, Play, Crown, Loader2, Users, Zap,
   Trophy, ArrowLeft, CheckCircle, Clock,
@@ -130,6 +131,9 @@ function LobbyScreen() {
     toast({ title: "Código copiado!" });
   };
 
+  return <div className="min-h-screen bg-[#1a1e2a]"><MobileNav/><NotificationCenter/><div className="flex justify-center"><GameIdentityLayout players={room.players} userId={user.uid} hostId={room.hostId} detail={(player)=><p className="mt-1 text-[9px] font-black uppercase text-amber-300">{player.score ?? 0} pontos</p>}><header className="flex flex-col gap-3 border-b border-slate-700/60 pb-5 sm:flex-row sm:items-center sm:justify-between"><button onClick={copyCode} className="text-left"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Código da sala</p><div className="mt-1 flex items-center gap-3"><strong className="font-mono text-4xl font-black tracking-widest text-amber-400">{room.code}</strong><Copy className="h-5 w-5 text-slate-400"/></div></button><button onClick={leaveGame} className="h-12 rounded-xl border border-slate-700 bg-slate-900 px-5 font-black text-slate-300"><LogOut className="mr-2 inline h-5 w-5"/>Sair da Sala</button></header><section className="flex flex-1 flex-col items-center justify-center py-6 text-center"><img src="/rankify-logo.png" alt="Rankify" className="h-20 object-contain"/><h2 className="mt-5 text-3xl font-black">Sala pronta para jogar</h2><p className="mt-2 text-slate-400">Ordene os itens e tente acertar o ranking verdadeiro.</p>{isHost?<div className="mt-7 w-full max-w-2xl space-y-4"><div className="tj-inset grid gap-4 p-4 sm:grid-cols-2"><label className="text-left text-xs font-black uppercase text-slate-500">Rodadas<select value={totalRounds} onChange={e=>setTotalRounds(Number(e.target.value))} className="mt-2 h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white"><option value={3}>3 rodadas</option><option value={5}>5 rodadas</option><option value={7}>7 rodadas</option></select></label><label className="text-left text-xs font-black uppercase text-slate-500">Tamanho do ranking<select value={topCount} onChange={e=>setTopCount(Number(e.target.value) as 5|10)} className="mt-2 h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-3 text-base text-white"><option value={5}>Top 5</option><option value={10}>Top 10</option></select></label></div><div className="grid grid-cols-2 gap-2 sm:grid-cols-4">{RANKMASTER_THEMES.map(theme=><button key={theme.id} onClick={()=>setSelectedTheme(theme.id)} className={cn("tj-selection-card p-3 text-sm font-black",selectedTheme===theme.id&&"is-selected")}>{theme.emoji} {theme.label}</button>)}</div><button onClick={()=>startGame(totalRounds,topCount,selectedTheme)} disabled={!canStart} className="h-16 w-full rounded-2xl border-b-4 border-violet-800 bg-violet-500 text-lg font-black text-white"><Play className="mr-2 inline h-5 w-5 fill-current"/>INICIAR PARTIDA</button></div>:<div className="tj-inset mt-7 w-full max-w-md border-violet-400/35 p-5 font-black text-violet-300">Aguardando o capitão...</div>}</section></GameIdentityLayout></div></div>;
+
+  /* Layout anterior preservado temporariamente para comparação. */
   return (
     <div className="min-h-screen flex flex-col bg-[#1a1b2e]">
       <MobileNav />
@@ -319,7 +323,7 @@ function LobbyScreen() {
 }
 
 function PreparingScreen() {
-  const { room } = useRankMasterStore();
+  const { room, user } = useRankMasterStore();
   const [countdown, setCountdown] = useState(5);
   const gameData = room?.gameData;
 
@@ -337,7 +341,9 @@ function PreparingScreen() {
     return () => clearInterval(interval);
   }, [gameData?.preparingEndsAt]);
 
-  if (!gameData) return null;
+  if (!gameData || !room || !user) return null;
+
+  return <div className="min-h-screen bg-[#1a1e2a]"><NotificationCenter/><div className="flex justify-center"><GameIdentityLayout players={room.players} userId={user.uid} hostId={room.hostId} detail={(player)=><p className="mt-1 text-[9px] font-black uppercase text-amber-300">{player.score} pontos</p>}><section className="flex flex-1 flex-col items-center justify-center text-center"><Trophy className="h-14 w-14 text-amber-300"/><p className="mt-5 text-[10px] font-black uppercase tracking-[.22em] text-amber-300">Rodada {gameData.roundNumber} de {gameData.totalRounds}</p><h1 className="mt-3 max-w-3xl text-3xl font-black sm:text-5xl">{gameData.challenge.category}</h1><p className="mt-3 text-slate-400">Prepare-se para ordenar o Top {gameData.topCount}</p><div className="tj-inset mt-8 grid h-24 w-24 place-items-center rounded-full border-amber-400/40"><span className="text-5xl font-black text-amber-300">{countdown}</span></div></section></GameIdentityLayout></div></div>;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#1a1b2e] px-4">
@@ -419,6 +425,8 @@ function OrderingScreen() {
   const handleSubmit = () => {
     submitOrder(items.map(i => i.id));
   };
+
+  return <div className="min-h-screen bg-[#1a1e2a]"><NotificationCenter/><div className="flex justify-center"><GameIdentityLayout players={room.players} userId={user.uid} hostId={room.hostId} detail={(player)=><p className="mt-1 text-[9px] font-black uppercase text-amber-300">{player.score} pontos</p>}><header className="flex items-center justify-between border-b border-slate-700/60 pb-5"><div><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Rodada {gameData.roundNumber} de {gameData.totalRounds}</p><h1 className="mt-1 text-xl font-black">{gameData.challenge.category}</h1></div><span className="rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-xs font-black text-violet-300">{submittedCount}/{totalActive} enviados</span></header><section className="flex-1 overflow-y-auto py-5"><p className="mb-4 text-sm font-bold text-slate-400">Arraste do 1º ao {gameData.topCount}º lugar</p>{items.length>0&&<DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}><SortableContext items={items.map(item=>item.id)} strategy={verticalListSortingStrategy}><div className="space-y-2">{items.map((item,index)=><SortableItem key={item.id} item={item} rank={index+1} submitted={submitted}/>)}</div></SortableContext></DndContext>}</section><div className="space-y-2">{!submitted?<button onClick={handleSubmit} className="h-16 w-full rounded-2xl border-b-4 border-violet-800 bg-violet-500 text-lg font-black text-white"><CheckCircle className="mr-2 inline h-5 w-5"/>CONFIRMAR ORDEM</button>:<div className="tj-inset border-emerald-400/35 py-4 text-center font-bold text-emerald-300">Ordem enviada! Aguardando...</div>}{isHost&&!submitted&&<button onClick={skipChallenge} className="h-12 w-full rounded-xl border-2 border-slate-700 bg-slate-900 font-black text-slate-400"><RefreshCw className="mr-2 inline h-4 w-4"/>Sortear novo desafio</button>}{isHost&&submitted&&allSubmitted&&<button onClick={revealResults} className="h-14 w-full rounded-2xl border-b-4 border-amber-800 bg-amber-400 font-black text-slate-950"><Trophy className="mr-2 inline h-5 w-5"/>REVELAR RESULTADOS</button>}</div></GameIdentityLayout></div></div>;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#1a1b2e]">
@@ -540,6 +548,8 @@ function RevealScreen() {
     .filter(Boolean);
 
   const isLastRound = gameData.roundNumber >= gameData.totalRounds;
+
+  return <div className="min-h-screen bg-[#1a1e2a]"><NotificationCenter/><div className="flex justify-center"><GameIdentityLayout players={room.players} userId={user.uid} hostId={room.hostId} detail={(player)=><p className="mt-1 text-[9px] font-black uppercase text-amber-300">{player.score} pontos</p>}><header className="border-b border-slate-700/60 pb-5"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Rodada {gameData.roundNumber} de {gameData.totalRounds}</p><h1 className="mt-1 text-xl font-black">Gabarito · {gameData.challenge.category}</h1></header>{roundWinners.length>0&&<div className="tj-inset mt-5 border-amber-400/35 p-4 text-center"><Trophy className="mx-auto h-6 w-6 text-amber-300"/><p className="mt-2 font-black text-amber-300">{roundWinners.join(' & ')} +100 pontos</p></div>}<section className="flex-1 overflow-y-auto py-5"><div className="space-y-2">{correctItems.map((item,index)=>{const revealed=index<revealedCount;const myPos=myOrder?myOrder.orderedIds.indexOf(item.id)+1:null;const exact=myPos===item.trueRank;return <article key={item.id} className={cn("tj-player-card flex items-center gap-3 p-3 transition-all",revealed&&exact&&"is-current",!revealed&&"opacity-30")}><span className={cn("grid h-9 w-9 place-items-center rounded-xl font-black",item.trueRank===1?"bg-amber-400 text-slate-950":"bg-slate-800 text-slate-300")}>{revealed?item.trueRank:'?'}</span><strong className={cn("flex-1 text-sm",revealed?"text-white":"text-transparent")}>{item.label}</strong>{revealed&&myPos!==null&&<span className={cn("rounded-lg px-2 py-1 text-xs font-black",exact?"bg-emerald-400/15 text-emerald-300":"bg-slate-800 text-slate-400")}>{exact?'ACERTOU':`Você: ${myPos}º`}</span>}</article>})}</div></section>{isHost&&!animating?<button onClick={()=>showIntermission(nextRound)} className="h-16 rounded-2xl border-b-4 border-violet-800 bg-violet-500 text-lg font-black text-white">{isLastRound?'VER PLACAR FINAL':'PRÓXIMA RODADA'}</button>:!isHost&&!animating?<div className="tj-inset py-4 text-center font-bold text-slate-400">Aguardando o capitão...</div>:null}</GameIdentityLayout></div></div>;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#1a1b2e]">
@@ -663,6 +673,8 @@ function GameoverScreen() {
     if (index === 2) return "text-amber-700";
     return "text-slate-600";
   };
+
+  return <div className="min-h-screen bg-[#1a1e2a]"><NotificationCenter/><div className="flex justify-center"><GameIdentityLayout players={sorted} userId={user.uid} hostId={room.hostId} detail={(player)=><p className="mt-1 text-[9px] font-black uppercase text-amber-300">{player.score} pontos</p>}><section className="flex flex-1 flex-col items-center justify-center text-center"><Trophy className="h-16 w-16 text-amber-300"/><p className="mt-5 text-[10px] font-black uppercase tracking-[.22em] text-amber-300">Campeão do Rankify</p><h1 className="mt-2 text-4xl font-black sm:text-6xl">{winners.map(winner=>winner.name).join(' & ')}</h1><p className="mt-3 text-lg font-bold text-violet-300">{topScore} pontos</p><div className="mt-8 w-full max-w-xl">{isHost?<button onClick={returnToLobby} className="h-16 w-full rounded-2xl border-b-4 border-violet-800 bg-violet-500 text-lg font-black text-white"><RotateCcw className="mr-2 inline h-5 w-5"/>JOGAR NOVAMENTE</button>:<div className="tj-inset py-5 font-bold text-slate-400">Aguardando o capitão...</div>}</div></section></GameIdentityLayout></div></div>;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#1a1b2e]">

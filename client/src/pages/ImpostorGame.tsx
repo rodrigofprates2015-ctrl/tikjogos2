@@ -1633,7 +1633,6 @@ const CronometroGameCard = () => {
   const [name, setName] = useState(() => localStorage.getItem('tikjogos_nickname') || localStorage.getItem('tikjogos_saved_nickname') || '');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
-  const [gameMode, setGameMode] = useState<'classic' | 'challenge'>('classic');
   const getPlayerId = () => { const current = sessionStorage.getItem('cronometro_player_id') || crypto.randomUUID(); sessionStorage.setItem('cronometro_player_id', current); return current; };
   const enter = async (mode: 'create' | 'join') => {
     const nickname = name.trim();
@@ -1643,7 +1642,7 @@ const CronometroGameCard = () => {
     try {
       localStorage.setItem('tikjogos_nickname', nickname);
       const roomCode = code.toUpperCase();
-      const response = await fetch(mode === 'create' ? '/api/cronometro/rooms' : `/api/cronometro/rooms/${roomCode}/join`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ playerId: getPlayerId(), nickname, ...(mode === 'create' ? { gameMode } : {}) }) });
+      const response = await fetch(mode === 'create' ? '/api/cronometro/rooms' : `/api/cronometro/rooms/${roomCode}/join`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ playerId: getPlayerId(), nickname }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Não foi possível entrar na sala.');
       sessionStorage.setItem('cronometro_room_code', data.code);
@@ -1653,10 +1652,6 @@ const CronometroGameCard = () => {
   };
   return <div className="space-y-3">
     <div className="text-center"><img src={tempoLogo} alt="T3:MP:00" className="mx-auto h-[76px] w-auto max-w-full object-contain drop-shadow-[0_10px_24px_rgba(34,211,238,.3)]"/><p className="mt-2 text-xs font-semibold text-slate-400">Pare o cronômetro no tempo exato.</p></div>
-    <div className="grid grid-cols-2 gap-2 rounded-2xl border border-slate-700 bg-slate-950/50 p-2">
-      <button type="button" onClick={() => setGameMode('classic')} className={cn('rounded-xl border-2 px-3 py-3 text-sm font-black transition', gameMode === 'classic' ? 'border-cyan-400 bg-cyan-400/15 text-cyan-200' : 'border-transparent text-slate-400')}>CLÁSSICO</button>
-      <button type="button" onClick={() => setGameMode('challenge')} className={cn('rounded-xl border-2 px-3 py-3 text-sm font-black transition', gameMode === 'challenge' ? 'border-fuchsia-400 bg-fuchsia-400/15 text-fuchsia-200' : 'border-transparent text-slate-400')}>DESAFIO</button>
-    </div>
     <input className="input-dark" value={name} onChange={e => setName(e.target.value)} placeholder="Seu nickname" maxLength={18}/>
     <button onClick={() => enter('create')} disabled={busy} style={{ backgroundColor: "#18bff2", color: "#07152b" }} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-cyan-800 px-8 py-5 text-xl font-black shadow-[0_12px_28px_rgba(24,191,242,.28)] transition-all hover:brightness-110 active:translate-y-2 active:border-b-0 disabled:opacity-50"><Clock size={27}/> CRIAR SALA</button>
     <div className="flex items-center gap-3"><div className="h-px flex-1 bg-slate-700"/><span className="text-xs font-black text-slate-500">OU</span><div className="h-px flex-1 bg-slate-700"/></div>

@@ -4,9 +4,10 @@ import { notifyGameEnded } from '@/hooks/useFeedback';
 
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
-import { Loader2, Copy, Users, Crown, LogOut, Play, Send, Clock, Trophy, X, Settings, Sparkles, Star, ArrowLeft, Home, UserX, Info } from 'lucide-react';
+import { Loader2, Copy, Users, Crown, LogOut, Play, Send, Clock, Trophy, X, Settings, Sparkles, Star, ArrowLeft, Home, UserX, Info, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useGameIntermission } from '@/components/GameIntermission';
+import { GameIdentityLayout } from '@/components/GameIdentityLayout';
 const sincroniaLogo = "/sincronia-logo.webp";
 import jogosCover from '@/assets/jogos_cover.png';
 import animesCover from '@/assets/submode-animes.png';
@@ -141,15 +142,58 @@ const RC_THEME_CARDS: RCThemeCard[] = [
 // ── ThemeSelectScreen ──────────────────────────────────────────────────
 
 const RCThemeSelectScreen = () => {
-  const { room, selectTheme } = useRCGameStore();
+  const { room, user, selectTheme } = useRCGameStore();
 
-  if (!room) return null;
+  if (!room || !user) return null;
 
   // Back to lobby without changing theme
   const goBackToLobby = () => {
     useRCGameStore.setState({ phase: 'lobby' });
   };
 
+  const players = room.players || [];
+
+  return (
+    <GameIdentityLayout players={players} userId={user.uid} hostId={room.hostId}>
+      <div className="flex items-center justify-between gap-4 border-b border-slate-700/70 pb-5">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[.2em] text-emerald-300">Sala {room.code}</p>
+          <h1 className="mt-1 text-2xl font-black text-white sm:text-4xl">Escolha o tema</h1>
+        </div>
+        <button onClick={goBackToLobby} className="tj-secondary-btn inline-flex items-center gap-2 px-4 py-3">
+          <ArrowLeft className="h-4 w-4" /> Voltar
+        </button>
+      </div>
+
+      <div className="mt-6 grid flex-1 grid-cols-1 gap-4 overflow-y-auto pr-1 sm:grid-cols-2">
+        {RC_THEME_CARDS.map((theme) => (
+          <button
+            key={theme.id}
+            onClick={() => selectTheme(theme.id)}
+            className="tj-player-card group relative overflow-hidden text-left transition hover:-translate-y-1 hover:border-emerald-400/60"
+          >
+            {theme.cover && (
+              <div className="h-28 overflow-hidden border-b border-slate-700/80">
+                <img src={theme.cover} alt={theme.name} className="h-full w-full object-cover opacity-65 transition group-hover:scale-105 group-hover:opacity-90" />
+              </div>
+            )}
+            <div className="flex items-start gap-4 p-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-400/15 text-3xl">{theme.emoji}</div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-black text-white">{theme.name}</h2>
+                <p className="mt-1 text-xs leading-relaxed text-slate-400">{theme.description}</p>
+                <p className="mt-3 flex items-center gap-1 text-[11px] font-black uppercase tracking-wide text-emerald-300"><Sparkles className="h-3.5 w-3.5" /> {theme.questionCount} perguntas</p>
+              </div>
+              <Play className="mt-2 h-5 w-5 fill-emerald-300 text-emerald-300 opacity-0 transition group-hover:opacity-100" />
+            </div>
+            {theme.isRecommended && <span className="absolute right-3 top-3 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 px-2.5 py-1 text-[10px] font-black uppercase text-white"><Star className="mr-1 inline h-3 w-3 fill-current" /> Recomendado</span>}
+          </button>
+        ))}
+      </div>
+    </GameIdentityLayout>
+  );
+
+  /* Layout legado mantido temporariamente abaixo; o fluxo usa o painel unificado acima. */
   return (
     <div className="min-h-screen w-full flex flex-col items-center bg-[#1a1b2e] px-4 py-6">
       <div className="fixed inset-0 pointer-events-none z-0">
@@ -272,6 +316,9 @@ const RCLobbyScreen = () => {
     startGame({ mode: config.mode || 'classico', rounds: 10, timePerRound: 30, category: config.category });
   };
 
+  return <GameIdentityLayout players={players} userId={user.uid} hostId={room.hostId} detail={(player) => <p className="mt-1 text-[9px] font-black uppercase text-emerald-300">{player.connected === false ? 'Desconectado' : `Pronto · ${player.score ?? 0} pts`}</p>}><header className="flex flex-col gap-3 border-b border-slate-700/60 pb-5 sm:flex-row sm:items-center sm:justify-between"><button onClick={copyLink} className="text-left"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Código da sala</p><div className="mt-1 flex items-center gap-3"><strong className="font-mono text-4xl font-black tracking-widest text-amber-400">{room.code}</strong><span className="rounded-xl border border-slate-700 bg-slate-900 p-2"><Copy className="h-5 w-5"/></span></div></button><button onClick={leaveGame} className="h-12 rounded-xl border border-slate-700 bg-slate-900 px-5 font-black text-slate-300"><LogOut className="mr-2 inline h-5 w-5"/>Sair da Sala</button></header><section className="flex flex-1 flex-col items-center justify-center py-8 text-center"><div className="tj-icon-box tj-icon-box--xl bg-violet-500/15 text-violet-300"><Sparkles className="h-9 w-9"/></div><img src={sincroniaLogo} alt="Sincronia" className="mt-5 h-16 object-contain sm:h-20"/><h2 className="mt-5 text-2xl font-black sm:text-3xl">Sala pronta para jogar</h2><p className="mt-2 max-w-xl text-slate-400">Pense como seus amigos e tente responder a mesma coisa.</p><div className="mt-7 w-full max-w-md space-y-3">{isHost?<><button onClick={goBackToThemeSelect} className="h-14 w-full rounded-2xl border-2 border-slate-700 bg-slate-900 font-black text-slate-200"><Sparkles className="mr-2 inline h-5 w-5"/>{config.category?`TEMA: ${selectedTheme?.name || config.category}`:'ESCOLHER TEMA'}</button><button onClick={handleStart} disabled={players.length<2||!config.category} className="h-16 w-full rounded-2xl border-b-4 border-violet-800 bg-violet-500 text-lg font-black text-white disabled:opacity-40"><Play className="mr-2 inline h-5 w-5 fill-current"/>INICIAR JOGO</button></>:<div className="tj-inset border-violet-400/35 p-5 font-black text-violet-300">Aguardando o capitão...</div>}</div></section></GameIdentityLayout>;
+
+  /* Layout anterior preservado temporariamente para comparação. */
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#1a1b2e] px-4 py-6">
       {/* Background decorations */}
@@ -470,7 +517,7 @@ const RCLobbyScreen = () => {
 // ── QuestionScreen ─────────────────────────────────────────────────────
 
 const RCQuestionScreen = () => {
-  const { currentRound, totalRounds, currentQuestion, timeLeft, myAnswer, setMyAnswer, submitAnswer, hasSubmitted, answeredCount, room, returnToLobby } = useRCGameStore();
+  const { currentRound, totalRounds, currentQuestion, timeLeft, myAnswer, setMyAnswer, submitAnswer, hasSubmitted, answeredCount, room, user, returnToLobby } = useRCGameStore();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -487,6 +534,8 @@ const RCQuestionScreen = () => {
 
   const totalPlayers = room?.players.length || 0;
   const urgentTime = timeLeft <= 5;
+
+  if (room && user) return <GameIdentityLayout players={room.players} userId={user.uid} hostId={room.hostId} detail={(player)=><p className="mt-1 text-[9px] font-black uppercase text-emerald-300">{player.score ?? 0} pontos</p>}><header className="flex items-center justify-between border-b border-slate-700/60 pb-5"><div><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Rodada {currentRound} de {totalRounds}</p><h1 className="mt-1 text-xl font-black">Sincronia</h1></div><div className={cn("rounded-full border px-4 py-2 font-black",urgentTime?"border-rose-400/40 bg-rose-500/10 text-rose-300 animate-pulse":"border-violet-400/30 bg-violet-500/10 text-violet-300")}><Clock className="mr-2 inline h-4 w-4"/>{timeLeft}s</div></header><section className="flex flex-1 flex-col items-center justify-center py-8 text-center"><div className="tj-icon-box tj-icon-box--xl bg-violet-500/15 text-violet-300"><Sparkles className="h-9 w-9"/></div><p className="mt-5 text-[10px] font-black uppercase tracking-[.2em] text-violet-300">Pense como seus amigos</p><h2 className="mt-3 max-w-3xl text-2xl font-black leading-tight sm:text-4xl">{currentQuestion}</h2><div className="mt-8 w-full max-w-xl">{!hasSubmitted?<div className="tj-inset p-5"><input ref={inputRef} value={myAnswer} onChange={e=>setMyAnswer(e.target.value)} onKeyDown={handleKeyDown} placeholder="Digite sua resposta..." maxLength={100} className="h-16 w-full rounded-xl border-2 border-slate-700 bg-slate-950 px-5 text-center text-xl font-black text-white outline-none focus:border-violet-400"/><button onClick={handleSubmit} disabled={!myAnswer.trim()} className="mt-3 h-14 w-full rounded-2xl border-b-4 border-violet-800 bg-violet-500 font-black text-white disabled:opacity-40"><Send className="mr-2 inline h-5 w-5"/>ENVIAR RESPOSTA</button></div>:<div className="tj-inset border-emerald-400/35 p-5"><CheckCircle className="mx-auto h-7 w-7 text-emerald-300"/><p className="mt-2 font-black text-emerald-300">Resposta enviada: {myAnswer}</p><p className="mt-1 text-sm text-slate-400">Aguardando jogadores ({answeredCount}/{totalPlayers})</p></div>}</div></section><button onClick={returnToLobby} className="h-12 rounded-xl border-2 border-slate-700 bg-slate-900 font-black text-slate-400"><Home className="mr-2 inline h-4 w-4"/>Voltar ao lobby</button></GameIdentityLayout>;
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#1a1b2e] px-4">
@@ -576,6 +625,8 @@ const RCRoundResultScreen = () => {
 
   // Sort players by score descending
   const sortedPlayers = [...room.players].sort((a, b) => (scores[b.uid] || 0) - (scores[a.uid] || 0));
+
+  return <GameIdentityLayout players={sortedPlayers} userId={user.uid} hostId={room.hostId} detail={(player)=><p className="mt-1 text-[9px] font-black uppercase text-emerald-300">{scores[player.uid] || 0} pontos</p>}><header className="border-b border-slate-700/60 pb-5"><p className="text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Rodada {currentRound} de {totalRounds}</p><h1 className="mt-1 text-xl font-black">Respostas em comum</h1></header><section className="flex-1 py-6"><div className="tj-inset border-violet-400/30 p-5 text-center"><Sparkles className="mx-auto h-7 w-7 text-violet-300"/><h2 className="mt-3 text-xl font-black sm:text-2xl">{roundResult.questionText}</h2></div><div className="mt-5 space-y-2.5">{roundResult.groups.map((group,index)=><article key={index} className={cn("tj-player-card p-4",group.points>0&&"is-current")}><div className="flex items-center justify-between gap-3"><strong className="text-lg uppercase text-white">{group.original[0]}</strong><span className={cn("rounded-full px-3 py-1 text-[10px] font-black uppercase",group.points>0?"bg-emerald-400/15 text-emerald-300":"bg-slate-800 text-slate-500")}>{group.players.length} iguais · {group.points>0?'+1 ponto':'0 pontos'}</span></div><div className="mt-2 flex flex-wrap gap-2">{group.players.map(player=><span key={player.uid} className={cn("rounded-lg bg-slate-950/60 px-2 py-1 text-xs font-bold text-slate-400",player.uid===user.uid&&"text-violet-300")}>{player.name}</span>)}</div></article>)}</div></section>{isHost?<button onClick={()=>showIntermission(nextRound)} className="h-16 rounded-2xl border-b-4 border-violet-800 bg-violet-500 text-lg font-black text-white">{isLastRound?'VER RESULTADO FINAL':'PRÓXIMA RODADA'} <Play className="ml-2 inline h-5 w-5 fill-current"/></button>:<div className="tj-inset py-5 text-center font-bold text-slate-400">Aguardando o capitão...</div>}</GameIdentityLayout>;
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#1a1b2e] px-4 py-8">
@@ -673,6 +724,8 @@ const RCFinalScoreScreen = () => {
 
   const winner = sortedPlayers[0];
   const isWinner = winner?.uid === user.uid;
+
+  return <GameIdentityLayout players={sortedPlayers} userId={user.uid} hostId={room.hostId} detail={(player)=><p className="mt-1 text-[9px] font-black uppercase text-amber-300">{player.score} pontos</p>}><section className="flex flex-1 flex-col items-center justify-center text-center"><Trophy className="h-16 w-16 text-amber-300"/><p className="mt-5 text-[10px] font-black uppercase tracking-[.22em] text-amber-300">Campeão da partida</p><h1 className="mt-2 text-4xl font-black sm:text-6xl">{winner?.name}</h1><p className="mt-3 text-lg font-bold text-violet-300">{winner?.score} pontos</p><p className="mt-2 text-slate-400">{isWinner?'Você pensou como a maioria!':'Foi quem mais entrou em sintonia com o grupo.'}</p><div className="mt-8 w-full max-w-xl space-y-3">{isHost&&<button onClick={returnToLobby} className="h-16 w-full rounded-2xl border-b-4 border-violet-800 bg-violet-500 text-lg font-black text-white"><Play className="mr-2 inline h-5 w-5 fill-current"/>JOGAR NOVAMENTE</button>}<button onClick={leaveGame} className="h-14 w-full rounded-2xl border-2 border-slate-700 bg-slate-900 font-black text-slate-300"><LogOut className="mr-2 inline h-5 w-5"/>SAIR DA SALA</button></div></section></GameIdentityLayout>;
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#1a1b2e] px-4 py-8">
