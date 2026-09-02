@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CheckCircle2, Clock3, Copy, Flag, Forward, Home, LogOut, Play, RotateCcw,
-  Settings, SkipForward, Sparkles, Trophy, X,
+  Plus, Settings, SkipForward, Sparkles, Trophy, X,
 } from "lucide-react";
 import {
   GameIdentityAvatar, GameIdentityCharacterPicker, GameIdentityLayout,
@@ -25,7 +25,7 @@ type Room = {
   voteReady: Record<string, boolean>;
   votingComplete: boolean;
   serverNow: number;
-  settings: { durationSeconds: number; excludedLetters: string[] };
+  settings: { durationSeconds: number; excludedLetters: string[]; selectedCategories: string[] };
   revealAt?: number;
   endAt?: number;
   stopBy?: string;
@@ -33,6 +33,13 @@ type Room = {
 };
 
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+const DEFAULT_CATEGORIES = ["Nome", "Animal", "Comida", "Cidade ou país", "Filme ou série", "Profissão", "Objeto", "Marca"];
+const EXTRA_CATEGORIES = [
+  "Cor", "Fruta", "Cidade", "País", "Filme", "Série", "Parte do corpo", "Personagem", "Desenho animado", "Novela",
+  "Cantor ou cantora", "Música", "Esporte", "Time", "Celebridade", "Verbo",
+  "Adjetivo", "Roupa", "Lugar", "Órgão", "Livro", "Jogo", "Veículo", "Minha sogra é",
+];
+const CATEGORY_OPTIONS = [...DEFAULT_CATEGORIES, ...EXTRA_CATEGORIES];
 
 function formatTime(milliseconds: number) {
   const seconds = Math.max(0, Math.ceil(milliseconds / 1000));
@@ -57,6 +64,8 @@ export default function StopGame() {
   const [now, setNow] = useState(Date.now());
   const [rollingLetter, setRollingLetter] = useState("A");
   const [showSettings, setShowSettings] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
+  const [forcedRollUntil, setForcedRollUntil] = useState(0);
   sessionStorage.setItem("stop_player_id", playerId.current);
 
   const request = useCallback(async (path: string, body?: object) => {
@@ -92,14 +101,14 @@ export default function StopGame() {
   }, []);
 
   useEffect(() => {
-    if (room?.status !== "rolling") return;
+    if (room?.status !== "rolling" && Date.now() >= forcedRollUntil) return;
     let index = 0;
     const spin = window.setInterval(() => {
       index = (index + 1) % LETTERS.length;
       setRollingLetter(LETTERS[index]);
     }, 95);
     return () => window.clearInterval(spin);
-  }, [room?.status]);
+  }, [room?.status, forcedRollUntil]);
 
   const act = async (endpoint: string, body: object = {}) => {
     if (!room) return;
@@ -141,6 +150,31 @@ export default function StopGame() {
     .filter((item): item is { player: Player; answer: Answer } => Boolean(item.answer));
   const anonymousCategoryAnswers = [...categoryAnswers].sort((first, second) => anonymousOrder(`${me.uid}:${voteCategory}:${first.player.uid}`) - anonymousOrder(`${me.uid}:${voteCategory}:${second.player.uid}`));
   const ranking = [...room.players].sort((a, b) => b.score - a.score);
+  const selectedCategories = room.settings.selectedCategories?.length ? room.settings.selectedCategories : DEFAULT_CATEGORIES;
+  const forcedRollRemaining = Math.max(0, forcedRollUntil - Date.now());
+  const showRolling = room.status === "rolling" || (room.status === "playing" && forcedRollRemaining > 0);
+  const showPlaying = room.status === "playing" && forcedRollRemaining <= 0;
+  const isLetterSpinning = forcedRollRemaining > 1800 || (forcedRollRemaining <= 0 && room.status === "rolling" && Boolean(room.revealAt && room.revealAt - now > 1800));
+
+  const updateSettings = (changes: Partial<Room["settings"]>) => act("settings", {
+    playerId: me.uid,
+    durationSeconds: room.settings.durationSeconds,
+    excludedLetters: room.settings.excludedLetters,
+    selectedCategories,
+    ...changes,
+  });
+
+  const startRound = async () => {
+    setForcedRollUntil(Date.now() + 6500);
+    await act("start", { playerId: me.uid });
+  };
+
+  const addCustomCategory = () => {
+    const category = customCategory.trim().replace(/\s+/g, " ");
+    if (category.length < 2 || selectedCategories.length >= 20 || selectedCategories.some(item => item.toLocaleLowerCase("pt-BR") === category.toLocaleLowerCase("pt-BR"))) return;
+    void updateSettings({ selectedCategories: [...selectedCategories, category] });
+    setCustomCategory("");
+  };
 
   const sidebarHeader = <div className="space-y-3">
     <button onClick={() => navigator.clipboard.writeText(room.code)} className="group flex w-full items-center justify-between rounded-xl border border-slate-700 bg-[#111a30] px-4 py-3 text-left shadow-[0_4px_0_#080d1b] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#F27052]/60 hover:bg-[#17213a] hover:shadow-[0_6px_0_#080d1b] active:translate-y-1 active:shadow-none">
@@ -179,16 +213,51 @@ export default function StopGame() {
 
         {isHost && <button onClick={() => setShowSettings(true)} className="mt-7 flex h-12 items-center gap-2 rounded-xl border border-[#F27052]/30 bg-[#503FBF]/30 px-5 text-sm font-black text-[#EBB3F2] shadow-[0_4px_0_#3f0b18] transition-all hover:-translate-y-0.5 hover:border-[#EBB3F2] hover:bg-[#F27052]/15 hover:text-white active:translate-y-1 active:shadow-none"><Settings className="h-5 w-5"/>Configurações</button>}
         {!isHost && <p className="mt-6 text-sm font-bold text-slate-500">Partida de {room.settings.durationSeconds / 60} minutos</p>}
-        {isHost ? <button onClick={() => act("start", { playerId: me.uid })} disabled={busy || room.players.length < 2 || room.settings.excludedLetters.length >= LETTERS.length} className="mt-6 h-16 w-full max-w-2xl rounded-2xl border-2 border-[#EBB3F2] border-b-[6px] border-b-[#503FBF] bg-[#6650F2] text-lg font-black shadow-[0_12px_35px_rgba(244,63,94,.24)] transition hover:-translate-y-0.5 hover:brightness-110 active:translate-y-1 active:border-b-2 disabled:opacity-40"><Play className="mr-2 inline h-5 w-5 fill-current"/>SORTEAR LETRA E COMEÇAR</button> : <div className="mt-6 w-full max-w-2xl rounded-2xl border border-[#F27052]/20 bg-[#503FBF]/20 py-5 font-black text-[#EBB3F2]">Aguardando o capitão...</div>}
+        {isHost ? <button onClick={startRound} disabled={busy || room.players.length < 2 || room.settings.excludedLetters.length >= LETTERS.length || selectedCategories.length < 4} className="mt-6 h-16 w-full max-w-2xl rounded-2xl border-2 border-[#EBB3F2] border-b-[6px] border-b-[#503FBF] bg-[#6650F2] text-lg font-black shadow-[0_12px_35px_rgba(244,63,94,.24)] transition hover:-translate-y-0.5 hover:brightness-110 active:translate-y-1 active:border-b-2 disabled:opacity-40"><Play className="mr-2 inline h-5 w-5 fill-current"/>SORTEAR LETRA E COMEÇAR</button> : <div className="mt-6 w-full max-w-2xl rounded-2xl border border-[#F27052]/20 bg-[#503FBF]/20 py-5 font-black text-[#EBB3F2]">Aguardando o capitão...</div>}
       </section>}
 
-      {showSettings && room.status === "waiting" && <div className="fixed inset-0 z-[120] grid place-items-center bg-slate-950/80 p-4 backdrop-blur-sm" onMouseDown={() => setShowSettings(false)}><div onMouseDown={event => event.stopPropagation()} className="w-full max-w-xl rounded-3xl border border-[#F27052]/30 bg-[#292052] p-6 shadow-[0_24px_90px_rgba(0,0,0,.55)]"><header className="flex items-center justify-between border-b border-slate-700 pb-4"><div><p className="text-[10px] font-black uppercase tracking-[.2em] text-[#EBB3F2]">STOP em sequência</p><h2 className="mt-1 text-2xl font-black">Configurações da partida</h2></div><button onClick={() => setShowSettings(false)} className="grid h-10 w-10 place-items-center rounded-xl border border-slate-700 bg-slate-900 text-slate-400 transition hover:border-[#F27052] hover:text-white"><X className="h-5 w-5"/></button></header><div className="mt-5"><label className="text-[10px] font-black uppercase tracking-[.16em] text-slate-400">Tempo total</label><div className="mt-2 grid grid-cols-5 gap-2">{[120, 180, 300, 480, 600].map(seconds => <button key={seconds} onClick={() => act("settings", { playerId: me.uid, durationSeconds: seconds, excludedLetters: room.settings.excludedLetters })} className={cn("h-11 rounded-xl border font-black transition hover:-translate-y-0.5", room.settings.durationSeconds === seconds ? "border-[#EBB3F2] bg-[#F27052] text-white shadow-[0_4px_0_#503FBF]" : "border-slate-700 bg-slate-950 text-slate-400 hover:border-[#F27052]/60")}>{seconds / 60} min</button>)}</div><label className="mt-6 block text-[10px] font-black uppercase tracking-[.16em] text-slate-400">Letras fora do sorteio</label><p className="mt-1 text-xs text-slate-500">Toque nas letras difíceis que sua turma não quer jogar.</p><div className="mt-3 grid grid-cols-7 gap-2 sm:grid-cols-9">{LETTERS.map(letter => { const excluded = room.settings.excludedLetters.includes(letter); return <button key={letter} onClick={() => act("settings", { playerId: me.uid, durationSeconds: room.settings.durationSeconds, excludedLetters: excluded ? room.settings.excludedLetters.filter(item => item !== letter) : [...room.settings.excludedLetters, letter] })} className={cn("grid aspect-square place-items-center rounded-lg border font-black transition hover:scale-105", excluded ? "border-[#F27052] bg-[#F27052]/20 text-[#EBB3F2] line-through" : "border-slate-700 bg-slate-950 text-slate-300 hover:border-[#F27052]")}>{letter}</button>; })}</div></div><button onClick={() => setShowSettings(false)} className="mt-6 h-12 w-full rounded-xl border-b-4 border-[#503FBF] bg-[#6650F2] font-black">SALVAR CONFIGURAÇÕES</button></div></div>}
+      {showSettings && room.status === "waiting" && <div className="fixed inset-0 z-[120] grid place-items-center overflow-y-auto bg-slate-950/80 p-4 backdrop-blur-sm" onMouseDown={() => setShowSettings(false)}>
+        <div onMouseDown={event => event.stopPropagation()} className="my-4 w-full max-w-2xl rounded-3xl border border-[#F27052]/30 bg-[#292052] p-5 shadow-[0_24px_90px_rgba(0,0,0,.55)] sm:p-6">
+          <header className="flex items-center justify-between border-b border-slate-700 pb-4">
+            <div><p className="text-[10px] font-black uppercase tracking-[.2em] text-[#EBB3F2]">STOP em sequência</p><h2 className="mt-1 text-2xl font-black">Configurações da partida</h2></div>
+            <button onClick={() => setShowSettings(false)} className="grid h-10 w-10 place-items-center rounded-xl border border-slate-700 bg-slate-900 text-slate-400 transition hover:border-[#F27052] hover:text-white"><X className="h-5 w-5"/></button>
+          </header>
 
-      {room.status === "rolling" && <section className="grid flex-1 place-items-center py-10 text-center">
-        <div className="min-w-0 w-full max-w-3xl"><p className="text-[10px] font-black uppercase tracking-[.2em] text-[#EBB3F2] sm:text-[11px] sm:tracking-[.28em]">Roleta de letras</p><h1 className="mx-auto mt-2 max-w-full text-3xl font-black leading-tight sm:text-4xl">Qual será a letra?</h1>{room.revealAt && room.revealAt - now > 1800 ? <div className="relative mt-7 w-full min-w-0 overflow-hidden rounded-2xl border-2 border-[#F27052]/30 bg-[#503FBF]/25 px-2 py-9 shadow-[0_8px_0_#503FBF] sm:mt-10 sm:rounded-[2rem] sm:px-6 sm:py-12 sm:shadow-[0_12px_0_#503FBF,0_24px_70px_rgba(244,63,94,.2)]"><div className="pointer-events-none absolute inset-y-0 left-1/2 w-24 -translate-x-1/2 border-x-2 border-[#EBB3F2]/60 bg-[#F27052]/10 sm:w-32"/><div key={rollingLetter} className="relative flex min-w-0 items-center justify-center gap-2 animate-[pulse_.16s_ease-in-out] sm:animate-[bounce_.18s_ease-in-out] sm:gap-4">{[-2,-1,0,1,2].map(offset => { const index = (LETTERS.indexOf(rollingLetter) + offset + LETTERS.length) % LETTERS.length; return <span key={offset} className={cn("place-items-center rounded-xl border-2 font-black transition-all sm:rounded-2xl", offset === 0 ? "grid h-28 w-24 shrink-0 border-white bg-[#F27052] text-6xl text-white shadow-[0_7px_0_#503FBF] sm:h-32 sm:w-28 sm:scale-110 sm:text-7xl" : Math.abs(offset) === 1 ? "grid h-20 w-16 shrink-0 border-[#F27052]/30 bg-[#503FBF]/50 text-3xl text-[#EBB3F2] opacity-65 sm:h-24 sm:w-20 sm:text-4xl" : "hidden h-20 w-16 shrink-0 border-[#F27052]/10 bg-[#503FBF]/30 text-3xl text-[#EBB3F2] opacity-25 sm:grid")}>{LETTERS[index]}</span>; })}</div><p className="mt-7 animate-pulse text-xs font-black uppercase tracking-[.18em] text-[#EBB3F2] sm:mt-8 sm:text-sm sm:tracking-[.24em]">Sorteando...</p></div> : <div className="relative mx-auto mt-10 grid h-52 w-52 place-items-center bg-[#F27052] drop-shadow-[0_12px_0_#503FBF] [clip-path:polygon(25%_3%,75%_3%,100%_50%,75%_97%,25%_97%,0_50%)] sm:mt-12 sm:h-64 sm:w-64 sm:scale-110 sm:drop-shadow-[0_18px_0_#503FBF]"><div className="grid h-[178px] w-[178px] place-items-center border-[5px] border-white/90 [clip-path:inherit] sm:h-[220px] sm:w-[220px] sm:border-[6px]"><span className="text-7xl font-black text-white sm:text-9xl">{room.letter}</span></div><Sparkles className="absolute -right-4 -top-5 h-11 w-11 text-[#EBB3F2] sm:-right-8 sm:-top-7 sm:h-16 sm:w-16"/></div>}<p className="mx-auto mt-9 max-w-full text-xl font-black leading-tight text-white sm:mt-12 sm:text-2xl">{room.revealAt && room.revealAt - now <= 1800 ? `A letra sorteada foi ${room.letter}!` : "A roleta está girando"}</p></div>
+          <div className="mt-5">
+            <label className="text-[10px] font-black uppercase tracking-[.16em] text-slate-400">Tempo total</label>
+            <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-5">{[120, 180, 300, 480, 600].map(seconds => <button key={seconds} onClick={() => updateSettings({ durationSeconds: seconds })} className={cn("h-11 rounded-xl border font-black transition hover:-translate-y-0.5", room.settings.durationSeconds === seconds ? "border-[#EBB3F2] bg-[#F27052] text-white shadow-[0_4px_0_#503FBF]" : "border-slate-700 bg-slate-950 text-slate-400 hover:border-[#F27052]/60")}>{seconds / 60} min</button>)}</div>
+
+            <div className="mt-6 flex items-end justify-between gap-3">
+              <div><label className="text-[10px] font-black uppercase tracking-[.16em] text-slate-400">Temas da partida</label><p className="mt-1 text-xs text-slate-500">Os oito clássicos já começam selecionados. Escolha entre 4 e 20.</p></div>
+              <strong className="shrink-0 rounded-lg bg-[#503FBF] px-3 py-1 text-xs text-[#EBB3F2]">{selectedCategories.length}/20</strong>
+            </div>
+            <div className="mt-3 grid max-h-52 grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
+              {CATEGORY_OPTIONS.map(category => {
+                const selected = selectedCategories.includes(category);
+                const disabled = selected ? selectedCategories.length <= 4 : selectedCategories.length >= 20;
+                return <button key={category} disabled={disabled} onClick={() => updateSettings({ selectedCategories: selected ? selectedCategories.filter(item => item !== category) : [...selectedCategories, category] })} className={cn("min-h-11 rounded-xl border px-3 py-2 text-left text-xs font-black transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-30", selected ? "border-[#79D9AC] bg-[#79D9AC] text-[#292052]" : "border-slate-700 bg-slate-950 text-slate-300 hover:border-[#6650F2]")}>{selected ? "✓ " : "+ "}{category}</button>;
+              })}
+              {selectedCategories.filter(category => !CATEGORY_OPTIONS.includes(category)).map(category => <button key={category} disabled={selectedCategories.length <= 4} onClick={() => updateSettings({ selectedCategories: selectedCategories.filter(item => item !== category) })} className="min-h-11 rounded-xl border border-[#EBB3F2] bg-[#EBB3F2] px-3 py-2 text-left text-xs font-black text-[#292052] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50">✓ {category}</button>)}
+            </div>
+            <div className="mt-3 flex gap-2">
+              <input value={customCategory} onChange={event => setCustomCategory(event.target.value)} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); addCustomCategory(); } }} maxLength={30} placeholder="Ex.: Órgãos, séries favoritas..." className="h-11 min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-950 px-4 text-sm font-bold outline-none placeholder:text-slate-600 focus:border-[#6650F2]"/>
+              <button onClick={addCustomCategory} disabled={customCategory.trim().length < 2 || selectedCategories.length >= 20} className="flex h-11 items-center gap-1 rounded-xl border border-[#EBB3F2] bg-[#6650F2] px-4 text-xs font-black transition hover:-translate-y-0.5 disabled:opacity-30"><Plus className="h-4 w-4"/>Adicionar</button>
+            </div>
+            {selectedCategories.length < 4 && <p className="mt-2 text-xs font-bold text-[#F27052]">Selecione pelo menos 4 temas para começar.</p>}
+
+            <label className="mt-6 block text-[10px] font-black uppercase tracking-[.16em] text-slate-400">Letras fora do sorteio</label>
+            <p className="mt-1 text-xs text-slate-500">Toque nas letras difíceis que sua turma não quer jogar.</p>
+            <div className="mt-3 grid grid-cols-7 gap-2 sm:grid-cols-9">{LETTERS.map(letter => { const excluded = room.settings.excludedLetters.includes(letter); return <button key={letter} onClick={() => updateSettings({ excludedLetters: excluded ? room.settings.excludedLetters.filter(item => item !== letter) : [...room.settings.excludedLetters, letter] })} className={cn("grid aspect-square place-items-center rounded-lg border font-black transition hover:scale-105", excluded ? "border-[#F27052] bg-[#F27052]/20 text-[#EBB3F2] line-through" : "border-slate-700 bg-slate-950 text-slate-300 hover:border-[#F27052]")}>{letter}</button>; })}</div>
+          </div>
+          <button onClick={() => setShowSettings(false)} disabled={selectedCategories.length < 4} className="mt-6 h-12 w-full rounded-xl border-b-4 border-[#503FBF] bg-[#6650F2] font-black disabled:opacity-40">SALVAR CONFIGURAÇÕES</button>
+        </div>
+      </div>}
+
+      {showRolling && <section className="grid flex-1 place-items-center py-10 text-center">
+        <div className="min-w-0 w-full max-w-3xl"><p className="text-[10px] font-black uppercase tracking-[.2em] text-[#EBB3F2] sm:text-[11px] sm:tracking-[.28em]">Roleta de letras</p><h1 className="mx-auto mt-2 max-w-full text-3xl font-black leading-tight sm:text-4xl">Qual será a letra?</h1>{isLetterSpinning ? <div className="relative mt-7 w-full min-w-0 overflow-hidden rounded-2xl border-2 border-[#F27052]/30 bg-[#503FBF]/25 px-2 py-9 shadow-[0_8px_0_#503FBF] sm:mt-10 sm:rounded-[2rem] sm:px-6 sm:py-12 sm:shadow-[0_12px_0_#503FBF,0_24px_70px_rgba(244,63,94,.2)]"><div className="pointer-events-none absolute inset-y-0 left-1/2 w-24 -translate-x-1/2 border-x-2 border-[#EBB3F2]/60 bg-[#F27052]/10 sm:w-32"/><div key={rollingLetter} className="relative flex min-w-0 items-center justify-center gap-2 animate-[pulse_.16s_ease-in-out] sm:animate-[bounce_.18s_ease-in-out] sm:gap-4">{[-2,-1,0,1,2].map(offset => { const index = (LETTERS.indexOf(rollingLetter) + offset + LETTERS.length) % LETTERS.length; return <span key={offset} className={cn("place-items-center rounded-xl border-2 font-black transition-all sm:rounded-2xl", offset === 0 ? "grid h-28 w-24 shrink-0 border-white bg-[#F27052] text-6xl text-white shadow-[0_7px_0_#503FBF] sm:h-32 sm:w-28 sm:scale-110 sm:text-7xl" : Math.abs(offset) === 1 ? "grid h-20 w-16 shrink-0 border-[#F27052]/30 bg-[#503FBF]/50 text-3xl text-[#EBB3F2] opacity-65 sm:h-24 sm:w-20 sm:text-4xl" : "hidden h-20 w-16 shrink-0 border-[#F27052]/10 bg-[#503FBF]/30 text-3xl text-[#EBB3F2] opacity-25 sm:grid")}>{LETTERS[index]}</span>; })}</div><p className="mt-7 animate-pulse text-xs font-black uppercase tracking-[.18em] text-[#EBB3F2] sm:mt-8 sm:text-sm sm:tracking-[.24em]">Sorteando...</p></div> : <div className="relative mx-auto mt-10 grid h-52 w-52 place-items-center bg-[#F27052] drop-shadow-[0_12px_0_#503FBF] [clip-path:polygon(25%_3%,75%_3%,100%_50%,75%_97%,25%_97%,0_50%)] sm:mt-12 sm:h-64 sm:w-64 sm:scale-110 sm:drop-shadow-[0_18px_0_#503FBF]"><div className="grid h-[178px] w-[178px] place-items-center border-[5px] border-white/90 [clip-path:inherit] sm:h-[220px] sm:w-[220px] sm:border-[6px]"><span className="text-7xl font-black text-white sm:text-9xl">{room.letter}</span></div><Sparkles className="absolute -right-4 -top-5 h-11 w-11 text-[#EBB3F2] sm:-right-8 sm:-top-7 sm:h-16 sm:w-16"/></div>}<p className="mx-auto mt-9 max-w-full text-xl font-black leading-tight text-white sm:mt-12 sm:text-2xl">{!isLetterSpinning ? `A letra sorteada foi ${room.letter}!` : "A roleta está girando"}</p></div>
       </section>}
 
-      {room.status === "playing" && <section className="flex flex-1 flex-col py-4">
+      {showPlaying && <section className="flex flex-1 flex-col py-4">
         <div className="relative overflow-hidden rounded-[2rem] border-2 border-[#F27052]/30 bg-[#292052] p-4 shadow-[0_10px_0_#503FBF,0_24px_70px_rgba(244,63,94,.18)] sm:p-6">
           <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#F27052]/10 blur-3xl"/>
           <header className="relative flex items-center justify-between gap-3 border-b border-[#EBB3F2]/15 pb-5"><div className="rounded-xl border border-[#EBB3F2]/25 bg-[#503FBF]/40 px-4 py-2 text-left"><small className="block text-[9px] font-black uppercase tracking-[.18em] text-[#EBB3F2]">Categorias</small><strong className="text-xl">{me.currentIndex + 1}<span className="text-sm text-[#EBB3F2]">/{me.answers.length}</span></strong></div><div className="absolute left-1/2 top-[-8px] -translate-x-1/2"><div className="grid h-24 w-24 place-items-center bg-[#F27052] drop-shadow-[0_8px_0_#503FBF] [clip-path:polygon(25%_3%,75%_3%,100%_50%,75%_97%,25%_97%,0_50%)]"><div className="grid h-[78px] w-[78px] place-items-center border-4 border-white/90 [clip-path:inherit]"><span className="text-5xl font-black text-white">{room.letter}</span></div></div><small className="absolute left-1/2 top-1 -translate-x-1/2 text-[8px] font-black uppercase tracking-widest text-white">Letra</small></div><div className="flex items-center gap-2 rounded-xl border border-[#EBB3F2]/25 bg-[#503FBF]/40 px-3 py-2"><Clock3 className={cn("h-6 w-6 text-[#EBB3F2]", remaining < 20000 && "animate-pulse")}/><strong className={cn("font-mono text-lg", remaining < 20000 && "text-[#EBB3F2]")}>{formatTime(remaining)}</strong></div></header>

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { randomBytes } from "crypto";
 import { z } from "zod";
 
-const CATEGORIES = ["Nome", "Animal", "Comida", "Cidade ou país", "Filme ou série", "Profissão", "Objeto", "Marca"];
+const DEFAULT_CATEGORIES = ["Nome", "Animal", "Comida", "Cidade ou país", "Filme ou série", "Profissão", "Objeto", "Marca"];
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const BOT_ANSWERS: Record<string, string[]> = {
   A: ["Ana", "Arara", "Arroz", "Argentina", "Avatar", "Arquiteto", "Agulha", "Adidas"],
@@ -18,11 +18,11 @@ const BOT_ANSWERS: Record<string, string[]> = {
 type AnswerStatus = "pending" | "skipped" | "answered" | "noAnswer";
 type StopAnswer = { category: string; value: string; status: AnswerStatus };
 type StopPlayer = { uid: string; name: string; connected: boolean; characterIndex: number; answers: StopAnswer[]; currentIndex: number; finished: boolean; score: number };
-type StopRoom = { code: string; hostId: string; status: "waiting" | "rolling" | "playing" | "voting" | "results"; letter: string; players: StopPlayer[]; votes: Record<string, Record<string, boolean>>; prevalidation: Record<string, boolean>; voteCategoryIndex: number; voteEndsAt: number | null; voteReady: Record<string, boolean>; votingComplete: boolean; settings: { durationSeconds: number; excludedLetters: string[] }; revealAt: number | null; endAt: number | null; stopBy: string | null; stopAt: number | null; createdAt: number };
+type StopRoom = { code: string; hostId: string; status: "waiting" | "rolling" | "playing" | "voting" | "results"; letter: string; players: StopPlayer[]; votes: Record<string, Record<string, boolean>>; prevalidation: Record<string, boolean>; voteCategoryIndex: number; voteEndsAt: number | null; voteReady: Record<string, boolean>; votingComplete: boolean; settings: { durationSeconds: number; excludedLetters: string[]; selectedCategories: string[] }; revealAt: number | null; endAt: number | null; stopBy: string | null; stopAt: number | null; createdAt: number };
 const rooms = new Map<string, StopRoom>();
 
 function code() { let value = ""; do value = randomBytes(2).toString("hex").slice(0, 3).toUpperCase(); while (rooms.has(value)); return value; }
-function blankAnswers(): StopAnswer[] { return CATEGORIES.map(category => ({ category, value: "", status: "pending" })); }
+function blankAnswers(categories = DEFAULT_CATEGORIES): StopAnswer[] { return categories.map(category => ({ category, value: "", status: "pending" })); }
 function isBot(player: StopPlayer) { return player.uid.startsWith("stop-bot-"); }
 function looksValid(value: string, letter: string) {
   const clean = value.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z -]/g, "");
@@ -44,7 +44,7 @@ function addBotVotes(room: StopRoom) {
 }
 function resetVoteReady(room: StopRoom) { room.voteReady = {}; room.players.filter(isBot).forEach(player => { room.voteReady[player.uid] = true; }); }
 function advanceVoting(room: StopRoom, now = Date.now()) {
-  if (room.voteCategoryIndex < CATEGORIES.length - 1) { room.voteCategoryIndex += 1; room.voteEndsAt = now + 20_000; resetVoteReady(room); }
+  if (room.voteCategoryIndex < room.settings.selectedCategories.length - 1) { room.voteCategoryIndex += 1; room.voteEndsAt = now + 20_000; resetVoteReady(room); }
   else { room.votingComplete = true; room.voteEndsAt = null; room.voteReady = {}; }
 }
 function beginVoting(room: StopRoom, stoppedBy?: string) { room.status = "voting"; room.endAt = null; room.stopBy = stoppedBy || null; room.stopAt = Date.now(); room.voteCategoryIndex = 0; room.voteEndsAt = Date.now() + 20_000; room.votingComplete = false; prevalidate(room); addBotVotes(room); resetVoteReady(room); }
@@ -76,7 +76,7 @@ export function setupStopGame(app: Express) {
     const parsed = z.object({ playerId: z.string().min(1), nickname: z.string().trim().min(1).max(18) }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Digite um apelido válido." });
     const roomCode = code();
-    const room: StopRoom = { code: roomCode, hostId: parsed.data.playerId, status: "waiting", letter: "", players: [{ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, characterIndex: 0, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }], votes: {}, prevalidation: {}, voteCategoryIndex: 0, voteEndsAt: null, voteReady: {}, votingComplete: false, settings: { durationSeconds: 180, excludedLetters: [] }, revealAt: null, endAt: null, stopBy: null, stopAt: null, createdAt: Date.now() };
+    const room: StopRoom = { code: roomCode, hostId: parsed.data.playerId, status: "waiting", letter: "", players: [{ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, characterIndex: 0, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }], votes: {}, prevalidation: {}, voteCategoryIndex: 0, voteEndsAt: null, voteReady: {}, votingComplete: false, settings: { durationSeconds: 180, excludedLetters: [], selectedCategories: [...DEFAULT_CATEGORIES] }, revealAt: null, endAt: null, stopBy: null, stopAt: null, createdAt: Date.now() };
     if (parsed.data.nickname.toLocaleLowerCase("pt-BR") === "testeadm26") {
       ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"].forEach((name, index) => room.players.push({ uid: `stop-bot-${roomCode}-${index}`, name, connected: true, characterIndex: index + 1, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }));
     }
@@ -105,10 +105,11 @@ export function setupStopGame(app: Express) {
 
   app.post("/api/stop/rooms/:code/settings", (req, res) => {
     const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.status(404).json({ error: "Sala não encontrada." });
-    const parsed = z.object({ playerId: z.string(), durationSeconds: z.number().int().min(120).max(600), excludedLetters: z.array(z.string().length(1)).max(25) }).safeParse(req.body);
+    const parsed = z.object({ playerId: z.string(), durationSeconds: z.number().int().min(120).max(600), excludedLetters: z.array(z.string().length(1)).max(25), selectedCategories: z.array(z.string().trim().min(2).max(30)).min(4).max(20).optional() }).safeParse(req.body);
     if (!parsed.success || parsed.data.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode configurar." });
     if (room.status !== "waiting") return res.status(409).json({ error: "Configure antes de iniciar." });
-    room.settings = { durationSeconds: parsed.data.durationSeconds, excludedLetters: Array.from(new Set(parsed.data.excludedLetters.map(letter => letter.toUpperCase()).filter(letter => LETTERS.includes(letter)))) };
+    const selectedCategories = parsed.data.selectedCategories ? Array.from(new Set(parsed.data.selectedCategories.map(category => category.trim()).filter(Boolean))) : room.settings.selectedCategories;
+    room.settings = { durationSeconds: parsed.data.durationSeconds, excludedLetters: Array.from(new Set(parsed.data.excludedLetters.map(letter => letter.toUpperCase()).filter(letter => LETTERS.includes(letter)))), selectedCategories };
     res.json(publicRoom(room));
   });
 
@@ -118,7 +119,7 @@ export function setupStopGame(app: Express) {
     if (room.players.length < 2) return res.status(409).json({ error: "Entre com pelo menos 2 jogadores." });
     const availableLetters = LETTERS.filter(letter => !room.settings.excludedLetters.includes(letter)); if (!availableLetters.length) return res.status(409).json({ error: "Deixe pelo menos uma letra disponível." });
     room.status = "rolling"; room.letter = availableLetters[Math.floor(Math.random() * availableLetters.length)]; room.votes = {}; room.prevalidation = {}; room.voteCategoryIndex = 0; room.voteEndsAt = null; room.voteReady = {}; room.votingComplete = false; room.revealAt = Date.now() + 6500; room.endAt = room.revealAt + room.settings.durationSeconds * 1000; room.stopBy = null; room.stopAt = null;
-    room.players.forEach(player => { player.answers = blankAnswers(); player.currentIndex = 0; player.finished = false; player.score = 0; if (isBot(player)) { const bank = BOT_ANSWERS[room.letter]; player.answers = CATEGORIES.map((category,index) => ({ category, value: bank?.[index] || `${room.letter}${["na", "nimal", "omida", "idade", "ilme", "rofissional", "bjeto", "arca"][index]}`, status: "answered" as const })); player.finished = true; } }); res.json(publicRoom(room));
+    room.players.forEach(player => { player.answers = blankAnswers(room.settings.selectedCategories); player.currentIndex = 0; player.finished = false; player.score = 0; if (isBot(player)) { const bank = BOT_ANSWERS[room.letter]; player.answers = room.settings.selectedCategories.map((category,index) => ({ category, value: bank?.[DEFAULT_CATEGORIES.indexOf(category)] || `${room.letter}resposta${index + 1}`, status: "answered" as const })); player.finished = true; } }); res.json(publicRoom(room));
   });
 
   app.post("/api/stop/rooms/:code/answer", (req, res) => {
@@ -141,7 +142,7 @@ export function setupStopGame(app: Express) {
 
   app.post("/api/stop/rooms/:code/vote", (req, res) => {
     const room = rooms.get(req.params.code.toUpperCase()); if (!room || refreshRoom(room).status !== "voting" || room.votingComplete) return res.status(409).json({ error: "Votação indisponível." });
-    const parsed = z.object({ voterId: z.string(), playerId: z.string(), categoryIndex: z.number().int().min(0).max(CATEGORIES.length - 1), valid: z.boolean() }).safeParse(req.body); if (!parsed.success || parsed.data.categoryIndex !== room.voteCategoryIndex) return res.status(400).json({ error: "Voto inválido." });
+    const parsed = z.object({ voterId: z.string(), playerId: z.string(), categoryIndex: z.number().int().min(0).max(19), valid: z.boolean() }).safeParse(req.body); if (!parsed.success || parsed.data.categoryIndex !== room.voteCategoryIndex || parsed.data.categoryIndex >= room.settings.selectedCategories.length) return res.status(400).json({ error: "Voto inválido." });
     const key = `${parsed.data.playerId}:${parsed.data.categoryIndex}`; room.votes[key] ||= {}; room.votes[key][parsed.data.voterId] = parsed.data.valid; res.json(publicRoom(room));
   });
 
