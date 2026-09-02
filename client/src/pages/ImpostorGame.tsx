@@ -1057,7 +1057,7 @@ const DrawingGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void) 
             src={logoImpostorArt}
             alt="Logo Desenho do Impostor - TikJogos"
             width={550} height={192}
-            className="h-[82px] object-contain drop-shadow-lg"
+            className="h-[67px] w-full max-w-[260px] object-contain drop-shadow-lg"
           />
         </div>
         <p className="text-slate-400 text-xs">Desenhe e descubra quem é o impostor</p>
@@ -1215,7 +1215,7 @@ const SincroniaGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void
             src={sincroniaLogo}
             alt="Logo Sincronia - Respostas em Comum - TikJogos"
             width={575} height={133}
-            className="h-[67px] object-contain drop-shadow-lg"
+            className="h-[67px] w-full max-w-[260px] object-contain drop-shadow-lg"
           />
         </div>
         <p className="text-slate-400 text-xs">Respondeu igual? Pontuou!</p>
@@ -1368,7 +1368,7 @@ const DesafioGameCard = () => {
           <img
             src={logoDesafioPalavraForms}
             alt="Desafio da Palavra"
-            className="h-[67px] object-contain drop-shadow-lg"
+            className="h-[67px] w-full max-w-[260px] object-contain drop-shadow-lg"
           />
         </div>
         <p className="text-slate-400 text-xs">Não forme a palavra ou desafie!</p>
@@ -1493,7 +1493,7 @@ const RankMasterGameCard = () => {
       <div className="flex justify-center mb-1">
         <div className="text-center">
           <div className="flex justify-center mb-2">
-            <img src="/rankify-logo.png" alt="Rankify" className="h-[67px] drop-shadow-lg" />
+            <img src="/rankify-logo.png" alt="Rankify" className="h-[67px] w-full max-w-[260px] object-contain drop-shadow-lg" />
           </div>
           <p className="text-slate-400 text-xs">Ordene os itens e conquiste pontos!</p>
         </div>
@@ -1610,7 +1610,7 @@ const BombaGameCard = () => {
   return (
     <div className="space-y-3">
       <div className="text-center">
-        <img src={bombaLogo} alt="Bomba" className="mx-auto h-[92px] w-auto max-w-full object-contain drop-shadow-[0_12px_24px_rgba(124,58,237,.35)]" />
+        <img src={bombaLogo} alt="Bomba" className="mx-auto h-[67px] w-full max-w-[260px] object-contain drop-shadow-[0_12px_24px_rgba(124,58,237,.35)]" />
         <p className="text-xs font-semibold text-slate-400">Escolha uma letra, responda e passe a vez antes de explodir.</p>
       </div>
       <input className="input-dark" value={name} onChange={(event) => setName(event.target.value)} placeholder="Seu nickname" maxLength={18} />
@@ -1652,7 +1652,7 @@ const CronometroGameCard = () => {
     finally { setBusy(false); }
   };
   return <div className="space-y-3">
-    <div className="text-center"><img src={tempoLogo} alt="T3:MP:00" className="mx-auto h-[76px] w-auto max-w-full object-contain drop-shadow-[0_10px_24px_rgba(34,211,238,.3)]"/><p className="mt-2 text-xs font-semibold text-slate-400">Pare o cronômetro no tempo exato.</p></div>
+    <div className="text-center"><img src={tempoLogo} alt="T3:MP:00" className="mx-auto h-[67px] w-full max-w-[260px] object-contain drop-shadow-[0_10px_24px_rgba(34,211,238,.3)]"/><p className="mt-2 text-xs font-semibold text-slate-400">Pare o cronômetro no tempo exato.</p></div>
     <input className="input-dark" value={name} onChange={e => setName(e.target.value)} placeholder="Seu nickname" maxLength={18}/>
     <button onClick={() => enter('create')} disabled={busy} style={{ backgroundColor: "#18bff2", color: "#07152b" }} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-cyan-800 px-8 py-5 text-xl font-black shadow-[0_12px_28px_rgba(24,191,242,.28)] transition-all hover:brightness-110 active:translate-y-2 active:border-b-0 disabled:opacity-50"><Clock size={27}/> CRIAR SALA</button>
     <div className="flex items-center gap-3"><div className="h-px flex-1 bg-slate-700"/><span className="text-xs font-black text-slate-500">OU</span><div className="h-px flex-1 bg-slate-700"/></div>
@@ -1682,7 +1682,7 @@ const StopGameCard = () => {
     } catch (e: any) { toast({ title: e.message, variant: 'destructive' }); }
     finally { setBusy(false); }
   };
-  return <div className="space-y-3"><div className="text-center"><img src={stopLogo} alt="STOP" className="mx-auto h-[76px] w-auto max-w-full object-contain drop-shadow-[0_10px_24px_rgba(242,112,82,.3)]"/><p className="mt-2 text-xs font-semibold text-slate-400">Uma categoria por vez. Complete tudo e pare a rodada.</p></div><input className="input-dark" value={name} onChange={e=>setName(e.target.value)} placeholder="Seu nickname" maxLength={18}/><button onClick={()=>enter('create')} disabled={busy} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-[#503FBF] bg-[#6650F2] px-8 py-5 text-xl font-black text-white shadow-[0_12px_28px_rgba(102,80,242,.28)] active:translate-y-2 active:border-b-0 disabled:opacity-50"><Flag size={27}/>CRIAR SALA</button><div className="flex items-center gap-3"><div className="h-px flex-1 bg-slate-700"/><span className="text-xs font-black text-slate-500">OU</span><div className="h-px flex-1 bg-slate-700"/></div><div className="flex gap-2"><input className="input-code min-w-0 flex-1" value={code} onChange={e=>setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3))} onKeyDown={e=>e.key==='Enter'&&enter('join')} placeholder="CÓDIGO" maxLength={3}/><button onClick={()=>enter('join')} disabled={busy} className="rounded-2xl border-b-[6px] border-[#503FBF] bg-[#79D9AC] px-6 font-black text-[#503FBF] active:translate-y-2 active:border-b-0 disabled:opacity-50">ENTRAR</button></div></div>;
+  return <div className="space-y-3"><div className="text-center"><img src={stopLogo} alt="STOP" className="mx-auto h-[67px] w-full max-w-[260px] object-contain drop-shadow-[0_10px_24px_rgba(242,112,82,.3)]"/><p className="mt-2 text-xs font-semibold text-slate-400">Uma categoria por vez. Complete tudo e pare a rodada.</p></div><input className="input-dark" value={name} onChange={e=>setName(e.target.value)} placeholder="Seu nickname" maxLength={18}/><button onClick={()=>enter('create')} disabled={busy} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-[#503FBF] bg-[#6650F2] px-8 py-5 text-xl font-black text-white shadow-[0_12px_28px_rgba(102,80,242,.28)] active:translate-y-2 active:border-b-0 disabled:opacity-50"><Flag size={27}/>CRIAR SALA</button><div className="flex items-center gap-3"><div className="h-px flex-1 bg-slate-700"/><span className="text-xs font-black text-slate-500">OU</span><div className="h-px flex-1 bg-slate-700"/></div><div className="flex gap-2"><input className="input-code min-w-0 flex-1" value={code} onChange={e=>setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3))} onKeyDown={e=>e.key==='Enter'&&enter('join')} placeholder="CÓDIGO" maxLength={3}/><button onClick={()=>enter('join')} disabled={busy} className="rounded-2xl border-b-[6px] border-[#503FBF] bg-[#79D9AC] px-6 font-black text-[#503FBF] active:translate-y-2 active:border-b-0 disabled:opacity-50">ENTRAR</button></div></div>;
 };
 
 const AproximacaoGameCard = () => {
@@ -1730,7 +1730,7 @@ const AproximacaoGameCard = () => {
           <img
             src={logoAprox}
             alt="Jogo da Aproximação"
-            className="h-[67px] object-contain drop-shadow-lg"
+            className="h-[67px] w-full max-w-[260px] object-contain drop-shadow-lg"
           />
         </div>
         <p className="text-slate-400 text-xs">Quem chega mais perto ganha!</p>
