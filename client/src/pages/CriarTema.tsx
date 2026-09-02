@@ -17,7 +17,7 @@ import {
   Sparkles,
   Users
 } from "lucide-react";
-import logoImpostor from "@assets/logo site impostor.png";
+import { logoImpostor } from "@/assets/impostorLogos";
 
 type PaymentState = {
   status: 'idle' | 'loading' | 'awaiting_payment' | 'success' | 'error';

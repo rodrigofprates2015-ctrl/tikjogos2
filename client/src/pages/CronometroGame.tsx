@@ -4,7 +4,7 @@ import { ArrowLeft, Check, Clock3, Copy, Crown, Eye, EyeOff, LogOut, Play, Refre
 import { MobileNav } from "@/components/MobileNav";
 import { LobbyAd } from "@/components/AdSense";
 import { Button } from "@/components/ui/button";
-import tempoLogo from "../../../attached_assets/t3mp00-logo.png";
+import tempoLogo from "@/assets/tempoLogo";
 
 type GameMode = "classic" | "challenge";
 type Player = { uid: string; name: string; connected: boolean; eliminated: boolean; wins: number };

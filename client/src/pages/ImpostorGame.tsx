@@ -9,7 +9,7 @@ import SupportHome from "@/pages/SupportHome";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import bombaLogo from "@/assets/bomba-logo.png";
 import bombaIcon from "@/assets/bomba-icon.png";
-import tempoLogo from "../../../attached_assets/t3mp00-logo.png";
+import tempoLogo from "@/assets/tempoLogo";
 import stopLogo from "@assets/stop-logo.png";
 
 import { SpeakingOrderWithVotingStage } from "@/components/RoundStageContent";
@@ -92,8 +92,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
-const logoImpostor = "/impostor-logo.webp";
-const logoImpostorArt = "/art-impostor-logo.webp";
+import { logoImpostor, logoImpostorArt } from "@/assets/impostorLogos";
 import tripulanteImg from "@assets/tripulante_natal_1765071995242.webp";
 import impostorImg from "@assets/impostor_natal_1765071992843.webp";
 import tripulantePincelImg from "@assets/TripulantePincel.webp";

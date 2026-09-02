@@ -5,7 +5,7 @@ import { MobileNav } from "@/components/MobileNav";
 import { SideAds, BottomAd } from "@/components/AdSense";
 import { useLanguage } from "@/hooks/useLanguage";
 import { setPageSeo } from "@/lib/pageSeo";
-import logoImpostorArt from "@/assets/logo_impostor_art.png";
+import { logoImpostorArt } from "@/assets/impostorLogos";
 
 const CONTENT = {
   pt: {

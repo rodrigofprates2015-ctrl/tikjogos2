@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { Zap, Heart } from "lucide-react";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
-import logoImpostor from "@assets/logo site impostor.png";
+import { logoImpostor } from "@/assets/impostorLogos";
 import tripulanteImg from "@assets/tripulante_natal_1765071995242.webp";
 import impostorImg from "@assets/impostor_natal_1765071992843.webp";
 import { AdBanner } from "@/components/ad-banner";

@@ -62,7 +62,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
-import logoImpostor from "@assets/logo site impostor.png";
+import { logoImpostor } from "@/assets/impostorLogos";
 import tripulanteImg from "@assets/tripulante_natal_1765071995242.webp";
 import impostorImg from "@assets/impostor_natal_1765071992843.webp";
 
