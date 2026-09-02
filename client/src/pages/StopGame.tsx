@@ -24,6 +24,7 @@ type Room = {
   voteEndsAt?: number;
   voteReady: Record<string, boolean>;
   votingComplete: boolean;
+  serverNow: number;
   settings: { durationSeconds: number; excludedLetters: string[] };
   revealAt?: number;
   endAt?: number;
@@ -38,10 +39,17 @@ function formatTime(milliseconds: number) {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
+function anonymousOrder(value: string) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index++) hash = Math.imul(hash ^ value.charCodeAt(index), 16777619);
+  return hash >>> 0;
+}
+
 export default function StopGame() {
   const query = new URLSearchParams(window.location.search);
   const roomCode = (query.get("room") || sessionStorage.getItem("stop_room_code") || "").toUpperCase();
   const playerId = useRef(sessionStorage.getItem("stop_player_id") || crypto.randomUUID());
+  const serverOffset = useRef(0);
   const [room, setRoom] = useState<Room | null>(null);
   const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
@@ -68,7 +76,7 @@ export default function StopGame() {
     const load = async () => {
       try {
         const data = await request(`/api/stop/rooms/${roomCode}`);
-        if (active) setRoom(data);
+        if (active) { serverOffset.current = Number(data.serverNow || Date.now()) - Date.now(); setRoom(data); }
       } catch (cause: any) {
         if (active) setError(cause.message);
       }
@@ -79,7 +87,7 @@ export default function StopGame() {
   }, [request, roomCode]);
 
   useEffect(() => {
-    const clock = window.setInterval(() => setNow(Date.now()), 100);
+    const clock = window.setInterval(() => setNow(Date.now() + serverOffset.current), 100);
     return () => window.clearInterval(clock);
   }, []);
 
@@ -96,7 +104,7 @@ export default function StopGame() {
   const act = async (endpoint: string, body: object = {}) => {
     if (!room) return;
     setBusy(true); setError("");
-    try { setRoom(await request(`/api/stop/rooms/${room.code}/${endpoint}`, body)); }
+    try { const data = await request(`/api/stop/rooms/${room.code}/${endpoint}`, body); serverOffset.current = Number(data.serverNow || Date.now()) - Date.now(); setNow(Number(data.serverNow || Date.now())); setRoom(data); }
     catch (cause: any) { setError(cause.message); }
     finally { setBusy(false); }
   };
@@ -131,6 +139,7 @@ export default function StopGame() {
   const categories = me.answers.map(answer => answer.category);
   const categoryAnswers = room.players.map(player => ({ player, answer: player.answers[voteCategory] }))
     .filter((item): item is { player: Player; answer: Answer } => Boolean(item.answer));
+  const anonymousCategoryAnswers = [...categoryAnswers].sort((first, second) => anonymousOrder(`${me.uid}:${voteCategory}:${first.player.uid}`) - anonymousOrder(`${me.uid}:${voteCategory}:${second.player.uid}`));
   const ranking = [...room.players].sort((a, b) => b.score - a.score);
 
   const sidebarHeader = <div className="space-y-3">
@@ -203,7 +212,7 @@ export default function StopGame() {
 
           <div className="relative mt-10 min-h-[390px] rounded-3xl border border-[#EBB3F2]/20 bg-[#17142B]/85 p-5 text-center shadow-inner sm:p-8">
             <p className="text-[10px] font-black uppercase tracking-[.22em] text-[#EBB3F2]">Tema da validação</p><h1 className="mt-1 text-4xl font-black">{categories[voteCategory]}</h1><p className="mt-2 text-sm font-bold text-[#EBB3F2]">{Object.keys(room.voteReady).length}/{room.players.length} jogadores prontos</p>
-            <div className="mt-7 flex flex-wrap justify-center gap-3">{categoryAnswers.map(({ player, answer }) => { const key = `${player.uid}:${voteCategory}`; const selected = room.votes[key]?.[me.uid] ?? room.prevalidation[key] ?? false; const locked = Boolean(room.voteReady[me.uid]) || room.votingComplete; return <button key={player.uid} disabled={locked} onClick={() => act("vote", { voterId: me.uid, playerId: player.uid, categoryIndex: voteCategory, valid: !selected })} className={cn("group flex min-w-[180px] max-w-[280px] items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left shadow-[0_5px_0_#090b28] transition-all hover:-translate-y-1 active:translate-y-1 active:shadow-none disabled:cursor-default disabled:hover:translate-y-0", selected ? "border-[#79D9AC] bg-[#79D9AC] text-[#503FBF]" : "border-[#EBB3F2] bg-[#F27052] text-[#503FBF]")}><GameIdentityAvatar player={player} index={player.characterIndex} className="h-11 w-11 border-black/10"/><span className="min-w-0 flex-1"><small className="block truncate text-[10px] font-black uppercase opacity-70">{player.name}</small><strong className="block truncate text-base">{answer.status === "noAnswer" ? "Não existe" : answer.value || "Sem resposta"}</strong></span><span className="text-xl font-black">{selected ? "✓" : "×"}</span></button>; })}</div>
+            <div className="mt-7 flex flex-wrap justify-center gap-3">{anonymousCategoryAnswers.map(({ player, answer }, anonymousIndex) => { const key = `${player.uid}:${voteCategory}`; const selected = room.votes[key]?.[me.uid] ?? room.prevalidation[key] ?? false; const locked = Boolean(room.voteReady[me.uid]) || room.votingComplete; return <button key={player.uid} disabled={locked} onClick={() => act("vote", { voterId: me.uid, playerId: player.uid, categoryIndex: voteCategory, valid: !selected })} className={cn("group flex min-w-[180px] max-w-[280px] items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left shadow-[0_5px_0_#090b28] transition-all hover:-translate-y-1 active:translate-y-1 active:shadow-none disabled:cursor-default disabled:hover:translate-y-0", selected ? "border-[#79D9AC] bg-[#79D9AC] text-[#503FBF]" : "border-[#EBB3F2] bg-[#F27052] text-[#503FBF]")}><span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 border-black/20 text-sm font-black">{anonymousIndex + 1}</span><span className="min-w-0 flex-1"><small className="block truncate text-[9px] font-black uppercase tracking-[.14em] opacity-60">Resposta anônima</small><strong className="block truncate text-base">{answer.status === "noAnswer" ? "Não existe" : answer.value || "Sem resposta"}</strong></span><span className="text-xl font-black">{selected ? "✓" : "×"}</span></button>; })}</div>
           </div>
 
           <div className="relative mt-5 flex items-center gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-full border-2 border-[#EBB3F2]/40 bg-[#503FBF]/40"><Clock3 className="h-5 w-5 text-[#EBB3F2]"/></div><div className="h-4 flex-1 overflow-hidden rounded-full border-2 border-[#503FBF] bg-[#503FBF]"><div className="h-full rounded-full bg-[#79D9AC] transition-all duration-100" style={{ width: `${room.votingComplete ? 100 : Math.max(0, Math.min(100, (((room.voteEndsAt || now) - now) / 20_000) * 100))}%` }}/></div></div>
