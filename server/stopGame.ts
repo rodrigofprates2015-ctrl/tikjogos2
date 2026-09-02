@@ -18,7 +18,7 @@ const BOT_ANSWERS: Record<string, string[]> = {
 type AnswerStatus = "pending" | "skipped" | "answered" | "noAnswer";
 type StopAnswer = { category: string; value: string; status: AnswerStatus };
 type StopPlayer = { uid: string; name: string; connected: boolean; characterIndex: number; answers: StopAnswer[]; currentIndex: number; finished: boolean; score: number };
-type StopRoom = { code: string; hostId: string; status: "waiting" | "rolling" | "playing" | "voting" | "results"; letter: string; players: StopPlayer[]; votes: Record<string, Record<string, boolean>>; prevalidation: Record<string, boolean>; voteCategoryIndex: number; voteEndsAt: number | null; votingComplete: boolean; settings: { durationSeconds: number; excludedLetters: string[] }; revealAt: number | null; endAt: number | null; stopBy: string | null; stopAt: number | null; createdAt: number };
+type StopRoom = { code: string; hostId: string; status: "waiting" | "rolling" | "playing" | "voting" | "results"; letter: string; players: StopPlayer[]; votes: Record<string, Record<string, boolean>>; prevalidation: Record<string, boolean>; voteCategoryIndex: number; voteEndsAt: number | null; voteReady: Record<string, boolean>; votingComplete: boolean; settings: { durationSeconds: number; excludedLetters: string[] }; revealAt: number | null; endAt: number | null; stopBy: string | null; stopAt: number | null; createdAt: number };
 const rooms = new Map<string, StopRoom>();
 
 function code() { let value = ""; do value = randomBytes(2).toString("hex").slice(0, 3).toUpperCase(); while (rooms.has(value)); return value; }
@@ -41,14 +41,18 @@ function addBotVotes(room: StopRoom) {
   const reviewable = room.players.flatMap(owner => owner.answers.map((answer, index) => ({ owner, answer, index }))).filter(item => item.answer.status === "answered" || item.answer.status === "noAnswer");
   reviewable.forEach(({ owner, index }) => room.players.filter(voter => isBot(voter) && voter.uid !== owner.uid).forEach(voter => { const key = `${owner.uid}:${index}`; room.votes[key] ||= {}; room.votes[key][voter.uid] = room.prevalidation[key]; }));
 }
-function beginVoting(room: StopRoom, stoppedBy?: string) { room.status = "voting"; room.endAt = null; room.stopBy = stoppedBy || null; room.stopAt = Date.now(); room.voteCategoryIndex = 0; room.voteEndsAt = Date.now() + 20_000; room.votingComplete = false; prevalidate(room); addBotVotes(room); }
+function resetVoteReady(room: StopRoom) { room.voteReady = {}; room.players.filter(isBot).forEach(player => { room.voteReady[player.uid] = true; }); }
+function advanceVoting(room: StopRoom, now = Date.now()) {
+  if (room.voteCategoryIndex < CATEGORIES.length - 1) { room.voteCategoryIndex += 1; room.voteEndsAt = now + 20_000; resetVoteReady(room); }
+  else { room.votingComplete = true; room.voteEndsAt = null; room.voteReady = {}; }
+}
+function beginVoting(room: StopRoom, stoppedBy?: string) { room.status = "voting"; room.endAt = null; room.stopBy = stoppedBy || null; room.stopAt = Date.now(); room.voteCategoryIndex = 0; room.voteEndsAt = Date.now() + 20_000; room.votingComplete = false; prevalidate(room); addBotVotes(room); resetVoteReady(room); }
 function refreshRoom(room: StopRoom) {
   const now = Date.now();
   if (room.status === "rolling" && room.revealAt && now >= room.revealAt) room.status = "playing";
   if (room.status === "playing" && room.endAt && now >= room.endAt) beginVoting(room);
   if (room.status === "voting" && room.voteEndsAt && now >= room.voteEndsAt) {
-    if (room.voteCategoryIndex < CATEGORIES.length - 1) { room.voteCategoryIndex += 1; room.voteEndsAt = now + 20_000; }
-    else { room.votingComplete = true; room.voteEndsAt = null; }
+    advanceVoting(room, now);
   }
   return room;
 }
@@ -71,7 +75,7 @@ export function setupStopGame(app: Express) {
     const parsed = z.object({ playerId: z.string().min(1), nickname: z.string().trim().min(1).max(18) }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Digite um apelido válido." });
     const roomCode = code();
-    const room: StopRoom = { code: roomCode, hostId: parsed.data.playerId, status: "waiting", letter: "", players: [{ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, characterIndex: 0, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }], votes: {}, prevalidation: {}, voteCategoryIndex: 0, voteEndsAt: null, votingComplete: false, settings: { durationSeconds: 180, excludedLetters: [] }, revealAt: null, endAt: null, stopBy: null, stopAt: null, createdAt: Date.now() };
+    const room: StopRoom = { code: roomCode, hostId: parsed.data.playerId, status: "waiting", letter: "", players: [{ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, characterIndex: 0, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }], votes: {}, prevalidation: {}, voteCategoryIndex: 0, voteEndsAt: null, voteReady: {}, votingComplete: false, settings: { durationSeconds: 180, excludedLetters: [] }, revealAt: null, endAt: null, stopBy: null, stopAt: null, createdAt: Date.now() };
     if (parsed.data.nickname.toLocaleLowerCase("pt-BR") === "testeadm26") {
       ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"].forEach((name, index) => room.players.push({ uid: `stop-bot-${roomCode}-${index}`, name, connected: true, characterIndex: index + 1, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }));
     }
@@ -112,7 +116,7 @@ export function setupStopGame(app: Express) {
     if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode iniciar." });
     if (room.players.length < 2) return res.status(409).json({ error: "Entre com pelo menos 2 jogadores." });
     const availableLetters = LETTERS.filter(letter => !room.settings.excludedLetters.includes(letter)); if (!availableLetters.length) return res.status(409).json({ error: "Deixe pelo menos uma letra disponível." });
-    room.status = "rolling"; room.letter = availableLetters[Math.floor(Math.random() * availableLetters.length)]; room.votes = {}; room.prevalidation = {}; room.voteCategoryIndex = 0; room.voteEndsAt = null; room.votingComplete = false; room.revealAt = Date.now() + 4200; room.endAt = room.revealAt + room.settings.durationSeconds * 1000; room.stopBy = null; room.stopAt = null;
+    room.status = "rolling"; room.letter = availableLetters[Math.floor(Math.random() * availableLetters.length)]; room.votes = {}; room.prevalidation = {}; room.voteCategoryIndex = 0; room.voteEndsAt = null; room.voteReady = {}; room.votingComplete = false; room.revealAt = Date.now() + 4200; room.endAt = room.revealAt + room.settings.durationSeconds * 1000; room.stopBy = null; room.stopAt = null;
     room.players.forEach(player => { player.answers = blankAnswers(); player.currentIndex = 0; player.finished = false; player.score = 0; if (isBot(player)) { const bank = BOT_ANSWERS[room.letter]; player.answers = CATEGORIES.map((category,index) => ({ category, value: bank?.[index] || `${room.letter}${["na", "nimal", "omida", "idade", "ilme", "rofissional", "bjeto", "arca"][index]}`, status: "answered" as const })); player.finished = true; } }); res.json(publicRoom(room));
   });
 
@@ -140,6 +144,14 @@ export function setupStopGame(app: Express) {
     const key = `${parsed.data.playerId}:${parsed.data.categoryIndex}`; room.votes[key] ||= {}; room.votes[key][parsed.data.voterId] = parsed.data.valid; res.json(publicRoom(room));
   });
 
+  app.post("/api/stop/rooms/:code/vote-ready", (req, res) => {
+    const room = rooms.get(req.params.code.toUpperCase()); if (!room || refreshRoom(room).status !== "voting" || room.votingComplete) return res.status(409).json({ error: "Validação indisponível." });
+    const parsed = z.object({ playerId: z.string(), categoryIndex: z.number().int() }).safeParse(req.body); if (!parsed.success || parsed.data.categoryIndex !== room.voteCategoryIndex || !room.players.some(player => player.uid === parsed.data.playerId)) return res.status(400).json({ error: "Confirmação inválida ou atrasada." });
+    room.voteReady[parsed.data.playerId] = true;
+    if (room.players.filter(player => player.connected !== false).every(player => room.voteReady[player.uid])) advanceVoting(room);
+    res.json(publicRoom(room));
+  });
+
   app.post("/api/stop/rooms/:code/finish", (req, res) => {
     const room = rooms.get(req.params.code.toUpperCase()); if (!room || refreshRoom(room).status !== "voting" || !room.votingComplete) return res.status(409).json({ error: "Conclua todas as categorias antes de ver o resultado." });
     if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode encerrar." });
@@ -147,6 +159,6 @@ export function setupStopGame(app: Express) {
     room.status = "results"; res.json(publicRoom(room));
   });
 
-  app.post("/api/stop/rooms/:code/lobby", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.status(404).json({ error: "Sala não encontrada." }); if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode voltar ao lobby." }); room.status = "waiting"; room.letter = ""; room.revealAt = null; room.endAt = null; room.stopBy = null; room.stopAt = null; room.voteEndsAt = null; room.votingComplete = false; res.json(publicRoom(room)); });
+  app.post("/api/stop/rooms/:code/lobby", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.status(404).json({ error: "Sala não encontrada." }); if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode voltar ao lobby." }); room.status = "waiting"; room.letter = ""; room.revealAt = null; room.endAt = null; room.stopBy = null; room.stopAt = null; room.voteEndsAt = null; room.voteReady = {}; room.votingComplete = false; res.json(publicRoom(room)); });
   app.post("/api/stop/rooms/:code/leave", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.json({ ok: true }); room.players = room.players.filter(player => player.uid !== req.body?.playerId); if (!room.players.length) rooms.delete(room.code); else if (room.hostId === req.body?.playerId) room.hostId = room.players[0].uid; res.json({ ok: true }); });
 }
