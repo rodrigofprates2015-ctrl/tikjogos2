@@ -34,7 +34,8 @@ function looksValid(value: string, letter: string) {
 function prevalidate(room: StopRoom) {
   room.prevalidation = {};
   room.players.forEach(player => player.answers.forEach((answer, index) => {
-    room.prevalidation[`${player.uid}:${index}`] = answer.status === "answered" && looksValid(answer.value, room.letter);
+    const anotherValidAnswer = room.players.some(other => other.uid !== player.uid && other.answers[index]?.status === "answered" && looksValid(other.answers[index].value, room.letter));
+    room.prevalidation[`${player.uid}:${index}`] = answer.status === "noAnswer" ? !anotherValidAnswer : answer.status === "answered" && looksValid(answer.value, room.letter);
   }));
 }
 function addBotVotes(room: StopRoom) {
@@ -127,7 +128,7 @@ export function setupStopGame(app: Express) {
     const answer = player.answers[player.currentIndex];
     if (parsed.data.action === "answer") { const value = (parsed.data.value || "").trim(); if (!value || initial(value) !== room.letter) return res.status(400).json({ error: `A resposta deve começar com ${room.letter}.` }); answer.value = value; answer.status = "answered"; }
     if (parsed.data.action === "skip") answer.status = "skipped";
-    if (parsed.data.action === "noAnswer") { if (answer.status !== "skipped") return res.status(409).json({ error: "Pule a categoria antes de marcá-la sem resposta." }); answer.status = "noAnswer"; answer.value = ""; }
+    if (parsed.data.action === "noAnswer") { answer.status = "noAnswer"; answer.value = ""; }
     player.currentIndex = nextIndex(player.answers, player.currentIndex); player.finished = player.answers.every(item => item.status === "answered" || item.status === "noAnswer"); res.json(publicRoom(room));
   });
 
@@ -155,7 +156,7 @@ export function setupStopGame(app: Express) {
   app.post("/api/stop/rooms/:code/finish", (req, res) => {
     const room = rooms.get(req.params.code.toUpperCase()); if (!room || refreshRoom(room).status !== "voting" || !room.votingComplete) return res.status(409).json({ error: "Conclua todas as categorias antes de ver o resultado." });
     if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode encerrar." });
-    room.players.forEach(player => { player.score = player.answers.reduce((total, answer, index) => { if (answer.status !== "answered") return total; const key = `${player.uid}:${index}`; const votes = Object.values(room.votes[key] || {}); const valid = votes.length ? votes.filter(Boolean).length >= Math.ceil(votes.length / 2) : room.prevalidation[key]; if (!valid) return total; const duplicated = room.players.some(other => other.uid !== player.uid && other.answers[index].value.trim().toLocaleLowerCase("pt-BR") === answer.value.trim().toLocaleLowerCase("pt-BR")); return total + (duplicated ? 5 : 10); }, 0); });
+    room.players.forEach(player => { player.score = player.answers.reduce((total, answer, index) => { const key = `${player.uid}:${index}`; const votes = Object.values(room.votes[key] || {}); const valid = votes.length ? votes.filter(Boolean).length > votes.length / 2 : room.prevalidation[key]; if (answer.status === "noAnswer") return valid ? total : total - 10; if (answer.status !== "answered" || !valid) return total; const duplicated = room.players.some(other => other.uid !== player.uid && other.answers[index].value.trim().toLocaleLowerCase("pt-BR") === answer.value.trim().toLocaleLowerCase("pt-BR")); return total + (duplicated ? 5 : 10); }, 0); });
     room.status = "results"; res.json(publicRoom(room));
   });
 
