@@ -617,7 +617,7 @@ export function createAnalyticsRouter(verifyAdmin: any) {
           COALESCE(
             MAX(game_mode),
             (SELECT MAX(gs.game_type) FROM game_sessions gs WHERE gs.room_code = lobby_sessions.room_code),
-            'naoIdentificado'
+            'aguardandoModo'
           )                                       AS game_mode,
           STRING_AGG(DISTINCT theme_name, ', ')   AS themes,
           BOOL_OR(is_host)                        AS is_host_present

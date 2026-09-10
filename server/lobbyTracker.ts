@@ -46,7 +46,9 @@ export async function trackLobbyLeave(
   }
 }
 
-// Updates game_mode and theme_name for all open sessions in a room (called when game starts).
+// Updates every session in the room when the game starts. A player may have
+// disconnected just before the host starts; their row must still describe the
+// same lobby in analytics.
 export async function trackLobbyGameStart(
   roomCode: string,
   gameMode: string,
@@ -57,7 +59,7 @@ export async function trackLobbyGameStart(
     await (pool as Pool).query(
       `UPDATE lobby_sessions
        SET game_mode = $2, theme_name = COALESCE($3, theme_name)
-       WHERE room_code = $1 AND left_at IS NULL`,
+       WHERE room_code = $1`,
       [roomCode, gameMode, themeName ?? null],
     );
   } catch (err) {

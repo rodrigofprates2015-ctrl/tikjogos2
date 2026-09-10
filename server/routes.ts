@@ -2334,10 +2334,12 @@ export async function registerRoutes(
 
       // If themeCode is provided, fetch custom theme words (for palavraSecreta or palavraComunidade)
       let customWords: string[] | undefined;
+      let customThemeName: string | undefined;
       if (themeCode && (gameMode === "palavraSecreta" || gameMode === "palavraComunidade")) {
         const theme = await storage.getThemeByAccessCode(themeCode);
         if (theme && theme.paymentStatus === "approved") {
           customWords = theme.palavras;
+          customThemeName = theme.titulo;
           console.log(`[StartGame] Using custom theme "${theme.titulo}" by ${theme.autor} with ${customWords.length} words`);
         } else {
           console.log(`[StartGame] Theme code ${themeCode} not found or not approved, using default words`);
@@ -2431,7 +2433,10 @@ export async function registerRoutes(
       if (updatedRoom) {
         broadcastToRoom(code.toUpperCase(), { type: 'room-update', room: updatedRoom });
         recordGameSession('impostor', code.toUpperCase(), connectedPlayers.length).catch(() => {});
-        trackLobbyGameStart(code.toUpperCase(), gameMode, themeCode ?? null).catch(() => {});
+        const trackedTheme = gameMode === 'palavraSecreta' || gameMode === 'palavraComunidade'
+          ? (customThemeName ?? selectedSubmode ?? 'classico')
+          : null;
+        trackLobbyGameStart(code.toUpperCase(), gameMode, trackedTheme).catch(() => {});
         
         // Schedule bot actions if there are bots in the room
         const bots = updatedRoom.players.filter(p => p.name.startsWith('Bot '));

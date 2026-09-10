@@ -127,7 +127,8 @@ const GAME_MODE_LABELS: Record<string, string> = {
   perguntasDiferentes: 'Perguntas Diferentes',
   palavraComunidade: 'Tema Comunidade',
   'impostor-desenho': 'Impostor Desenho',
-  naoIdentificado: 'Não identificado (registro antigo)',
+  aguardandoModo: 'Aguardando escolha do modo',
+  naoIdentificado: 'Modo não registrado',
   impostor: 'Jogo do Impostor',
   desenho: 'Impostor Desenho',
   sincronia: 'Sincronia',
@@ -136,7 +137,40 @@ const GAME_MODE_LABELS: Record<string, string> = {
   cronometroClassico: 'T3:MP:00 — Clássico',
   cronometroDesafio: 'T3:MP:00 — Desafio',
   bomba: 'Bomba',
+  stop: 'Stop',
 };
+
+const THEME_LABELS: Record<string, string> = {
+  classico: 'Clássico',
+  natal: 'Natal',
+  estrategia: 'Estratégia',
+  animes: 'Animes',
+  herois: 'Heróis',
+  seriesMisterio: 'Séries de mistério',
+  futebol: 'Futebol',
+  disney: 'Disney',
+  roblox: 'Roblox',
+  supernatural: 'Supernatural',
+  dragonball: 'Dragon Ball',
+  harrypotter: 'Harry Potter',
+  starwars: 'Star Wars',
+  walkingdead: 'The Walking Dead',
+  lacasadepapel: 'La Casa de Papel',
+  theboys: 'The Boys',
+  round6: 'Round 6',
+  onepiece: 'One Piece',
+  aot: 'Attack on Titan',
+  jjk: 'Jujutsu Kaisen',
+  demonslayer: 'Demon Slayer',
+  mha: 'My Hero Academia',
+  tokyoghoul: 'Tokyo Ghoul',
+  chainsawman: 'Chainsaw Man',
+};
+
+function formatThemes(value: string | null): string {
+  if (!value) return '—';
+  return value.split(', ').map(theme => THEME_LABELS[theme] ?? theme).join(', ');
+}
 
 const DEVICE_ICONS: Record<string, any> = { mobile: Smartphone, desktop: Monitor, tablet: Monitor };
 
@@ -959,8 +993,8 @@ export default function AnalyticsDashboard({ token }: AnalyticsDashboardProps) {
                             <td className="py-3 px-3 text-white/60 text-center whitespace-nowrap">
                               {lobby.maxDurationSeconds != null ? formatDuration(lobby.maxDurationSeconds) : '—'}
                             </td>
-                            <td className="py-3 px-3 text-white/50 max-w-[180px] truncate" title={lobby.themes ?? ''}>
-                              {lobby.themes ?? '—'}
+                            <td className="py-3 px-3 text-white/50 max-w-[180px] truncate" title={formatThemes(lobby.themes)}>
+                              {formatThemes(lobby.themes)}
                             </td>
                             <td className="py-3 px-3 text-white/40 whitespace-nowrap text-xs">
                               {lobby.firstJoin

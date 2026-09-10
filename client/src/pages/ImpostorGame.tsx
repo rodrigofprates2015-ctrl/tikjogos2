@@ -1013,12 +1013,15 @@ const DrawingGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void) 
   const [drawName, setDrawName] = useState(() => localStorage.getItem('tikjogos_saved_nickname') || '');
   const [drawCode, setDrawCode] = useState('');
   const [drawLoading, setDrawLoading] = useState(false);
+  const [drawRemember, setDrawRemember] = useState(() => !!localStorage.getItem('tikjogos_saved_nickname'));
 
   const handleDrawCreate = async () => {
     if (!drawName.trim()) {
       toast({ title: "Nome necessário", description: "Por favor, digite seu nome.", variant: "destructive" });
       return;
     }
+    if (drawRemember) localStorage.setItem('tikjogos_saved_nickname', drawName.trim());
+    else localStorage.removeItem('tikjogos_saved_nickname');
     drawingStore.setUser(drawName);
     onCreateRoom(async () => {
       setDrawLoading(true);
@@ -1037,6 +1040,8 @@ const DrawingGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void) 
       toast({ title: "Código inválido", description: "Digite o código da sala.", variant: "destructive" });
       return;
     }
+    if (drawRemember) localStorage.setItem('tikjogos_saved_nickname', drawName.trim());
+    else localStorage.removeItem('tikjogos_saved_nickname');
     setDrawLoading(true);
     drawingStore.setUser(drawName);
     const success = await drawingStore.joinRoom(drawCode.toUpperCase());
@@ -1057,7 +1062,7 @@ const DrawingGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void) 
             src={logoImpostorArt}
             alt="Logo Desenho do Impostor - TikJogos"
             width={550} height={192}
-            className="h-[67px] w-full max-w-[260px] object-contain drop-shadow-lg"
+            className="h-[78px] w-full max-w-[300px] object-contain drop-shadow-lg"
           />
         </div>
         <p className="text-slate-400 text-xs">Desenhe e descubra quem é o impostor</p>
@@ -1094,18 +1099,12 @@ const DrawingGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void) 
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={!!localStorage.getItem('tikjogos_saved_nickname')}
-              onChange={(e) => {
-                if (e.target.checked && drawName.trim()) {
-                  localStorage.setItem('tikjogos_saved_nickname', drawName.trim());
-                } else {
-                  localStorage.removeItem('tikjogos_saved_nickname');
-                }
-              }}
+              checked={drawRemember}
+              onChange={(e) => setDrawRemember(e.target.checked)}
               className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]"
               data-testid="checkbox-save-nickname-drawing"
             />
-            <span className="text-sm text-[#8aa0b0]">{t('home.saveNickname', 'Guardar nickname')}</span>
+            <span className="text-sm text-[#8aa0b0]">Lembrar meu apelido</span>
           </label>
         </div>
 
@@ -1171,12 +1170,15 @@ const SincroniaGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void
   const [rcName, setRcName] = useState(() => localStorage.getItem('tikjogos_saved_nickname') || '');
   const [rcCode, setRcCode] = useState('');
   const [rcLoading, setRcLoading] = useState(false);
+  const [rcRemember, setRcRemember] = useState(() => !!localStorage.getItem('tikjogos_saved_nickname'));
 
   const handleRcCreate = async () => {
     if (!rcName.trim()) {
       toast({ title: "Nome necessário", description: "Por favor, digite seu nome.", variant: "destructive" });
       return;
     }
+    if (rcRemember) localStorage.setItem('tikjogos_saved_nickname', rcName.trim());
+    else localStorage.removeItem('tikjogos_saved_nickname');
     rcStore.setUser(rcName);
     onCreateRoom(async () => {
       setRcLoading(true);
@@ -1195,6 +1197,8 @@ const SincroniaGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void
       toast({ title: "Código inválido", description: "Digite o código da sala.", variant: "destructive" });
       return;
     }
+    if (rcRemember) localStorage.setItem('tikjogos_saved_nickname', rcName.trim());
+    else localStorage.removeItem('tikjogos_saved_nickname');
     setRcLoading(true);
     rcStore.setUser(rcName);
     const success = await rcStore.joinRoom(rcCode.toUpperCase());
@@ -1261,18 +1265,12 @@ const SincroniaGameCard = ({ onCreateRoom }: { onCreateRoom: (action: () => void
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={!!localStorage.getItem('tikjogos_saved_nickname')}
-              onChange={(e) => {
-                if (e.target.checked && rcName.trim()) {
-                  localStorage.setItem('tikjogos_saved_nickname', rcName.trim());
-                } else {
-                  localStorage.removeItem('tikjogos_saved_nickname');
-                }
-              }}
+              checked={rcRemember}
+              onChange={(e) => setRcRemember(e.target.checked)}
               className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]"
               data-testid="checkbox-save-nickname-sincronia"
             />
-            <span className="text-sm text-[#8aa0b0]">{t('home.saveNickname', 'Guardar nickname')}</span>
+            <span className="text-sm text-[#8aa0b0]">Lembrar meu apelido</span>
           </label>
         </div>
 
@@ -1405,7 +1403,7 @@ const DesafioGameCard = () => {
             onChange={(e) => setSaveChecked(e.target.checked)}
             className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#7c3aed]"
           />
-          <span className="text-sm text-[#8aa0b0]">Guardar nickname</span>
+          <span className="text-sm text-[#8aa0b0]">Lembrar meu apelido</span>
         </label>
       </div>
 
@@ -1533,7 +1531,7 @@ const RankMasterGameCard = () => {
             onChange={(e) => setSaveChecked(e.target.checked)}
             className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-amber-500"
           />
-          <span className="text-sm text-[#8aa0b0]">Guardar nickname</span>
+          <span className="text-sm text-[#8aa0b0]">Lembrar meu apelido</span>
         </label>
       </div>
 
@@ -1575,9 +1573,10 @@ const RankMasterGameCard = () => {
 const BombaGameCard = () => {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [name, setName] = useState(() => localStorage.getItem('tikjogos_nickname') || localStorage.getItem('tikjogos_saved_nickname') || '');
+  const [name, setName] = useState(() => localStorage.getItem('tikjogos_saved_nickname') || '');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
+  const [saveChecked, setSaveChecked] = useState(() => !!localStorage.getItem('tikjogos_saved_nickname'));
 
   const playerId = () => {
     const current = sessionStorage.getItem('bomba_player_id') || crypto.randomUUID();
@@ -1591,7 +1590,8 @@ const BombaGameCard = () => {
     if (mode === 'join' && code.trim().length !== 3) return toast({ title: 'Digite o código de 3 letras', variant: 'destructive' });
     setBusy(true);
     try {
-      localStorage.setItem('tikjogos_nickname', nickname);
+      if (saveChecked) localStorage.setItem('tikjogos_saved_nickname', nickname);
+      else localStorage.removeItem('tikjogos_saved_nickname');
       const roomCode = code.trim().toUpperCase();
       const url = mode === 'create' ? '/api/bomba/rooms' : `/api/bomba/rooms/${roomCode}/join`;
       const response = await fetch(url, {
@@ -1610,10 +1610,11 @@ const BombaGameCard = () => {
   return (
     <div className="space-y-3">
       <div className="text-center">
-        <img src={bombaLogo} alt="Bomba" className="mx-auto h-[67px] w-full max-w-[260px] object-contain drop-shadow-[0_12px_24px_rgba(124,58,237,.35)]" />
+        <img src={bombaLogo} alt="Bomba" className="mx-auto h-[76px] w-full max-w-[285px] object-contain drop-shadow-[0_12px_24px_rgba(124,58,237,.35)]" />
         <p className="text-xs font-semibold text-slate-400">Escolha uma letra, responda e passe a vez antes de explodir.</p>
       </div>
       <input className="input-dark" value={name} onChange={(event) => setName(event.target.value)} placeholder="Seu nickname" maxLength={18} />
+      <label className="flex cursor-pointer items-center gap-2 px-1"><input type="checkbox" checked={saveChecked} onChange={(event) => setSaveChecked(event.target.checked)} className="h-4 w-4 cursor-pointer rounded border-2 border-[#4a6a8a] bg-[#1a2a3a] accent-[#ffca28]"/><span className="text-sm text-[#8aa0b0]">Lembrar meu apelido</span></label>
       <button onClick={() => enterRoom('create')} disabled={busy} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-[#b77900] bg-[#ffca28] px-8 py-5 text-xl font-black text-[#171329] shadow-[0_14px_30px_rgba(255,202,40,.28)] transition-all hover:bg-[#ffd43b] active:translate-y-2 active:border-b-0 disabled:opacity-50">
         <Bomb size={27} /> CRIAR SALA
       </button>
@@ -1631,9 +1632,10 @@ const BombaGameCard = () => {
 const CronometroGameCard = () => {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [name, setName] = useState(() => localStorage.getItem('tikjogos_nickname') || localStorage.getItem('tikjogos_saved_nickname') || '');
+  const [name, setName] = useState(() => localStorage.getItem('tikjogos_saved_nickname') || '');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
+  const [saveChecked, setSaveChecked] = useState(() => !!localStorage.getItem('tikjogos_saved_nickname'));
   const getPlayerId = () => { const current = sessionStorage.getItem('cronometro_player_id') || crypto.randomUUID(); sessionStorage.setItem('cronometro_player_id', current); return current; };
   const enter = async (mode: 'create' | 'join') => {
     const nickname = name.trim();
@@ -1641,7 +1643,8 @@ const CronometroGameCard = () => {
     if (mode === 'join' && code.length !== 3) return toast({ title: 'Digite o código de 3 letras', variant: 'destructive' });
     setBusy(true);
     try {
-      localStorage.setItem('tikjogos_nickname', nickname);
+      if (saveChecked) localStorage.setItem('tikjogos_saved_nickname', nickname);
+      else localStorage.removeItem('tikjogos_saved_nickname');
       const roomCode = code.toUpperCase();
       const response = await fetch(mode === 'create' ? '/api/cronometro/rooms' : `/api/cronometro/rooms/${roomCode}/join`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ playerId: getPlayerId(), nickname }) });
       const data = await response.json();
@@ -1654,6 +1657,7 @@ const CronometroGameCard = () => {
   return <div className="space-y-3">
     <div className="text-center"><img src={tempoLogo} alt="T3:MP:00" className="mx-auto h-[67px] w-full max-w-[260px] object-contain drop-shadow-[0_10px_24px_rgba(34,211,238,.3)]"/><p className="mt-2 text-xs font-semibold text-slate-400">Pare o cronômetro no tempo exato.</p></div>
     <input className="input-dark" value={name} onChange={e => setName(e.target.value)} placeholder="Seu nickname" maxLength={18}/>
+    <label className="flex cursor-pointer items-center gap-2 px-1"><input type="checkbox" checked={saveChecked} onChange={event => setSaveChecked(event.target.checked)} className="h-4 w-4 cursor-pointer rounded border-2 border-[#4a6a8a] bg-[#1a2a3a] accent-[#18bff2]"/><span className="text-sm text-[#8aa0b0]">Lembrar meu apelido</span></label>
     <button onClick={() => enter('create')} disabled={busy} style={{ backgroundColor: "#18bff2", color: "#07152b" }} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-cyan-800 px-8 py-5 text-xl font-black shadow-[0_12px_28px_rgba(24,191,242,.28)] transition-all hover:brightness-110 active:translate-y-2 active:border-b-0 disabled:opacity-50"><Clock size={27}/> CRIAR SALA</button>
     <div className="flex items-center gap-3"><div className="h-px flex-1 bg-slate-700"/><span className="text-xs font-black text-slate-500">OU</span><div className="h-px flex-1 bg-slate-700"/></div>
     <div className="flex gap-2"><input className="input-code min-w-0 flex-1" value={code} onChange={e => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3))} onKeyDown={e => e.key === 'Enter' && enter('join')} placeholder="CÓDIGO" maxLength={3}/><button onClick={() => enter('join')} disabled={busy} className="rounded-2xl border-b-[6px] border-green-800 bg-gradient-to-r from-green-500 to-emerald-500 px-6 font-black text-white active:translate-y-2 active:border-b-0 disabled:opacity-50">ENTRAR</button></div>
@@ -1663,9 +1667,10 @@ const CronometroGameCard = () => {
 const StopGameCard = () => {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [name, setName] = useState(() => localStorage.getItem('tikjogos_nickname') || localStorage.getItem('tikjogos_saved_nickname') || '');
+  const [name, setName] = useState(() => localStorage.getItem('tikjogos_saved_nickname') || '');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
+  const [saveChecked, setSaveChecked] = useState(() => !!localStorage.getItem('tikjogos_saved_nickname'));
   const getPlayerId = () => { const current = sessionStorage.getItem('stop_player_id') || crypto.randomUUID(); sessionStorage.setItem('stop_player_id', current); return current; };
   const enter = async (mode: 'create' | 'join') => {
     const nickname = name.trim();
@@ -1673,7 +1678,8 @@ const StopGameCard = () => {
     if (mode === 'join' && code.length !== 3) return toast({ title: 'Digite o código de 3 letras', variant: 'destructive' });
     setBusy(true);
     try {
-      localStorage.setItem('tikjogos_nickname', nickname);
+      if (saveChecked) localStorage.setItem('tikjogos_saved_nickname', nickname);
+      else localStorage.removeItem('tikjogos_saved_nickname');
       const response = await fetch(mode === 'create' ? '/api/stop/rooms' : `/api/stop/rooms/${code.toUpperCase()}/join`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ playerId: getPlayerId(), nickname }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Não foi possível entrar na sala.');
@@ -1682,7 +1688,7 @@ const StopGameCard = () => {
     } catch (e: any) { toast({ title: e.message, variant: 'destructive' }); }
     finally { setBusy(false); }
   };
-  return <div className="space-y-3"><div className="text-center"><img src={stopLogo} alt="STOP" className="mx-auto h-[67px] w-full max-w-[260px] object-contain drop-shadow-[0_10px_24px_rgba(242,112,82,.3)]"/><p className="mt-2 text-xs font-semibold text-slate-400">Uma categoria por vez. Complete tudo e pare a rodada.</p></div><input className="input-dark" value={name} onChange={e=>setName(e.target.value)} placeholder="Seu nickname" maxLength={18}/><button onClick={()=>enter('create')} disabled={busy} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-[#503FBF] bg-[#6650F2] px-8 py-5 text-xl font-black text-white shadow-[0_12px_28px_rgba(102,80,242,.28)] active:translate-y-2 active:border-b-0 disabled:opacity-50"><Flag size={27}/>CRIAR SALA</button><div className="flex items-center gap-3"><div className="h-px flex-1 bg-slate-700"/><span className="text-xs font-black text-slate-500">OU</span><div className="h-px flex-1 bg-slate-700"/></div><div className="flex gap-2"><input className="input-code min-w-0 flex-1" value={code} onChange={e=>setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3))} onKeyDown={e=>e.key==='Enter'&&enter('join')} placeholder="CÓDIGO" maxLength={3}/><button onClick={()=>enter('join')} disabled={busy} className="rounded-2xl border-b-[6px] border-[#503FBF] bg-[#79D9AC] px-6 font-black text-[#503FBF] active:translate-y-2 active:border-b-0 disabled:opacity-50">ENTRAR</button></div></div>;
+  return <div className="space-y-3"><div className="text-center"><img src={stopLogo} alt="STOP" className="mx-auto h-[67px] w-full max-w-[260px] object-contain drop-shadow-[0_10px_24px_rgba(242,112,82,.3)]"/><p className="mt-2 text-xs font-semibold text-slate-400">Uma categoria por vez. Complete tudo e pare a rodada.</p></div><input className="input-dark" value={name} onChange={e=>setName(e.target.value)} placeholder="Seu nickname" maxLength={18}/><label className="flex cursor-pointer items-center gap-2 px-1"><input type="checkbox" checked={saveChecked} onChange={event=>setSaveChecked(event.target.checked)} className="h-4 w-4 cursor-pointer rounded border-2 border-[#4a6a8a] bg-[#1a2a3a] accent-[#6650F2]"/><span className="text-sm text-[#8aa0b0]">Lembrar meu apelido</span></label><button onClick={()=>enter('create')} disabled={busy} className="flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-[#503FBF] bg-[#6650F2] px-8 py-5 text-xl font-black text-white shadow-[0_12px_28px_rgba(102,80,242,.28)] active:translate-y-2 active:border-b-0 disabled:opacity-50"><Flag size={27}/>CRIAR SALA</button><div className="flex items-center gap-3"><div className="h-px flex-1 bg-slate-700"/><span className="text-xs font-black text-slate-500">OU</span><div className="h-px flex-1 bg-slate-700"/></div><div className="flex gap-2"><input className="input-code min-w-0 flex-1" value={code} onChange={e=>setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3))} onKeyDown={e=>e.key==='Enter'&&enter('join')} placeholder="CÓDIGO" maxLength={3}/><button onClick={()=>enter('join')} disabled={busy} className="rounded-2xl border-b-[6px] border-[#503FBF] bg-[#79D9AC] px-6 font-black text-[#503FBF] active:translate-y-2 active:border-b-0 disabled:opacity-50">ENTRAR</button></div></div>;
 };
 
 const AproximacaoGameCard = () => {
@@ -1770,7 +1776,7 @@ const AproximacaoGameCard = () => {
             onChange={(e) => setSaveChecked(e.target.checked)}
             className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-cyan-500"
           />
-          <span className="text-sm text-[#8aa0b0]">Guardar nickname</span>
+          <span className="text-sm text-[#8aa0b0]">Lembrar meu apelido</span>
         </label>
       </div>
 
@@ -2419,7 +2425,7 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
                     className="w-4 h-4 rounded bg-[#1a2a3a] border-2 border-[#4a6a8a] cursor-pointer accent-[#e8a045]"
                     data-testid="checkbox-save-nickname"
                   />
-                  <span className="text-sm text-[#8aa0b0]">{t('home.saveNickname', 'Guardar nickname')}</span>
+                  <span className="text-sm text-[#8aa0b0]">Lembrar meu apelido</span>
                 </label>
                 {savedNickname && (
                   <button
@@ -3959,12 +3965,10 @@ const LobbyScreen = () => {
 const ModeSelectScreen = () => {
   const { room, user, gameModes, selectedMode, selectMode, selectCharacter, startGame, startGameWithConfig, gameConfig, backToLobby, fetchGameModes, showSpeakingOrderWheel, speakingOrder, setSpeakingOrder, setShowSpeakingOrderWheel } = useGameStore();
   const { toast } = useToast();
-  const { user: accountUser, isLoading: isAuthLoading } = useAuth();
+  const { user: accountUser } = useAuth();
   const [isStarting, setIsStarting] = useState(false);
   const [communityThemes, setCommunityThemes] = useState<PublicTheme[]>([]);
   const [myThemes, setMyThemes] = useState<PublicTheme[]>([]);
-  const [redeemCode, setRedeemCode] = useState('');
-  const [isRedeemingTheme, setIsRedeemingTheme] = useState(false);
   const [isLoadingThemes, setIsLoadingThemes] = useState(false);
   const [selectedThemeCode, setSelectedThemeCode] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -4007,33 +4011,6 @@ const ModeSelectScreen = () => {
     setSelectedThemeCode(theme.accessCode);
     setSelectedCategory(`custom:${theme.id}`);
     toast({ title: 'Tema selecionado!', description: `“${theme.titulo}” está pronto para jogar.` });
-  };
-
-  const handleRedeemTheme = async () => {
-    const accessCode = redeemCode.trim().toUpperCase();
-    if (!accountUser) {
-      window.location.href = `/entrar?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`;
-      return;
-    }
-    if (!accessCode) return;
-    setIsRedeemingTheme(true);
-    try {
-      const res = await fetch('/api/themes/redeem', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessCode })
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Código inválido ou tema indisponível.');
-      setMyThemes(current => current.some(theme => theme.id === data.id) ? current : [data, ...current]);
-      setRedeemCode('');
-      selectCustomTheme(data);
-      toast({ title: 'Tema salvo na sua conta', description: 'Você não precisará digitar este código novamente.' });
-    } catch (err: any) {
-      toast({ title: 'Não foi possível adicionar', description: err.message, variant: 'destructive' });
-    } finally {
-      setIsRedeemingTheme(false);
-    }
   };
 
   const handleStartGameWithSorteio = async () => {
@@ -4417,32 +4394,16 @@ const ModeSelectScreen = () => {
                   <ArrowLeft className="h-5 w-5 shrink-0 rotate-180 text-violet-200 transition-transform group-hover:translate-x-1" />
                 </div>
               </Link>
-              <section className="tj-theme-card p-4 sm:col-span-2 xl:col-span-3" data-testid="theme-account-library">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-[.16em] text-violet-300">Sua biblioteca</span>
-                    <strong className="mt-1 block text-base text-white">Meus temas</strong>
-                    <p className="mt-1 text-xs text-slate-400">Os temas que você criou ou adicionou ficam salvos na sua conta.</p>
-                  </div>
-                  {!isAuthLoading && !accountUser && <Link href={`/entrar?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`} className="shrink-0 rounded-xl border border-violet-400/40 bg-violet-500/15 px-4 py-2 text-xs font-black text-violet-200">Entrar na conta</Link>}
-                </div>
-
-                {accountUser && myThemes.length > 0 && <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {accountUser && myThemes.length > 0 && <section className="sm:col-span-2 xl:col-span-3">
+                <h4 className="mb-2 text-xs font-black uppercase tracking-[.14em] text-slate-300">Seus temas</h4>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
                   {myThemes.map(theme => <button key={theme.id} type="button" onClick={() => selectCustomTheme(theme)} className={cn("tj-theme-card p-3 text-left", selectedThemeCode === theme.accessCode && "is-selected")}>
                     <strong className="block truncate text-sm text-white">{theme.titulo}</strong>
                     <span className="mt-1 block text-[10px] text-slate-400">{theme.palavrasCount} palavras · {theme.isPublic ? 'Público' : 'Privado'}</span>
                     {theme.isOwner && <span className="mt-1 block text-[9px] font-black uppercase text-violet-300">Criado por você</span>}
                   </button>)}
-                </div>}
-                {accountUser && myThemes.length === 0 && !isLoadingThemes && <p className="mt-3 rounded-xl bg-slate-950/35 px-3 py-2 text-xs text-slate-400">Sua biblioteca ainda está vazia.</p>}
-
-                <div className="mt-4 flex gap-2">
-                  <Input value={redeemCode} onChange={event => setRedeemCode(event.target.value.toUpperCase())} onKeyDown={event => event.key === 'Enter' && handleRedeemTheme()} placeholder="CÓDIGO DO TEMA" maxLength={12} className="h-11 border-slate-600 bg-slate-950/60 font-black uppercase tracking-widest text-white" />
-                  <Button type="button" onClick={handleRedeemTheme} disabled={isRedeemingTheme || !redeemCode.trim()} variant="gameSecondary" className="h-11 shrink-0 px-4">
-                    {isRedeemingTheme ? <Loader2 className="h-4 w-4 animate-spin"/> : <Plus className="h-4 w-4"/>}<span className="hidden sm:inline">Adicionar</span>
-                  </Button>
                 </div>
-              </section>
+              </section>}
 
               {communityThemes.filter(theme => !myThemes.some(mine => mine.id === theme.id)).length > 0 && <section className="sm:col-span-2 xl:col-span-3">
                 <h4 className="mb-2 text-xs font-black uppercase tracking-[.14em] text-slate-300">Temas públicos da comunidade</h4>

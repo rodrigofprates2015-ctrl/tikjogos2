@@ -1,6 +1,9 @@
 import type { Express } from "express";
 import { randomBytes } from "crypto";
 import { z } from "zod";
+import { recordGameSession } from "./db.js";
+import { trackRoomJoin } from "./analyticsMiddleware.js";
+import { trackLobbyGameStart, trackLobbyJoin, trackLobbyLeave } from "./lobbyTracker.js";
 
 const DEFAULT_CATEGORIES = ["Nome", "Animal", "Comida", "Cidade ou país", "Filme ou série", "Profissão", "Objeto", "Marca"];
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -80,7 +83,10 @@ export function setupStopGame(app: Express) {
     if (parsed.data.nickname.toLocaleLowerCase("pt-BR") === "testeadm26") {
       ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"].forEach((name, index) => room.players.push({ uid: `stop-bot-${roomCode}-${index}`, name, connected: true, characterIndex: index + 1, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }));
     }
-    rooms.set(roomCode, room); res.json(publicRoom(room));
+    rooms.set(roomCode, room);
+    trackLobbyJoin(roomCode, parsed.data.playerId, parsed.data.nickname, true, 'stop', null, req).catch(() => {});
+    trackRoomJoin(req.cookies?.['visitor_id'] || parsed.data.playerId, roomCode, 'stop', req).catch(() => {});
+    res.json(publicRoom(room));
   });
 
   app.post("/api/stop/rooms/:code/join", (req, res) => {
@@ -90,7 +96,7 @@ export function setupStopGame(app: Express) {
     const parsed = z.object({ playerId: z.string(), nickname: z.string().trim().min(1).max(18) }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Dados inválidos." });
     let player = room.players.find(item => item.uid === parsed.data.playerId);
-    if (!player) { if (room.players.length >= 10) return res.status(409).json({ error: "Sala cheia." }); player = { uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, characterIndex: room.players.length % 10, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }; room.players.push(player); }
+    if (!player) { if (room.players.length >= 10) return res.status(409).json({ error: "Sala cheia." }); player = { uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, characterIndex: room.players.length % 10, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }; room.players.push(player); trackLobbyJoin(room.code, parsed.data.playerId, parsed.data.nickname, false, 'stop', null, req).catch(() => {}); trackRoomJoin(req.cookies?.['visitor_id'] || parsed.data.playerId, room.code, 'stop', req).catch(() => {}); }
     res.json(publicRoom(room));
   });
 
@@ -120,6 +126,8 @@ export function setupStopGame(app: Express) {
     const availableLetters = LETTERS.filter(letter => !room.settings.excludedLetters.includes(letter)); if (!availableLetters.length) return res.status(409).json({ error: "Deixe pelo menos uma letra disponível." });
     room.status = "rolling"; room.letter = availableLetters[Math.floor(Math.random() * availableLetters.length)]; room.votes = {}; room.prevalidation = {}; room.voteCategoryIndex = 0; room.voteEndsAt = null; room.voteReady = {}; room.votingComplete = false; room.revealAt = Date.now() + 6500; room.endAt = room.revealAt + room.settings.durationSeconds * 1000; room.stopBy = null; room.stopAt = null;
     room.players.forEach(player => { player.answers = blankAnswers(room.settings.selectedCategories); player.currentIndex = 0; player.finished = false; player.score = 0; if (isBot(player)) { const bank = BOT_ANSWERS[room.letter]; player.answers = room.settings.selectedCategories.map((category,index) => ({ category, value: bank?.[DEFAULT_CATEGORIES.indexOf(category)] || `${room.letter}resposta${index + 1}`, status: "answered" as const })); player.finished = true; } }); res.json(publicRoom(room));
+    trackLobbyGameStart(room.code, 'stop', room.settings.selectedCategories.join(', ')).catch(() => {});
+    recordGameSession('stop', room.code, room.players.length).catch(() => {});
   });
 
   app.post("/api/stop/rooms/:code/answer", (req, res) => {
@@ -162,5 +170,5 @@ export function setupStopGame(app: Express) {
   });
 
   app.post("/api/stop/rooms/:code/lobby", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.status(404).json({ error: "Sala não encontrada." }); if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode voltar ao lobby." }); room.status = "waiting"; room.letter = ""; room.revealAt = null; room.endAt = null; room.stopBy = null; room.stopAt = null; room.voteEndsAt = null; room.voteReady = {}; room.votingComplete = false; res.json(publicRoom(room)); });
-  app.post("/api/stop/rooms/:code/leave", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.json({ ok: true }); room.players = room.players.filter(player => player.uid !== req.body?.playerId); if (!room.players.length) rooms.delete(room.code); else if (room.hostId === req.body?.playerId) room.hostId = room.players[0].uid; res.json({ ok: true }); });
+  app.post("/api/stop/rooms/:code/leave", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.json({ ok: true }); const playerId = req.body?.playerId; room.players = room.players.filter(player => player.uid !== playerId); trackLobbyLeave(room.code, playerId).catch(() => {}); if (!room.players.length) rooms.delete(room.code); else if (room.hostId === playerId) room.hostId = room.players[0].uid; res.json({ ok: true }); });
 }
