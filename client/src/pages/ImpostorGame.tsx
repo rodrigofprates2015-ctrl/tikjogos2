@@ -39,6 +39,7 @@ import {
   Eye,
   EyeOff,
   ArrowLeft,
+  ArrowRight,
   Rocket,
   MapPin,
   Swords,
@@ -2565,6 +2566,12 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
           <p className="mt-3 text-slate-400">
             {lang === 'en' ? 'Choose your favorite, create a room and invite your friends.' : lang === 'es' ? 'Elige tu favorito, crea una sala e invita a tus amigos.' : 'Escolha seu favorito, crie uma sala e convide seus amigos.'}
           </p>
+          {lang === 'pt' && (
+            <Link href="/jogos-do-tiktok" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-purple-300 underline decoration-purple-400/40 underline-offset-4 hover:text-purple-200">
+              Veja todos os jogos do TikTok para jogar com amigos
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
         </header>
 
         <div className="grid gap-5 md:grid-cols-2">
@@ -2582,7 +2589,7 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
                   <Icon className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-white">{title}</h2>
+                  <h3 className="text-2xl font-black text-white">{title}</h3>
                   <p className="mt-3 leading-relaxed text-slate-400">{description}</p>
                   <div className="mt-5 flex flex-wrap gap-3">
                     <Link href={guide} className="inline-flex items-center gap-2 rounded-xl border border-[#454a70] bg-[#1a1b2e] px-5 py-3 text-sm font-black text-slate-200 transition-colors hover:border-purple-400 hover:text-white">
@@ -2595,6 +2602,36 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
           ))}
         </div>
       </section>
+
+      {lang === 'pt' && (
+        <section className="native-web-only relative z-20 mx-auto mb-16 w-full max-w-5xl px-4" aria-labelledby="impostor-guide-title">
+          <div className="rounded-3xl border border-[#343854] bg-[#20223b] p-6 shadow-xl md:p-10">
+            <p className="text-xs font-black uppercase tracking-[.18em] text-orange-300">Regras rápidas</p>
+            <h2 id="impostor-guide-title" className="mt-3 text-3xl font-black text-white md:text-5xl">Como funciona o Jogo do Impostor online</h2>
+            <p className="mt-5 max-w-4xl leading-relaxed text-slate-300 md:text-lg">No Jogo do Impostor de palavras, quase todos recebem a mesma palavra secreta. O impostor não sabe qual é a palavra e precisa improvisar durante as pistas para não ser descoberto. O grupo conversa, observa as respostas e vota em quem parece estar fingindo.</p>
+            <ol className="mt-8 grid gap-4 md:grid-cols-2">
+              {[
+                'Digite seu apelido, crie uma sala e envie o código aos amigos.',
+                'Escolha o modo, o tema e a quantidade de impostores.',
+                'Cada jogador vê seu papel e dá uma pista sem revelar a palavra.',
+                'Depois da discussão, todos votam para tentar eliminar o impostor.',
+              ].map((step, index) => <li key={step} className="flex gap-4 rounded-2xl border border-white/10 bg-[#17182a] p-5"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-orange-500 font-black text-white">{index + 1}</span><span className="pt-1 font-bold text-slate-200">{step}</span></li>)}
+            </ol>
+          </div>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <article className="rounded-3xl border border-[#343854] bg-[#242642] p-6 md:p-8"><h2 className="text-2xl font-black text-white">Jogue sem baixar e sem cadastro</h2><p className="mt-3 leading-relaxed text-slate-300">A partida funciona no navegador do celular ou computador. Cada pessoa entra pelo próprio aparelho usando o código da sala, inclusive quando os amigos estão à distância.</p></article>
+            <article className="rounded-3xl border border-[#343854] bg-[#242642] p-6 md:p-8"><h2 className="text-2xl font-black text-white">Temas para cada grupo</h2><p className="mt-3 leading-relaxed text-slate-300">Escolha temas de anime, futebol, séries, filmes e games ou crie um tema personalizado com personagens e piadas internas da sua turma.</p><Link href="/jogo-do-impostor/temas" className="mt-4 inline-flex items-center gap-2 font-black text-purple-300 hover:text-purple-200">Explorar temas <ArrowRight className="h-4 w-4"/></Link></article>
+          </div>
+
+          <section className="mt-12" aria-labelledby="impostor-faq-title"><h2 id="impostor-faq-title" className="text-3xl font-black text-white">Perguntas frequentes</h2><div className="mt-5 space-y-3">{[
+            ['O Jogo do Impostor é gratuito?', 'Sim. Você pode criar e entrar em salas gratuitamente pelo TikJogos.'],
+            ['Quantas pessoas precisam jogar?', 'Recomendamos pelo menos três jogadores para que exista discussão e votação.'],
+            ['O impostor recebe alguma palavra?', 'Isso depende do modo escolhido. Ele pode não receber a palavra ou receber uma informação diferente do restante do grupo.'],
+            ['Dá para jogar à distância?', 'Sim. Basta compartilhar o código da sala e manter o grupo em uma chamada de voz.'],
+          ].map(([question, answer]) => <article key={question} className="rounded-2xl border border-white/10 bg-[#20223b] p-5"><h3 className="font-black text-white">{question}</h3><p className="mt-2 leading-relaxed text-slate-400">{answer}</p></article>)}</div></section>
+        </section>
+      )}
 
       {showSupportContent && <SupportHome embedded />}
 

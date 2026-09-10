@@ -30,8 +30,25 @@ app.use((req, res, next) => {
     return res.redirect(301, `https://tikjogos.com.br${req.originalUrl}`);
   }
 
+  // Keep one URL for every document. A trailing slash on a SPA route used to
+  // create a second crawlable URL with the same content.
+  if ((req.method === 'GET' || req.method === 'HEAD')
+      && !req.path.startsWith('/api/')
+      && req.path.length > 1
+      && req.path.endsWith('/')) {
+    const queryIndex = req.originalUrl.indexOf('?');
+    const query = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : '';
+    return res.redirect(301, `${req.path.slice(0, -1)}${query}`);
+  }
+
   const homeAliases: Record<string, string> = {
     '/jogos': '/',
+    '/rank-master': '/rankmaster',
+    '/apoie': '/doacoes',
+    '/oficina': '/criar-tema',
+    '/personagens': '/personagem',
+    '/skin': '/personagem',
+    '/termo': '/termos',
     '/en/games': '/en',
     '/es/juegos': '/es',
     '/como-jogar': '/comojogar',

@@ -19,6 +19,8 @@ interface SeoMeta {
   bodyHtml?: string;
   /** hreflang alternate links */
   hreflangTags?: string;
+  /** Override crawler indexing for private, transient or duplicate routes. */
+  robots?: string;
 }
 
 const BASE_URL = 'https://tikjogos.com.br';
@@ -185,6 +187,10 @@ const THEME_SEO: Record<string, { title: string; description: string }> = {
 
 // Static page SEO data
 const PAGE_SEO: Record<string, { title: string; description: string }> = {
+  '/jogos-do-tiktok': {
+    title: 'Jogos do TikTok para Jogar com Amigos Grátis | TikJogos',
+    description: 'Jogue online os jogos do TikTok que viralizaram: Impostor, Stop, Bomba, Sincronia, Cronômetro e outros desafios grátis para amigos.',
+  },
   '/como-jogar': {
     title: 'Como Jogar o Jogo do Impostor Online | TikJogos',
     description: 'Aprenda como jogar o Jogo do Impostor online. Regras, dicas e estratégias para jogar com amigos. Grátis e sem download.',
@@ -192,6 +198,54 @@ const PAGE_SEO: Record<string, { title: string; description: string }> = {
   '/comojogar': {
     title: 'Como Jogar no TikJogos: Regras de Todos os Jogos | TikJogos',
     description: 'Veja como jogar todos os jogos do TikJogos: Impostor, Desenho, Bomba, Cronômetro, Sincronia, Rankify, Aproximação e Desafio da Palavra.',
+  },
+  '/bomba': {
+    title: 'Jogo da Bomba Online Grátis para Amigos | TikJogos',
+    description: 'Jogue Bomba online com amigos: responda ao tema, escolha uma letra e passe a vez antes que a bomba exploda.',
+  },
+  '/stop': {
+    title: 'Stop Online Grátis para Jogar com Amigos | TikJogos',
+    description: 'Jogue Stop online por categorias, sorteie uma letra, responda antes dos amigos e valide as palavras em grupo.',
+  },
+  '/rankmaster': {
+    title: 'Rankify Online: Jogo de Ranking com Amigos | TikJogos',
+    description: 'Jogue Rankify online grátis, organize itens na ordem certa e descubra quem chega mais perto do ranking verdadeiro.',
+  },
+  '/aproximacao': {
+    title: 'Jogo da Aproximação Online Grátis | TikJogos',
+    description: 'Dê palpites para perguntas numéricas, chegue mais perto da resposta e dispute corações com seus amigos.',
+  },
+  '/approximation': {
+    title: 'Approximation Game Online Free | TikJogos',
+    description: 'Submit numerical guesses, get closer to the correct answer and compete for hearts with your friends online.',
+  },
+  '/aproximacion': {
+    title: 'Juego de Aproximación Online Gratis | TikJogos',
+    description: 'Envía estimaciones numéricas, acércate a la respuesta correcta y compite por corazones con tus amigos.',
+  },
+  '/desafio-da-palavra': {
+    title: 'Desafio da Palavra Online Grátis | TikJogos',
+    description: 'Adicione letras, forme palavras possíveis e desafie os blefes dos adversários no Desafio da Palavra online.',
+  },
+  '/desenho-impostor': {
+    title: 'Desenho do Impostor Online Grátis | TikJogos',
+    description: 'Todos desenham a mesma palavra, menos o impostor. Compare os desenhos e descubra quem está fingindo.',
+  },
+  '/respostas-em-comum': {
+    title: 'Sincronia: Jogo de Respostas em Comum | TikJogos',
+    description: 'Responda pensando como seus amigos e ganhe pontos quando o grupo escrever respostas iguais.',
+  },
+  '/common-answers': {
+    title: 'Sincronia: Common Answers Game Online | TikJogos',
+    description: 'Think like your friends and score points whenever the group submits the same answer in this free online party game.',
+  },
+  '/respuestas-en-comun': {
+    title: 'Sincronia: Juego de Respuestas en Común | TikJogos',
+    description: 'Piensa como tus amigos y gana puntos cuando el grupo escribe la misma respuesta en este juego online gratuito.',
+  },
+  '/sincronia-br': {
+    title: 'Sincronia Battle Royale Online | TikJogos',
+    description: 'Jogue Sincronia Battle Royale online, compare respostas e sobreviva às rodadas com seus amigos.',
   },
   '/how-to-play': {
     title: 'How to Play on TikJogos: Rules for Every Game | TikJogos',
@@ -305,13 +359,85 @@ const PAGE_SEO: Record<string, { title: string; description: string }> = {
     title: 'Jogo do Impostor Modo Local – Jogar Offline | TikJogos',
     description: 'Jogue o Jogo do Impostor no modo local, passando o celular entre amigos. Sem internet necessária.',
   },
+  '/local-mode': {
+    title: 'Impostor Game Local Mode | TikJogos',
+    description: 'Play the Impostor Game locally by passing one phone between friends. Quick setup with no room code required.',
+  },
+  '/criar-tema': {
+    title: 'Crie seu Tema para o Jogo do Impostor | TikJogos',
+    description: 'Crie um tema personalizado com personagens, séries ou piadas internas e jogue com seus amigos no TikJogos.',
+  },
+  '/create-theme': {
+    title: 'Create an Impostor Game Theme | TikJogos',
+    description: 'Create a custom theme using characters, series or inside jokes and play it with your friends on TikJogos.',
+  },
+  '/crear-tema': {
+    title: 'Crea un Tema para el Juego del Impostor | TikJogos',
+    description: 'Crea un tema personalizado con personajes, series o bromas internas y juega con tus amigos en TikJogos.',
+  },
+  '/personagem': {
+    title: 'Crie seu Personagem no TikJogos',
+    description: 'Personalize seu personagem para jogar com seus amigos nas salas online do TikJogos.',
+  },
+  '/doacoes': {
+    title: 'Apoie o TikJogos e os Próximos Jogos',
+    description: 'Ajude o TikJogos a criar novos jogos online gratuitos e veja quem está apoiando o projeto.',
+  },
+  '/privacidade': {
+    title: 'Política de Privacidade | TikJogos',
+    description: 'Saiba como o TikJogos trata dados, cookies e informações usadas durante a navegação e as partidas.',
+  },
+  '/privacy': {
+    title: 'Privacy Policy | TikJogos',
+    description: 'Learn how TikJogos handles data, cookies and information used while browsing and playing online.',
+  },
+  '/privacidad': {
+    title: 'Política de Privacidad | TikJogos',
+    description: 'Conoce cómo TikJogos trata los datos, las cookies y la información utilizada durante la navegación y las partidas.',
+  },
+  '/termos': {
+    title: 'Termos de Uso | TikJogos',
+    description: 'Consulte os termos e condições para utilizar os jogos, salas e recursos da plataforma TikJogos.',
+  },
+  '/terms': {
+    title: 'Terms of Use | TikJogos',
+    description: 'Read the terms and conditions for using TikJogos games, rooms and online features.',
+  },
+  '/terminos': {
+    title: 'Términos de Uso | TikJogos',
+    description: 'Consulta los términos y condiciones para utilizar los juegos, salas y recursos online de TikJogos.',
+  },
+  '/donations': {
+    title: 'Support TikJogos and Upcoming Games',
+    description: 'Help TikJogos create more free online party games and support the continued development of the platform.',
+  },
+  '/donaciones': {
+    title: 'Apoya TikJogos y los Próximos Juegos',
+    description: 'Ayuda a TikJogos a crear nuevos juegos online gratuitos y apoya el desarrollo continuo de la plataforma.',
+  },
   '/outros-jogos': {
     title: 'Outros Jogos Online Grátis | TikJogos',
     description: 'Descubra outros jogos online grátis no TikJogos. Jogos de dedução, estratégia e diversão com amigos.',
   },
+  '/other-games': {
+    title: 'Other Free Online Party Games | TikJogos',
+    description: 'Discover free online social, deduction and word games to play instantly with friends on TikJogos.',
+  },
+  '/otros-juegos': {
+    title: 'Otros Juegos Online Gratis | TikJogos',
+    description: 'Descubre juegos sociales, de deducción y de palabras para jugar gratis con amigos en TikJogos.',
+  },
   '/temas': {
     title: 'Todos os Temas do Jogo do Impostor | TikJogos',
     description: 'Explore todos os temas disponíveis no Jogo do Impostor. Animes, séries, games e muito mais. Grátis e online.',
+  },
+  '/themes': {
+    title: 'All Impostor Game Themes | TikJogos',
+    description: 'Explore Impostor Game themes including anime, series, games and more. Play online free with friends.',
+  },
+  '/temas-del-juego': {
+    title: 'Temas del Juego del Impostor | TikJogos',
+    description: 'Explora temas del Juego del Impostor de anime, series, videojuegos y mucho más. Juega gratis con amigos.',
   },
   '/jogo-do-impostor/temas': {
     title: 'Todos os Temas do Jogo do Impostor | TikJogos',
@@ -324,6 +450,14 @@ const PAGE_SEO: Record<string, { title: string; description: string }> = {
   '/modos-de-jogo': {
     title: 'Modos de Jogo do Impostor | TikJogos',
     description: 'Conheça todos os modos de jogo do Impostor: Palavra Secreta, Quem Sou Eu e mais. Grátis e online.',
+  },
+  '/game-modes': {
+    title: 'Impostor Game Modes | TikJogos',
+    description: 'Discover every Impostor Game mode available on TikJogos and play online free with your friends.',
+  },
+  '/modos-de-juego': {
+    title: 'Modos del Juego del Impostor | TikJogos',
+    description: 'Descubre todos los modos del Juego del Impostor disponibles en TikJogos y juega gratis con amigos.',
   },
   '/modos': {
     title: 'Modos de Jogo do Impostor | TikJogos',
@@ -397,21 +531,11 @@ function getLocalizedPost(post: BlogPostFull, lang: string) {
   return { title: post.title, excerpt: post.excerpt, slug: post.slug };
 }
 
-/** Build hreflang link tags for a blog post */
-function buildBlogHreflang(post: BlogPostFull): string {
-  return [
-    `<link rel="alternate" hreflang="pt" href="${BASE_URL}/blog/${post.slug}" />`,
-    `<link rel="alternate" hreflang="en" href="${BASE_URL}/en/blog/${post.slugEn}" />`,
-    `<link rel="alternate" hreflang="es" href="${BASE_URL}/es/blog/${post.slugEs}" />`,
-    `<link rel="alternate" hreflang="x-default" href="${BASE_URL}/blog/${post.slug}" />`,
-  ].join('\n    ');
-}
-
 /** Build visible article HTML for crawlers */
 function buildArticleHtml(post: BlogPostFull, lang: string): string {
   const loc = getLocalizedPost(post, lang);
   const contentHtml = markdownToHtml(post.content);
-  return `<article itemscope itemtype="https://schema.org/BlogPosting" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
+  return `<article data-seo-prerender="article" itemscope itemtype="https://schema.org/BlogPosting">
       <h1 itemprop="headline">${escapeHtml(loc.title)}</h1>
       <p itemprop="description">${escapeHtml(loc.excerpt)}</p>
       <meta itemprop="image" content="${post.image}" />
@@ -427,6 +551,14 @@ function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+function buildPageHtml(title: string, description: string): string {
+  return `<main data-seo-prerender="page">
+      <h1>${escapeHtml(title.replace(/\s*\|\s*TikJogos$/, ''))}</h1>
+      <p>${escapeHtml(description)}</p>
+      <p><a href="${BASE_URL}/jogos-do-tiktok">Conheça todos os jogos do TikJogos</a></p>
+    </main>`;
+}
+
 /**
  * Get SEO metadata for a given URL path.
  * Returns null if no specific SEO data exists (use default).
@@ -435,6 +567,20 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
   // Strip trailing slash (except root) and query string
   let path = urlPath.split('?')[0];
   path = path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
+
+  // These pages are private, temporary, test-only, or room-specific. They
+  // must never compete with the public landing pages in search results.
+  if (/^\/(?:en\/|es\/)?(?:entrar|conta|dashboard|dashadmin|ad-test|prototipo)(?:\/|$)/.test(path)
+      || /^\/(?:en\/|es\/)?(?:sala|desafio|jogar|play|jugar)\//.test(path)
+      || /^\/(?:en\/|es\/)?(?:modo-local\/jogo|local-mode\/game)(?:\/|$)/.test(path)
+      || /^\/api\//.test(path)) {
+    return {
+      title: 'TikJogos',
+      description: 'Área interna do TikJogos.',
+      canonical: `${BASE_URL}${path}`,
+      robots: 'noindex, nofollow, noarchive',
+    };
+  }
 
   // Blog post pages: /blog/{slug}, /en/blog/{slug}, /es/blog/{slug}
   const blogMatch = path.match(/^(?:\/(en|es))?\/blog\/([a-z0-9-]+)$/);
@@ -466,17 +612,21 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
         'mainEntityOfPage': { '@type': 'WebPage', '@id': canonical },
       });
 
+      const isUntranslatedVersion = lang !== 'pt';
       return {
         title: `${loc.title} - TikJogos Blog`,
         description: loc.excerpt,
-        canonical,
+        // Article bodies currently exist only in Portuguese. Do not present
+        // translated slugs as independent translations until their full body
+        // content is translated as well.
+        canonical: isUntranslatedVersion ? `${BASE_URL}/blog/${post.slug}` : canonical,
+        robots: isUntranslatedVersion ? 'noindex, follow' : undefined,
         image: post.image,
         type: 'article',
         publishedTime: isoDate,
         author: post.authorName,
         articleSchema,
         bodyHtml: buildArticleHtml(post, lang),
-        hreflangTags: buildBlogHreflang(post),
       };
     }
   }
@@ -486,13 +636,6 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
   if (blogIndexMatch) {
     const pageSeo = PAGE_SEO['/blog'];
     if (pageSeo) {
-      const hreflang = [
-        `<link rel="alternate" hreflang="pt" href="${BASE_URL}/blog" />`,
-        `<link rel="alternate" hreflang="en" href="${BASE_URL}/en/blog" />`,
-        `<link rel="alternate" hreflang="es" href="${BASE_URL}/es/blog" />`,
-        `<link rel="alternate" hreflang="x-default" href="${BASE_URL}/blog" />`,
-      ].join('\n    ');
-
       // Build a list of blog posts as visible HTML for crawlers
       const listHtml = BLOG_POSTS_FULL.map(p => {
         return `<li><a href="${BASE_URL}/blog/${p.slug}">${escapeHtml(p.title)}</a> - ${escapeHtml(p.excerpt)}</li>`;
@@ -501,9 +644,9 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
       return {
         title: pageSeo.title,
         description: pageSeo.description,
-        canonical: `${BASE_URL}${path}`,
-        hreflangTags: hreflang,
-        bodyHtml: `<nav style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-label="Blog posts">
+        canonical: blogIndexMatch[1] ? `${BASE_URL}/blog` : `${BASE_URL}${path}`,
+        robots: blogIndexMatch[1] ? 'noindex, follow' : undefined,
+        bodyHtml: `<nav data-seo-prerender="blog-index" aria-label="Artigos do blog">
       <h1>${escapeHtml(pageSeo.title)}</h1>
       <ul>
         ${listHtml}
@@ -523,8 +666,38 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
         title: seo.title,
         description: seo.description,
         canonical: `${BASE_URL}/jogo-do-impostor/temas/${slug}`,
+        bodyHtml: buildPageHtml(seo.title, seo.description),
       };
     }
+  }
+
+  // Landing page for the main Portuguese search. Supply useful content in the
+  // first HTML response instead of depending on client-side JavaScript.
+  if (path === '/jogos-do-tiktok') {
+    const pageSeo = PAGE_SEO[path];
+    return {
+      title: pageSeo.title,
+      description: pageSeo.description,
+      canonical: `${BASE_URL}${path}`,
+      bodyHtml: `<main data-seo-prerender="jogos-do-tiktok">
+        <h1>Jogos do TikTok para jogar com amigos</h1>
+        <p>Jogue gratuitamente brincadeiras e desafios que ficaram populares no TikTok. Crie uma sala online, compartilhe o código e jogue pelo celular ou computador.</p>
+        <h2>Jogos virais disponíveis no TikJogos</h2>
+        <ul>
+          <li><a href="${BASE_URL}/">Jogo do Impostor</a> — descubra quem não recebeu a palavra secreta.</li>
+          <li><a href="${BASE_URL}/stop">Stop online</a> — responda às categorias antes dos amigos.</li>
+          <li><a href="${BASE_URL}/bomba">Jogo da Bomba</a> — responda e passe a vez antes do tempo acabar.</li>
+          <li><a href="${BASE_URL}/respostas-em-comum">Sincronia</a> — tente pensar igual ao seu grupo.</li>
+          <li><a href="${BASE_URL}/cronometro">Jogo do Cronômetro</a> — pare o relógio no instante certo.</li>
+          <li><a href="${BASE_URL}/aproximacao">Jogo da Aproximação</a> — dê o palpite mais próximo.</li>
+          <li><a href="${BASE_URL}/desenho-impostor">Desenho do Impostor</a> — desenhe e encontre quem não conhece o tema.</li>
+          <li><a href="${BASE_URL}/rankmaster">Rankify</a> — organize os itens na ordem correta.</li>
+          <li><a href="${BASE_URL}/desafio-da-palavra">Desafio da Palavra</a> — complete palavras e desafie os blefes.</li>
+        </ul>
+        <h2>Como jogar</h2>
+        <p>Escolha um jogo, digite seu apelido, crie uma sala e envie o código aos seus amigos. O TikJogos é independente e não possui vínculo oficial com o TikTok.</p>
+      </main>`,
+    };
   }
 
   // Static pages (check with and without lang prefix)
@@ -538,6 +711,7 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
         description: pageSeo.description,
         canonical: `${BASE_URL}${path}`,
         hreflangTags: hreflangLookup.get(path),
+        bodyHtml: buildPageHtml(pageSeo.title, pageSeo.description),
       };
     }
   }
@@ -549,6 +723,7 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
       description: pageSeo.description,
       canonical: `${BASE_URL}${path}`,
       hreflangTags: hreflangLookup.get(path),
+      bodyHtml: buildPageHtml(pageSeo.title, pageSeo.description),
     };
   }
 
@@ -566,6 +741,10 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
       description: 'Jogue o Jogo do Impostor online grátis com seus amigos. Crie uma sala, compartilhe o código e descubra quem recebeu a palavra diferente.',
       canonical: `${BASE_URL}${path === '/' ? '/' : path}`,
       hreflangTags: hreflang,
+      bodyHtml: buildPageHtml(
+        'Jogo do Impostor Online Grátis com Amigos | TikJogos',
+        'Jogue o Jogo do Impostor online grátis com seus amigos. Crie uma sala, compartilhe o código e descubra quem recebeu a palavra diferente.',
+      ),
     };
   }
 
@@ -576,6 +755,18 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
  * Inject SEO meta tags into HTML string, replacing defaults.
  */
 export function injectSeoIntoHtml(html: string, seo: SeoMeta): string {
+  const canonicalPath = new URL(seo.canonical).pathname;
+  const documentLanguage = canonicalPath === '/en' || canonicalPath.startsWith('/en/')
+    ? 'en'
+    : canonicalPath === '/es' || canonicalPath.startsWith('/es/')
+      ? 'es'
+      : 'pt-BR';
+  html = html.replace(/<html\s+lang="[^"]*">/, `<html lang="${documentLanguage}">`);
+  html = html.replace(
+    /<meta\s+http-equiv="content-language"\s+content="[^"]*"\s*\/?>/,
+    `<meta http-equiv="content-language" content="${documentLanguage}" />`,
+  );
+
   // Replace <title>
   html = html.replace(
     /<title>[^<]*<\/title>/,
@@ -593,6 +784,17 @@ export function injectSeoIntoHtml(html: string, seo: SeoMeta): string {
     /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/,
     `<link rel="canonical" href="${seo.canonical}" />`
   );
+
+  if (seo.robots) {
+    html = html.replace(
+      /<meta\s+name="robots"\s+content="[^"]*"\s*\/?>/,
+      `<meta name="robots" content="${seo.robots}" />`,
+    );
+    html = html.replace(
+      /<meta\s+name="googlebot"\s+content="[^"]*"\s*\/?>/,
+      `<meta name="googlebot" content="${seo.robots}" />`,
+    );
+  }
 
   // Replace og:title
   html = html.replace(
@@ -670,6 +872,10 @@ export function injectSeoIntoHtml(html: string, seo: SeoMeta): string {
     if (extraHead) {
       html = html.replace('</head>', `${extraHead}\n  </head>`);
     }
+  }
+
+  if (seo.bodyHtml) {
+    html = html.replace('<div id="root"></div>', `<div id="root">${seo.bodyHtml}</div>`);
   }
 
   return html;

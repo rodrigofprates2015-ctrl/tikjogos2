@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  CheckCircle2, Clock3, Copy, Flag, Forward, Home, LogOut, Play, RotateCcw,
-  Plus, Settings, SkipForward, Sparkles, Trophy, X,
+  BookOpen, CheckCircle2, Clock3, Copy, Flag, Forward, HelpCircle, Home, LogOut, Play, RotateCcw,
+  Plus, Settings, SkipForward, Sparkles, Trophy, Users, X,
 } from "lucide-react";
+import { Link } from "wouter";
 import {
   GameIdentityAvatar, GameIdentityCharacterPicker, GameIdentityLayout,
 } from "@/components/GameIdentityLayout";
 import { MobileNav } from "@/components/MobileNav";
 import { cn } from "@/lib/utils";
+import { setPageSeo } from "@/lib/pageSeo";
 import stopLogo from "@/assets/stop-logo.png";
 
 type Answer = { category: string; value: string; status: "pending" | "skipped" | "answered" | "noAnswer" };
@@ -52,6 +54,110 @@ function anonymousOrder(value: string) {
   return hash >>> 0;
 }
 
+function StopLanding({ playerId }: { playerId: string }) {
+  const [nickname, setNickname] = useState(() => localStorage.getItem("playerNickname") || "");
+  const [code, setCode] = useState("");
+  const [remember, setRemember] = useState(() => Boolean(localStorage.getItem("playerNickname")));
+  const [loading, setLoading] = useState<"create" | "join" | null>(null);
+  const [landingError, setLandingError] = useState("");
+
+  useEffect(() => {
+    setPageSeo({
+      title: "Stop Online Grátis para Jogar com Amigos | TikJogos",
+      description: "Jogue Stop, Adedonha ou Adedanha online por categorias. Crie uma sala, sorteie uma letra e jogue gratuitamente com seus amigos.",
+      canonical: "https://tikjogos.com.br/stop",
+      keywords: "stop online, adedonha online, adedanha online, abecedário online, stop com amigos",
+    });
+  }, []);
+
+  const enterRoom = (roomCode: string) => {
+    sessionStorage.setItem("stop_room_code", roomCode);
+    if (remember) localStorage.setItem("playerNickname", nickname.trim());
+    else localStorage.removeItem("playerNickname");
+    window.location.href = `/stop?room=${encodeURIComponent(roomCode)}`;
+  };
+
+  const submit = async (kind: "create" | "join") => {
+    const cleanNickname = nickname.trim();
+    if (!cleanNickname) return setLandingError("Digite seu apelido para continuar.");
+    if (kind === "join" && code.trim().length !== 3) return setLandingError("Digite o código de 3 caracteres da sala.");
+    setLoading(kind); setLandingError("");
+    try {
+      const response = await fetch(kind === "create" ? "/api/stop/rooms" : `/api/stop/rooms/${code.trim().toUpperCase()}/join`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerId, nickname: cleanNickname }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Não foi possível entrar na sala.");
+      enterRoom(data.code || code.trim().toUpperCase());
+    } catch (cause: any) {
+      setLandingError(cause.message);
+      setLoading(null);
+    }
+  };
+
+  return <div className="min-h-screen bg-[#17142B] text-white">
+    <MobileNav />
+    <main>
+      <section className="border-b border-[#EBB3F2]/15 px-4 py-12 sm:py-16">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1fr_.9fr]">
+          <div>
+            <img src={stopLogo} alt="Stop Online" className="h-auto w-full max-w-[360px] object-contain" />
+            <p className="mt-7 text-xs font-black uppercase tracking-[.2em] text-[#79D9AC]">Stop, Adedonha ou Adedanha</p>
+            <h1 className="mt-3 text-4xl font-black leading-tight sm:text-6xl">Stop online grátis para jogar com amigos</h1>
+            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-[#EBB3F2]/75">Uma letra, várias categorias e pouco tempo para pensar. Crie uma sala, envie o código para sua turma e descubra quem tem as respostas mais rápidas.</p>
+          </div>
+
+          <div className="rounded-3xl border-2 border-[#EBB3F2]/25 bg-[#292052] p-5 shadow-[0_10px_0_#503FBF] sm:p-7">
+            <h2 className="text-2xl font-black">Comece uma partida</h2>
+            <label className="mt-5 block text-xs font-black uppercase tracking-wider text-[#EBB3F2]">Seu apelido</label>
+            <input value={nickname} maxLength={18} onChange={event => setNickname(event.target.value)} placeholder="Digite seu apelido" className="mt-2 h-14 w-full rounded-xl border-2 border-[#EBB3F2]/20 bg-[#17142B] px-4 font-bold outline-none focus:border-[#79D9AC]" />
+            <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-[#EBB3F2]/70"><input type="checkbox" checked={remember} onChange={event => setRemember(event.target.checked)} className="h-4 w-4 accent-[#6650F2]" /> Lembrar meu apelido</label>
+            <button onClick={() => submit("create")} disabled={Boolean(loading)} className="mt-5 h-14 w-full rounded-xl border-2 border-[#EBB3F2] border-b-[6px] border-b-[#503FBF] bg-[#6650F2] font-black transition hover:-translate-y-0.5 disabled:opacity-50"><Play className="mr-2 inline h-5 w-5 fill-current" />{loading === "create" ? "CRIANDO..." : "CRIAR SALA"}</button>
+            <div className="my-5 flex items-center gap-3 text-xs font-black text-[#EBB3F2]/40"><span className="h-px flex-1 bg-[#EBB3F2]/15" />OU ENTRE COM UM CÓDIGO<span className="h-px flex-1 bg-[#EBB3F2]/15" /></div>
+            <div className="grid grid-cols-[1fr_auto] gap-2"><input value={code} maxLength={3} onChange={event => setCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))} placeholder="CÓDIGO" className="h-13 min-w-0 rounded-xl border-2 border-[#EBB3F2]/20 bg-[#17142B] px-4 text-center font-black uppercase tracking-[.25em] outline-none focus:border-[#79D9AC]" /><button onClick={() => submit("join")} disabled={Boolean(loading)} className="rounded-xl bg-[#79D9AC] px-5 font-black text-[#292052] disabled:opacity-50">ENTRAR</button></div>
+            {landingError && <p className="mt-4 rounded-xl border border-[#F27052]/40 bg-[#F27052]/10 p-3 text-sm font-bold text-[#F27052]">{landingError}</p>}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
+        <div className="grid gap-6 md:grid-cols-3">{[
+          [Users, "Multiplayer online", "Cada amigo entra pelo próprio celular usando o mesmo código de sala."],
+          [Clock3, "Tempo configurável", "Escolha a duração da rodada e tente completar todas as categorias."],
+          [CheckCircle2, "Validação em grupo", "As respostas são votadas anonimamente antes da pontuação final."],
+        ].map(([Icon, title, text]) => { const CardIcon = Icon as typeof Users; return <article key={title as string} className="rounded-2xl border border-[#EBB3F2]/15 bg-[#211B45] p-6"><CardIcon className="h-8 w-8 text-[#79D9AC]"/><h2 className="mt-4 text-xl font-black">{title as string}</h2><p className="mt-2 leading-relaxed text-[#EBB3F2]/65">{text as string}</p></article>; })}</div>
+
+        <article className="mx-auto mt-16 max-w-4xl">
+          <p className="text-xs font-black uppercase tracking-[.2em] text-[#79D9AC]">Regras rápidas</p>
+          <h2 className="mt-3 text-3xl font-black sm:text-5xl">Como jogar Stop online</h2>
+          <ol className="mt-7 grid gap-4 sm:grid-cols-2">{[
+            "Crie uma sala e compartilhe o código com os amigos.",
+            "Configure o tempo, as categorias e as letras do sorteio.",
+            "Responda cada categoria usando a letra sorteada.",
+            "Complete a cartela, bata Stop e valide as respostas da mesa.",
+          ].map((step, index) => <li key={step} className="flex gap-4 rounded-2xl border border-[#EBB3F2]/15 bg-[#292052] p-5"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#F27052] font-black">{index + 1}</span><span className="pt-1 font-bold text-[#EBB3F2]/80">{step}</span></li>)}</ol>
+        </article>
+
+        <article className="mx-auto mt-16 max-w-4xl rounded-3xl border border-[#EBB3F2]/15 bg-[#211B45] p-6 sm:p-9">
+          <BookOpen className="h-9 w-9 text-[#EBB3F2]"/><h2 className="mt-4 text-3xl font-black">Stop, Adedonha e Adedanha são o mesmo jogo?</h2>
+          <p className="mt-4 leading-relaxed text-[#EBB3F2]/70">São nomes regionais para a brincadeira em que todos respondem categorias usando uma letra sorteada. Em alguns lugares ela também é chamada de Abecedário. No TikJogos, a dinâmica acontece online e uma categoria aparece por vez.</p>
+        </article>
+
+        <section className="mx-auto mt-16 max-w-4xl" aria-labelledby="stop-faq"><HelpCircle className="h-9 w-9 text-[#79D9AC]"/><h2 id="stop-faq" className="mt-4 text-3xl font-black">Perguntas frequentes</h2><div className="mt-6 space-y-3">{[
+          ["O Stop online é gratuito?", "Sim. Você pode criar uma sala e jogar gratuitamente pelo navegador."],
+          ["Precisa instalar aplicativo?", "Não. O jogo funciona no navegador do celular e do computador."],
+          ["Quantas pessoas podem jogar?", "A sala aceita até dez jogadores. Para uma disputa mais divertida, recomendamos pelo menos três."],
+          ["Posso criar minhas próprias categorias?", "Sim. O host pode selecionar categorias prontas e adicionar temas personalizados."],
+        ].map(([question, answer]) => <article key={question} className="rounded-2xl border border-[#EBB3F2]/15 bg-[#292052] p-5"><h3 className="font-black">{question}</h3><p className="mt-2 text-[#EBB3F2]/65">{answer}</p></article>)}</div></section>
+
+        <div className="mt-16 text-center"><Link href="/jogos-do-tiktok" className="inline-flex items-center gap-2 rounded-xl border border-[#EBB3F2]/25 px-5 py-3 font-black text-[#EBB3F2] hover:bg-[#503FBF]/30">Conheça outros jogos do TikTok <Forward className="h-4 w-4"/></Link></div>
+      </section>
+    </main>
+  </div>;
+}
+
 export default function StopGame() {
   const query = new URLSearchParams(window.location.search);
   const roomCode = (query.get("room") || sessionStorage.getItem("stop_room_code") || "").toUpperCase();
@@ -80,7 +186,7 @@ export default function StopGame() {
   }, []);
 
   useEffect(() => {
-    if (!roomCode) { window.location.replace("/"); return; }
+    if (!roomCode) return;
     let active = true;
     const load = async () => {
       try {
@@ -132,6 +238,7 @@ export default function StopGame() {
     if (action === "answer") setValue("");
   };
 
+  if (!roomCode) return <StopLanding playerId={playerId.current} />;
   if (!room) return <div className="min-h-screen bg-[#17142B] text-white"><MobileNav/><div className="grid min-h-[75vh] place-items-center"><div className="text-center"><Forward className="mx-auto h-12 w-12 animate-pulse text-[#EBB3F2]"/><p className="mt-4 font-bold text-[#EBB3F2]/50">{error || "Entrando na sala..."}</p></div></div></div>;
 
   const me = room.players.find(player => player.uid === playerId.current);

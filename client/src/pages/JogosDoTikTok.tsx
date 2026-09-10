@@ -7,9 +7,13 @@ import {
   Clock3,
   Gamepad2,
   HelpCircle,
+  ListOrdered,
+  Octagon,
+  Pencil,
   Play,
   Sparkles,
   Target,
+  Type,
   Users,
 } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
@@ -66,6 +70,46 @@ const games = [
     action: "Jogar Aproximação",
     icon: Target,
     color: "blue",
+  },
+  {
+    title: "Stop Online",
+    description:
+      "Uma letra é sorteada e cada categoria aparece por vez. Responda todas, grite Stop e participe da validação das palavras do grupo.",
+    href: "/stop",
+    guide: "/stop",
+    action: "Jogar Stop",
+    icon: Octagon,
+    color: "rose",
+  },
+  {
+    title: "Desenho do Impostor",
+    description:
+      "Todos desenham a mesma palavra, menos o impostor. Compare os desenhos e descubra quem está tentando disfarçar.",
+    href: "/desenho-impostor",
+    guide: "/como-jogar/jogo-do-impostor-desenho",
+    action: "Jogar Desenho",
+    icon: Pencil,
+    color: "orange",
+  },
+  {
+    title: "Rankify",
+    description:
+      "Organize os itens na ordem que você acredita ser correta e descubra quem chegou mais perto do ranking verdadeiro.",
+    href: "/rankmaster",
+    guide: "/como-jogar/rankify",
+    action: "Jogar Rankify",
+    icon: ListOrdered,
+    color: "purple",
+  },
+  {
+    title: "Desafio da Palavra",
+    description:
+      "Adicione letras, forme palavras possíveis e desafie os blefes dos adversários antes de perder todas as vidas.",
+    href: "/desafio-da-palavra",
+    guide: "/como-jogar/desafio-da-palavra",
+    action: "Jogar Desafio da Palavra",
+    icon: Type,
+    color: "cyan",
   },
 ] as const;
 

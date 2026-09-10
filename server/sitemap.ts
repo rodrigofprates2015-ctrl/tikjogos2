@@ -120,6 +120,7 @@ function generateMainSitemap(): string {
     '/bomba',
     '/cronometro',
     '/rankmaster',
+    '/stop',
   ];
   for (const path of standaloneGames) {
     entries.push(urlEntry(`${BASE_URL}${path}`, { priority: '0.9', changefreq: 'weekly' }));
@@ -162,24 +163,20 @@ ${entries.join('\n')}
 function generateBlogSitemap(): string {
   const entries: string[] = [];
 
-  // Blog index (with hreflangs)
+  // Blog content is currently written in Portuguese. Only publish genuine
+  // language versions in the sitemap; translated slugs with a Portuguese body
+  // were creating duplicate and language-mismatch signals.
   entries.push(urlEntry(`${BASE_URL}/blog`, {
     priority: '0.7',
     changefreq: 'weekly',
-    hreflangs: [`${BASE_URL}/blog`, `${BASE_URL}/en/blog`, `${BASE_URL}/es/blog`],
   }));
 
-  // Individual posts — PT, EN and ES versions
+  // Individual Portuguese posts.
   for (const post of BLOG_POSTS_FULL) {
     const lastmod = parseDate(post.date || today());
-    const hreflangs: [string, string, string] = [
-      `${BASE_URL}/blog/${post.slug}`,
-      `${BASE_URL}/en/blog/${post.slugEn || post.slug}`,
-      `${BASE_URL}/es/blog/${post.slugEs || post.slug}`,
-    ];
-    for (const loc of hreflangs) {
-      entries.push(urlEntry(loc, { priority: '0.6', changefreq: 'monthly', lastmod, hreflangs }));
-    }
+    entries.push(urlEntry(`${BASE_URL}/blog/${post.slug}`, {
+      priority: '0.6', changefreq: 'monthly', lastmod,
+    }));
   }
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -207,10 +204,6 @@ function generateSitemapIndex(): string {
 const ROBOTS_TXT = `User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /dashadmin
-Disallow: /ad-test
-Disallow: /sala/
-Disallow: /prototipo
 
 Sitemap: ${BASE_URL}/sitemap_index.xml
 `;
