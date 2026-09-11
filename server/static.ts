@@ -16,6 +16,9 @@ export function serveStatic(app: Express) {
   const indexHtml = fs.readFileSync(indexPath, 'utf-8');
 
   app.use(express.static(distPath, {
+    // Let the catch-all below handle `/` so the homepage receives the same
+    // server-rendered SEO body and metadata as every other public landing page.
+    index: false,
     setHeaders: (res, filePath) => {
       // Ensure proper content types
       if (filePath.endsWith('.html')) {
@@ -41,10 +44,13 @@ export function serveStatic(app: Express) {
     } else {
       // Unknown SPA URLs used to return the homepage with HTTP 200. Search
       // engines correctly classified many of those responses as soft 404s.
+      // `req.path` becomes `/` inside Express' wildcard middleware, so derive
+      // the real pathname from originalUrl for an accurate canonical.
+      const requestedPath = new URL(req.originalUrl, 'https://tikjogos.com.br').pathname;
       const notFoundHtml = injectSeoIntoHtml(indexHtml, {
         title: 'Página não encontrada | TikJogos',
         description: 'A página solicitada não existe no TikJogos.',
-        canonical: `https://tikjogos.com.br${req.path}`,
+        canonical: `https://tikjogos.com.br${requestedPath}`,
         robots: 'noindex, nofollow, noarchive',
       });
       res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
