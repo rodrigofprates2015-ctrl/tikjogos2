@@ -48,7 +48,13 @@ app.use((req, res, next) => {
     '/oficina': '/criar-tema',
     '/personagens': '/personagem',
     '/skin': '/personagem',
-    '/termo': '/termos',
+    // Consolidate legacy content aliases so backlinks and crawl signals point
+    // to the same canonical document.
+    '/temas': '/jogo-do-impostor/temas',
+    '/en/temas': '/en/themes',
+    '/es/temas': '/es/temas-del-juego',
+    '/modos': '/modos-de-jogo',
+    '/sincronia-battle-royale': '/sincronia-br',
     '/en/games': '/en',
     '/es/juegos': '/es',
     '/como-jogar': '/comojogar',

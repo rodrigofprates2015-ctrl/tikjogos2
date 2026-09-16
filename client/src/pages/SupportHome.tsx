@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { Gamepad2, Heart, Sparkles, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 import { SideAds } from "@/components/AdSense";
 import logoTikjogos from "@assets/logo_nova_tikjogos (1).png";
@@ -36,33 +36,7 @@ export default function SupportHome({ embedded = false }: SupportHomeProps) {
       </div>}
 
       <main className={`relative z-10 mx-auto w-full max-w-5xl px-4 pb-20 sm:px-6 ${embedded ? "pt-8 md:pt-12" : "pt-10 md:pt-16"}`}>
-        <section className="launch-goal animate-fade-in" aria-labelledby="goal-title">
-          <div className="launch-goal__flare launch-goal__flare--one" aria-hidden="true">✦</div>
-          <div className="launch-goal__flare launch-goal__flare--two" aria-hidden="true">✦</div>
-          <div className="launch-goal__top">
-            <div className="launch-goal__message">
-              <span className="launch-goal__kicker">A comunidade faz o jogo acontecer</span>
-              <h2 id="goal-title">Ajude a lançar o <strong>Bomba!</strong></h2>
-              <p>Cada contribuição nos aproxima do lançamento. Quando a barra chegar a 100%, o novo jogo será liberado para todos.</p>
-            </div>
-            <div className="launch-goal__target"><span>Meta</span><strong>R$ {support.goal.toLocaleString('pt-BR')}</strong></div>
-          </div>
-          <div className="launch-goal__progress-row">
-            <div className="launch-goal__heart" aria-hidden="true"><Heart /></div>
-            <div className="launch-goal__track" role="progressbar" aria-valuenow={support.raised} aria-valuemin={0} aria-valuemax={support.goal} aria-label={`R$ ${support.raised} arrecadados de R$ ${support.goal}`}>
-              <div className="launch-goal__fill" style={{ width: `${support.percentage}%` }} />
-            </div>
-            <div className="launch-goal__amount"><strong>R$ {support.raised.toLocaleString('pt-BR')}</strong><span>/ R$ {support.goal.toLocaleString('pt-BR')}</span></div>
-            <div className="launch-goal__percent"><strong>{support.percentage}%</strong><span>da meta</span></div>
-          </div>
-          <div className="launch-goal__footer">
-            <p><Sparkles aria-hidden="true" /> Faltam <strong>R$ {support.remaining.toLocaleString('pt-BR')}</strong> para o lançamento</p>
-            <Link href="/doacoes" className="launch-goal__cta" data-testid="button-support-launch"><Heart className="h-6 w-6 fill-current" /> Apoie via PIX</Link>
-            <small>Qualquer valor faz a diferença.</small>
-          </div>
-        </section>
-
-        <section className="mt-8">
+        <section>
           <div className="support-panel supporter-panel" aria-labelledby="supporters-title">
             <div className="flex items-center gap-3"><Users className="h-7 w-7 text-purple-400" /><h2 id="supporters-title" className="text-2xl font-black">Quem está ajudando a construir o TikJogos</h2></div>
             <p className="mt-3 text-sm text-slate-400">Deixe seu @ no mural, conecte-se com outros jogadores e faça parte da comunidade.</p>

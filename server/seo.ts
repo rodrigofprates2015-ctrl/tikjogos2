@@ -484,7 +484,7 @@ const HREFLANG_MAP: Array<[string, string, string]> = [
   ['/desenho-impostor', '/en/desenho-impostor', '/es/desenho-impostor'],
   ['/respostas-em-comum', '/en/common-answers', '/es/respuestas-en-comun'],
   ['/modo-local', '/en/local-mode', '/es/modo-local'],
-  ['/temas', '/en/themes', '/es/temas-del-juego'],
+  ['/jogo-do-impostor/temas', '/en/themes', '/es/temas-del-juego'],
   ['/criar-tema', '/en/create-theme', '/es/crear-tema'],
   ['/modos-de-jogo', '/en/game-modes', '/es/modos-de-juego'],
   ['/outros-jogos', '/en/other-games', '/es/otros-juegos'],
@@ -556,6 +556,32 @@ function buildPageHtml(title: string, description: string): string {
       <h1>${escapeHtml(title.replace(/\s*\|\s*TikJogos$/, ''))}</h1>
       <p>${escapeHtml(description)}</p>
       <p><a href="${BASE_URL}/jogos-do-tiktok">Conheça todos os jogos do TikJogos</a></p>
+    </main>`;
+}
+
+function buildHomepageHtml(): string {
+  return `<main data-seo-prerender="homepage">
+      <h1>Jogo do Impostor online grátis com amigos</h1>
+      <p>Crie uma sala grátis, envie o código para seus amigos e descubra quem é o impostor. O TikJogos funciona direto no navegador do celular ou computador, sem download.</p>
+      <section>
+        <h2>Como jogar o Jogo do Impostor</h2>
+        <ol>
+          <li>Crie uma sala e compartilhe o código com o grupo.</li>
+          <li>Cada jogador recebe uma palavra secreta; o impostor precisa fingir que também a conhece.</li>
+          <li>Todos dão pistas, discutem e votam em quem acreditam ser o impostor.</li>
+        </ol>
+        <p><a href="${BASE_URL}/como-jogar/jogo-do-impostor">Veja as regras completas e estratégias do Jogo do Impostor</a>.</p>
+      </section>
+      <section>
+        <h2>Temas para cada grupo</h2>
+        <p>Escolha temas de anime, futebol, filmes, séries e games ou crie um tema personalizado para sua turma.</p>
+        <p><a href="${BASE_URL}/jogo-do-impostor/temas">Explore todos os temas do Jogo do Impostor</a>.</p>
+      </section>
+      <section>
+        <h2>Mais jogos para jogar com amigos</h2>
+        <p>Além do Impostor, o TikJogos reúne Stop, Bomba, Sincronia, Cronômetro e outros jogos sociais gratuitos.</p>
+        <p><a href="${BASE_URL}/jogos-do-tiktok">Conheça os jogos do TikTok disponíveis no TikJogos</a>.</p>
+      </section>
     </main>`;
 }
 
@@ -741,7 +767,7 @@ export function getSeoForPath(urlPath: string): SeoMeta | null {
       description: 'Jogue o Jogo do Impostor online grátis com seus amigos. Crie uma sala, compartilhe o código e descubra quem recebeu a palavra diferente.',
       canonical: `${BASE_URL}${path === '/' ? '/' : path}`,
       hreflangTags: hreflang,
-      bodyHtml: buildPageHtml(
+      bodyHtml: path === '/' ? buildHomepageHtml() : buildPageHtml(
         'Jogo do Impostor Online Grátis com Amigos | TikJogos',
         'Jogue o Jogo do Impostor online grátis com seus amigos. Crie uma sala, compartilhe o código e descubra quem recebeu a palavra diferente.',
       ),

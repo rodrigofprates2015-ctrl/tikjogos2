@@ -58,7 +58,7 @@ const I18N_PAGES: Array<{ paths: [string, string, string]; priority: string; cha
   { paths: ['/como-jogar/rankify', '/en/how-to-play/rankify', '/es/como-jugar/rankify'], priority: '0.8', changefreq: 'weekly' },
   { paths: ['/como-jogar/aproximacao', '/en/how-to-play/approximation', '/es/como-jugar/aproximacion'], priority: '0.8', changefreq: 'weekly' },
   // Themes
-  { paths: ['/temas', '/en/themes', '/es/temas-del-juego'], priority: '0.8', changefreq: 'weekly' },
+  { paths: ['/jogo-do-impostor/temas', '/en/themes', '/es/temas-del-juego'], priority: '0.8', changefreq: 'weekly' },
   { paths: ['/criar-tema', '/en/create-theme', '/es/crear-tema'], priority: '0.6', changefreq: 'monthly' },
   // Game modes & other games
   { paths: ['/modos-de-jogo', '/en/game-modes', '/es/modos-de-juego'], priority: '0.7', changefreq: 'weekly' },
@@ -139,12 +139,6 @@ ${entries.join('\n')}
 
 function generateTemasSitemap(): string {
   const entries: string[] = [];
-
-  // Hub page
-  entries.push(urlEntry(`${BASE_URL}/jogo-do-impostor/temas`, {
-    priority: '0.8',
-    changefreq: 'weekly',
-  }));
 
   // Individual theme pages
   for (const slug of THEME_SLUGS) {
