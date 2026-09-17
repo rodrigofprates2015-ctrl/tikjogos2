@@ -968,25 +968,29 @@ function OverviewView({
   const playing = rooms.filter(r => r.status === "playing" && r.gameMode !== 'desafioPalavra').length + drawingRooms.filter(r => r.status !== "waiting").length + (sincStats?.playingRooms ?? 0) + desafioRooms.filter(r => r.status === "playing").length + aproximacaoRooms.filter(r => r.status === "playing").length + bombaRooms.filter(r => r.status === "playing").length;
   const waiting = rooms.filter(r => r.status === "waiting" && r.gameMode !== 'desafioPalavra').length + drawingRooms.filter(r => r.status === "waiting").length + (sincStats?.waitingRooms ?? 0) + desafioRooms.filter(r => r.status === "waiting").length + aproximacaoRooms.filter(r => r.status === "waiting").length + bombaRooms.filter(r => r.status === "waiting").length;
 
-  const { data: analytics } = useQuery<any>({
+  const {
+    data: analytics,
+    isLoading: analyticsLoading,
+    isError: analyticsFailed,
+    error: analyticsError,
+    refetch: refetchAnalytics,
+  } = useQuery<any>({
     queryKey: ["/api/analytics/dashboard", token],
     queryFn: async () => {
       if (!token) return null;
       const res = await fetch("/api/analytics/dashboard", { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        if (err.code === 'DATABASE_COMPUTE_QUOTA_EXCEEDED') {
-          const error = new Error(err.message || 'Cota de compute do banco excedida') as Error & { code?: string };
-          error.code = err.code;
-          throw error;
-        }
-        return null;
+        const error = new Error(err.message || err.error || `Erro ${res.status} ao carregar os dados`) as Error & { code?: string; status?: number };
+        error.code = err.code;
+        error.status = res.status;
+        throw error;
       }
       return res.json();
     },
     staleTime: 2 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
-    retry: (_failureCount, err: any) => err?.code !== 'DATABASE_COMPUTE_QUOTA_EXCEEDED',
+    retry: (failureCount, err: any) => err?.code !== 'DATABASE_COMPUTE_QUOTA_EXCEEDED' && failureCount < 2,
     enabled: !!token,
   });
 
@@ -1024,7 +1028,28 @@ function OverviewView({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {formattedRoomsChart.length > 0 ? (
+          {analyticsLoading ? (
+            <div className="h-[200px] flex items-center justify-center gap-2 text-slate-500 text-sm">
+              <RefreshCw className="h-4 w-4 animate-spin" /> Carregando dados...
+            </div>
+          ) : analyticsFailed ? (
+            <div className="h-[200px] flex flex-col items-center justify-center gap-3 px-4 text-center">
+              <AlertTriangle className="h-6 w-6 text-amber-500" />
+              <div>
+                <p className="text-sm font-bold text-slate-700">Não foi possível carregar o histórico</p>
+                <p className="mt-1 text-xs text-slate-500">{(analyticsError as Error)?.message || "Erro na API de analytics"}</p>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => refetchAnalytics()} className="h-8 gap-2 text-xs">
+                <RefreshCw className="h-3.5 w-3.5" /> Tentar novamente
+              </Button>
+            </div>
+          ) : analytics?.databaseUnavailable ? (
+            <div className="h-[200px] flex flex-col items-center justify-center gap-2 px-4 text-center">
+              <AlertTriangle className="h-6 w-6 text-amber-500" />
+              <p className="text-sm font-bold text-slate-700">Banco de analytics temporariamente indisponível</p>
+              <p className="text-xs text-slate-500">Os dados em tempo real continuam funcionando, mas o histórico não pôde ser consultado.</p>
+            </div>
+          ) : formattedRoomsChart.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={formattedRoomsChart}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e8eaf4" />
@@ -1035,7 +1060,7 @@ function OverviewView({
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-[200px] flex items-center justify-center text-slate-500 text-sm">Carregando dados...</div>
+            <div className="h-[200px] flex items-center justify-center text-slate-500 text-sm">Nenhuma sala registrada nos últimos 30 dias.</div>
           )}
         </CardContent>
       </Card>
