@@ -4,7 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage, type Room } from "./storage";
 import { type Player, type GameModeType, type GameData } from "@shared/schema";
 import { z } from "zod";
-import { randomBytes } from "crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { setupAuth, isAuthenticated } from "./githubAuth";
 import { createPayment, createDonationPayment, getPaymentStatus, type ThemeData, type DonationData } from "./paymentController";
 import { randomBytes as cryptoRandomBytes } from "crypto";
@@ -91,9 +91,10 @@ export function getDrawingRoomStats() {
   };
 }
 
-// Server-side admin token store with expiration (24h)
+// Signed admin tokens remain valid across deploys and server restarts.
+// Previously these tokens lived in an in-memory Map, so every Render restart
+// silently invalidated the dashboard session while the browser kept the token.
 const ADMIN_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
-const adminTokens = new Map<string, number>(); // token -> expiry timestamp
 
 type SkinRequestStatus = "awaiting_payment" | "approved" | "rejected" | "cancelled" | "unknown";
 
@@ -132,22 +133,49 @@ function updateSkinRequestPaymentStatus(paymentId: string | number, status: stri
   });
 }
 
-function storeAdminToken(token: string): void {
-  adminTokens.set(token, Date.now() + ADMIN_TOKEN_TTL_MS);
+function getAdminTokenSecret(): string | null {
+  return process.env.ADMIN_TOKEN_SECRET || process.env.ADMIN_PASSWORD || null;
+}
+
+function signAdminTokenPayload(payload: string, secret: string): string {
+  return createHmac('sha256', secret).update(payload).digest('base64url');
+}
+
+function createAdminToken(email: string): string {
+  const secret = getAdminTokenSecret();
+  if (!secret) throw new Error('Admin token secret is not configured');
+
+  const payload = Buffer.from(JSON.stringify({
+    sub: email,
+    exp: Date.now() + ADMIN_TOKEN_TTL_MS,
+    nonce: randomBytes(16).toString('hex'),
+  })).toString('base64url');
+
+  return `${payload}.${signAdminTokenPayload(payload, secret)}`;
 }
 
 function isValidAdminToken(token: string): boolean {
-  const expiry = adminTokens.get(token);
-  if (!expiry) return false;
-  if (Date.now() > expiry) {
-    adminTokens.delete(token);
+  try {
+    const secret = getAdminTokenSecret();
+    if (!secret) return false;
+
+    const [payload, signature, extra] = token.split('.');
+    if (!payload || !signature || extra) return false;
+
+    const expected = signAdminTokenPayload(payload, secret);
+    const receivedBuffer = Buffer.from(signature);
+    const expectedBuffer = Buffer.from(expected);
+    if (receivedBuffer.length !== expectedBuffer.length || !timingSafeEqual(receivedBuffer, expectedBuffer)) {
+      return false;
+    }
+
+    const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as { sub?: string; exp?: number };
+    return typeof claims.exp === 'number'
+      && claims.exp > Date.now()
+      && claims.sub === process.env.ADMIN_EMAIL;
+  } catch {
     return false;
   }
-  return true;
-}
-
-function revokeAdminToken(token: string): void {
-  adminTokens.delete(token);
 }
 
 const GAME_MODES = {
@@ -3251,9 +3279,7 @@ export async function registerRoutes(
       }
       
       if (email === adminEmail && password === adminPassword) {
-        // Generate a cryptographically secure token and store it server-side
-        const token = randomBytes(32).toString('hex');
-        storeAdminToken(token);
+        const token = createAdminToken(email);
         
         console.log('[Admin] Login successful');
         return res.json({ success: true, token });
@@ -3267,15 +3293,10 @@ export async function registerRoutes(
     }
   });
   
-  // Admin logout endpoint - revokes the token server-side
+  // The browser removes the stateless token on logout. It also expires after 24h.
   app.post("/api/admin/logout", (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        const token = authHeader.substring(7);
-        revokeAdminToken(token);
-      }
-      console.log('[Admin] Logout successful - token revoked');
+      console.log('[Admin] Logout successful');
       res.json({ success: true });
     } catch (error) {
       console.error('[Admin] Logout error:', error);
