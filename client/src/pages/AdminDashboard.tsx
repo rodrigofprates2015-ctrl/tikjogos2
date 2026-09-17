@@ -1119,7 +1119,7 @@ function GameSessionsChart({ gameType, token, accent }: { gameType: string; toke
       <CardHeader className="pb-2">
         <CardTitle className="text-sm text-slate-300 font-medium flex items-center gap-2">
           <BarChart3 className="w-4 h-4" style={{ color: accent }} />
-          Partidas Jogadas — Últimos 30 dias
+          Partidas Jogadas — Últimos 90 dias
           <span className="ml-auto text-xs text-slate-400 font-normal">{totalGames} total</span>
         </CardTitle>
       </CardHeader>
@@ -1136,7 +1136,7 @@ function GameSessionsChart({ gameType, token, accent }: { gameType: string; toke
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} interval={4} />
+              <XAxis dataKey="label" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} interval={14} />
               <YAxis tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} allowDecimals={false} />
               <Tooltip
                 contentStyle={{ backgroundColor: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", fontSize: "12px", color: "#fff" }}

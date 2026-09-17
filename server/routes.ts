@@ -3875,14 +3875,16 @@ export async function registerRoutes(
     }
   });
 
-  // Admin: 30-day game session stats per game type
+  // Admin: 90-day game session stats per game type.
+  // A wider window keeps the preserved history visible after database outages
+  // without mixing it with the separate real-time room counters.
   app.get("/api/admin/game-sessions/:gameType", verifyAdmin, async (req, res) => {
     const { gameType } = req.params;
     if (!['impostor', 'desenho', 'sincronia', 'desafio', 'aproximacao', 'bomba'].includes(gameType)) {
       return res.status(400).json({ error: "Invalid game type" });
     }
     try {
-      const data = await getGameSessionStats(gameType as any, 30);
+      const data = await getGameSessionStats(gameType as any, 90);
       res.json(data);
     } catch (err) {
       res.status(500).json({ error: "Failed to fetch game session stats" });
