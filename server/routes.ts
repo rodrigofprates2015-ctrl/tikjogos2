@@ -49,11 +49,15 @@ type DrawingRoom = {
 };
 const drawingRooms = new Map<string, DrawingRoom>();
 
+function isImpostorBot(player: Pick<Player, 'uid'>) {
+  return player.uid.startsWith('bot-');
+}
+
 /** Real-time stats for Impostor game rooms (in-memory) */
 export async function getImpostorRoomStats() {
   const allRoomsRaw = await storage.getAllRooms();
   const allRooms = allRoomsRaw.filter(r => r.gameMode !== 'desafioPalavra');
-  const activeRooms = allRooms.filter(r => r.players.some(p => p.connected));
+  const activeRooms = allRooms.filter(r => r.players.some(p => p.connected && !isImpostorBot(p)));
   const playingRooms = allRooms.filter(r => r.status === 'playing');
   const totalConnectedPlayers = allRooms.reduce((sum, r) => sum + r.players.filter(p => p.connected).length, 0);
   return {
@@ -1558,6 +1562,27 @@ export async function registerRoutes(
   const emptyRoomTimers = new Map<string, NodeJS.Timeout>();
   const EMPTY_ROOM_CLEANUP_DELAY = 10000; // 10 seconds
 
+  async function deleteAutomatedOnlyRoom(roomCode: string) {
+    console.log(`[Empty Room] Deleting bot-only room ${roomCode}`);
+    await storage.deleteRoom(roomCode);
+    const connections = roomConnections.get(roomCode);
+    if (connections) {
+      connections.clear();
+      roomConnections.delete(roomCode);
+    }
+    const emptyTimer = emptyRoomTimers.get(roomCode);
+    if (emptyTimer) {
+      clearTimeout(emptyTimer);
+      emptyRoomTimers.delete(roomCode);
+    }
+    for (const [key, timer] of Array.from(hardExitTimers.entries())) {
+      if (key.startsWith(`${roomCode}:`)) {
+        clearTimeout(timer);
+        hardExitTimers.delete(key);
+      }
+    }
+  }
+
   // Schedule room deletion when it becomes empty
   function scheduleEmptyRoomDeletion(roomCode: string) {
     // Clear any existing timer for this room
@@ -1623,6 +1648,13 @@ export async function registerRoutes(
     
     // Remove player from room
     const updatedPlayers = room.players.filter(p => p.uid !== playerId);
+
+    // Test bots do not represent a live participant. Once the last human
+    // leaves, keeping the bots would turn the lobby into a permanent ghost.
+    if (updatedPlayers.length > 0 && updatedPlayers.every(isImpostorBot)) {
+      await deleteAutomatedOnlyRoom(roomCode);
+      return;
+    }
     
     // Determine new host if needed
     let newHostId = room.hostId;
@@ -1730,6 +1762,17 @@ export async function registerRoutes(
       }
     });
   }, HEARTBEAT_INTERVAL);
+
+  // Also removes bot-only rooms left behind by older server versions.
+  const botOnlyRoomCleanup = setInterval(async () => {
+    const allRooms = await storage.getAllRooms();
+    for (const room of allRooms) {
+      if (room.players.length > 0 && room.players.every(isImpostorBot)) {
+        await deleteAutomatedOnlyRoom(room.code);
+      }
+    }
+  }, 30_000);
+  botOnlyRoomCleanup.unref?.();
 
   httpServer.on('upgrade', (request, socket, head) => {
     if (request.url === '/game-ws') {
@@ -5063,6 +5106,12 @@ export async function registerRoutes(
 
     // Remove player from room
     room.players = room.players.filter(p => p.uid !== playerId);
+
+    // Admin test bots cannot keep an abandoned room alive by themselves.
+    if (room.players.length > 0 && room.players.every(p => p.uid.startsWith('aprox-bot-'))) {
+      aproximacaoRooms.delete(roomCode);
+      return;
+    }
 
     // Transfer host if needed
     if (room.hostId === playerId && room.players.length > 0) {
