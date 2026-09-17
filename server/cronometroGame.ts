@@ -20,6 +20,8 @@ type Room = {
 };
 
 const rooms = new Map<string, Room>();
+const roomLastSeen = new Map<string, number>();
+const ABANDONED_WAITING_ROOM_MS = 120_000;
 
 function code() {
   for (let i = 0; i < 20; i++) {
@@ -124,6 +126,20 @@ function scheduleChallengeBot(room: Room) {
 }
 
 export function setupCronometroGame(app: Express) {
+  const cleanupTimer = setInterval(() => {
+    const now = Date.now();
+    rooms.forEach((room, roomCode) => {
+      if (room.status === "waiting" && now - (roomLastSeen.get(roomCode) ?? room.createdAt) >= ABANDONED_WAITING_ROOM_MS) {
+        room.players
+          .filter((player) => !player.uid.startsWith("chrono-bot-"))
+          .forEach((player) => { trackLobbyLeave(roomCode, player.uid).catch(() => {}); });
+        rooms.delete(roomCode);
+        roomLastSeen.delete(roomCode);
+      }
+    });
+  }, 30_000);
+  cleanupTimer.unref?.();
+
   app.post("/api/cronometro/rooms", (req, res) => {
     const parsed = z.object({ playerId: z.string().min(1), nickname: z.string().trim().min(1).max(18), gameMode: z.enum(["classic", "challenge"]).default("classic") }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Digite um apelido válido." });
@@ -131,6 +147,7 @@ export function setupCronometroGame(app: Express) {
     const room: Room = { code: roomCode, hostId: parsed.data.playerId, status: "waiting", gameMode: parsed.data.gameMode, players: [{ uid: parsed.data.playerId, name: parsed.data.nickname, connected: true, eliminated: false, wins: 0 }], targetMs: null, startedAt: null, attempts: [], showTimer: false, round: 0, createdAt: Date.now(), challengePhase: null, accumulatedMs: 0, currentPlayerId: null, suggesterId: null, lastChallengeAttempt: null, lastResolution: null, winnerId: null, timerActivePlayerId: null };
     if (parsed.data.nickname.toLowerCase() === "testeadm26") ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"].forEach((name, i) => room.players.push({ uid: `chrono-bot-${roomCode}-${i}`, name, connected: true, eliminated: false, wins: 0 }));
     rooms.set(roomCode, room);
+    roomLastSeen.set(roomCode, Date.now());
     const trackedMode = parsed.data.gameMode === "challenge" ? "cronometroDesafio" : "cronometroClassico";
     trackLobbyJoin(roomCode, parsed.data.playerId, parsed.data.nickname, true, trackedMode, null, req).catch(() => {});
     trackRoomJoin(req.cookies?.["visitor_id"] || parsed.data.playerId, roomCode, trackedMode, req).catch(() => {});
@@ -138,8 +155,10 @@ export function setupCronometroGame(app: Express) {
   });
 
   app.post("/api/cronometro/rooms/:code/join", (req, res) => {
-    const room = rooms.get(req.params.code.toUpperCase());
+    const roomCode = req.params.code.toUpperCase();
+    const room = rooms.get(roomCode);
     if (!room) return res.status(404).json({ error: "Sala não encontrada." });
+    roomLastSeen.set(roomCode, Date.now());
     if (room.status !== "waiting") return res.status(409).json({ error: "A partida já começou." });
     const parsed = z.object({ playerId: z.string().min(1), nickname: z.string().trim().min(1).max(18) }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Dados inválidos." });
@@ -154,8 +173,10 @@ export function setupCronometroGame(app: Express) {
   });
 
   app.get("/api/cronometro/rooms/:code", (req, res) => {
-    const room = rooms.get(req.params.code.toUpperCase());
+    const roomCode = req.params.code.toUpperCase();
+    const room = rooms.get(roomCode);
     if (!room) return res.status(404).json({ error: "Sala não encontrada." });
+    roomLastSeen.set(roomCode, Date.now());
     res.json(response(room));
   });
 
@@ -283,7 +304,10 @@ export function setupCronometroGame(app: Express) {
     const leavingId = typeof req.body?.playerId === "string" ? req.body.playerId : "";
     room.players = room.players.filter(p => p.uid !== leavingId); room.attempts = room.attempts.filter(a => a.playerId !== leavingId);
     if (leavingId) trackLobbyLeave(room.code, leavingId).catch(() => {});
-    if (!room.players.length) rooms.delete(room.code); else if (room.hostId === req.body?.playerId) room.hostId = room.players[0].uid; else maybeFinishClassic(room);
+    if (!room.players.length) {
+      rooms.delete(room.code);
+      roomLastSeen.delete(room.code);
+    } else if (room.hostId === req.body?.playerId) room.hostId = room.players[0].uid; else maybeFinishClassic(room);
     res.json({ ok: true });
   });
 }

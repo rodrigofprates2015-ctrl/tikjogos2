@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { ArrowLeft, Check, Clock3, Copy, Crown, Eye, EyeOff, LogOut, Play, RefreshCw, Repeat2, RotateCcw, ShieldAlert, Skull, Swords, Trophy, UserX, Users } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
 import { LobbyAd } from "@/components/AdSense";
+import { LobbyInactivityGuard } from "@/components/LobbyInactivityGuard";
 import { Button } from "@/components/ui/button";
 import tempoLogo from "@/assets/tempoLogo";
 
@@ -161,6 +162,7 @@ export default function CronometroGame() {
   if (!room) return <div className="min-h-screen bg-[#111827] text-white"><MobileNav/><div className="mx-auto max-w-md px-5 py-24 text-center"><Clock3 className="mx-auto h-14 w-14 text-cyan-400"/><h1 className="mt-5 text-3xl font-black">Sala não encontrada</h1><p className="mt-3 text-slate-400">{error || "Crie ou entre em uma sala pela Home."}</p><Link href="/" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-6 py-3 font-black text-slate-950"><ArrowLeft/>Voltar para a Home</Link></div></div>;
 
   return <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(141,81,251,.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(44,126,252,.10),transparent_32%),#1A1E2A] text-white">
+    <LobbyInactivityGuard active={room.status === "waiting"} onExpire={leave} />
     <MobileNav/>
     <div className="relative z-10 mx-auto grid w-full max-w-[1480px] grid-cols-1 items-stretch gap-4 px-2 py-3 sm:px-5 lg:grid-cols-[350px_minmax(0,1fr)] lg:gap-5 lg:py-8">
       <aside className="tj-surface order-2 flex min-w-0 flex-col p-3 sm:p-5 lg:order-1">

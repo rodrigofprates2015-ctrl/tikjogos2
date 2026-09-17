@@ -8,6 +8,7 @@ import {
   GameIdentityAvatar, GameIdentityCharacterPicker, GameIdentityLayout,
 } from "@/components/GameIdentityLayout";
 import { MobileNav } from "@/components/MobileNav";
+import { LobbyInactivityGuard } from "@/components/LobbyInactivityGuard";
 import { cn } from "@/lib/utils";
 import { setPageSeo } from "@/lib/pageSeo";
 import stopLogo from "@/assets/stop-logo.png";
@@ -227,7 +228,7 @@ export default function StopGame() {
   const leave = async () => {
     if (room) fetch(`/api/stop/rooms/${room.code}/leave`, {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ playerId: playerId.current }),
+      body: JSON.stringify({ playerId: playerId.current }), keepalive: true,
     }).catch(() => {});
     sessionStorage.removeItem("stop_room_code");
     window.location.href = "/";
@@ -303,7 +304,7 @@ export default function StopGame() {
     />
   </div> : undefined;
 
-  return <div className="min-h-screen overflow-x-hidden bg-[#17142B] text-white"><MobileNav/><div className="flex min-w-0 justify-center overflow-x-hidden">
+  return <div className="min-h-screen overflow-x-hidden bg-[#17142B] text-white"><LobbyInactivityGuard active={room.status === "waiting"} onExpire={leave} /><MobileNav/><div className="flex min-w-0 justify-center overflow-x-hidden">
     <GameIdentityLayout
       players={room.players} userId={me.uid} hostId={room.hostId}
       sidebarHeader={sidebarHeader} sidebarFooter={sidebarFooter}

@@ -23,6 +23,8 @@ type StopAnswer = { category: string; value: string; status: AnswerStatus };
 type StopPlayer = { uid: string; name: string; connected: boolean; characterIndex: number; answers: StopAnswer[]; currentIndex: number; finished: boolean; score: number };
 type StopRoom = { code: string; hostId: string; status: "waiting" | "rolling" | "playing" | "voting" | "results"; letter: string; players: StopPlayer[]; votes: Record<string, Record<string, boolean>>; prevalidation: Record<string, boolean>; voteCategoryIndex: number; voteEndsAt: number | null; voteReady: Record<string, boolean>; votingComplete: boolean; settings: { durationSeconds: number; excludedLetters: string[]; selectedCategories: string[] }; revealAt: number | null; endAt: number | null; stopBy: string | null; stopAt: number | null; createdAt: number };
 const rooms = new Map<string, StopRoom>();
+const roomLastSeen = new Map<string, number>();
+const ABANDONED_WAITING_ROOM_MS = 120_000;
 
 function code() { let value = ""; do value = randomBytes(2).toString("hex").slice(0, 3).toUpperCase(); while (rooms.has(value)); return value; }
 function blankAnswers(categories = DEFAULT_CATEGORIES): StopAnswer[] { return categories.map(category => ({ category, value: "", status: "pending" })); }
@@ -75,6 +77,20 @@ function nextIndex(answers: StopAnswer[], current: number) {
 }
 
 export function setupStopGame(app: Express) {
+  const cleanupTimer = setInterval(() => {
+    const now = Date.now();
+    rooms.forEach((room, roomCode) => {
+      if (room.status === "waiting" && now - (roomLastSeen.get(roomCode) ?? room.createdAt) >= ABANDONED_WAITING_ROOM_MS) {
+        room.players
+          .filter((player) => !isBot(player))
+          .forEach((player) => { trackLobbyLeave(roomCode, player.uid).catch(() => {}); });
+        rooms.delete(roomCode);
+        roomLastSeen.delete(roomCode);
+      }
+    });
+  }, 30_000);
+  cleanupTimer.unref?.();
+
   app.post("/api/stop/rooms", (req, res) => {
     const parsed = z.object({ playerId: z.string().min(1), nickname: z.string().trim().min(1).max(18) }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Digite um apelido válido." });
@@ -84,14 +100,17 @@ export function setupStopGame(app: Express) {
       ["Bot Alpha", "Bot Beta", "Bot Gamma", "Bot Delta"].forEach((name, index) => room.players.push({ uid: `stop-bot-${roomCode}-${index}`, name, connected: true, characterIndex: index + 1, answers: blankAnswers(), currentIndex: 0, finished: false, score: 0 }));
     }
     rooms.set(roomCode, room);
+    roomLastSeen.set(roomCode, Date.now());
     trackLobbyJoin(roomCode, parsed.data.playerId, parsed.data.nickname, true, 'stop', null, req).catch(() => {});
     trackRoomJoin(req.cookies?.['visitor_id'] || parsed.data.playerId, roomCode, 'stop', req).catch(() => {});
     res.json(publicRoom(room));
   });
 
   app.post("/api/stop/rooms/:code/join", (req, res) => {
-    const room = rooms.get(req.params.code.toUpperCase());
+    const roomCode = req.params.code.toUpperCase();
+    const room = rooms.get(roomCode);
     if (!room) return res.status(404).json({ error: "Sala não encontrada." });
+    roomLastSeen.set(roomCode, Date.now());
     if (room.status !== "waiting") return res.status(409).json({ error: "A partida já começou." });
     const parsed = z.object({ playerId: z.string(), nickname: z.string().trim().min(1).max(18) }).safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Dados inválidos." });
@@ -100,7 +119,7 @@ export function setupStopGame(app: Express) {
     res.json(publicRoom(room));
   });
 
-  app.get("/api/stop/rooms/:code", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.status(404).json({ error: "Sala não encontrada." }); res.json(publicRoom(room)); });
+  app.get("/api/stop/rooms/:code", (req, res) => { const roomCode = req.params.code.toUpperCase(); const room = rooms.get(roomCode); if (!room) return res.status(404).json({ error: "Sala não encontrada." }); roomLastSeen.set(roomCode, Date.now()); res.json(publicRoom(room)); });
 
   app.post("/api/stop/rooms/:code/character", (req, res) => {
     const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.status(404).json({ error: "Sala não encontrada." });
@@ -170,5 +189,5 @@ export function setupStopGame(app: Express) {
   });
 
   app.post("/api/stop/rooms/:code/lobby", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.status(404).json({ error: "Sala não encontrada." }); if (req.body?.playerId !== room.hostId) return res.status(403).json({ error: "Apenas o capitão pode voltar ao lobby." }); room.status = "waiting"; room.letter = ""; room.revealAt = null; room.endAt = null; room.stopBy = null; room.stopAt = null; room.voteEndsAt = null; room.voteReady = {}; room.votingComplete = false; res.json(publicRoom(room)); });
-  app.post("/api/stop/rooms/:code/leave", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.json({ ok: true }); const playerId = req.body?.playerId; room.players = room.players.filter(player => player.uid !== playerId); trackLobbyLeave(room.code, playerId).catch(() => {}); if (!room.players.length) rooms.delete(room.code); else if (room.hostId === playerId) room.hostId = room.players[0].uid; res.json({ ok: true }); });
+  app.post("/api/stop/rooms/:code/leave", (req, res) => { const room = rooms.get(req.params.code.toUpperCase()); if (!room) return res.json({ ok: true }); const playerId = req.body?.playerId; room.players = room.players.filter(player => player.uid !== playerId); trackLobbyLeave(room.code, playerId).catch(() => {}); if (!room.players.length) { rooms.delete(room.code); roomLastSeen.delete(room.code); } else if (room.hostId === playerId) room.hostId = room.players[0].uid; res.json({ ok: true }); });
 }

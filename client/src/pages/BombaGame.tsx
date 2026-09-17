@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Bomb, Check, Copy, Crown, LogOut, Play, Plus, RotateCcw, Settings, Shuffle, Trash2, Users, Volume2, X } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import { LobbyInactivityGuard } from "@/components/LobbyInactivityGuard";
 import { useGameIntermission } from "@/components/GameIntermission";
 import bombaLogo from "@/assets/bomba-logo.png";
 import "./bomba-game.css?online=2";
@@ -317,7 +318,7 @@ export default function BombaGame() {
   const leaveOnlineRoom = async () => {
     if (onlineRoom) {
       fetch(`/api/bomba/rooms/${onlineRoom.code}/leave`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ playerId: playerIdRef.current }),
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ playerId: playerIdRef.current }), keepalive: true,
       }).catch(() => {});
     }
     sessionStorage.removeItem("bomba_room_code");
@@ -353,6 +354,7 @@ export default function BombaGame() {
     const isHost = onlineRoom.hostId === playerIdRef.current;
     return (
       <div className="bomba-page bomba-page--setup">
+        <LobbyInactivityGuard active onExpire={leaveOnlineRoom} />
         <MobileNav />
         <main className="bomba-lobby-shell">
           <section className="bomba-lobby-card">

@@ -35,7 +35,9 @@ type BombaRoom = {
 };
 
 const bombaRooms = new Map<string, BombaRoom>();
+const bombaRoomLastSeen = new Map<string, number>();
 const pendingBotTurns = new Set<string>();
+const ABANDONED_WAITING_ROOM_MS = 120_000;
 const BOT_WORDS: Record<string, string> = {
   A: "Abacaxi", B: "Banana", C: "Café", D: "Doce", E: "Esfiha", F: "Feijão",
   G: "Goiaba", H: "Hambúrguer", I: "Iogurte", J: "Jaca", K: "Kiwi", L: "Laranja",
@@ -123,6 +125,21 @@ function scheduleBombaBotTurn(room: BombaRoom) {
 }
 
 export function setupBombaGame(app: Express) {
+  const cleanupTimer = setInterval(() => {
+    const now = Date.now();
+    bombaRooms.forEach((room, code) => {
+      if (room.status === "waiting" && now - (bombaRoomLastSeen.get(code) ?? room.createdAt) >= ABANDONED_WAITING_ROOM_MS) {
+        room.players
+          .filter((player) => !player.uid.startsWith("bomba-bot-"))
+          .forEach((player) => { trackLobbyLeave(code, player.uid).catch(() => {}); });
+        bombaRooms.delete(code);
+        bombaRoomLastSeen.delete(code);
+        pendingBotTurns.delete(code);
+      }
+    });
+  }, 30_000);
+  cleanupTimer.unref?.();
+
   app.post("/api/bomba/rooms", (req, res) => {
     try {
       const { playerId, nickname } = z.object({
@@ -152,6 +169,7 @@ export function setupBombaGame(app: Express) {
         });
       }
       bombaRooms.set(code, room);
+      bombaRoomLastSeen.set(code, Date.now());
       trackRoomJoin(req.cookies?.['visitor_id'] || playerId, code, 'bomba', req).catch(() => {});
       trackLobbyJoin(code, playerId, nickname, true, 'bomba', null, req).catch(() => {});
       res.json(roomResponse(room));
@@ -169,6 +187,7 @@ export function setupBombaGame(app: Express) {
       }).parse(req.body);
       const room = bombaRooms.get(code);
       if (!room) return res.status(404).json({ error: "Sala não encontrada." });
+      bombaRoomLastSeen.set(code, Date.now());
       if (room.status !== "waiting") return res.status(409).json({ error: "A partida já começou." });
       const existing = room.players.find((player) => player.uid === playerId);
       if (existing) {
@@ -186,8 +205,10 @@ export function setupBombaGame(app: Express) {
   });
 
   app.get("/api/bomba/rooms/:code", (req, res) => {
-    const room = bombaRooms.get(req.params.code.toUpperCase());
+    const code = req.params.code.toUpperCase();
+    const room = bombaRooms.get(code);
     if (!room) return res.status(404).json({ error: "Sala não encontrada." });
+    bombaRoomLastSeen.set(code, Date.now());
     res.json(roomResponse(room));
   });
 
@@ -329,7 +350,10 @@ export function setupBombaGame(app: Express) {
     const playerId = typeof req.body?.playerId === "string" ? req.body.playerId : "";
     room.players = room.players.filter((player) => player.uid !== playerId);
     if (playerId) trackLobbyLeave(code, playerId).catch(() => {});
-    if (room.players.length === 0) bombaRooms.delete(code);
+    if (room.players.length === 0) {
+      bombaRooms.delete(code);
+      bombaRoomLastSeen.delete(code);
+    }
     else if (room.hostId === playerId) room.hostId = room.players[0].uid;
     res.json({ ok: true });
   });

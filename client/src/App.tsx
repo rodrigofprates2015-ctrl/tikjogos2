@@ -18,6 +18,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { isNativeApp } from "@/lib/nativeApp";
 import { ArrowLeft } from "lucide-react";
+import { LobbyInactivityGuard } from "@/components/LobbyInactivityGuard";
+import { useGameStore } from "@/lib/gameStore";
+import { useDrawingGameStore } from "@/lib/drawingGameStore";
+import { useDesafioStore } from "@/lib/desafioStore";
+import { useAproximacaoStore } from "@/lib/aproximacaoStore";
+import { useRankMasterStore } from "@/lib/rankMasterStore";
+import { useRCGameStore } from "@/lib/rcGameStore";
 
 // Lazy-loaded pages - reduces initial JS bundle for faster LCP on mobile
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
@@ -547,6 +554,30 @@ function FeedbackController() {
   return <FeedbackPopup onDismiss={dismiss} onDone={markDone} />;
 }
 
+function GlobalLobbyInactivityGuard() {
+  const impostor = useGameStore();
+  const drawing = useDrawingGameStore();
+  const desafio = useDesafioStore();
+  const aproximacao = useAproximacaoStore();
+  const rankMaster = useRankMasterStore();
+  const respostas = useRCGameStore();
+
+  const candidate =
+    (impostor.room && (impostor.status === "lobby" || impostor.room.status === "waiting") ? impostor : null) ||
+    (drawing.room && ["lobby", "themeSelect"].includes(drawing.phase) ? drawing : null) ||
+    (desafio.room && desafio.status === "lobby" ? desafio : null) ||
+    (aproximacao.room && aproximacao.phase === "lobby" ? aproximacao : null) ||
+    (rankMaster.room && rankMaster.phase === "lobby" ? rankMaster : null) ||
+    (respostas.room && ["lobby", "themeSelect"].includes(respostas.phase) ? respostas : null);
+
+  const expire = () => {
+    candidate?.leaveGame();
+    window.location.assign("/");
+  };
+
+  return <LobbyInactivityGuard active={Boolean(candidate)} onExpire={expire} />;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -556,6 +587,7 @@ function App() {
           <SessionTracker />
           <NativeAdBlocker />
           <NativeHomeButton />
+          <GlobalLobbyInactivityGuard />
           <AppRouter />
           <FeedbackController />
           <Toaster />
