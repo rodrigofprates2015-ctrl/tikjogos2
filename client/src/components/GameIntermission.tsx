@@ -107,7 +107,26 @@ export function GameIntermissionScreen({
 }: {
   onContinue: () => void;
 }) {
+  const [secondsUntilClose, setSecondsUntilClose] = useState(5);
+
+  useEffect(() => {
+    const countdown = window.setInterval(() => {
+      setSecondsUntilClose((seconds) => {
+        if (seconds <= 1) {
+          window.clearInterval(countdown);
+          return 0;
+        }
+        return seconds - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(countdown);
+  }, []);
+
   if (isNativeApp()) return null;
+
+  const canClose = secondsUntilClose === 0;
+
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 px-3 py-5 text-white"
@@ -123,10 +142,11 @@ export function GameIntermissionScreen({
           <button
             type="button"
             onClick={onContinue}
-            className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white transition hover:bg-emerald-500"
-            aria-label="Fechar anúncio e continuar"
+            disabled={!canClose}
+            className="flex min-w-[104px] items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300"
+            aria-label={canClose ? "Fechar anúncio e continuar" : `Fechar anúncio em ${secondsUntilClose} segundos`}
           >
-            <X size={14} /> Fechar
+            <X size={14} /> {canClose ? "Fechar" : `Fechar em ${secondsUntilClose}s`}
           </button>
         </header>
 
