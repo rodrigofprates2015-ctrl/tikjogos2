@@ -32,6 +32,7 @@ function IntermissionAd() {
     const imaPlayer = player as typeof player & {
       ima: ((options: { adTagUrl: string; locale: string; showCountdown: boolean }) => void) & {
         initializeAdDisplayContainer?: () => void;
+        requestAds?: () => void;
       };
     };
 
@@ -50,10 +51,25 @@ function IntermissionAd() {
         showCountdown: true,
       });
       player.ready(() => {
-        try { imaPlayer.ima.initializeAdDisplayContainer?.(); } catch {}
-        void player.play()?.catch(() => {
-          // Browsers may require the user to press play; controls remain visible.
-        });
+        player.muted(true);
+
+        try {
+          imaPlayer.ima.initializeAdDisplayContainer?.();
+          // O plugin normalmente espera o primeiro clique em Play. Como o modal
+          // já foi aberto por uma ação do usuário, solicitamos o anúncio agora.
+          imaPlayer.ima.requestAds?.();
+        } catch (error) {
+          console.warn("GameIntermission autoplay initialization was skipped:", error);
+        }
+
+        const startPlayback = () => {
+          void player.play()?.catch((error) => {
+            console.warn("GameIntermission autoplay was blocked:", error);
+          });
+        };
+
+        startPlayback();
+        player.one("loadedmetadata", startPlayback);
       });
     } catch (error) {
       console.error("GameIntermission IMA initialization error:", error);
@@ -73,7 +89,13 @@ function IntermissionAd() {
         Publicidade
       </p>
       <div data-vjs-player className="mx-auto aspect-video w-full max-w-[336px] overflow-hidden rounded-2xl bg-black">
-        <video ref={videoRef} className="video-js vjs-default-skin h-full w-full" playsInline />
+        <video
+          ref={videoRef}
+          className="video-js vjs-default-skin h-full w-full"
+          autoPlay
+          muted
+          playsInline
+        />
       </div>
       {adError && <p className="mt-2 text-center text-xs font-semibold text-slate-400">Anúncio indisponível no momento. Você pode continuar a partida.</p>}
     </section>
