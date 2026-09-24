@@ -129,7 +129,7 @@ export function GameIntermissionScreen({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 px-3 py-5 text-white"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/45 px-3 py-5 text-white backdrop-blur-[2px]"
       role="dialog"
       aria-modal="true"
       aria-label="Publicidade entre partidas"
