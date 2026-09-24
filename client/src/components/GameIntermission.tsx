@@ -4,23 +4,32 @@ import { isNativeApp } from "@/lib/nativeApp";
 import { showNativeInterstitial } from "@/lib/nativeAdMob";
 
 function IntermissionAd() {
-  const insRef = useRef<HTMLModElement>(null);
-
   useEffect(() => {
-    const element = insRef.current;
-    if (!element || element.dataset.adsbygoogleStatus) return;
+    const adWindow = window as typeof window & {
+      aclib?: { runVideoSlider: (options: { zoneId: string }) => void };
+    };
 
-    const frame = window.requestAnimationFrame(() => {
-      if (!element.isConnected || element.getBoundingClientRect().width <= 0) return;
+    const runVideoSlider = () => {
+      if (!adWindow.aclib?.runVideoSlider) return false;
       try {
-        const adWindow = window as typeof window & { adsbygoogle: any[] };
-        (adWindow.adsbygoogle = adWindow.adsbygoogle || []).push({});
+        adWindow.aclib.runVideoSlider({ zoneId: "12215562" });
+        return true;
       } catch (error) {
-        console.error("GameIntermissionAd error:", error);
+        console.error("GameIntermissionVideoSlider error:", error);
+        return true;
       }
-    });
+    };
 
-    return () => window.cancelAnimationFrame(frame);
+    if (runVideoSlider()) return;
+    const retry = window.setInterval(() => {
+      if (runVideoSlider()) window.clearInterval(retry);
+    }, 250);
+    const stopRetry = window.setTimeout(() => window.clearInterval(retry), 5_000);
+
+    return () => {
+      window.clearInterval(retry);
+      window.clearTimeout(stopRetry);
+    };
   }, []);
 
   return (
@@ -28,16 +37,10 @@ function IntermissionAd() {
       <p className="mb-2 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
         Publicidade
       </p>
-      <div className="mx-auto flex min-h-[250px] w-full max-w-[336px] items-center justify-center overflow-hidden rounded-2xl bg-white/[0.03]">
-        <ins
-          ref={insRef}
-          className="adsbygoogle"
-          style={{ display: "block", width: "100%", minHeight: 250 }}
-          data-ad-client="ca-pub-9927561573478881"
-          data-ad-slot="7536067322"
-          data-ad-format="rectangle"
-          data-full-width-responsive="true"
-        />
+      <div className="mx-auto flex min-h-28 w-full max-w-[336px] items-center justify-center overflow-hidden rounded-2xl bg-white/[0.03] px-5 text-center">
+        <p className="text-sm font-semibold leading-relaxed text-slate-300">
+          O vídeo será exibido para apoiar o TikJogos.
+        </p>
       </div>
     </section>
   );
