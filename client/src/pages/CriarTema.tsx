@@ -30,7 +30,7 @@ type PaymentState = {
 
 const MIN_PALAVRAS = 7;
 const TOTAL_PALAVRAS = 25;
-const THEME_PRICE = "5,00";
+const THEME_PRICE = "0,99";
 
 export default function CriarTema() {
   const { toast } = useToast();
@@ -199,7 +199,7 @@ export default function CriarTema() {
           {[
             ['1', 'Entre na sua conta', 'Assim o tema ficará salvo para sempre na sua biblioteca.'],
             ['2', 'Monte seu tema', 'Dê um nome, escolha as palavras e decida se ele será público ou privado.'],
-            ['3', 'Contribua com R$ 5', 'O pagamento libera seu tema e ajuda a manter o TikJogos gratuito.'],
+            ['3', 'Contribua com R$ 0,99', 'O pagamento libera seu tema e ajuda a manter o TikJogos gratuito.'],
             ['4', 'Jogue e compartilhe', 'Use imediatamente e envie o código para seus amigos.']
           ].map(([number, title, description]) => <div key={number} className="flex gap-3 rounded-2xl border border-slate-700 bg-[#1a1b2e] p-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-violet-600 font-black text-white">{number}</span><div><strong className="text-white">{title}</strong><p className="mt-1 text-sm leading-relaxed text-slate-400">{description}</p></div></div>)}
         </div>

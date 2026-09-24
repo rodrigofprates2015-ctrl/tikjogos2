@@ -2122,7 +2122,7 @@ const HomeScreen = ({ showSupportContent = false }: { showSupportContent?: boole
               </span>
               <h2 className="mt-1 text-lg font-black leading-tight text-white">Tem uma ideia divertida? Coloque no jogo!</h2>
               <p className="mt-1 text-xs leading-relaxed text-violet-100">
-                Crie um tema com sua série favorita, personagens ou piadas internas da turma por <strong className="text-white">R$ 5</strong>.
+                Crie um tema com sua série favorita, personagens ou piadas internas da turma por <strong className="text-white">R$ 0,99</strong>.
               </p>
             </div>
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/20 bg-white/10 text-white transition-transform group-hover:translate-x-1">
@@ -4422,7 +4422,7 @@ const ModeSelectScreen = () => {
                     <Plus className="h-7 w-7" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] font-black uppercase tracking-[.16em] text-amber-300">Seu tema por R$ 5</span>
+                    <span className="text-[10px] font-black uppercase tracking-[.16em] text-amber-300">Seu tema por R$ 0,99</span>
                     <strong className="mt-0.5 block text-base text-white">Tem uma ideia divertida? Coloque no jogo!</strong>
                     <span className="mt-1 block text-xs leading-relaxed text-slate-300">
                       Crie um tema com sua série favorita, personagens, memes ou piadas internas da turma. Use por código e, se for público, envie para a galeria.
