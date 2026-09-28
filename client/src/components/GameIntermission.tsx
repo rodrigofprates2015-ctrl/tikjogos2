@@ -2,85 +2,25 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { isNativeApp } from "@/lib/nativeApp";
 import { showNativeInterstitial } from "@/lib/nativeAdMob";
-import videojs from "video.js";
-import "video.js/dist/video-js.css";
-import "videojs-contrib-ads";
-import "videojs-contrib-ads/dist/videojs.ads.css";
-import "videojs-ima";
-import "videojs-ima/dist/videojs.ima.css";
-
-const INTERMISSION_AD_TAG = "https://youradexchange.com/video/select.php?r=12215622";
-const CONTENT_VIDEO = "https://storage.googleapis.com/gvabox/media/samples/stock.mp4";
 
 function IntermissionAd() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [adError, setAdError] = useState(false);
+  const insRef = useRef<HTMLModElement>(null);
 
   useEffect(() => {
-    if (!videoRef.current) return;
+    const element = insRef.current;
+    if (!element || element.dataset.adsbygoogleStatus) return;
 
-    const player = videojs(videoRef.current, {
-      controls: true,
-      autoplay: "muted",
-      muted: true,
-      preload: "auto",
-      responsive: true,
-      fluid: true,
-      sources: [{ src: CONTENT_VIDEO, type: "video/mp4" }],
+    const frame = window.requestAnimationFrame(() => {
+      if (!element.isConnected || element.getBoundingClientRect().width <= 0) return;
+      try {
+        const adWindow = window as typeof window & { adsbygoogle: any[] };
+        (adWindow.adsbygoogle = adWindow.adsbygoogle || []).push({});
+      } catch (error) {
+        console.error("GameIntermissionAd error:", error);
+      }
     });
 
-    const imaPlayer = player as typeof player & {
-      ima: ((options: { adTagUrl: string; locale: string; showCountdown: boolean }) => void) & {
-        initializeAdDisplayContainer?: () => void;
-        requestAds?: () => void;
-      };
-    };
-
-    const handleAdError = () => {
-      player.pause();
-      setAdError(true);
-    };
-    player.on("adserror", handleAdError);
-    player.on("ima3error", handleAdError);
-    player.on("ads-ad-ended", () => player.pause());
-
-    try {
-      imaPlayer.ima({
-        adTagUrl: INTERMISSION_AD_TAG,
-        locale: "pt_br",
-        showCountdown: true,
-      });
-      player.ready(() => {
-        player.muted(true);
-
-        try {
-          imaPlayer.ima.initializeAdDisplayContainer?.();
-          // O plugin normalmente espera o primeiro clique em Play. Como o modal
-          // já foi aberto por uma ação do usuário, solicitamos o anúncio agora.
-          imaPlayer.ima.requestAds?.();
-        } catch (error) {
-          console.warn("GameIntermission autoplay initialization was skipped:", error);
-        }
-
-        const startPlayback = () => {
-          void player.play()?.catch((error) => {
-            console.warn("GameIntermission autoplay was blocked:", error);
-          });
-        };
-
-        startPlayback();
-        player.one("loadedmetadata", startPlayback);
-      });
-    } catch (error) {
-      console.error("GameIntermission IMA initialization error:", error);
-      setAdError(true);
-    }
-
-    return () => {
-      player.off("adserror", handleAdError);
-      player.off("ima3error", handleAdError);
-      player.dispose();
-    };
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   return (
@@ -88,16 +28,17 @@ function IntermissionAd() {
       <p className="mb-2 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
         Publicidade
       </p>
-      <div data-vjs-player className="mx-auto aspect-video w-full max-w-[336px] overflow-hidden rounded-2xl bg-black">
-        <video
-          ref={videoRef}
-          className="video-js vjs-default-skin h-full w-full"
-          autoPlay
-          muted
-          playsInline
+      <div className="mx-auto flex min-h-[250px] w-full max-w-[336px] items-center justify-center overflow-hidden rounded-2xl bg-white/[0.03]">
+        <ins
+          ref={insRef}
+          className="adsbygoogle"
+          style={{ display: "block", width: "100%", minHeight: 250 }}
+          data-ad-client="ca-pub-9927561573478881"
+          data-ad-slot="7536067322"
+          data-ad-format="rectangle"
+          data-full-width-responsive="true"
         />
       </div>
-      {adError && <p className="mt-2 text-center text-xs font-semibold text-slate-400">Anúncio indisponível no momento. Você pode continuar a partida.</p>}
     </section>
   );
 }
