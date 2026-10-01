@@ -873,8 +873,8 @@ function TemasView({ token, themes, setThemes, onLogout }: {
                 <TableCell className="text-slate-400 text-sm">{theme.autor}</TableCell>
                 <TableCell className="text-slate-400 text-sm">{theme.palavras.length}</TableCell>
                 <TableCell>
-                  <Badge className={theme.approved ? "bg-emerald-600/80 text-xs" : "bg-amber-600/80 text-xs"}>
-                    {theme.approved ? "Aprovado" : "Pendente"}
+                  <Badge className={theme.paymentStatus !== "approved" ? "bg-slate-600/80 text-xs" : theme.approved ? "bg-emerald-600/80 text-xs" : "bg-amber-600/80 text-xs"}>
+                    {theme.paymentStatus !== "approved" ? "Aguardando pagamento" : theme.approved ? "Aprovado" : "Revisão manual"}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -1334,7 +1334,7 @@ export default function AdminDashboard() {
     { id: "overview", label: "Visão Geral", icon: Home, accent: "#6366f1" },
     { id: "games", label: "Jogos", icon: Gamepad2, accent: "#6157f5", badge: rooms.length + drawingRooms.length + (sincStats?.activeRooms ?? 0) + desafioRooms.length + aproximacaoRooms.length + bombaRooms.length || undefined },
     { id: "users", label: "Cadastros", icon: UserRound, accent: "#8b5cf6", badge: registeredUsers.length || undefined },
-    { id: "temas", label: "Temas", icon: FileText, accent: "#ec4899", badge: themes.filter(t => !t.approved).length || undefined },
+    { id: "temas", label: "Temas", icon: FileText, accent: "#ec4899", badge: themes.filter(t => t.isPublic && t.paymentStatus === "approved" && !t.approved).length || undefined },
     { id: "analytics", label: "Analytics", icon: BarChart3, accent: "#06b6d4" },
     { id: "feedback", label: "Feedback", icon: Star, accent: "#f59e0b" },
   ];
@@ -1506,7 +1506,7 @@ export default function AdminDashboard() {
                 <FileText className="w-5 h-5 text-pink-400" />
               </div>
               <h2 className="text-lg font-bold text-white">Moderação de Temas</h2>
-              <Badge className="bg-amber-600/80 ml-auto">{themes.filter(t => !t.approved).length} pendentes</Badge>
+              <Badge className="bg-amber-600/80 ml-auto">{themes.filter(t => t.isPublic && t.paymentStatus === "approved" && !t.approved).length} pendentes</Badge>
             </div>
             <TemasView token={token} themes={themes} setThemes={setThemes} onLogout={handleLogout} />
           </div>

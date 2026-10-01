@@ -203,7 +203,7 @@ export default function CriarTema() {
             ['4', 'Jogue e compartilhe', 'Use imediatamente e envie o código para seus amigos.']
           ].map(([number, title, description]) => <div key={number} className="flex gap-3 rounded-2xl border border-slate-700 bg-[#1a1b2e] p-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-violet-600 font-black text-white">{number}</span><div><strong className="text-white">{title}</strong><p className="mt-1 text-sm leading-relaxed text-slate-400">{description}</p></div></div>)}
         </div>
-        <div className="mt-6 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4 text-sm leading-relaxed text-emerald-100">Temas públicos passam por moderação. Temas privados ficam disponíveis somente para quem tiver o código.</div>
+        <div className="mt-6 rounded-2xl border border-emerald-300/25 bg-emerald-400/10 p-4 text-sm leading-relaxed text-emerald-100">Temas públicos seguros podem ser pré-aprovados automaticamente e entrar na galeria após o pagamento. Casos duvidosos passam por análise manual. Temas privados ficam disponíveis somente para quem tiver o código.</div>
         <Link href="/entrar?returnTo=%2Fcriar-tema" className="mt-6 flex w-full items-center justify-center gap-3 rounded-2xl border-b-[6px] border-violet-900 bg-gradient-to-r from-violet-600 to-fuchsia-500 px-5 py-4 text-lg font-black text-white shadow-xl transition hover:brightness-110 active:translate-y-1 active:border-b-0" data-testid="button-login-to-create-theme"><Rocket className="h-6 w-6"/> ENTRAR E CRIAR MEU TEMA</Link>
         <p className="mt-3 text-center text-xs text-slate-500">Você só preencherá o formulário e fará o pagamento depois de entrar.</p>
       </section>
@@ -379,7 +379,7 @@ export default function CriarTema() {
           <div>
             <h4 className="text-red-400 font-black text-lg">LEIA COM ATENÇÃO</h4>
             <p className="text-red-100/80 text-sm leading-relaxed">
-              Temas públicos passam por moderação antes de aparecer na galeria. Conteúdo ofensivo, ilegal, discriminatório ou inadequado será rejeitado ou removido.
+              Temas públicos passam por uma pré-moderação automática. Conteúdo seguro pode ser liberado na hora; casos duvidosos seguem para análise manual. Conteúdo ofensivo, ilegal, discriminatório ou inadequado será rejeitado ou removido.
             </p>
             <p className="text-red-300 font-bold text-sm mt-2">
               O pagamento cobre a criação do tema e não garante sua publicação na galeria pública. Mesmo aguardando análise, você poderá usá-lo pelo código de acesso.

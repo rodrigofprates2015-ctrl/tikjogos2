@@ -14,6 +14,7 @@ import { trackLobbyJoin, trackLobbyLeave, trackLobbyGameStart } from "./lobbyTra
 import { trackRoomJoin } from "./analyticsMiddleware";
 import { getSupportSummary, savePendingDonation, updateDonationStatus } from "./donationStore";
 import { APROXIMACAO_QUESTIONS_2026 } from "./aproximacaoQuestions2026";
+import { preModerateTheme } from "./themeModeration";
 import agoraToken from 'agora-token';
 const { RtcTokenBuilder, RtcRole } = agoraToken;
 
@@ -3165,15 +3166,16 @@ export async function registerRoutes(
         if (existingTheme.paymentStatus !== 'approved') {
           try {
             const accessCode = existingTheme.accessCode || cryptoRandomBytes(3).toString('hex').toUpperCase();
+            const moderation = existingTheme.isPublic
+              ? preModerateTheme(existingTheme)
+              : { autoApproved: true, reasons: [] };
             existingTheme = await storage.updateTheme(existingTheme.id, {
               paymentStatus: 'approved',
-              // Pagamento e moderação são etapas independentes. O código já
-              // funciona, mas temas públicos só entram na galeria após a
-              // aprovação manual no dashboard.
-              approved: false,
+              approved: moderation.autoApproved,
               accessCode
             });
-            console.log('[Webhook] Updated theme to approved:', existingTheme?.id, 'accessCode:', accessCode);
+            console.log('[Webhook] Theme payment approved:', existingTheme?.id, 'accessCode:', accessCode,
+              'autoApproved:', moderation.autoApproved, 'reasons:', moderation.reasons);
           } catch (updateError) {
             console.error('[Webhook] Failed to update theme to approved:', updateError);
           }
@@ -3256,10 +3258,20 @@ export async function registerRoutes(
       
       // If theme exists and is already approved, return immediately
       if (existingTheme && existingTheme.paymentStatus === 'approved') {
+        if (!existingTheme.approved) {
+          const moderation = existingTheme.isPublic
+            ? preModerateTheme(existingTheme)
+            : { autoApproved: true, reasons: [] };
+          if (moderation.autoApproved) {
+            existingTheme = await storage.updateTheme(existingTheme.id, { approved: true }) ?? existingTheme;
+            console.log('[Payment Status] Existing theme auto-approved:', existingTheme.id);
+          }
+        }
         console.log('[Payment Status] Theme already approved in DB:', existingTheme.id);
         return res.json({
           status: 'approved',
-          accessCode: existingTheme.accessCode
+          accessCode: existingTheme.accessCode,
+          moderationStatus: existingTheme.approved ? 'approved' : 'manual_review',
         });
       }
       
@@ -3274,18 +3286,23 @@ export async function registerRoutes(
           // Theme exists but not yet approved - update it to approved
           if (existingTheme.paymentStatus !== 'approved') {
             const accessCode = cryptoRandomBytes(3).toString('hex').toUpperCase();
+            const moderation = existingTheme.isPublic
+              ? preModerateTheme(existingTheme)
+              : { autoApproved: true, reasons: [] };
             existingTheme = await storage.updateTheme(existingTheme.id, {
               paymentStatus: 'approved',
-              approved: false,
+              approved: moderation.autoApproved,
               accessCode
             });
-            console.log('[Payment Status] Updated theme to approved:', existingTheme?.id, 'accessCode:', accessCode);
+            console.log('[Payment Status] Theme payment approved:', existingTheme?.id, 'accessCode:', accessCode,
+              'autoApproved:', moderation.autoApproved, 'reasons:', moderation.reasons);
           }
           
           if (existingTheme && existingTheme.paymentStatus === 'approved') {
             return res.json({
               status: 'approved',
-              accessCode: existingTheme.accessCode
+              accessCode: existingTheme.accessCode,
+              moderationStatus: existingTheme.approved ? 'approved' : 'manual_review',
             });
           }
         } else {

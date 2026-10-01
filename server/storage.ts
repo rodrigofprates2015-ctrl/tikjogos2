@@ -225,7 +225,11 @@ export class MemoryStorage implements IStorage {
     const result: Theme[] = [];
     const themesArray = Array.from(this.themesMap.values());
     for (let i = 0; i < themesArray.length; i++) {
-      if (themesArray[i].isPublic && themesArray[i].approved) {
+      if (
+        themesArray[i].isPublic &&
+        themesArray[i].approved &&
+        themesArray[i].paymentStatus === "approved"
+      ) {
         result.push(themesArray[i]);
       }
     }
@@ -415,7 +419,11 @@ export class DatabaseStorage implements IStorage {
   async getPublicApprovedThemes(): Promise<Theme[]> {
     if (!db) throw new Error("Database not initialized");
     const result = await db.select().from(themes).where(
-      and(eq(themes.isPublic, true), eq(themes.approved, true))
+      and(
+        eq(themes.isPublic, true),
+        eq(themes.approved, true),
+        eq(themes.paymentStatus, "approved"),
+      )
     );
     return result;
   }
